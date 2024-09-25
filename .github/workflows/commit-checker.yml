@@ -1,0 +1,21 @@
+name: Commit Check
+
+on:
+  pull_request:
+    branches:
+      - main  # Adjust this to your main branch if different
+
+jobs:
+  commit-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Check commits
+        run: |
+          git fetch --prune --unshallow
+          git log origin/main..HEAD --pretty=format:%s | npx commitlint --from=HEAD --to=origin/main
