@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Get the commit messages
+COMMIT_MESSAGES=$(git log --format=%s -n 1)
+
+# Run commitlint on the last commit message
+echo "$COMMIT_MESSAGES" | npx commitlint
