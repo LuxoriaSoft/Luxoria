@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Luxoria.App (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Luxoria.App (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
