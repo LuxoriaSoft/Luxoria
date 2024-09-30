@@ -16,7 +16,7 @@
 
   <Properties>
     <DisplayName>Luxoria.App</DisplayName>
-    <PublisherDisplayName>quentin</PublisherDisplayName>
+    <PublisherDisplayName>Luxoria Project</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
