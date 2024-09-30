@@ -8,15 +8,15 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="ba76abdd-53b9-4860-87f1-77fca9dcf20e"
+    Name="11c2117d-0a8e-4e60-b354-8abe002a4144"
     Publisher="CN=quentin"
     Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="ba76abdd-53b9-4860-87f1-77fca9dcf20e" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="11c2117d-0a8e-4e60-b354-8abe002a4144" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>Luxoria.App</DisplayName>
-    <PublisherDisplayName>quentin</PublisherDisplayName>
+    <PublisherDisplayName>Luxoria Project</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
