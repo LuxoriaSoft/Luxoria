@@ -46,7 +46,6 @@ jobs:
       - name: Build and analyze
         shell: powershell
         run: |
-          cd Luxoria.App
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"Luxoria-Desktop" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
-          dotnet build Luxoria.App.sln
+          dotnet build --project Luxoria.App/Luxoria.App.sln
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
