@@ -5,6 +5,15 @@
 | |___  | |_| |  >  <  | (_) | | |    | | | (_| |
 |_____|  \__,_| /_/\_\  \___/  |_|    |_|  \__,_|
 ```
+----------------  
+
+<div align="center">
+
+[![Quality Gate Status](https://sonarqube.bluepelicandev.com/api/project_badges/measure?project=Luxoria-Desktop&metric=alert_status&token=sqb_3921655c14cd935b36618078c64c6f4d13ed7ee8)](https://sonarqube.bluepelicandev.com/dashboard?id=Luxoria-Desktop) [![Lines of Code](https://sonarqube.bluepelicandev.com/api/project_badges/measure?project=Luxoria-Desktop&metric=ncloc&token=sqb_3921655c14cd935b36618078c64c6f4d13ed7ee8)](https://sonarqube.bluepelicandev.com/dashboard?id=Luxoria-Desktop) [![Duplicated Lines (%)](https://sonarqube.bluepelicandev.com/api/project_badges/measure?project=Luxoria-Desktop&metric=duplicated_lines_density&token=sqb_3921655c14cd935b36618078c64c6f4d13ed7ee8)](https://sonarqube.bluepelicandev.com/dashboard?id=Luxoria-Desktop) [![Maintainability Rating](https://sonarqube.bluepelicandev.com/api/project_badges/measure?project=Luxoria-Desktop&metric=sqale_rating&token=sqb_3921655c14cd935b36618078c64c6f4d13ed7ee8)](https://sonarqube.bluepelicandev.com/dashboard?id=Luxoria-Desktop) [![Security Rating](https://sonarqube.bluepelicandev.com/api/project_badges/measure?project=Luxoria-Desktop&metric=security_rating&token=sqb_3921655c14cd935b36618078c64c6f4d13ed7ee8)](https://sonarqube.bluepelicandev.com/dashboard?id=Luxoria-Desktop)
+
+</div>
+
+----------------
 
 # Luxoria
 
