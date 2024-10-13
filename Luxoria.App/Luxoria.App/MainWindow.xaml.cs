@@ -1,17 +1,8 @@
+using Luxoria.Modules;
+using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Models.Events;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using System.Diagnostics;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -23,14 +14,45 @@ namespace Luxoria.App
     /// </summary>
     public sealed partial class MainWindow : Window
     {
-        public MainWindow()
+        private readonly IEventBus _eventBus;
+
+        public MainWindow(IEventBus eventBus)
         {
             this.InitializeComponent();
+            _eventBus = eventBus;
+            Initialize();
+
         }
 
-        private void myButton_Click(object sender, RoutedEventArgs e)
+        public void Initialize()
         {
-            myButton.Content = "Clicked";
+            // Subscribe to the ImageUpdatedEvent
+            _eventBus.Subscribe<ImageUpdatedEvent>(OnImageUpdated);
+        }
+
+        private void SendToModule_Click(object sender, RoutedEventArgs e)
+        {
+            string inputText = InputTextBox.Text;
+            Log($"Sending input text: {inputText}");
+
+            // Publish the input text to the module
+            _eventBus.Publish(new TextInputEvent(inputText));
+
+            // Optionally, clear the TextBox after sending
+            InputTextBox.Text = string.Empty;
+        }
+
+        private void OnImageUpdated(ImageUpdatedEvent imageUpdatedEvent)
+        {
+            // Handle the response from the module
+            // For example, display the updated image or log a message
+            Log($"Image updated: {imageUpdatedEvent.ImagePath}");
+        }
+
+        private void Log(string message)
+        {
+            // Log the message (e.g., output to console or a log file)
+            Debug.WriteLine(message);
         }
     }
 }

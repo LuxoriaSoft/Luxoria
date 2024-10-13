@@ -5,10 +5,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Luxoria.App"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:components="using:Luxoria.App.Components"
+    Title="Luxoria App."
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
-    </StackPanel>
+    <Grid x:Name="MainGrid">
+        <TextBox x:Name="InputTextBox" Width="300" Margin="10" PlaceholderText="Enter some text here..." />
+        <Button Content="Send to Module" Click="SendToModule_Click" Margin="10" />
+    </Grid>
 </Window>
