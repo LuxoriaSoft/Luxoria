@@ -32,7 +32,7 @@ jobs:
         run: msbuild $env:Solution_Name /t:Restore /p:Configuration=$env:Configuration
         env:
           Configuration: ${{ matrix.configuration }}
-        working-directory: ./G-EIP-700-STG-7-1-eip-lucas.hoch-main/Luxoria.App
+        working-directory: ./Luxoria.App
       
       # Decode the base 64 encoded pfx and save the Signing_Certificate
       - name: Decode the pfx
@@ -40,7 +40,7 @@ jobs:
           $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.BASE64_ENCODED_PFX }}")
           $certificatePath = "GitHubActionsWorkflow.pfx"
           [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
-        working-directory: ./G-EIP-700-STG-7-1-eip-lucas.hoch-main/Luxoria.App
+        working-directory: ./Luxoria.App
       
       # Create the app package by building and packaging the project
       - name: Create the app package
@@ -51,15 +51,15 @@ jobs:
           Appx_Package_Dir: Packages\
           Configuration: ${{ matrix.configuration }}
           Platform: ${{ matrix.platform }}
-        working-directory: ./G-EIP-700-STG-7-1-eip-lucas.hoch-main/Luxoria.App
+        working-directory: ./Luxoria.App
       
         # Verify output directory
       - name: List output directory recursively
-        run: Get-ChildItem -Recurse ./G-EIP-700-STG-7-1-eip-lucas.hoch-main/Luxoria.App/
+        run: Get-ChildItem -Recurse ./Luxoria.App/
         shell: pwsh
       
       - name: Zip the published app
-        run: Compress-Archive -Path ./G-EIP-700-STG-7-1-eip-lucas.hoch-main/Luxoria.App/Luxoria.App/Packages -DestinationPath ./G-EIP-700-STG-7-1-eip-lucas.hoch-main/Luxoria.App.${{matrix.platform}}.zip
+        run: Compress-Archive -Path ./Luxoria.App/Luxoria.App/Packages -DestinationPath ./Luxoria.App.${{matrix.platform}}.zip
         shell: pwsh
       
       # Upload the published app
@@ -67,4 +67,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Luxoria.App.${{matrix.platform}}
-          path: ./G-EIP-700-STG-7-1-eip-lucas.hoch-main/Luxoria.App.${{matrix.platform}}.zip
+          path: ./Luxoria.App.${{matrix.platform}}.zip
