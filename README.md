@@ -1,10 +1,6 @@
-```
- _                                     _         
-| |      _   _  __  __   ___    _ __  (_)   __ _ 
-| |     | | | | \ \/ /  / _ \  | '__| | |  / _` |
-| |___  | |_| |  >  <  | (_) | | |    | | | (_| |
-|_____|  \__,_| /_/\_\  \___/  |_|    |_|  \__,_|
-```
+# Luxoria
+
+<image src="./docs/.assets/Luxoria_logo.png"></image>
 ----------------  
 
 <div align="center">
@@ -20,8 +16,6 @@
 </h4>
 
 ----------------
-
-# Luxoria
 
 Luxoria is a powerful all-in-one photography solution designed to streamline your workflow. Whether you are an individual photographer or part of a team, Luxoria makes it easy to manage and enhance your images, collaborate with clients, and deliver exceptional results.
 

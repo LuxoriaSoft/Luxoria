@@ -1,11 +1,5 @@
 # Luxoria Documentation
-```
- _                                     _         
-| |      _   _  __  __   ___    _ __  (_)   __ _ 
-| |     | | | | \ \/ /  / _ \  | '__| | |  / _` |
-| |___  | |_| |  >  <  | (_) | | |    | | | (_| |
-|_____|  \__,_| /_/\_\  \___/  |_|    |_|  \__,_|
-```
+<image src=".assets/Luxoria_logo.png">
 
 ## Introduction
 This is the official documentation for the Luxoria project.
