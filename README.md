@@ -14,7 +14,7 @@
 </div>
 
 <h4 align="center">
-  <a href="./releases">Download / Releases</a> |
+  <a href="https://github.com/EpitechPromo2026/G-EIP-700-STG-7-1-eip-lucas.hoch/releases">Download / Releases</a> |
   <a href="./docs">Documentation</a> |
   <a href="./docs/CONTRIBUTING.md">Contribute</a>
 </h4>
