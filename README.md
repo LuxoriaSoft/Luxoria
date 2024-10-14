@@ -13,6 +13,12 @@
 
 </div>
 
+<h4 align="center">
+  <a href="./release">Download / Releases</a> |
+  <a href="./docs">Documentation</a> |
+  <a href="./docs/CONTRIBUTING.md">Contribute</a>
+</h4>
+
 ----------------
 
 # Luxoria
