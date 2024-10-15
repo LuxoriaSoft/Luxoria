@@ -49,7 +49,7 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Luxoria.Models\Luxoria.Core.csproj" />
+    <ProjectReference Include="..\Luxoria.Core\Luxoria.Core.csproj" />
     <ProjectReference Include="..\Luxoria.Modules\Luxoria.Modules.csproj" />
   </ItemGroup>
   <ItemGroup>

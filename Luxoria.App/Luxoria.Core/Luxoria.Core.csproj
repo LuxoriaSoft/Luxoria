@@ -8,11 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Luxoria.Modules\Luxoria.Modules.csproj" />
+    <Compile Remove="Core\**" />
+    <EmbeddedResource Remove="Core\**" />
+    <None Remove="Core\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
+    <ProjectReference Include="..\Luxoria.Modules\Luxoria.Modules.csproj" />
   </ItemGroup>
 
 </Project>
