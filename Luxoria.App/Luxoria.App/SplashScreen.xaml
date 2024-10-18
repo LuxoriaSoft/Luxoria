@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="Luxoria.App.SplashScreen"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="Luxoria App. | Loading..."
+    mc:Ignorable="d">
+
+    <Grid Background="White">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Luxoria App" FontSize="32" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+            <TextBlock x:Name="CurrentModuleText" Text="Loading modules..." FontSize="24" HorizontalAlignment="Center"/>
+            <ProgressBar IsIndeterminate="True" Width="300" Margin="0,20,0,0"/>
+        </StackPanel>
+    </Grid>
+</Window>
