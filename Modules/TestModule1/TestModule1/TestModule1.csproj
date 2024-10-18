@@ -7,11 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Luxoria.Core">
-      <HintPath>..\..\..\G-EIP-700-STG-7-1-eip-lucas.hoch-main\Luxoria.App\Luxoria.Modules\bin\Debug\net8.0\Luxoria.Core.dll</HintPath>
-    </Reference>
     <Reference Include="Luxoria.Modules">
-      <HintPath>..\..\..\G-EIP-700-STG-7-1-eip-lucas.hoch-main\Luxoria.App\Luxoria.Modules\bin\Debug\net8.0\Luxoria.Modules.dll</HintPath>
+      <HintPath>..\..\..\Luxoria.App\Luxoria.Modules\bin\Debug\net8.0\Luxoria.Modules.dll</HintPath>
     </Reference>
   </ItemGroup>
 

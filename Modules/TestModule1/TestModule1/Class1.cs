@@ -12,7 +12,7 @@ namespace TestModule1
         private IEventBus? _eventBus;
         private IModuleContext? _context;
 
-        public string Name => "TestModule1";
+        public string Name => "Test Module1";
         public string Description => "Basic module for testing purposes.";
         public string Version => "1.0.1";
 
@@ -70,7 +70,7 @@ namespace TestModule1
 
             // Perform some processing logic with the input text (e.g., update an image)
             string updatedImagePath = ProcessInputText(textInputEvent.Text);
-
+            
             // Publish an event to notify that an image has been updated
             _eventBus?.Publish(new ImageUpdatedEvent(updatedImagePath));
         }

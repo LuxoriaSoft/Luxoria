@@ -20,4 +20,9 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Luxoria.Core\Luxoria.Core.csproj" />
+    <ProjectReference Include="..\Luxoria.Modules\Luxoria.Modules.csproj" />
+  </ItemGroup>
+
 </Project>
