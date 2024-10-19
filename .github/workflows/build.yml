@@ -48,11 +48,15 @@ jobs:
         run: |
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
+      
+      - name: Install dotnet-coverage globally
+        run: | 
+          dotnet tool install -g dotnet-coverage
 
       - name: Build and analyze
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Luxoria-Desktop" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.coverage.exclusions="**/App.xaml.cs, **/MainWindow.xaml.cs, **/*.sqignore"
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Luxoria-Desktop" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.coverage.exclusions="**/App.xaml.cs, **/MainWindow.xaml.cs, **/*.sqignore" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"
           dotnet build Luxoria.App/Luxoria.App.sln
-          dotnet test Luxoria.App/Luxoria.App.sln --collect "Code Coverage"
+          dotnet test Luxoria.App/Luxoria.App.sln --collect "Code Coverage" -- DataCollectionOutputFormat=opencover --results-directory $(System.DefaultWorkingDirectory)/TestResults/
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
