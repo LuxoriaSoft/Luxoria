@@ -1,5 +1,6 @@
 ﻿using Luxoria.Core.Interfaces;
 using Luxoria.Modules.Interfaces;
+using Luxoria.SDK.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,10 +13,12 @@ namespace Luxoria.Core.Services
     {
         private List<IModule> _modules = new List<IModule>();
         private IEventBus _eventBus;
+        private ILoggerService _logger;
 
-        public ModuleService(IEventBus eventBus)
+        public ModuleService(IEventBus eventBus, ILoggerService logger)
         {
             _eventBus = eventBus;
+            _logger = logger;
             // Load modules
         }
 
@@ -35,7 +38,7 @@ namespace Luxoria.Core.Services
         {
             foreach (IModule module in _modules)
             {
-                module.Initialize(_eventBus, context);
+                module.Initialize(_eventBus, context, _logger);
             }
         }
     }

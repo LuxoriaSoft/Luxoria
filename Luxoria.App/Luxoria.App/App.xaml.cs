@@ -1,7 +1,6 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Luxoria.Core;
 using Luxoria.Modules;
 using System.Diagnostics;
 using System.IO;
@@ -9,6 +8,8 @@ using System.Threading.Tasks;
 using System;
 using Luxoria.Core.Interfaces;
 using Luxoria.Modules.Interfaces;
+using Luxoria.SDK.Interfaces;
+using Luxoria.SDK.Models;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -22,6 +23,7 @@ namespace Luxoria.App
     {
         private readonly Startup _startup;
         private readonly IHost _host;
+        private readonly ILoggerService _logger;
         
         private readonly IModuleService _moduleService;
         /// <summary>
@@ -34,6 +36,7 @@ namespace Luxoria.App
             _startup = new Startup();
             _host = CreateHostBuilder(_startup).Build();
             _moduleService = _host.Services.GetRequiredService<IModuleService>();
+            _logger = _host.Services.GetRequiredService<ILoggerService>();
         }
 
         public static IHostBuilder CreateHostBuilder(Startup startup)
@@ -53,13 +56,13 @@ namespace Luxoria.App
         /// <param name="args">Details about the launch request and process.</param>
         protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            Log("Application is starting...");
+            _logger.Log("Application is starting...");
 
             // Show splash screen
             var splashScreen = new SplashScreen();
             splashScreen.Activate();
 
-            Log("Modules loaded. Closing splash screen...");
+            _logger.Log("Modules loaded. Closing slasph screen...");
             await Task.Delay(500);
 
             // Load modules asynchronously and update the splash screen with the module names
@@ -85,12 +88,12 @@ namespace Luxoria.App
                 // Check if the modules directory exists
                 if (!Directory.Exists(modulesPath))
                 {
-                    Debug.WriteLine($"Modules directory not found: {modulesPath}");
+                    _logger.Log($"Modules directory not found: {modulesPath}", "General", LogLevel.Warning);
 
                     // Create the modules directory if it doesn't exist
                     Directory.CreateDirectory(modulesPath);
 
-                    Debug.WriteLine($"Modules directory created: {modulesPath}");
+                    _logger.Log($"Modules directory created: {modulesPath}");
                 }
 
                 // Get all module DLL files in the modules directory
@@ -102,7 +105,7 @@ namespace Luxoria.App
                 {
                     string moduleName = Path.GetFileNameWithoutExtension(moduleFile);
 
-                    Debug.WriteLine("Trying to load : " + moduleName);
+                    _logger.Log("Trying to load : " + moduleName);
 
                     // Update the splash screen with the module name being loaded
                     splashScreen.DispatcherQueue.TryEnqueue(() =>
@@ -111,7 +114,7 @@ namespace Luxoria.App
                     });
 
                     // Small delay to ensure the splash screen updates properly
-                    await Task.Delay(200); // 0.5 second delay
+                    await Task.Delay(300); // 0.3 second delay
 
                     try
                     {
@@ -122,30 +125,30 @@ namespace Luxoria.App
                             if (module != null)
                             {
                                 // Display module information
-                                Debug.WriteLine($"Module loaded: {moduleName}");
-                                Debug.WriteLine($"Module name: {module.Name}");
-                                Debug.WriteLine($"Module version: {module.Version}");
-                                Debug.WriteLine($"Module description: {module.Description}");
+                                _logger.Log($"Module loaded: {moduleName}");
+                                _logger.Log($"Module name: {module.Name}");
+                                _logger.Log($"Module version: {module.Version}");
+                                _logger.Log($"Module description: {module.Description}");
                                 // Save the module to ModuleService
                                 _moduleService.AddModule(module);
                             }
                             else
                             {
-                                Debug.WriteLine($"No valid module found in: {moduleFile}");
+                                _logger.Log($"No valid module found in: {moduleFile}", "General", LogLevel.Warning);
                             }
                         });
                     }
                     catch (FileNotFoundException ex)
                     {
-                        Debug.WriteLine($"File not found for module [{moduleFile}]: {ex.Message}");
+                        _logger.Log($"File not found for module [{moduleFile}]: {ex.Message}", "General", LogLevel.Error);
                     }
                     catch (BadImageFormatException ex)
                     {
-                        Debug.WriteLine($"Invalid module file format for [{moduleFile}]: {ex.Message}");
+                        _logger.Log($"Invalid module file format for [{moduleFile}]: {ex.Message}", "General", LogLevel.Error);
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"Failed to load module [{moduleFile}]: {ex.Message}");
+                        _logger.Log($"Failed to load module [{moduleFile}]: {ex.Message}", "General", LogLevel.Error);
                     }
                 }
 
@@ -156,7 +159,7 @@ namespace Luxoria.App
                 });
 
                 // Small delay to ensure the splash screen updates properly
-                await Task.Delay(100); // 0.5 second delay
+                await Task.Delay(300); // 0.3 second delay
                 _moduleService.InitializeModules(new ModuleContext());
             }
         }
