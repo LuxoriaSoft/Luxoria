@@ -1,4 +1,10 @@
-on: push
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+      - release/*
 
 jobs:
   build:
@@ -7,7 +13,7 @@ jobs:
     strategy:
       matrix:
         configuration: [Release]
-        platform: [x64, x86]
+        platform: [x64]
 
     env:
       Solution_Name: Luxoria.App.sln
@@ -53,11 +59,6 @@ jobs:
           Platform: ${{ matrix.platform }}
         working-directory: ./Luxoria.App
       
-        # Verify output directory
-      - name: List output directory recursively
-        run: Get-ChildItem -Recurse ./Luxoria.App/
-        shell: pwsh
-      
       - name: Zip the published app
         run: Compress-Archive -Path ./Luxoria.App/Luxoria.App/Packages -DestinationPath ./Luxoria.App.${{matrix.platform}}.zip
         shell: pwsh
@@ -68,3 +69,4 @@ jobs:
         with:
           name: Luxoria.App.${{matrix.platform}}
           path: ./Luxoria.App.${{matrix.platform}}.zip
+          retention-days: 1

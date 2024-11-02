@@ -1,13 +1,11 @@
-name: Build And Analyze
+name: Build And Analyze (develop branch)
 
 on:
   push:
     branches:
-      - main
-      - release/*
+      - develop
+      - develop/*
   pull_request:
-    branches:
-      - main
     types: [opened, synchronize, reopened]
 
 
@@ -59,7 +57,7 @@ jobs:
       - name: Build and analyze
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Luxoria-Desktop" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.coverage.exclusions="**/App.xaml.cs, **/MainWindow.xaml.cs, **/*.sqignore, **/Startup.cs, **/*.xaml" /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Luxoria-Desktop-dev" /d:sonar.token="${{ secrets.SONAR_TOKEN_DEVELOP }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.coverage.exclusions="**/App.xaml.cs, **/MainWindow.xaml.cs, **/*.sqignore, **/Startup.cs, **/*.xaml" /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
           dotnet build Luxoria.App/Luxoria.App.sln
           dotnet-coverage collect "dotnet test Luxoria.App/Luxoria.App.sln" -f xml -o "coverage.xml"
-          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN_DEVELOP }}"
