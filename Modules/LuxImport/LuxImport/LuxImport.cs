@@ -1,7 +1,11 @@
-﻿using Luxoria.Modules.Interfaces;
+﻿using LuxImport.Interfaces;
+using LuxImport.Services;
+using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
-using System.Diagnostics;
+using System;
+using System.Threading.Tasks;
 
 namespace LuxImport
 {
@@ -26,6 +30,9 @@ namespace LuxImport
             _context = context;
             _logger = logger;
             _logger?.Log("LuxImport initialized", "Mods/LuxImport", LogLevel.Info);
+
+            // Subscribe to mandatory events with an async handler
+            _eventBus.Subscribe<OpenCollectionEvent>(HandleOnOpenCollectionAsync);
         }
 
         /// <summary>
@@ -34,7 +41,7 @@ namespace LuxImport
         public void Execute()
         {
             _logger?.Log("LuxImport executed", "Mods/LuxImport", LogLevel.Info);
-            // You can add more logic here if needed
+            // Additional logic can be added here if needed
         }
 
         /// <summary>
@@ -44,6 +51,51 @@ namespace LuxImport
         {
             // Unsubscribe from events if necessary to avoid memory leaks
             _logger?.Log("LuxImport shutdown", "Mods/LuxImport", LogLevel.Info);
+        }
+
+        /// <summary>
+        /// Asynchronous handler for the OpenCollectionEvent by importing the collection at the specified path.
+        /// </summary>
+        /// <param name="event">The OpenCollectionEvent containing the path to the collection.</param>
+        public async Task HandleOnOpenCollectionAsync(OpenCollectionEvent @event)
+        {
+            _logger?.Log($"Importing collection at path: {@event.Path}", "Mods/LuxImport", LogLevel.Info);
+
+            // Simulate some delay in the import process
+            await Task.Delay(1000);
+
+            // Send a message back through the event tunnel
+            SendProgressMessage(@event, "Initiating import process...");
+
+            await Task.Delay(2000);
+
+            try
+            {
+                // Simulate initialization of the import service
+                _logger?.Log("Importing collection...", "Mods/LuxImport", LogLevel.Info);
+                SendProgressMessage(@event, "Importing collection...");
+
+                // Additional simulated delay
+                await Task.Delay(1000);
+                SendProgressMessage(@event, "Importing collection step 2...");
+
+            }
+            catch (Exception ex)
+            {
+                _logger?.Log($"Error importing collection: {ex.Message}", "Mods/LuxImport", LogLevel.Error);
+                SendProgressMessage(@event, $"Error importing collection: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Sends a progress message to the logger and the event tunnel.
+        /// </summary>
+        private void SendProgressMessage(OpenCollectionEvent @event, string message)
+        {
+            // Log the message
+            _logger?.Log(message, "Mods/LuxImport", LogLevel.Info);
+            // Send the message through the event tunnel
+            @event.SendProgressMessage(message);
         }
     }
 }

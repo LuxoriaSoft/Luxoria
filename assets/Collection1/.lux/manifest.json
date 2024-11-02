@@ -1,0 +1,20 @@
+{
+    "version": "1.0.0",
+    "name": "Collection1",
+    "description": "Collection1",
+
+    "luxoria": {
+        "version": "1.0.0"
+    },
+
+    "assets": [
+        {
+            "fileName": "Luxoria_logo.png",
+            "luxCfgID": "3d237bdd-aae9-4773-82bf-867cba741f35",
+            "fileSha256": "033682BD5C15CA3E12A1DB0A3DA2DBACC6091B8FD2FCE829722316DE8497E7C2"
+        }
+    ],
+
+    "createdAt": "2021-09-01T00:00:00.000Z",
+    "updatedAt": "2021-09-01T00:00:00.000Z"
+}
