@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Luxoria.Modules\Luxoria.Modules.csproj" />
+    <ProjectReference Include="..\Luxoria.SDK\Luxoria.SDK.csproj" />
   </ItemGroup>
 
 </Project>

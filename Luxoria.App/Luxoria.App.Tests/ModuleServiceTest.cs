@@ -1,6 +1,8 @@
 ﻿using Luxoria.Core.Interfaces;
 using Luxoria.Core.Services;
 using Luxoria.Modules.Interfaces;
+using Luxoria.SDK.Interfaces;
+using Luxoria.SDK.Services;
 using Moq;
 using Xunit;
 
@@ -10,11 +12,13 @@ namespace Luxoria.App.Tests
     {
         private readonly Mock<IEventBus> _mockEventBus;
         private readonly ModuleService _moduleService;
+        private readonly ILoggerService _logger;
 
         public ModuleServiceTests()
         {
             _mockEventBus = new Mock<IEventBus>();
-            _moduleService = new ModuleService(_mockEventBus.Object);
+            _logger = new LoggerService();
+            _moduleService = new ModuleService(_mockEventBus.Object, _logger);
         }
 
         [Fact]
@@ -70,7 +74,7 @@ namespace Luxoria.App.Tests
             _moduleService.InitializeModules(mockContext.Object);
 
             // Assert
-            mockModule.Verify(m => m.Initialize(_mockEventBus.Object, mockContext.Object), Times.Once);
+            mockModule.Verify(m => m.Initialize(_mockEventBus.Object, mockContext.Object, _logger), Times.Once);
         }
     }
 }

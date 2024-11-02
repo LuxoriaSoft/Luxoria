@@ -4,20 +4,17 @@ using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
 using System.Diagnostics;
 
-namespace TestModule1
+namespace TestModule2
 {
-    /// <summary>
-    /// A basic module for testing purposes that interacts with the EventBus.
-    /// </summary>
-    public class TestModule1 : IModule
+    public class TestModule2 : IModule
     {
         private IEventBus? _eventBus;
         private IModuleContext? _context;
         private ILoggerService? _logger;
 
-        public string Name => "Test Module1";
+        public string Name => "Test Module2";
         public string Description => "Basic module for testing purposes.";
-        public string Version => "1.0.1";
+        public string Version => "1.0.0";
 
         /// <summary>
         /// Initializes the module with the provided EventBus and ModuleContext.
@@ -36,11 +33,11 @@ namespace TestModule1
             // Check if EventBus & Context are not null before proceeding
             if (_eventBus == null || _context == null)
             {
-                _logger?.Log("Failed to initialize TestModule1: EventBus or Context is null", "Mods/TestModule1", LogLevel.Error);
+                _logger?.Log("Failed to initialize TestModule2: EventBus or Context is null", "Mods/TestModule2", LogLevel.Error);
                 return;
             }
 
-            _logger?.Log($"{Name} initialized", "Mods/TestModule1", LogLevel.Info);
+            _logger?.Log($"{Name} initialized", "Mods/TestModule2", LogLevel.Info);
         }
 
         /// <summary>
@@ -48,7 +45,7 @@ namespace TestModule1
         /// </summary>
         public void Execute()
         {
-            _logger?.Log($"{Name} executed", "Mods/TestModule1", LogLevel.Info);
+            _logger?.Log($"{Name} executed", "Mods/TestModule2", LogLevel.Info);
             // You can add more logic here if needed
         }
 
@@ -60,7 +57,7 @@ namespace TestModule1
             // Unsubscribe from events if necessary to avoid memory leaks
             _eventBus?.Unsubscribe<TextInputEvent>(OnTextInputReceived);
 
-            _logger?.Log($"{Name} shut down", "Mods/TestModule1", LogLevel.Info);
+            _logger?.Log($"{Name} shut down", "Mods/TestModule2", LogLevel.Info);
         }
 
         /// <summary>
@@ -70,11 +67,11 @@ namespace TestModule1
         private void OnTextInputReceived(TextInputEvent textInputEvent)
         {
             // Process the input text
-            _logger?.Log($"Received input text: {textInputEvent.Text}", "Mods/TestModule1", LogLevel.Info);
+            _logger?.Log($"Received input text: {textInputEvent.Text}", "Mods/TestModule2", LogLevel.Info);
 
             // Perform some processing logic with the input text (e.g., update an image)
             string updatedImagePath = ProcessInputText(textInputEvent.Text);
-            
+
             // Publish an event to notify that an image has been updated
             _eventBus?.Publish(new ImageUpdatedEvent(updatedImagePath));
         }
@@ -88,7 +85,7 @@ namespace TestModule1
         {
             // Placeholder logic to simulate image processing based on input text
             // In a real scenario, this would involve actual image manipulation
-            _logger?.Log($"Processing input text: {inputText}", "Mods/TestModule1", LogLevel.Info);
+            _logger?.Log($"Processing input text: {inputText}", "Mods/TestModule2", LogLevel.Info);
 
             // Return a dummy image path for demonstration purposes
             return "path/to/updated/image.png";

@@ -20,6 +20,8 @@
 	<ItemGroup>
     <None Remove="Components\MainMenuBarComponent.xaml" />
     <None Remove="SplashScreen.xaml" />
+    <None Remove="Views\ImportationControl.xaml" />
+    <None Remove="Views\OpenCollectionControl.xaml" />
   </ItemGroup>
 
 	<ItemGroup>
@@ -51,6 +53,17 @@
   <ItemGroup>
     <ProjectReference Include="..\Luxoria.Core\Luxoria.Core.csproj" />
     <ProjectReference Include="..\Luxoria.Modules\Luxoria.Modules.csproj" />
+    <ProjectReference Include="..\Luxoria.SDK\Luxoria.SDK.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\ImportationControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\OpenCollectionControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="SplashScreen.xaml">
