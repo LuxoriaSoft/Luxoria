@@ -11,6 +11,12 @@
     <None Update="App.xaml">
       <SubType>Designer</SubType>
     </None>
+    <Page Update="Views\ImportationControl.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\OpenCollectionControl.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Components\MainMenuBarComponent.xaml">
       <SubType>Designer</SubType>
     </Page>

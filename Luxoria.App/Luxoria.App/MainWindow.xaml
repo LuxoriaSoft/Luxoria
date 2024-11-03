@@ -10,7 +10,34 @@
     mc:Ignorable="d">
 
     <Grid x:Name="MainGrid">
-        <TextBox x:Name="InputTextBox" Width="300" Margin="10" PlaceholderText="Enter some text here..." />
-        <Button Content="Send to Module" Click="SendToModule_Click" Margin="10" />
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBox 
+                x:Name="InputTextBox" 
+                PlaceholderText="Enter some text here..." 
+                Margin="0,0,0,10" 
+                Height="30" 
+                VerticalAlignment="Top"/>
+
+            <Button 
+                Content="Send to Module" 
+                Click="SendToModule_Click" 
+                Margin="0,0,0,20" 
+                Height="30" 
+                Grid.Row="1"/>
+
+            <Button 
+                Content="Open collection"
+                Click="OpenCollection_Click"
+                Margin="0,0,0,20" 
+                Height="30"
+                Grid.Row="2"/>
+        </Grid>
     </Grid>
 </Window>
