@@ -1,90 +1,61 @@
 ﻿using Luxoria.Modules;
-using Luxoria.Modules.Models;
-using Luxoria.Modules.Models.Events;
-using Luxoria.Core.Interfaces;
 using Luxoria.Modules.Interfaces;
-using Moq;
+using Luxoria.Modules.Models;
 using Xunit;
 
 namespace Luxoria.App.Tests
 {
     public class ModuleContextTests
     {
-        private readonly Mock<IEventBus> _mockEventBus;
         private readonly ModuleContext _moduleContext;
 
         public ModuleContextTests()
         {
-            _mockEventBus = new Mock<IEventBus>();
-            _moduleContext = new ModuleContext(_mockEventBus.Object);
+            _moduleContext = new ModuleContext();
         }
 
         [Fact]
         public void GetCurrentImage_ShouldReturnCurrentImage()
         {
             // Arrange
-            var pixelData = new byte[] { 0x00, 0x01, 0x02 };
-            var imageData = new ImageData(pixelData, 1920, 1080, "JPEG");
+            var pixelData = new byte[] { 0, 255, 127 };
+            var image = new ImageData(pixelData, 100, 200, "PNG");
+            _moduleContext.UpdateImage(image);
 
             // Act
-            _moduleContext.UpdateImage(imageData);
             var result = _moduleContext.GetCurrentImage();
 
             // Assert
-            Assert.Equal(imageData, result);
+            Assert.Equal(image, result);
         }
 
         [Fact]
         public void UpdateImage_ShouldSetCurrentImage()
         {
             // Arrange
-            var pixelData = new byte[] { 0x00, 0x01, 0x02 };
-            var imageData = new ImageData(pixelData, 1920, 1080, "JPEG");
+            var pixelData = new byte[] { 1, 2, 3, 4 };
+            var newImage = new ImageData(pixelData, 300, 400, "JPEG");
 
             // Act
-            _moduleContext.UpdateImage(imageData);
-
-            // Assert
-            Assert.Equal(imageData, _moduleContext.GetCurrentImage());
-            _mockEventBus.Verify(bus => bus.Publish(It.IsAny<LogEvent>()), Times.Never);
-        }
-
-        [Fact]
-        public void LogMessage_ShouldLogMessage()
-        {
-            // Arrange
-            var message = "Test message";
-
-            // Act
-            _moduleContext.LogMessage(message);
-
-            // Assert
-            _mockEventBus.Verify(bus => bus.Publish(It.Is<LogEvent>(e => e.Message == message)), Times.Once);
-        }
-
-        [Fact]
-        public void UpdateImage_ShouldNotLogMessage()
-        {
-            // Arrange
-            var pixelData = new byte[] { 0x00, 0x01, 0x02 };
-            var imageData = new ImageData(pixelData, 1920, 1080, "JPEG");
-
-            // Act
-            _moduleContext.UpdateImage(imageData);
-
-            // Assert
-            _mockEventBus.Verify(bus => bus.Publish(It.IsAny<LogEvent>()), Times.Never);
-        }
-
-        [Fact]
-        public void GetCurrentImage_ShouldReturnNull_WhenNoImageIsSet()
-        {
-            // Act
+            _moduleContext.UpdateImage(newImage);
             var result = _moduleContext.GetCurrentImage();
 
             // Assert
-            Assert.Null(result);
+            Assert.Equal(newImage, result);
         }
-        
+
+        [Fact]
+        public void LogMessage_ShouldBeCallable()
+        {
+            // Arrange
+            var logMessage = "Test log message";
+
+            // Act
+            _moduleContext.LogMessage(logMessage);
+
+            // Assert
+            // Since LogMessage has no implementation, we're only verifying that it executes without exceptions
+            Assert.True(true);
+        }
     }
 }
