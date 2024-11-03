@@ -4,6 +4,7 @@ using Moq;
 using System;
 using System.IO;
 using System.Reflection;
+using Luxoria.SDK.Interfaces;
 using Xunit;
 
 namespace Luxoria.App.Tests
@@ -309,7 +310,7 @@ namespace Luxoria.App.Tests
                 // No implementation needed
             }
 
-            public void Initialize(IEventBus eventBus, IModuleContext context)
+            public void Initialize(IEventBus eventBus, IModuleContext context, ILoggerService logger)
             {
                 // No implementation needed
             }
@@ -336,7 +337,7 @@ namespace Luxoria.App.Tests
                 // No implementation needed
             }
 
-            public void Initialize(IEventBus eventBus, IModuleContext context)
+            public void Initialize(IEventBus eventBus, IModuleContext context, ILoggerService logger)
             {
                 // No implementation needed
             }
@@ -367,7 +368,7 @@ namespace Luxoria.App.Tests
             public string Description { get; } = "Simulates a null return from Activator.CreateInstance";
             public string Version { get; } = "1.0.0";
 
-            public void Initialize(IEventBus eventBus, IModuleContext context)
+            public void Initialize(IEventBus eventBus, IModuleContext context, ILoggerService logger)
             {
             }
 
@@ -378,6 +379,8 @@ namespace Luxoria.App.Tests
             public void Shutdown()
             {
             }
+            
+            
         }
 
         public class FailingConstructorModule : IModule
@@ -396,7 +399,7 @@ namespace Luxoria.App.Tests
             public string Description { get; } = "Module that throws an exception in constructor";
             public string Version { get; } = "1.0.0";
 
-            public void Initialize(IEventBus eventBus, IModuleContext context)
+            public void Initialize(IEventBus eventBus, IModuleContext context, ILoggerService logger)
             {
             }
 
@@ -424,7 +427,7 @@ namespace Luxoria.App.Tests
             public string Description { get; } = "Module that has no parameterless constructor";
             public string Version { get; } = "1.0.0";
 
-            public void Initialize(IEventBus eventBus, IModuleContext context)
+            public void Initialize(IEventBus eventBus, IModuleContext context, ILoggerService logger)
             {
             }
 
@@ -448,7 +451,7 @@ namespace Luxoria.App.Tests
             public string Description { get; } = "Simulates a TargetInvocationException with null InnerException";
             public string Version { get; } = "1.0.0";
 
-            public void Initialize(IEventBus eventBus, IModuleContext context)
+            public void Initialize(IEventBus eventBus, IModuleContext context, ILoggerService logger)
             {
             }
 
@@ -491,7 +494,7 @@ namespace Luxoria.App.Tests
 
                 // Act & Assert
                 module.Initialize();
-                module.Initialize(null, null);
+                module.Initialize(null, null, null);
                 module.Execute();
                 module.Shutdown();
                 Assert.NotNull(module);
@@ -531,7 +534,7 @@ namespace Luxoria.App.Tests
 
             // Act & Assert
             module.Initialize();
-            module.Initialize(null, null);
+            module.Initialize(null, null, null);
             module.Execute();
             module.Shutdown();
             Assert.NotNull(module);
@@ -557,7 +560,7 @@ namespace Luxoria.App.Tests
 
             // Act & Assert
             module.Initialize();
-            module.Initialize(null, null);
+            module.Initialize(null, null, null);
             module.Execute();
             module.Shutdown();
             Assert.NotNull(module);
@@ -583,7 +586,7 @@ namespace Luxoria.App.Tests
 
             // Act & Assert
             module.Initialize();
-            module.Initialize(null, null);
+            module.Initialize(null, null, null);
             module.Execute();
             module.Shutdown();
 
@@ -610,7 +613,7 @@ namespace Luxoria.App.Tests
 
             // Act & Assert
             module.Initialize();
-            module.Initialize(null, null);
+            module.Initialize(null, null, null);
             module.Execute();
             module.Shutdown();
 
