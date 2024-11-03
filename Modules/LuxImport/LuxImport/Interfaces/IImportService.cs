@@ -1,9 +1,5 @@
 ﻿using Luxoria.Modules.Models.Events;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LuxImport.Interfaces
 {
@@ -19,5 +15,15 @@ namespace LuxImport.Interfaces
         /// Initializes the collection's database.
         ///</summary>
         void InitializeDatabase();
+
+        /// <summary>
+        /// Processes to the indexing of the collection.
+        /// </summary>
+        Task IndexCollectionAsync();
+
+        /// <summary>
+        /// Event triggered when a progress message is sent.
+        /// </summary>
+        event Action<string> ProgressMessageSent;
     }
 }

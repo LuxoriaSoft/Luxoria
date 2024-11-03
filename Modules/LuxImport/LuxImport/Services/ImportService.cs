@@ -2,11 +2,7 @@
 using LuxImport.Models;
 using LuxImport.Repositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Channels;
-using System.Threading.Tasks;
+using System.IO;
 
 namespace LuxImport.Services
 {
@@ -15,6 +11,9 @@ namespace LuxImport.Services
         private readonly string CollectionName;
         private readonly string CollectionPath;
 
+        // Event declaration for sending progress messages
+        public event Action<string> ProgressMessageSent;
+
         /// <summary>
         /// Initializes a new instance of the ImportService.
         /// </summary>
@@ -22,6 +21,10 @@ namespace LuxImport.Services
         {
             CollectionName = collectionName;
             CollectionPath = collectionPath;
+
+            // Initialize the event with a default handler
+            ProgressMessageSent += message => { }; // This prevents null reference issues
+
 
             // Check if the collection path is valid
             if (string.IsNullOrEmpty(CollectionPath))
@@ -39,7 +42,6 @@ namespace LuxImport.Services
         /// <summary>
         /// Verifies if the collection has already been initialized.
         /// </summary>
-        /// <returns>True if the collection has been initialized, false otherwise.</returns>
         public bool IsInitialized()
         {
             // If the collection path is not null or empty return false
@@ -55,8 +57,6 @@ namespace LuxImport.Services
             }
 
             // Check the root directory for the collection path
-            // If there is a folder called '.lux' and in this folder there is a file called 'manifest.json'
-            // then the collection is initialized
             if (Directory.Exists(Path.Combine(CollectionPath, ".lux")) &&
                 File.Exists(Path.Combine(CollectionPath, ".lux", "manifest.json")))
             {
@@ -66,9 +66,9 @@ namespace LuxImport.Services
             return false;
         }
 
-        ///<summary>
+        /// <summary>
         /// Initializes the collection's database.
-        ///</summary>
+        /// </summary>
         public void InitializeDatabase()
         {
             // Check if the collection is already initialized
@@ -86,7 +86,37 @@ namespace LuxImport.Services
 
             // Save the manifest file
             manifestRepository.SaveManifest(manifest);
+        }
 
+        /// <summary>
+        /// Processes to the indexing of the collection.
+        /// </summary>
+        public async Task IndexCollectionAsync()
+        {
+            if (!IsInitialized())
+            {
+                throw new InvalidOperationException("Collection is not initialized.");
+            }
+
+            ProgressMessageSent?.Invoke("Updating indexing files...");
+
+            string[] files = Directory.GetFiles(CollectionPath, "*.*", SearchOption.AllDirectories);
+            int total = files.Length;
+
+            for (int fcount = 0; fcount < total; fcount++)
+            {
+                string file = files[fcount];
+                string filename = Path.GetFileName(file);
+
+                if (filename.Equals("manifest.json", StringComparison.OrdinalIgnoreCase) ||
+                    file.Contains(Path.Combine(CollectionPath, ".lux")))
+                {
+                    continue; // Skip excluded files
+                }
+
+                ProgressMessageSent?.Invoke($"Processing file: {filename}... ({fcount + 1}/{total})");
+                await Task.Delay(100); // Simulated processing delay
+            }
         }
     }
 }

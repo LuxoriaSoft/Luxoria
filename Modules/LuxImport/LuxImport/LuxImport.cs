@@ -75,6 +75,8 @@ namespace LuxImport
                 _logger?.Log("Importing collection...", "Mods/LuxImport", LogLevel.Info);
                 SendProgressMessage(@event, $"Importing [{@event.CollectionName}] collection...");
                 IImportService importService = new ImportService(@event.CollectionName, @event.CollectionPath);
+                importService.ProgressMessageSent += (message) => SendProgressMessage(@event, message);
+
                 await Task.Delay(500);
 
                 // Check if the collection is already initialized
@@ -92,6 +94,7 @@ namespace LuxImport
 
                 // Update indexing files
                 SendProgressMessage(@event, "Updating indexing files...");
+                await importService.IndexCollectionAsync();
                 await Task.Delay(1000);
 
                 // Additional simulated delay
