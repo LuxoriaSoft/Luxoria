@@ -27,8 +27,11 @@ namespace Luxoria.App.Views
             this.InitializeComponent();
         }
 
-        // Add this property to expose the FolderPathTextBox
+        // Expose the FolderPathTextBox
         public string SelectedFolderPath => FolderPathTextBox.Text;
+        // Expose the CollectionNameTextBox
+        public string CollectionName => CollectionNameTextBox.Text;
+
 
         private async void BrowseButton_Click(object sender, RoutedEventArgs e)
         {

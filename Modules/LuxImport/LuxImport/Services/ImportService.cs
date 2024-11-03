@@ -1,4 +1,6 @@
 ﻿using LuxImport.Interfaces;
+using LuxImport.Models;
+using LuxImport.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,12 +12,15 @@ namespace LuxImport.Services
 {
     public class ImportService : IImportService
     {
+        private readonly string CollectionName;
         private readonly string CollectionPath;
+
         /// <summary>
         /// Initializes a new instance of the ImportService.
         /// </summary>
-        public ImportService(Channel<string> @event, string collectionPath)
+        public ImportService(string collectionName, string collectionPath)
         {
+            CollectionName = collectionName;
             CollectionPath = collectionPath;
 
             // Check if the collection path is valid
@@ -29,13 +34,6 @@ namespace LuxImport.Services
             {
                 throw new ArgumentException("Collection path does not exist.");
             }
-        }
-
-        /// <summary>
-        /// Initializes the ImportService.
-        /// </summary>
-        private void Initialize()
-        {
         }
 
         /// <summary>
@@ -66,6 +64,29 @@ namespace LuxImport.Services
             }
 
             return false;
+        }
+
+        ///<summary>
+        /// Initializes the collection's database.
+        ///</summary>
+        public void InitializeDatabase()
+        {
+            // Check if the collection is already initialized
+            if (IsInitialized())
+            {
+                return;
+            }
+
+            // Create the '.lux' folder
+            Directory.CreateDirectory(Path.Combine(CollectionPath, ".lux"));
+
+            // Initialize the manifest file
+            IManifestRepository manifestRepository = new ManifestRepository(CollectionName, CollectionPath);
+            Manifest manifest = manifestRepository.CreateManifest();
+
+            // Save the manifest file
+            manifestRepository.SaveManifest(manifest);
+
         }
     }
 }

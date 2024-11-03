@@ -4,20 +4,29 @@ namespace Luxoria.Modules.Models.Events
 {
     public class OpenCollectionEvent
     {
+        // *** Properties ***
+        // Collection name
+        public string CollectionName { get; }
         // Path to the collection
-        public string Path { get; set; }
+        public string CollectionPath { get; }
 
+        // *** Events ***
         // Event for progress messages
         public event OnProgressMessage? ProgressMessage;
-
         // Delegate for the progress message event
         public delegate void OnProgressMessage(string message, int? progress);
 
-        // Constructor
-        public OpenCollectionEvent(string path)
+        /// <summary>
+        /// Constructor for the OpenCollectionEvent class.
+        /// </summary>
+        /// <param name="name">Collection Name</param>
+        /// <param name="path">Collection Path</param>
+        public OpenCollectionEvent(string name, string path)
         {
-            // Set the path
-            Path = path;
+            // Set the collection name
+            CollectionName = name;
+            // Set the collection path
+            CollectionPath = path;
         }
 
         /// <summary>
@@ -36,7 +45,7 @@ namespace Luxoria.Modules.Models.Events
         /// </summary>
         public void Complete()
         {
-            // Logic to complete the event (optional)
+            // Logic to complete the event
         }
     }
 }

@@ -39,17 +39,6 @@ namespace Luxoria.App
 
         private void SendToModule_Click(object sender, RoutedEventArgs e)
         {
-            string inputText = InputTextBox.Text;
-            Log($"Sending input text: {inputText}");
-
-            // Publish the input text to the module
-            var progressChannel = Channel.CreateUnbounded<string>();
-            OpenCollectionEvent @event = new OpenCollectionEvent(inputText);
-            _eventBus.Publish(@event);
-            Log("Published event !");
-
-            // Optionally, clear the TextBox after sending
-            InputTextBox.Text = string.Empty;
         }
 
         private async void OpenCollection_Click(object sender, RoutedEventArgs e)
@@ -71,8 +60,10 @@ namespace Luxoria.App
             // Handle dialog result if needed
             if (result == ContentDialogResult.Primary)
             {
-                // Handle OK button click, e.g., retrieve the selected folder path
+                // Retrieve the selected folder path
                 string selectedFolderPath = openCollectionControl.SelectedFolderPath;
+                // Retrieve the collection name
+                string collectionName = openCollectionControl.CollectionName;
                 Log($"Selected folder path: {selectedFolderPath}");
 
                 var importationControl = new ImportationControl();
@@ -85,7 +76,7 @@ namespace Luxoria.App
                 };
 
                 // Publish the selected folder path to the module
-                OpenCollectionEvent openCollectionEvt = new OpenCollectionEvent(selectedFolderPath);
+                OpenCollectionEvent openCollectionEvt = new OpenCollectionEvent(collectionName, selectedFolderPath);
                 openCollectionEvt.ProgressMessage += (message, progress) =>
                 {
                     // Update the importation control with progress messages

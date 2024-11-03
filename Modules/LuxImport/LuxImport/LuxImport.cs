@@ -59,7 +59,7 @@ namespace LuxImport
         /// <param name="event">The OpenCollectionEvent containing the path to the collection.</param>
         public async Task HandleOnOpenCollectionAsync(OpenCollectionEvent @event)
         {
-            _logger?.Log($"Importing collection at path: {@event.Path}", "Mods/LuxImport", LogLevel.Info);
+            _logger?.Log($"Importing collection [{@event.CollectionName}] at path: {@event.CollectionPath}", "Mods/LuxImport", LogLevel.Info);
 
             // Simulate some delay in the import process
             await Task.Delay(1000);
@@ -67,13 +67,32 @@ namespace LuxImport
             // Send a message back through the event tunnel
             SendProgressMessage(@event, "Initiating import process...");
 
-            await Task.Delay(2000);
+            await Task.Delay(1000);
 
             try
             {
-                // Simulate initialization of the import service
+                // Initialize the import service with the collection name and path
                 _logger?.Log("Importing collection...", "Mods/LuxImport", LogLevel.Info);
-                SendProgressMessage(@event, "Importing collection...");
+                SendProgressMessage(@event, $"Importing [{@event.CollectionName}] collection...");
+                IImportService importService = new ImportService(@event.CollectionName, @event.CollectionPath);
+                await Task.Delay(500);
+
+                // Check if the collection is already initialized
+                SendProgressMessage(@event, "Checking collection initialization...");
+                if (importService.IsInitialized())
+                {
+                    SendProgressMessage(@event, "Collection is already initialized.");
+                } else
+                {
+                    // Initializing collection's database
+                    SendProgressMessage(@event, "Initializing collection's database...");
+                    importService.InitializeDatabase();
+                    await Task.Delay(1000);
+                }
+
+                // Update indexing files
+                SendProgressMessage(@event, "Updating indexing files...");
+                await Task.Delay(1000);
 
                 // Additional simulated delay
                 await Task.Delay(1000);
