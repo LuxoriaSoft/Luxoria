@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Luxoria.Modules.Models;
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -9,7 +10,12 @@ namespace LuxImport.Models
         private string _name;
         private string _description;
         private string _version;
+
         private LuxoriaInfo _luxoria;
+
+        private ICollection<LuxCfg.AssetInterface> _assets;
+
+        private DateTime _createdAt;
         private DateTime _updatedAt;
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -38,6 +44,12 @@ namespace LuxImport.Models
             set => SetProperty(ref _luxoria, value);
         }
 
+        public ICollection<LuxCfg.AssetInterface> Assets
+        {
+            get => _assets;
+            set => SetProperty(ref _assets, value);
+        }
+
         public DateTime CreatedAt { get; } = DateTime.Now;
 
         public DateTime UpdatedAt
@@ -59,6 +71,10 @@ namespace LuxImport.Models
             _description = description ?? throw new ArgumentNullException(nameof(description));
             _version = version ?? throw new ArgumentNullException(nameof(version));
             _luxoria = luxoria ?? throw new ArgumentNullException(nameof(luxoria));
+
+            _assets = new List<LuxCfg.AssetInterface>();
+
+            _createdAt = DateTime.Now;
             _updatedAt = DateTime.Now;
         }
 

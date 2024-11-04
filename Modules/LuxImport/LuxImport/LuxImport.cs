@@ -75,7 +75,10 @@ namespace LuxImport
                 _logger?.Log("Importing collection...", "Mods/LuxImport", LogLevel.Info);
                 SendProgressMessage(@event, $"Importing [{@event.CollectionName}] collection...");
                 IImportService importService = new ImportService(@event.CollectionName, @event.CollectionPath);
-                importService.ProgressMessageSent += (message) => SendProgressMessage(@event, message);
+                importService.ProgressMessageSent += (messageTuple) =>
+                {
+                    SendProgressMessage(@event, messageTuple.message, messageTuple.progress);
+                };
 
                 await Task.Delay(500);
 
@@ -83,23 +86,24 @@ namespace LuxImport
                 SendProgressMessage(@event, "Checking collection initialization...");
                 if (importService.IsInitialized())
                 {
-                    SendProgressMessage(@event, "Collection is already initialized.");
+                    SendProgressMessage(@event, "Collection is already initialized.", 10);
                 } else
                 {
                     // Initializing collection's database
-                    SendProgressMessage(@event, "Initializing collection's database...");
+                    SendProgressMessage(@event, "Initializing collection's database...", 20);
                     importService.InitializeDatabase();
                     await Task.Delay(1000);
                 }
 
                 // Update indexing files
-                SendProgressMessage(@event, "Updating indexing files...");
+                SendProgressMessage(@event, "Updating indexing files...", 25);
+                importService.BaseProgressPercent = 25;
                 await importService.IndexCollectionAsync();
                 await Task.Delay(1000);
 
                 // Additional simulated delay
                 await Task.Delay(1000);
-                SendProgressMessage(@event, "Importing collection step 2...");
+                SendProgressMessage(@event, "Loading in memory...");
 
             }
             catch (Exception ex)
@@ -112,12 +116,13 @@ namespace LuxImport
         /// <summary>
         /// Sends a progress message to the logger and the event tunnel.
         /// </summary>
-        private void SendProgressMessage(OpenCollectionEvent @event, string message)
+        private void SendProgressMessage(OpenCollectionEvent @event, string message, int? progress = null)
         {
             // Log the message
             _logger?.Log(message, "Mods/LuxImport", LogLevel.Info);
             // Send the message through the event tunnel
-            @event.SendProgressMessage(message);
+            if (progress.HasValue) @event.SendProgressMessage(message, progress.Value);
+            else @event.SendProgressMessage(message);
         }
     }
 }

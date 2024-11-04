@@ -1,10 +1,78 @@
 {
-  "Name": "ABC",
+  "Name": "ABCDEF",
   "Description": "C:\\Users\\quentin\\Code\\Luxoria\\assets\\BaseCollection",
   "Version": "1.0.0",
   "Luxoria": {
     "Version": "1.0.0"
   },
-  "CreatedAt": "2024-11-03T12:46:29.5491222+00:00",
-  "UpdatedAt": "2024-11-03T12:46:29.5491845+00:00"
+  "Assets": [
+    {
+      "FileName": "Luxoria_logo - Copy (10).png",
+      "RelativeFilePath": "\\Luxoria_logo - Copy (10).png",
+      "LuxCfgId": "b3438575-d8f7-4ef1-a313-f51b1363d756",
+      "Hash": "033682bd5c15ca3e12a1db0a3da2dbacc6091b8fd2fce829722316de8497e7c2"
+    },
+    {
+      "FileName": "Luxoria_logo - Copy (2).png",
+      "RelativeFilePath": "\\Luxoria_logo - Copy (2).png",
+      "LuxCfgId": "c84ea1af-6872-4d77-8646-9b5c1560a870",
+      "Hash": "033682bd5c15ca3e12a1db0a3da2dbacc6091b8fd2fce829722316de8497e7c2"
+    },
+    {
+      "FileName": "Luxoria_logo - Copy (3).png",
+      "RelativeFilePath": "\\Luxoria_logo - Copy (3).png",
+      "LuxCfgId": "eb3f228a-e0a7-4424-af71-71e9b8a56f62",
+      "Hash": "033682bd5c15ca3e12a1db0a3da2dbacc6091b8fd2fce829722316de8497e7c2"
+    },
+    {
+      "FileName": "Luxoria_logo - Copy (4).png",
+      "RelativeFilePath": "\\Luxoria_logo - Copy (4).png",
+      "LuxCfgId": "682c5f8b-e83f-418c-a5af-50a16d693415",
+      "Hash": "033682bd5c15ca3e12a1db0a3da2dbacc6091b8fd2fce829722316de8497e7c2"
+    },
+    {
+      "FileName": "Luxoria_logo - Copy (5).png",
+      "RelativeFilePath": "\\Luxoria_logo - Copy (5).png",
+      "LuxCfgId": "688ed49d-9742-48c4-914b-d27672dab6db",
+      "Hash": "033682bd5c15ca3e12a1db0a3da2dbacc6091b8fd2fce829722316de8497e7c2"
+    },
+    {
+      "FileName": "Luxoria_logo - Copy (6).png",
+      "RelativeFilePath": "\\Luxoria_logo - Copy (6).png",
+      "LuxCfgId": "e4708643-1119-4284-aed5-4a5b6efe5cdf",
+      "Hash": "033682bd5c15ca3e12a1db0a3da2dbacc6091b8fd2fce829722316de8497e7c2"
+    },
+    {
+      "FileName": "Luxoria_logo - Copy (7).png",
+      "RelativeFilePath": "\\Luxoria_logo - Copy (7).png",
+      "LuxCfgId": "3d3e8dd5-70d9-4ee4-9383-0ed7228edf27",
+      "Hash": "033682bd5c15ca3e12a1db0a3da2dbacc6091b8fd2fce829722316de8497e7c2"
+    },
+    {
+      "FileName": "Luxoria_logo - Copy (8).png",
+      "RelativeFilePath": "\\Luxoria_logo - Copy (8).png",
+      "LuxCfgId": "277c5e36-872a-44d1-ba88-3a13d4522337",
+      "Hash": "033682bd5c15ca3e12a1db0a3da2dbacc6091b8fd2fce829722316de8497e7c2"
+    },
+    {
+      "FileName": "Luxoria_logo - Copy (9).png",
+      "RelativeFilePath": "\\Luxoria_logo - Copy (9).png",
+      "LuxCfgId": "f632466b-9c5b-4540-89f2-3b969397a899",
+      "Hash": "033682bd5c15ca3e12a1db0a3da2dbacc6091b8fd2fce829722316de8497e7c2"
+    },
+    {
+      "FileName": "Luxoria_logo - Copy.png",
+      "RelativeFilePath": "\\Luxoria_logo - Copy.png",
+      "LuxCfgId": "ee132b9e-6459-42c3-99d4-5fe686c03a18",
+      "Hash": "033682bd5c15ca3e12a1db0a3da2dbacc6091b8fd2fce829722316de8497e7c2"
+    },
+    {
+      "FileName": "Luxoria_logo.png",
+      "RelativeFilePath": "\\Luxoria_logo.png",
+      "LuxCfgId": "9e757312-a92b-4306-acaa-3952e84a2e98",
+      "Hash": "033682bd5c15ca3e12a1db0a3da2dbacc6091b8fd2fce829722316de8497e7c2"
+    }
+  ],
+  "CreatedAt": "2024-11-04T13:33:23.3889307+00:00",
+  "UpdatedAt": "2024-11-04T13:33:23.3897362+00:00"
 }

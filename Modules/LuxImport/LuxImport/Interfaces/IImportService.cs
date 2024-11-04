@@ -24,6 +24,11 @@ namespace LuxImport.Interfaces
         /// <summary>
         /// Event triggered when a progress message is sent.
         /// </summary>
-        event Action<string> ProgressMessageSent;
+        event Action<(string message, int? progress)> ProgressMessageSent;
+
+        /// <summary>
+        /// Base progress percent for the import service.
+        /// </summary>
+        int BaseProgressPercent { get; set; }
     }
 }

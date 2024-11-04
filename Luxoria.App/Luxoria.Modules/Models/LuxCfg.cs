@@ -61,5 +61,20 @@ namespace Luxoria.Modules.Models
             Actions = actions ?? new List<LuxAction>();
             Versionning = versionning ?? new List<LuxVersion>();
         }
+
+        /// <summary>
+        /// Public model 'Asset interface'
+        /// </summary>
+        public class AssetInterface
+        {
+            // File name
+            public required string FileName { get; set; }
+            // Relative file path
+            public required string RelativeFilePath { get; set; }
+            // Related Luxoria Config Id
+            public required Guid LuxCfgId { get; set; }
+            // File hash (SHA-256)
+            public required string Hash { get; set; }
+        }
     }
 }

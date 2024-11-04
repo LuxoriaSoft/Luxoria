@@ -82,7 +82,7 @@ namespace Luxoria.App
                     // Update the importation control with progress messages
                     if (progress.HasValue)
                     {
-                        importationControl.UpdateProgress("Progress : " + progress.Value.ToString() + "%");
+                        importationControl.UpdateProgress(message, progress.Value);
                     } else
                     {
                         importationControl.UpdateProgress(message);
