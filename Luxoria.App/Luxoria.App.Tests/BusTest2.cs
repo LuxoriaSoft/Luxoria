@@ -60,5 +60,18 @@ namespace Luxoria.App.Tests
             mockHandler1.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Once);
             mockHandler2.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Once);
         }
+        
+        [Fact]
+        public void Constructor_ShouldSetMessageProperty()
+        {
+            // Arrange
+            var message = "Test message";
+
+            // Act
+            var logEvent = new LogEvent(message);
+
+            // Assert
+            Assert.Equal(message, logEvent.Message);
+        }
     }
 }
