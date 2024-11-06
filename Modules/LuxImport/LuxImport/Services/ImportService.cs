@@ -15,6 +15,7 @@ namespace LuxImport.Services
         private readonly string _collectionPath;
 
         private readonly IManifestRepository _manifestRepository;
+        private readonly ILuxConfigRepository _luxCfgRepository;
         private readonly IFileHasherService _fileHasherService;
 
         // Event declaration for sending progress messages
@@ -49,6 +50,12 @@ namespace LuxImport.Services
             {
                 throw new ArgumentException("Collection path does not exist.");
             }
+
+            // Initialize the LuxCfg repository
+            _luxCfgRepository = new LuxConfigRepository
+            {
+                CollectionPath = _collectionPath
+            };
         }
 
         /// <summary>
@@ -154,8 +161,24 @@ namespace LuxImport.Services
                 var existingAsset = manifest.Assets.FirstOrDefault(asset => asset.FileName == filename && asset.RelativeFilePath == relativePath);
                 var fileId = Guid.NewGuid();
 
+                // Convert file extension to LuxCfg FileExtension enum
+                var ext = Path.GetExtension(file).TrimStart('.').ToUpper();
+
+                LuxCfg luxCfg;
+
+                if (Enum.TryParse<FileExtension>(ext, true, out var fileExt))
+                {
+                    luxCfg = new LuxCfg("1.0.0", fileId, filename, "", fileExt);
+                }
+                else
+                {
+                    throw new InvalidOperationException($"File extension '{ext}' is not supported.");
+                }
+
                 if (existingAsset != null)
                 {
+                    // Update LuxCfg for the existing asset
+                    existingAsset.LuxCfgId = fileId;
                     existingAsset.Hash = hash256;
                 }
                 else
@@ -169,6 +192,9 @@ namespace LuxImport.Services
                         Hash = hash256
                     });
                 }
+
+                // Save the LuxCfg model
+                _luxCfgRepository.Save(luxCfg);
 
                 await Task.Delay(25);
             }

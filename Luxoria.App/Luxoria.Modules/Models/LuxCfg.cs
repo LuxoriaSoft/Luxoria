@@ -14,6 +14,11 @@ namespace Luxoria.Modules.Models
         public string Version { get; private set; }
 
         /// <summary>
+        /// Gets the unique identifier for the picture.
+        /// </summary>
+        public Guid Id { get; private set; }
+
+        /// <summary>
         /// Gets the name of the picture.
         /// </summary>
         public string Name { get; private set; }
@@ -52,14 +57,16 @@ namespace Luxoria.Modules.Models
         /// <param name="extension">The file extension of the picture.</param>
         /// <param name="actions">The list of actions associated with the picture.</param>
         /// <param name="versionning">The list of versions associated with the picture.</param>
-        public LuxCfg(string version, string name, string description, FileExtension extension, List<LuxAction> actions, List<LuxVersion> versionning)
+        public LuxCfg(string version, Guid fileUuid, string name, string description, FileExtension extension)
         {
             Version = version;
+
+            Id = fileUuid;
             Name = name;
             Description = description;
             Extension = extension;
-            Actions = actions ?? new List<LuxAction>();
-            Versionning = versionning ?? new List<LuxVersion>();
+            Actions = new List<LuxAction>();
+            Versionning = new List<LuxVersion>();
         }
 
         /// <summary>
@@ -68,7 +75,7 @@ namespace Luxoria.Modules.Models
         public class AssetInterface
         {
             // File name
-            public required string FileName { get; set; }
+            public required string FileName { get; set; }   
             // Relative file path
             public required string RelativeFilePath { get; set; }
             // Related Luxoria Config Id
