@@ -3,11 +3,13 @@ using Luxoria.App.Views;
 using Luxoria.Modules;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
+using Luxoria.SDK.Interfaces;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
@@ -21,26 +23,49 @@ namespace Luxoria.App
     /// </summary>
     public sealed partial class MainWindow : Window
     {
+        /// <summary>
+        /// Event bus for publishing and subscribing to events.
+        /// </summary>
         private readonly IEventBus _eventBus;
 
-        public MainWindow(IEventBus eventBus)
-        {
-            this.InitializeComponent();
-            _eventBus = eventBus;
-            Initialize();
+        /// <summary>
+        /// Logger service for logging messages.
+        /// </summary>
+        private readonly ILoggerService _loggerService;
 
+        /// <summary>
+        /// Constructor for the MainWindow class.
+        /// </summary>
+        /// <param name="eventBus">EventBus to handle Subscription and Publishing</param>
+        public MainWindow(IEventBus eventBus, ILoggerService loggerService)
+        {
+            // Initialize the component
+            this.InitializeComponent();
+            // Set the event bus
+            _eventBus = eventBus;
+            _loggerService = loggerService;
+
+            // Initialize the event bus
+            Initialize();
         }
 
+        /// <summary>
+        /// Subscribes all handlers decicated to MainWindow to the event bus.
+        /// </summary>
         public void Initialize()
         {
             // Subscribe to the ImageUpdatedEvent
             _eventBus.Subscribe<ImageUpdatedEvent>(OnImageUpdated);
+            _eventBus.Subscribe<CollectionUpdatedEvent>(OnCollectionUpdated);
         }
 
         private void SendToModule_Click(object sender, RoutedEventArgs e)
         {
         }
 
+        /// <summary>
+        /// Handles the Open Collection button click event.
+        /// </summary>
         private async void OpenCollection_Click(object sender, RoutedEventArgs e)
         {
             var openCollectionControl = new OpenCollectionControl();
@@ -64,7 +89,7 @@ namespace Luxoria.App
                 string selectedFolderPath = openCollectionControl.SelectedFolderPath;
                 // Retrieve the collection name
                 string collectionName = openCollectionControl.CollectionName;
-                Log($"Selected folder path: {selectedFolderPath}");
+                _loggerService.Log($"Selected folder path: {selectedFolderPath}");
 
                 var importationControl = new ImportationControl();
                 // Create the ContentDialog
@@ -100,7 +125,7 @@ namespace Luxoria.App
                 catch (Exception ex)
                 {
                     // Handle any exceptions that occur during event publishing
-                    Log($"Error publishing event: {ex.Message}");
+                    _loggerService.Log($"Error publishing event: {ex.Message}");
 
                     // Optionally update the dialog with the error message
                     importationControl.UpdateProgress("Error: " + ex.Message);
@@ -111,17 +136,29 @@ namespace Luxoria.App
             }
         }
 
-        private void OnImageUpdated(ImageUpdatedEvent imageUpdatedEvent)
+        /// <summary>
+        /// Handles the Image Updated event.
+        /// </summary>
+        /// <param name="body">Body as ImageUpdatedEvent, contains ImagePath, ...</param>
+        private void OnImageUpdated(ImageUpdatedEvent body)
         {
             // Handle the response from the module
-            // For example, display the updated image or log a message
-            Log($"Image updated: {imageUpdatedEvent.ImagePath}");
+            _loggerService.Log($"Image updated: {body.ImagePath}");
         }
 
-        private void Log(string message)
+        /// <summary>
+        /// Handles the Collection Updated event.
+        /// </summary>
+        /// <param name="body">Body as CollectionUpdatedEvent, contains collection details (name, path, assets)</param>
+        private void OnCollectionUpdated(CollectionUpdatedEvent body)
         {
-            // Log the message (e.g., output to console or a log file)
-            Debug.WriteLine(message);
+            // Handle the response from the module
+            _loggerService.Log($"Collection updated: {body.CollectionName}");
+            _loggerService.Log($"Collection path: {body.CollectionPath}");
+            for (int i = 0; i < body.Assets.Count; i++)
+            {
+                _loggerService.Log($"Asset {i}: {body.Assets.ElementAt(i).Config.Id}");
+            }
         }
     }
 }

@@ -227,5 +227,42 @@ namespace LuxImport.Services
 
             ProgressMessageSent?.Invoke(("Manifest file saved.", BaseProgressPercent + 10 + MaxProgressPercent + 10));
         }
+
+        /// <summary>
+        /// Loads the collection into memory.
+        /// </summary>
+        public ICollection<LuxAsset>  LoadAssets()
+        {
+            List<LuxAsset> assets = new List<LuxAsset>();
+
+            // Retrieve the manifest file
+            Manifest manifest = _manifestRepository.ReadManifest();
+
+            // Iterate through the assets in the manifest
+            foreach (var asset in manifest.Assets)
+            {
+                // Load the LuxCfg model
+                LuxCfg? luxCfg = _luxCfgRepository.Load(asset.LuxCfgId);
+
+                // If LuxCfg model is null, throw an exception
+                if (luxCfg == null)
+                {
+                    throw new InvalidOperationException($"LuxCfg model with ID {asset.LuxCfgId} not found.");
+                }
+
+                // Create a new LuxAsset object
+                LuxAsset newAsset = new LuxAsset
+                {
+                    Config = luxCfg,
+                    Data = new ImageData(new byte[500], 1920, 1080, "")
+                };
+
+                // Add the new asset to the list
+                assets.Add(newAsset);
+            }
+
+            // Return the list of assets
+            return assets;
+        }
     }
 }

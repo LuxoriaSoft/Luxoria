@@ -105,6 +105,12 @@ namespace LuxImport
                 await Task.Delay(1000);
                 SendProgressMessage(@event, "Loading in memory...");
 
+                // Load assets into memory
+                _logger?.Log("Loading assets into memory...", "Mods/LuxImport", LogLevel.Info);
+                var assets = importService.LoadAssets();
+                _logger?.Log($"Loaded {assets.Count} assets into memory.", "Mods/LuxImport", LogLevel.Info);
+                SendProgressMessage(@event, "Assets loaded into memory.", 100);
+                _eventBus?.Publish(new CollectionUpdatedEvent(@event.CollectionName, @event.CollectionPath, assets));
             }
             catch (Exception ex)
             {

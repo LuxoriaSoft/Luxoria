@@ -47,17 +47,11 @@ namespace Luxoria.App
             return Host.CreateDefaultBuilder().ConfigureServices((context, services) => startup.ConfigureServices(context, services));
         }
 
-        private void Log(string message)
-        {
-            Debug.WriteLine(message);
-            // You can also log to a file or any other logging mechanism
-        }
-
         /// <summary>
         /// Invoked when the application is launched.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
             _logger.Log("Application is starting...");
 
@@ -78,7 +72,9 @@ namespace Luxoria.App
             });
 
             var eventBus = _host.Services.GetRequiredService<IEventBus>();
-            m_window = new MainWindow(eventBus);
+            var loggerService = _host.Services.GetRequiredService<ILoggerService>();
+
+            m_window = new MainWindow(eventBus, loggerService);
             m_window.Activate();
         }
 
