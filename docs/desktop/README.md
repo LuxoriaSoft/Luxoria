@@ -48,3 +48,58 @@ This project contains the core services, repositories, and models used across th
 
 This project contains the module management system for the application. Each module is a separate project in the solution.
 
+## How does communication work inside Luxoria ?
+The communication between the modules and core program works by using `EventBus`.
+
+### What is `EventBus` ?
+`EventBus` is an implementation of the `Mediator` pattern. It allows the modules to communicate with each other without having to know about each other. This makes the application more modular and easier to maintain.
+
+With `EventBus`, modules can send messages to each other without having to know about each other. This makes the application more modular and easier to maintain.  
+The purpose of the `EventBus` is to decouple the modules from each other, so that they can be developed and tested independently.
+
+### How does it work ?
+`EventBus` works by registering `EventHandlers` for specific `Events`. When an `Event` is raised, the `EventBus` will call all the `EventHandlers` that are registered for that `Event`.  
+So, when a module wants to send a message to another module, it raises an `Event` and the `EventBus` will call the `EventHandlers` that are registered for that `Event`.
+
+### How to use it ?
+`EventBus` is implemented as a singleton, so you can access it from anywhere in the application (Luxoria.App).
+
+To use `EventBus`, you need to:
+1. Create an `Event` class.
+```csharp
+public class MyEvent
+{
+    public required string Message { get; set; }
+}
+```
+
+2. Create an `EventHandler` function.
+```csharp
+void OnMyEvent(MyEvent e)
+{
+    Console.WriteLine(e.Message);
+}
+```
+
+2. (b) If you want to use async `EventHandler` function.
+```csharp
+async Task OnMyEvent(MyEvent e)
+{
+    await Task.Delay(1000);
+    Console.WriteLine(e.Message);
+}
+```
+
+3. Register the `EventHandler` for the `Event`.
+```csharp
+EventBus.Subscribe<MyEvent>(OnMyEvent);
+```
+
+4. Raise the `Event`.
+```csharp
+await EventBus.Publish(new MyEvent { Message = "Hello, World!" });
+```
+
+For more information, go to  : [EventBus implementation](../../Luxoria.App/Luxoria.Modules/Interfaces/IEventBus.cs)
+
+For more information about `Event` : please refer to [LuxEvents]()
