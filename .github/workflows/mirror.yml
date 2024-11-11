@@ -2,8 +2,8 @@ name: Automatic Mirror Sync
 
 on:
   schedule:
-    # Run every day at 4:00 PM UTC
-    - cron: '00 16 * * *'
+    # Run every day at 4:30 PM UTC
+    - cron: '30 16 * * *'
 
 jobs:
   sync:
