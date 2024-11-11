@@ -3,7 +3,7 @@ name: Automatic Mirror Sync
 on: [push, delete]
 
 jobs:
-  to_gitlab:
+  mirror:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
