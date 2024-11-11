@@ -1,0 +1,44 @@
+name: Automatic Mirror Sync
+
+on:
+  schedule:
+    # Run every day at 3:50 PM UTC
+    - cron: '50 15 * * *'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout the source repo
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # Fetch all branches
+
+    - name: Fetch the latest changes
+      run: git fetch origin
+
+    - name: Set up SSH for the target repository
+      env:
+        SSH_KEY: ${{ secrets.TARGET_REPO_SSH_KEY }}
+      run: |
+        mkdir -p ~/.ssh
+        echo "$SSH_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+
+    - name: Set up Git configuration
+      run: |
+        git config --global user.name "Luxoria Automatic Mirror Sync"
+        git config --global user.email "quentin.erdinger@epitech.eu"
+
+    - name: Add target repository as remote
+      run: |
+        git remote add target git@github.com:EpitechPromo2026/G-EIP-700-STG-7-1-eip-lucas.hoch.git
+
+    - name: Force push all branches to target repo
+      run: git push --force --all target
+
+    - name: Clean up SSH key
+      run: rm -f ~/.ssh/id_rsa
+      if: success()
