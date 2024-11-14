@@ -29,6 +29,8 @@ namespace Luxoria.App
         private readonly ILoggerService _logger;
         
         private readonly IModuleService _moduleService;
+        public IModuleService ModuleService => _moduleService;
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -78,7 +80,7 @@ namespace Luxoria.App
             });
 
             var eventBus = _host.Services.GetRequiredService<IEventBus>();
-            m_window = new MainWindow(eventBus);
+            m_window = new MainWindow(eventBus, _moduleService);
             m_window.Activate();
         }
 

@@ -17,12 +17,22 @@
 	<WindowsSdkPackageVersion>10.0.19041.38</WindowsSdkPackageVersion>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Views\ImportationControl - Copier.xaml.cs" />
+  </ItemGroup>
+
 	<ItemGroup>
     <None Remove="Components\MainMenuBarComponent.xaml" />
     <None Remove="SplashScreen.xaml" />
+    <None Remove="Views\ImportationControl - Copier.xaml" />
     <None Remove="Views\ImportationControl.xaml" />
+    <None Remove="Views\ModuleManagerWindow.xaml" />
     <None Remove="Views\OpenCollectionControl.xaml" />
   </ItemGroup>
+
+	<ItemGroup>
+	  <Page Remove="Views\ImportationControl - Copier.xaml" />
+	</ItemGroup>
 
 	<ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -54,6 +64,11 @@
     <ProjectReference Include="..\Luxoria.Core\Luxoria.Core.csproj" />
     <ProjectReference Include="..\Luxoria.Modules\Luxoria.Modules.csproj" />
     <ProjectReference Include="..\Luxoria.SDK\Luxoria.SDK.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\ModuleManagerWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\ImportationControl.xaml">

@@ -1,5 +1,7 @@
 using Luxoria.App.Components;
 using Luxoria.App.Views;
+using Luxoria.Core.Interfaces;
+using Luxoria.Core.Services;
 using Luxoria.Modules;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
@@ -22,11 +24,13 @@ namespace Luxoria.App
     public sealed partial class MainWindow : Window
     {
         private readonly IEventBus _eventBus;
+        private readonly IModuleService _moduleService;
 
-        public MainWindow(IEventBus eventBus)
+        public MainWindow(IEventBus eventBus, IModuleService moduleService)
         {
             this.InitializeComponent();
             _eventBus = eventBus;
+            _moduleService = moduleService;
             Initialize();
 
         }
