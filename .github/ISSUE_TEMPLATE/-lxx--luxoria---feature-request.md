@@ -1,7 +1,7 @@
 ---
-name: Luxoria - Feature request
-about: Suggest an idea for this project
-title: "[L__] - (____) ..."
+name: "(LXX) Luxoria - Feature request"
+about: Suggest an idea for Luxoria Desktop App
+title: "[LXX] - (____) ..."
 labels: Feature
 assignees: ''
 

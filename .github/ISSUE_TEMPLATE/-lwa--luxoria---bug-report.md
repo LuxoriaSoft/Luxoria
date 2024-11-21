@@ -1,7 +1,7 @@
 ---
-name: Luxoria - Bug report
-about: Create a report to help us improve
-title: "[L__] - (____) ..."
+name: "(LWA) Luxoria - Bug report"
+about: Create a report to help us improve Luxoria Web App
+title: "[LWA] - (____) ..."
 labels: Bug
 assignees: ''
 
