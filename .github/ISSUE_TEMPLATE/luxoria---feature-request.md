@@ -1,7 +1,7 @@
 ---
-name: "[L__] - (____) Feature"
+name: Luxoria - Feature request
 about: Suggest an idea for this project
-title: ''
+title: "[L__] - (____) ..."
 labels: Feature
 assignees: ''
 

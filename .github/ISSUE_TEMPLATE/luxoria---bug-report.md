@@ -1,7 +1,7 @@
 ---
-name: "[L__] - (____) Bug report"
+name: Luxoria - Bug report
 about: Create a report to help us improve
-title: ''
+title: "[L__] - (____) ..."
 labels: Bug
 assignees: ''
 
