@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Windows.UI.Notifications;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -155,6 +156,16 @@ namespace Luxoria.App
             // Handle the response from the module
             _loggerService.Log($"Collection updated: {body.CollectionName}");
             _loggerService.Log($"Collection path: {body.CollectionPath}");
+
+            // Show a tost notification
+            {
+                var toastXml = ToastNotificationManager.GetTemplateContent(ToastTemplateType.ToastText01);
+                var textNodes = toastXml.GetElementsByTagName("text");
+                textNodes[0].AppendChild(toastXml.CreateTextNode($"Collection updated: {body.CollectionName}"));
+                var toast = new ToastNotification(toastXml);
+                ToastNotificationManager.CreateToastNotifier("Luxoria").Show(toast);
+            }
+
             for (int i = 0; i < body.Assets.Count; i++)
             {
                 _loggerService.Log($"Asset {i}: {body.Assets.ElementAt(i).Config.Id}");
