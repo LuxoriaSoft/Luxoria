@@ -64,9 +64,6 @@ namespace LuxImport.Repositories
                 Converters = { new CustomGuidConverter() }
             };
 
-            Debug.WriteLine($"Loading LuxCfg model with ID {id}");
-
-
             // Load the model from the file
             var model = JsonConvert.DeserializeObject<LuxCfg>(File.ReadAllText($"{CollectionPath}/{_luxRelAssetsPath}/{id}.{_luxCfgFileExtension}"), jsonSettings);
             if (model == null)
@@ -74,7 +71,6 @@ namespace LuxImport.Repositories
                 throw new InvalidOperationException($"Deserialization of LuxCfg model with ID {id} returned null.");
             }
 
-            Debug.WriteLine($"Loaded LuxCfg model with ID {model.Id}");
             return model;
         }
     }

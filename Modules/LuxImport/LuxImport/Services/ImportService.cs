@@ -2,15 +2,19 @@
 using LuxImport.Models;
 using LuxImport.Repositories;
 using Luxoria.Modules.Models;
+using Luxoria.Modules.Utils;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Services;
 using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace LuxImport.Services
 {
     public class ImportService : IImportService
     {
+        private static string LUXCFG_VERSION = "1.0.0";
+
         private readonly string _collectionName;
         private readonly string _collectionPath;
 
@@ -158,43 +162,43 @@ namespace LuxImport.Services
                 string hash256 = _fileHasherService.ComputeFileHash(file);
 
                 // Check if file (asset) already exists in the manifest
-                var existingAsset = manifest.Assets.FirstOrDefault(asset => asset.FileName == filename && asset.RelativeFilePath == relativePath);
-                var fileId = Guid.NewGuid();
+                LuxCfg.AssetInterface? existingAsset = manifest.Assets
+                    .FirstOrDefault(asset =>
+                        asset.FileName == filename
+                        &&
+                        asset.RelativeFilePath == relativePath
+                );
 
-                // Convert file extension to LuxCfg FileExtension enum
-                var ext = Path.GetExtension(file).TrimStart('.').ToUpper();
-
-                LuxCfg luxCfg;
-
-                if (Enum.TryParse<FileExtension>(ext, true, out var fileExt))
+                // If the asset does not exist, add it to the manifest
+                if (existingAsset == null)
                 {
-                    luxCfg = new LuxCfg("1.0.0", fileId, filename, "", fileExt);
-                }
-                else
-                {
-                    throw new InvalidOperationException($"File extension '{ext}' is not supported.");
-                }
-
-                if (existingAsset != null)
-                {
-                    // Update LuxCfg for the existing asset
-                    existingAsset.LuxCfgId = fileId;
-                    existingAsset.Hash = hash256;
-                }
-                else
-                {
-                    // Add the new asset to the manifest
+                    // Generate a new LuxCfg ID
+                    Guid luxCfgId = Guid.NewGuid();
                     manifest.Assets.Add(new LuxCfg.AssetInterface
                     {
                         FileName = filename,
                         RelativeFilePath = relativePath,
-                        LuxCfgId = fileId,
-                        Hash = hash256
+                        Hash = hash256,
+                        LuxCfgId = luxCfgId
                     });
-                }
 
-                // Save the LuxCfg model
-                _luxCfgRepository.Save(luxCfg);
+                    // Create a new LuxCfg model
+                    LuxCfg newLuxCfg = new LuxCfg(LUXCFG_VERSION, luxCfgId, filename, String.Empty, FileExtensionHelper.ConvertToEnum(Path.GetExtension(filename)));
+
+                    // Save the LuxCfg model
+                    _luxCfgRepository.Save(newLuxCfg);
+                }
+                // Check if the asset exists but the hash is different
+                else if (existingAsset.Hash != hash256)
+                {
+                    existingAsset.Hash = hash256;
+
+                    // Create a new LuxCfg model
+                    LuxCfg newLuxCfg = new LuxCfg(LUXCFG_VERSION, existingAsset.LuxCfgId, filename, String.Empty, FileExtensionHelper.ConvertToEnum(Path.GetExtension(filename)));
+
+                    // Save the LuxCfg model
+                    _luxCfgRepository.Save(newLuxCfg);
+                }
 
                 await Task.Delay(25);
             }
