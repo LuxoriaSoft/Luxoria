@@ -5,7 +5,7 @@ import shutil
 LUX_DLL_NAME = "LuxImport.dll"
 LUX_FINAL_NAME = "LuxImport.Lux.dll"
 LUX_MOD_FOLDER = "LuxImport"
-SOURCE_DIR = "./LuxImport/bin/Debug/net8.0/publish"
+SOURCE_DIR = "./LuxImport/bin/Debug/net9.0/publish"
 DEST_DIR = "../../Luxoria.App/Luxoria.App/bin/x64/Debug/net9.0-windows10.0.26100.0/win-x64/AppX/modules/" + LUX_MOD_FOLDER
 
 # Function to build the project

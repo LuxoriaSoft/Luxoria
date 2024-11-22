@@ -33,7 +33,7 @@ namespace Luxoria.Modules.Models
         /// </summary>
         public FileExtension Extension { get; private set; }
 
-        /// <summary>
+        /// <summary>ff
         /// Gets the full name of the picture, combining the name and extension.
         /// </summary>
         public string FullName => $"{Name}{Extension.ToString().ToLower()}";

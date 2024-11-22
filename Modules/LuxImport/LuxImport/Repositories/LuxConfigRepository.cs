@@ -1,4 +1,5 @@
 ﻿using LuxImport.Interfaces;
+using LuxImport.Utils;
 using Luxoria.Modules.Models;
 using Newtonsoft.Json;
 using System;
@@ -57,12 +58,23 @@ namespace LuxImport.Repositories
                 throw new FileNotFoundException($"LuxCfg file not found at {CollectionPath}/{_luxRelAssetsPath}/{id}.{_luxCfgFileExtension}");
             }
 
+            var jsonSettings = new JsonSerializerSettings
+            {
+                ContractResolver = new CustomLuxCfgResolver(),
+                Converters = { new CustomGuidConverter() }
+            };
+
+            Debug.WriteLine($"Loading LuxCfg model with ID {id}");
+
+
             // Load the model from the file
-            var model = JsonConvert.DeserializeObject<LuxCfg>(File.ReadAllText($"{CollectionPath}/{_luxRelAssetsPath}/{id}.{_luxCfgFileExtension}"));
+            var model = JsonConvert.DeserializeObject<LuxCfg>(File.ReadAllText($"{CollectionPath}/{_luxRelAssetsPath}/{id}.{_luxCfgFileExtension}"), jsonSettings);
             if (model == null)
             {
                 throw new InvalidOperationException($"Deserialization of LuxCfg model with ID {id} returned null.");
             }
+
+            Debug.WriteLine($"Loaded LuxCfg model with ID {model.Id}");
             return model;
         }
     }

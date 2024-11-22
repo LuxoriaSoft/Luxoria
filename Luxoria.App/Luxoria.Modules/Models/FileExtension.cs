@@ -8,6 +8,7 @@ namespace Luxoria.Modules.Models
 {
     public enum FileExtension
     {
+        UNKNOW = 0,
         PNG,
         JPG,
         JPEG,
