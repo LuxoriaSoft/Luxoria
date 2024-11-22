@@ -154,7 +154,7 @@ namespace LuxImport.Services
                     continue;
                 }
 
-                // Calculate current progress percentage, ensuring it does not exceed MaxProgressPercent%
+                // Update the current progress percentage, ensuring it does not exceed MaxProgressPercent%
                 int progressPercent = BaseProgressPercent + 10 + (int)Math.Min(MaxProgressPercent, progressIncrement * (fcount + 1));
                 ProgressMessageSent?.Invoke(($"Processing file: {filename}... ({fcount + 1}/{total})", progressPercent));
 
@@ -191,6 +191,7 @@ namespace LuxImport.Services
                 // Check if the asset exists but the hash is different
                 else if (existingAsset.Hash != hash256)
                 {
+                    // Update the hash of the existing asset
                     existingAsset.Hash = hash256;
 
                     // Create a new LuxCfg model
