@@ -87,7 +87,7 @@ namespace Luxoria.Modules.Tests.Models.Events
             var openCollectionEvent = new OpenCollectionEvent("Col#6", "test/path");
 
             // Act & Assert
-            var exception = Record.Exception(() => openCollectionEvent.Complete());
+            var exception = Record.Exception(() => openCollectionEvent.CompleteSuccessfully());
 
             Assert.Null(exception);
         }

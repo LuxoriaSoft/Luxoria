@@ -115,6 +115,22 @@ namespace Luxoria.App
                     }
                 };
 
+                // Handle the event when the importation is completed
+                openCollectionEvt.OnEventCompleted += (sender, args) =>
+                {
+                    // Close the dialog
+                    importationDialog.Hide();
+                    _loggerService.Log("Collection import completed successfully.");
+                };
+
+                // Handle the event when the importation is cancelled
+                openCollectionEvt.OnImportFailed += (sender, args) =>
+                {
+                    // Close the dialog
+                    importationDialog.Hide();
+                    _loggerService.Log("Collection import failed.");
+                };
+
                 // Show the dialog first, then start publishing
                 var importationDialogTask = importationDialog.ShowAsync();
 

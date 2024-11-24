@@ -112,11 +112,16 @@ public class LuxImport : IModule
             _logger?.Log($"Loaded {assets.Count} assets into memory.", "Mods/LuxImport", LogLevel.Info);
             SendProgressMessage(@event, "Assets loaded into memory.", 100);
             _eventBus?.Publish(new CollectionUpdatedEvent(@event.CollectionName, @event.CollectionPath, assets));
+
+            // Mark the collection as imported
+            SendProgressMessage(@event, "Collection imported successfully.", 100);
+            @event.CompleteSuccessfully();
         }
         catch (Exception ex)
         {
             _logger?.Log($"Error importing collection: {ex.Message}", "Mods/LuxImport", LogLevel.Error);
             SendProgressMessage(@event, $"Error importing collection: {ex.Message}");
+            @event.MarkAsFailed();
         }
     }
 
