@@ -16,12 +16,12 @@ namespace Luxoria.Modules.Models
         /// <summary>
         /// Gets the unique identifier for the asset.
         /// </summary>
-        public Guid Id => Config.Id;
+        public Guid Id => MetaData.Id;
 
         /// <summary>
         /// Contains the properties of the asset.
         /// </summary>
-        public required LuxCfg Config { get; init; }
+        public required LuxCfg MetaData { get; init; }
 
         /// <summary>
         /// Contains the data of the asset.

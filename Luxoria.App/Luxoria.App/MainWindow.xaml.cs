@@ -168,7 +168,7 @@ namespace Luxoria.App
 
             for (int i = 0; i < body.Assets.Count; i++)
             {
-                _loggerService.Log($"Asset {i}: {body.Assets.ElementAt(i).Config.Id}");
+                _loggerService.Log($"Asset {i}: {body.Assets.ElementAt(i).MetaData.Id}");
             }
         }
     }

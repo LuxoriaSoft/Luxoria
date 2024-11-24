@@ -285,7 +285,7 @@ namespace LuxImport.Services
                 // Create a new LuxAsset object
                 LuxAsset newAsset = new LuxAsset
                 {
-                    Config = luxCfg,
+                    MetaData = luxCfg,
                     Data = imageData
                 };
 
