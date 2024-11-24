@@ -161,7 +161,7 @@ namespace Luxoria.App
             {
                 var toastXml = ToastNotificationManager.GetTemplateContent(ToastTemplateType.ToastText01);
                 var textNodes = toastXml.GetElementsByTagName("text");
-                textNodes[0].AppendChild(toastXml.CreateTextNode($"Collection updated: {body.CollectionName}"));
+                textNodes[0].AppendChild(toastXml.CreateTextNode($"Updated Collection : {body.CollectionName}"));
                 var toast = new ToastNotification(toastXml);
                 ToastNotificationManager.CreateToastNotifier("Luxoria").Show(toast);
             }

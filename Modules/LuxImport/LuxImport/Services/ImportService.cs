@@ -1,6 +1,7 @@
 ﻿using LuxImport.Interfaces;
 using LuxImport.Models;
 using LuxImport.Repositories;
+using LuxImport.Utils;
 using Luxoria.Modules.Models;
 using Luxoria.Modules.Utils;
 using Luxoria.SDK.Interfaces;
@@ -182,8 +183,11 @@ namespace LuxImport.Services
                         LuxCfgId = luxCfgId
                     });
 
+                    // Get the file name without extension
+                    string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filename);
+
                     // Create a new LuxCfg model
-                    LuxCfg newLuxCfg = new LuxCfg(LUXCFG_VERSION, luxCfgId, filename, String.Empty, FileExtensionHelper.ConvertToEnum(Path.GetExtension(filename)));
+                    LuxCfg newLuxCfg = new LuxCfg(LUXCFG_VERSION, luxCfgId, fileNameWithoutExtension, filename, String.Empty, FileExtensionHelper.ConvertToEnum(Path.GetExtension(filename)));
 
                     // Save the LuxCfg model
                     _luxCfgRepository.Save(newLuxCfg);
@@ -194,8 +198,11 @@ namespace LuxImport.Services
                     // Update the hash of the existing asset
                     existingAsset.Hash = hash256;
 
+                    // Get the file name without extension
+                    string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filename);
+
                     // Create a new LuxCfg model
-                    LuxCfg newLuxCfg = new LuxCfg(LUXCFG_VERSION, existingAsset.LuxCfgId, filename, String.Empty, FileExtensionHelper.ConvertToEnum(Path.GetExtension(filename)));
+                    LuxCfg newLuxCfg = new LuxCfg(LUXCFG_VERSION, existingAsset.LuxCfgId, fileNameWithoutExtension, filename, String.Empty, FileExtensionHelper.ConvertToEnum(Path.GetExtension(filename)));
 
                     // Save the LuxCfg model
                     _luxCfgRepository.Save(newLuxCfg);
@@ -255,11 +262,31 @@ namespace LuxImport.Services
                     throw new InvalidOperationException($"LuxCfg model with ID {asset.LuxCfgId} not found.");
                 }
 
+                // Load the image data
+                ImageData imageData;
+
+                // Ensure the relative path does not start with a directory separator
+                string sanitizedRelativePath = asset.RelativeFilePath.TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+                // Construct the full file path
+                string filePath = Path.Combine(_collectionPath, sanitizedRelativePath);
+
+                try
+                {
+                    // Load the image data using the helper
+                    imageData = ImageDataHelper.LoadFromPath(filePath);
+                }
+                catch (Exception ex)
+                {
+                    // Handle errors and include meaningful context in the exception message
+                    throw new InvalidOperationException($"Failed to load image '{asset.FileName}' from path '{filePath}': {ex.Message}", ex);
+                }
+
                 // Create a new LuxAsset object
                 LuxAsset newAsset = new LuxAsset
                 {
                     Config = luxCfg,
-                    Data = new ImageData(new byte[500], 1920, 1080, "")
+                    Data = imageData
                 };
 
                 // Add the new asset to the list

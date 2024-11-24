@@ -21,7 +21,7 @@ namespace Luxoria.App.Tests
         {
             // Arrange
             var pixelData = new byte[] { 0, 255, 127 };
-            var image = new ImageData(pixelData, 100, 200, "PNG");
+            var image = new ImageData(pixelData, 100, 200, FileExtension.JPEG);
             _moduleContext.UpdateImage(image);
 
             // Act
@@ -36,7 +36,7 @@ namespace Luxoria.App.Tests
         {
             // Arrange
             var pixelData = new byte[] { 1, 2, 3, 4 };
-            var newImage = new ImageData(pixelData, 300, 400, "JPEG");
+            var newImage = new ImageData(pixelData, 300, 400, FileExtension.JPEG);
 
             // Act
             _moduleContext.UpdateImage(newImage);

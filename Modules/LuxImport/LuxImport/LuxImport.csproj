@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,5 +20,4 @@
       <HintPath>..\..\..\Luxoria.App\Luxoria.Modules\bin\Debug\net9.0\Luxoria.SDK.dll</HintPath>
     </Reference>
   </ItemGroup>
-
 </Project>
