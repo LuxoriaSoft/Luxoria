@@ -174,6 +174,9 @@ namespace LuxImport.Services
             ProgressMessageSent?.Invoke(("Manifest file saved.", BaseProgressPercent + 10 + MaxProgressPercent + 10));
         }
 
+        /// <summary>
+        /// Handles the asset by adding or updating it in the manifest.
+        /// </summary>
         private async Task HandleAsset(Manifest manifest, string filename, string relativePath, string hash256)
         {
             // Check for existing asset in the manifest
@@ -191,6 +194,9 @@ namespace LuxImport.Services
             }
         }
 
+        /// <summary>
+        /// Adds a new asset to the manifest.
+        /// </summary>
         private async Task AddNewAsset(Manifest manifest, string filename, string relativePath, string hash256)
         {
             Guid luxCfgId = Guid.NewGuid();
@@ -209,6 +215,9 @@ namespace LuxImport.Services
             await Task.Delay(10);
         }
 
+        /// <summary>
+        /// Updates an existing asset in the manifest.
+        /// </summary>
         private async Task UpdateExistingAsset(LuxCfg.AssetInterface existingAsset, string filename, string hash256)
         {
             existingAsset.Hash = hash256;
@@ -220,6 +229,9 @@ namespace LuxImport.Services
             await Task.Delay(10);
         }
 
+        /// <summary>
+        /// Finalizes the indexing process by cleaning up unused assets.
+        /// </summary>
         private async Task FinalizeIndexingAsync(Manifest manifest, string[] files)
         {
             // Notify progress: Cleaning up unused assets
