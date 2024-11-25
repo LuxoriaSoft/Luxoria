@@ -3,32 +3,44 @@ using Luxoria.SDK.Interfaces;
 using System.Linq;
 using Windows.UI.Notifications;
 
-namespace Luxoria.App.EventHandlers
+namespace Luxoria.App.EventHandlers;
+
+/// <summary>
+/// Handles the CollectionUpdatedEvent.
+/// </summary>
+public class CollectionUpdatedHandler
 {
-    public class CollectionUpdatedHandler
+    /// <summary>
+    /// The logger service.
+    /// </summary>
+    private readonly ILoggerService _loggerService;
+
+    /// <summary>
+    /// Constructor for the CollectionUpdatedHandler.
+    /// </summary>
+    /// <param name="loggerService"></param>
+    public CollectionUpdatedHandler(ILoggerService loggerService)
     {
-        private readonly ILoggerService _loggerService;
+        _loggerService = loggerService;
+    }
 
-        public CollectionUpdatedHandler(ILoggerService loggerService)
+    /// <summary>
+    /// Handles the CollectionUpdatedEvent.
+    /// </summary>
+    public void OnCollectionUpdated(CollectionUpdatedEvent body)
+    {
+        _loggerService.Log($"Collection updated: {body.CollectionName}");
+        _loggerService.Log($"Collection path: {body.CollectionPath}");
+
+        var toastXml = ToastNotificationManager.GetTemplateContent(ToastTemplateType.ToastText01);
+        var textNodes = toastXml.GetElementsByTagName("text");
+        textNodes[0].AppendChild(toastXml.CreateTextNode($"Updated Collection: {body.CollectionName}"));
+        var toast = new ToastNotification(toastXml);
+        ToastNotificationManager.CreateToastNotifier("Luxoria").Show(toast);
+
+        for (int i = 0; i < body.Assets.Count; i++)
         {
-            _loggerService = loggerService;
-        }
-
-        public void OnCollectionUpdated(CollectionUpdatedEvent body)
-        {
-            _loggerService.Log($"Collection updated: {body.CollectionName}");
-            _loggerService.Log($"Collection path: {body.CollectionPath}");
-
-            var toastXml = ToastNotificationManager.GetTemplateContent(ToastTemplateType.ToastText01);
-            var textNodes = toastXml.GetElementsByTagName("text");
-            textNodes[0].AppendChild(toastXml.CreateTextNode($"Updated Collection: {body.CollectionName}"));
-            var toast = new ToastNotification(toastXml);
-            ToastNotificationManager.CreateToastNotifier("Luxoria").Show(toast);
-
-            for (int i = 0; i < body.Assets.Count; i++)
-            {
-                _loggerService.Log($"Asset {i}: {body.Assets.ElementAt(i).MetaData.Id}");
-            }
+            _loggerService.Log($"Asset {i}: {body.Assets.ElementAt(i).MetaData.Id}");
         }
     }
 }
