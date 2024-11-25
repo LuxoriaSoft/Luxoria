@@ -4,8 +4,6 @@ using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
-using System;
-using System.Threading.Tasks;
 
 namespace LuxImport;
 
@@ -87,7 +85,8 @@ public class LuxImport : IModule
             if (importService.IsInitialized())
             {
                 SendProgressMessage(@event, "Collection is already initialized.", 10);
-            } else
+            }
+            else
             {
                 // Initializing collection's database
                 SendProgressMessage(@event, "Initializing collection's database...", 20);

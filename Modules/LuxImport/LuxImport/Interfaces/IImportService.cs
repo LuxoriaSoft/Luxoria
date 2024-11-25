@@ -1,6 +1,4 @@
 ﻿using Luxoria.Modules.Models;
-using Luxoria.Modules.Models.Events;
-using System;
 
 namespace LuxImport.Interfaces
 {

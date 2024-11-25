@@ -2,12 +2,7 @@
 using LuxImport.Utils;
 using Luxoria.Modules.Models;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LuxImport.Repositories
 {
@@ -24,7 +19,8 @@ namespace LuxImport.Repositories
         public void Save(LuxCfg model)
         {
             // Check if the model is null
-            if (model == null) {
+            if (model == null)
+            {
                 throw new ArgumentNullException(nameof(model));
             }
 
