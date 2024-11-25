@@ -1,191 +1,64 @@
-using Luxoria.App.Components;
-using Luxoria.App.Views;
-using Luxoria.Modules;
+using Luxoria.App.Components.Dialogs;
+using Luxoria.App.EventHandlers;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using System;
-using System.Collections;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Channels;
-using System.Threading.Tasks;
-using Windows.UI.Notifications;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Luxoria.App
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainWindow : Window
     {
-        /// <summary>
-        /// Event bus for publishing and subscribing to events.
-        /// </summary>
         private readonly IEventBus _eventBus;
-
-        /// <summary>
-        /// Logger service for logging messages.
-        /// </summary>
         private readonly ILoggerService _loggerService;
 
+        // Handlers for different events
+        private readonly ImageUpdatedHandler _imageUpdatedHandler;
+        private readonly CollectionUpdatedHandler _collectionUpdatedHandler;
+
         /// <summary>
-        /// Constructor for the MainWindow class.
+        /// Constructor for the main window of the application.
         /// </summary>
-        /// <param name="eventBus">EventBus to handle Subscription and Publishing</param>
         public MainWindow(IEventBus eventBus, ILoggerService loggerService)
         {
-            // Initialize the component
-            this.InitializeComponent();
-            // Set the event bus
+            InitializeComponent();
+
+            // Dependency injection
             _eventBus = eventBus;
             _loggerService = loggerService;
 
-            // Initialize the event bus
-            Initialize();
+            // Initialize event handlers
+            _imageUpdatedHandler = new ImageUpdatedHandler(_loggerService);
+            _collectionUpdatedHandler = new CollectionUpdatedHandler(_loggerService);
+
+            // Subscribe handlers to the event bus
+            InitializeEventBus();
         }
 
         /// <summary>
-        /// Subscribes all handlers decicated to MainWindow to the event bus.
+        /// Initialize the event bus and subscribe handlers to events.
         /// </summary>
-        public void Initialize()
+        private void InitializeEventBus()
         {
-            // Subscribe to the ImageUpdatedEvent
-            _eventBus.Subscribe<ImageUpdatedEvent>(OnImageUpdated);
-            _eventBus.Subscribe<CollectionUpdatedEvent>(OnCollectionUpdated);
-        }
-
-        private void SendToModule_Click(object sender, RoutedEventArgs e)
-        {
+            // Subscribe to events that will be published through the event bus
+            _eventBus.Subscribe<CollectionUpdatedEvent>(_collectionUpdatedHandler.OnCollectionUpdated);
         }
 
         /// <summary>
-        /// Handles the Open Collection button click event.
+        /// Event handler for the Open Collection button.
         /// </summary>
         private async void OpenCollection_Click(object sender, RoutedEventArgs e)
         {
-            var openCollectionControl = new OpenCollectionControl();
-            // Create the ContentDialog
-            var dialog = new ContentDialog
-            {
-                Title = "Open Collection",
-                Content = openCollectionControl,
-                CloseButtonText = "Close",
-                PrimaryButtonText = "Next",
-                XamlRoot = MainGrid.XamlRoot
-            };
-
-            // Show the dialog
-            var result = await dialog.ShowAsync();
-
-            // Handle dialog result if needed
-            if (result == ContentDialogResult.Primary)
-            {
-                // Retrieve the selected folder path
-                string selectedFolderPath = openCollectionControl.SelectedFolderPath;
-                // Retrieve the collection name
-                string collectionName = openCollectionControl.CollectionName;
-                _loggerService.Log($"Selected folder path: {selectedFolderPath}");
-
-                var importationControl = new ImportationControl();
-                // Create the ContentDialog
-                var importationDialog = new ContentDialog
-                {
-                    Title = "Importation",
-                    Content = importationControl,
-                    XamlRoot = MainGrid.XamlRoot
-                };
-
-                // Publish the selected folder path to the module
-                OpenCollectionEvent openCollectionEvt = new OpenCollectionEvent(collectionName, selectedFolderPath);
-                openCollectionEvt.ProgressMessage += (message, progress) =>
-                {
-                    // Update the importation control with progress messages
-                    if (progress.HasValue)
-                    {
-                        importationControl.UpdateProgress(message, progress.Value);
-                    } else
-                    {
-                        importationControl.UpdateProgress(message);
-                    }
-                };
-
-                // Handle the event when the importation is completed
-                openCollectionEvt.OnEventCompleted += (sender, args) =>
-                {
-                    // Close the dialog
-                    importationDialog.Hide();
-                    _loggerService.Log("Collection import completed successfully.");
-                };
-
-                // Handle the event when the importation is cancelled
-                openCollectionEvt.OnImportFailed += (sender, args) =>
-                {
-                    // Close the dialog
-                    importationDialog.Hide();
-                    _loggerService.Log("Collection import failed.");
-                };
-
-                // Show the dialog first, then start publishing
-                var importationDialogTask = importationDialog.ShowAsync();
-
-                try
-                {
-                    // Publish the selected folder path to the module asynchronously
-                    await _eventBus.Publish(openCollectionEvt);
-                }
-                catch (Exception ex)
-                {
-                    // Handle any exceptions that occur during event publishing
-                    _loggerService.Log($"Error publishing event: {ex.Message}");
-
-                    // Optionally update the dialog with the error message
-                    importationControl.UpdateProgress("Error: " + ex.Message);
-                }
-
-                // Await the dialog to ensure it is shown after publishing is complete
-                await importationDialogTask;
-            }
+            // Display the Open Collection dialog
+            await OpenCollectionDialog.ShowAsync(_eventBus, _loggerService, MainGrid.XamlRoot);
         }
 
         /// <summary>
-        /// Handles the Image Updated event.
+        /// Event handler for the Send to Module button.
         /// </summary>
-        /// <param name="body">Body as ImageUpdatedEvent, contains ImagePath, ...</param>
-        private void OnImageUpdated(ImageUpdatedEvent body)
+        private void SendToModule_Click(object sender, RoutedEventArgs e)
         {
-            // Handle the response from the module
-            _loggerService.Log($"Image updated: {body.ImagePath}");
-        }
-
-        /// <summary>
-        /// Handles the Collection Updated event.
-        /// </summary>
-        /// <param name="body">Body as CollectionUpdatedEvent, contains collection details (name, path, assets)</param>
-        private void OnCollectionUpdated(CollectionUpdatedEvent body)
-        {
-            // Handle the response from the module
-            _loggerService.Log($"Collection updated: {body.CollectionName}");
-            _loggerService.Log($"Collection path: {body.CollectionPath}");
-
-            // Show a tost notification
-            {
-                var toastXml = ToastNotificationManager.GetTemplateContent(ToastTemplateType.ToastText01);
-                var textNodes = toastXml.GetElementsByTagName("text");
-                textNodes[0].AppendChild(toastXml.CreateTextNode($"Updated Collection : {body.CollectionName}"));
-                var toast = new ToastNotification(toastXml);
-                ToastNotificationManager.CreateToastNotifier("Luxoria").Show(toast);
-            }
-
-            for (int i = 0; i < body.Assets.Count; i++)
-            {
-                _loggerService.Log($"Asset {i}: {body.Assets.ElementAt(i).MetaData.Id}");
-            }
+            // This button will eventually trigger module-specific logic
         }
     }
 }
