@@ -6,12 +6,13 @@
     xmlns:local="using:Luxoria.App.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    MinWidth="400"
     mc:Ignorable="d">
 
     <StackPanel>
         <TextBlock Text="Importation is running..." Margin="0,0,0,10" />
 
-        <ProgressBar IsIndeterminate="True" ShowPaused="False" ShowError="False" Margin="0,0,0,10" />
+        <ProgressBar x:Name="ImportationProgressBar"  Minimum="0" Maximum="100" ShowPaused="False" ShowError="False" Margin="0,0,0,10" />
 
         <TextBlock x:Name="ImportationLog"/>
     </StackPanel>

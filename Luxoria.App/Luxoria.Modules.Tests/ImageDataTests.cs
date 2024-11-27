@@ -12,7 +12,7 @@ namespace Luxoria.App.Tests
             var pixelData = new byte[] { 0x00, 0x01, 0x02 };
             var width = 1920;
             var height = 1080;
-            var format = "JPEG";
+            var format = FileExtension.JPEG;
 
             // Act
             var imageData = new ImageData(pixelData, width, height, format);
@@ -31,13 +31,13 @@ namespace Luxoria.App.Tests
             var pixelData = new byte[] { };
             var width = 1920;
             var height = 1080;
-            var format = "JPEG";
+            var format = FileExtension.JPEG;
 
             // Act
             var imageData = new ImageData(pixelData, width, height, format);
 
             // Assert
-            Assert.Empty(imageData.PixelData);
+            Assert.Equal(0, imageData.PixelData.Length);
             Assert.Equal(width, imageData.Width);
             Assert.Equal(height, imageData.Height);
             Assert.Equal(format, imageData.Format);
@@ -50,7 +50,7 @@ namespace Luxoria.App.Tests
             byte[] pixelData = null;
             var width = 1920;
             var height = 1080;
-            var format = "JPEG";
+            var format = FileExtension.JPEG;
 
             // Act
             var imageData = new ImageData(pixelData, width, height, format);
@@ -69,7 +69,7 @@ namespace Luxoria.App.Tests
             var pixelData = new byte[] { 0x00, 0x01, 0x02 };
             var width = -1920;
             var height = 1080;
-            var format = "JPEG";
+            var format = FileExtension.JPEG;
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => new ImageData(pixelData, width, height, format));
@@ -82,7 +82,7 @@ namespace Luxoria.App.Tests
             var pixelData = new byte[] { 0x00, 0x01, 0x02 };
             var width = 1920;
             var height = -1080;
-            var format = "JPEG";
+            var format = FileExtension.JPEG;
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => new ImageData(pixelData, width, height, format));
@@ -95,7 +95,7 @@ namespace Luxoria.App.Tests
             var pixelData = new byte[] { 0x00, 0x01, 0x02 };
             var width = 0;
             var height = 1080;
-            var format = "JPEG";
+            var format = FileExtension.JPEG;
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => new ImageData(pixelData, width, height, format));
@@ -108,7 +108,7 @@ namespace Luxoria.App.Tests
             var pixelData = new byte[] { 0x00, 0x01, 0x02 };
             var width = 1920;
             var height = 0;
-            var format = "JPEG";
+            var format = FileExtension.JPEG;
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => new ImageData(pixelData, width, height, format));

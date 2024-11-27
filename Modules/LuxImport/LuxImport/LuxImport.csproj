@@ -1,22 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	<OutputType>Library</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Luxoria.Modules">
-      <HintPath>..\..\..\Luxoria.App\Luxoria.Modules\bin\Debug\net8.0\Luxoria.Modules.dll</HintPath>
-    </Reference>
-    <Reference Include="Luxoria.SDK">
-      <HintPath>..\..\..\Luxoria.App\Luxoria.Modules\bin\Debug\net8.0\Luxoria.SDK.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
+    <Reference Include="Luxoria.Modules">
+      <HintPath>..\..\..\Luxoria.App\Luxoria.Modules\bin\Debug\net9.0\Luxoria.Modules.dll</HintPath>
+    </Reference>
+    <Reference Include="Luxoria.SDK">
+      <HintPath>..\..\..\Luxoria.App\Luxoria.Modules\bin\Debug\net9.0\Luxoria.SDK.dll</HintPath>
+    </Reference>
   </ItemGroup>
-
 </Project>
