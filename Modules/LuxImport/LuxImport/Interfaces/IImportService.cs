@@ -1,5 +1,4 @@
-﻿using Luxoria.Modules.Models.Events;
-using System;
+﻿using Luxoria.Modules.Models;
 
 namespace LuxImport.Interfaces
 {
@@ -30,5 +29,10 @@ namespace LuxImport.Interfaces
         /// Base progress percent for the import service.
         /// </summary>
         int BaseProgressPercent { get; set; }
+
+        /// <summary>
+        /// Loads the collection into memory.
+        /// </summary>
+        ICollection<LuxAsset> LoadAssets();
     }
 }

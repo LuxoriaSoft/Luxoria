@@ -24,6 +24,11 @@ namespace Luxoria.Modules.Models
         public string Name { get; private set; }
 
         /// <summary>
+        /// Gets the file name of the picture.
+        /// </summary>
+        public string FileName { get; private set; }
+
+        /// <summary>
         /// Gets the description of the picture.
         /// </summary>
         public string Description { get; private set; }
@@ -33,10 +38,10 @@ namespace Luxoria.Modules.Models
         /// </summary>
         public FileExtension Extension { get; private set; }
 
-        /// <summary>
+        /// <summary>ff
         /// Gets the full name of the picture, combining the name and extension.
         /// </summary>
-        public string FullName => $"{Name}{Extension.ToString().ToLower()}";
+        public string FullName => FileName;
 
         /// <summary>
         /// Gets the list of actions associated with the picture.
@@ -53,16 +58,18 @@ namespace Luxoria.Modules.Models
         /// </summary>
         /// <param name="version">The configuration version of Luxoria.</param>
         /// <param name="name">The name of the picture.</param>
+        /// <param name="fileName">The file name of the picture.</param>
         /// <param name="description">The description of the picture.</param>
         /// <param name="extension">The file extension of the picture.</param>
         /// <param name="actions">The list of actions associated with the picture.</param>
         /// <param name="versionning">The list of versions associated with the picture.</param>
-        public LuxCfg(string version, Guid fileUuid, string name, string description, FileExtension extension)
+        public LuxCfg(string version, Guid fileUuid, string name, string fileName, string description, FileExtension extension)
         {
             Version = version;
 
             Id = fileUuid;
             Name = name;
+            FileName = fileName;
             Description = description;
             Extension = extension;
             Actions = new List<LuxAction>();

@@ -27,7 +27,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.x'  # Specify the .NET SDK version you are using
+          dotnet-version: '9.x'  # Specify the .NET SDK version you are using
       
       # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
       - name: Setup MSBuild.exe

@@ -1,4 +1,5 @@
-﻿public class LuxVersion
+﻿namespace Luxoria.Modules.Models;
+public class LuxVersion
 {
     /// <summary>
     /// Gets or sets the unique identifier for the version.

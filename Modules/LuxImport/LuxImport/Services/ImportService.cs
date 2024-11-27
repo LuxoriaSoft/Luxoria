@@ -1,16 +1,20 @@
 ﻿using LuxImport.Interfaces;
 using LuxImport.Models;
 using LuxImport.Repositories;
+using LuxImport.Utils;
 using Luxoria.Modules.Models;
+using Luxoria.Modules.Utils;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Services;
-using System;
-using System.IO;
+using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace LuxImport.Services
 {
     public class ImportService : IImportService
     {
+        private static string LUXCFG_VERSION = "1.0.0";
+
         private readonly string _collectionName;
         private readonly string _collectionPath;
 
@@ -111,33 +115,35 @@ namespace LuxImport.Services
         /// </summary>
         public async Task IndexCollectionAsync()
         {
+            // Ensure the collection is initialized
             if (!IsInitialized())
             {
                 throw new InvalidOperationException("Collection is not initialized.");
             }
 
-            // Initial progress for manifest retrieval
+            // Notify progress: Retrieving the manifest
             ProgressMessageSent?.Invoke(("Retrieving manifest file...", BaseProgressPercent + 5));
             Manifest manifest = _manifestRepository.ReadManifest();
             await Task.Delay(100);
 
-            // Progress for updating indexing files
+            // Notify progress: Updating indexing files
             ProgressMessageSent?.Invoke(("Updating indexing files...", BaseProgressPercent + 10));
             string[] files = Directory.GetFiles(_collectionPath, "*.*", SearchOption.AllDirectories);
-            int total = files.Length;
+            int totalFiles = files.Length;
 
-            // Check if there are files to process
-            if (total == 0)
+            // Handle empty collections early
+            if (totalFiles == 0)
             {
                 ProgressMessageSent?.Invoke(("No files found to index.", 100));
-                return; // Exit early if no files to process
+                return;
             }
 
-            // Set max progress percent to 55%
+            // Calculate progress increment
             const int MaxProgressPercent = 55;
-            double progressIncrement = (double)MaxProgressPercent / total;
+            double progressIncrement = (double)MaxProgressPercent / totalFiles;
 
-            for (int fcount = 0; fcount < total; fcount++)
+            // Process each file
+            for (int fcount = 0; fcount < totalFiles; fcount++)
             {
                 string file = files[fcount];
                 string filename = Path.GetFileName(file);
@@ -150,65 +156,93 @@ namespace LuxImport.Services
                     continue;
                 }
 
-                // Calculate current progress percentage, ensuring it does not exceed MaxProgressPercent%
+                // Update progress
                 int progressPercent = BaseProgressPercent + 10 + (int)Math.Min(MaxProgressPercent, progressIncrement * (fcount + 1));
-                ProgressMessageSent?.Invoke(($"Processing file: {filename}... ({fcount + 1}/{total})", progressPercent));
+                ProgressMessageSent?.Invoke(($"Processing file: {filename}... ({fcount + 1}/{totalFiles})", progressPercent));
 
-                // Get sha256 hash of the file
+                // Compute hash and handle assets
                 string hash256 = _fileHasherService.ComputeFileHash(file);
+                await HandleAsset(manifest, filename, relativePath, hash256);
 
-                // Check if file (asset) already exists in the manifest
-                var existingAsset = manifest.Assets.FirstOrDefault(asset => asset.FileName == filename && asset.RelativeFilePath == relativePath);
-                var fileId = Guid.NewGuid();
-
-                // Convert file extension to LuxCfg FileExtension enum
-                var ext = Path.GetExtension(file).TrimStart('.').ToUpper();
-
-                LuxCfg luxCfg;
-
-                if (Enum.TryParse<FileExtension>(ext, true, out var fileExt))
-                {
-                    luxCfg = new LuxCfg("1.0.0", fileId, filename, "", fileExt);
-                }
-                else
-                {
-                    throw new InvalidOperationException($"File extension '{ext}' is not supported.");
-                }
-
-                if (existingAsset != null)
-                {
-                    // Update LuxCfg for the existing asset
-                    existingAsset.LuxCfgId = fileId;
-                    existingAsset.Hash = hash256;
-                }
-                else
-                {
-                    // Add the new asset to the manifest
-                    manifest.Assets.Add(new LuxCfg.AssetInterface
-                    {
-                        FileName = filename,
-                        RelativeFilePath = relativePath,
-                        LuxCfgId = fileId,
-                        Hash = hash256
-                    });
-                }
-
-                // Save the LuxCfg model
-                _luxCfgRepository.Save(luxCfg);
-
+                // Simulate processing delay
                 await Task.Delay(25);
             }
 
-            await Task.Delay(300);
-            ProgressMessageSent?.Invoke(("Indexing complete.", BaseProgressPercent + 10 + MaxProgressPercent));
-            await Task.Delay(250);
+            // Finalize indexing process
+            await FinalizeIndexingAsync(manifest, files);
 
-            ProgressMessageSent?.Invoke(($"Cleaning up... (base : {manifest.Assets.Count} assets)", BaseProgressPercent + 10 + MaxProgressPercent + 5));
-            await Task.Delay(250);
+            ProgressMessageSent?.Invoke(("Manifest file saved.", BaseProgressPercent + 10 + MaxProgressPercent + 10));
+        }
 
-            // Remove unused assets from the manifest
-            var assetsList = manifest.Assets.ToList(); // Convert to a List
-            assetsList.RemoveAll(asset => !files.Any(file => asset.RelativeFilePath == file.Replace(_collectionPath, string.Empty)));
+        /// <summary>
+        /// Handles the asset by adding or updating it in the manifest.
+        /// </summary>
+        private async Task HandleAsset(Manifest manifest, string filename, string relativePath, string hash256)
+        {
+            // Check for existing asset in the manifest
+            var existingAsset = manifest.Assets
+                .FirstOrDefault(asset => asset.FileName == filename && asset.RelativeFilePath == relativePath);
+
+            // Handle new or updated assets
+            if (existingAsset == null)
+            {
+                await AddNewAsset(manifest, filename, relativePath, hash256);
+            }
+            else if (existingAsset.Hash != hash256)
+            {
+                await UpdateExistingAsset(existingAsset, filename, hash256);
+            }
+        }
+
+        /// <summary>
+        /// Adds a new asset to the manifest.
+        /// </summary>
+        private async Task AddNewAsset(Manifest manifest, string filename, string relativePath, string hash256)
+        {
+            Guid luxCfgId = Guid.NewGuid();
+            manifest.Assets.Add(new LuxCfg.AssetInterface
+            {
+                FileName = filename,
+                RelativeFilePath = relativePath,
+                Hash = hash256,
+                LuxCfgId = luxCfgId
+            });
+
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filename);
+            var newLuxCfg = new LuxCfg(LUXCFG_VERSION, luxCfgId, fileNameWithoutExtension, filename, string.Empty, FileExtensionHelper.ConvertToEnum(Path.GetExtension(filename)));
+
+            _luxCfgRepository.Save(newLuxCfg);
+            await Task.Delay(10);
+        }
+
+        /// <summary>
+        /// Updates an existing asset in the manifest.
+        /// </summary>
+        private async Task UpdateExistingAsset(LuxCfg.AssetInterface existingAsset, string filename, string hash256)
+        {
+            existingAsset.Hash = hash256;
+
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filename);
+            var updatedLuxCfg = new LuxCfg(LUXCFG_VERSION, existingAsset.LuxCfgId, fileNameWithoutExtension, filename, string.Empty, FileExtensionHelper.ConvertToEnum(Path.GetExtension(filename)));
+
+            _luxCfgRepository.Save(updatedLuxCfg);
+            await Task.Delay(10);
+        }
+
+        /// <summary>
+        /// Finalizes the indexing process by cleaning up unused assets.
+        /// </summary>
+        private async Task FinalizeIndexingAsync(Manifest manifest, string[] files)
+        {
+            // Notify progress: Cleaning up unused assets
+            ProgressMessageSent?.Invoke(($"Cleaning up... (base: {manifest.Assets.Count} assets)", BaseProgressPercent + 67));
+
+            // Convert ICollection to List for filtering
+            var assetsList = manifest.Assets.ToList();
+
+            // Remove unused assets
+            var validFiles = files.Select(file => file.Replace(_collectionPath, string.Empty)).ToHashSet();
+            assetsList.RemoveAll(asset => !validFiles.Contains(asset.RelativeFilePath));
 
             // Clear the original collection and add back the filtered assets
             manifest.Assets.Clear();
@@ -217,15 +251,71 @@ namespace LuxImport.Services
                 manifest.Assets.Add(asset);
             }
 
-            ProgressMessageSent?.Invoke(($"Cleanup complete. (final : {manifest.Assets.Count} assets)", BaseProgressPercent + 10 + MaxProgressPercent + 7));
+            ProgressMessageSent?.Invoke(($"Cleanup complete. (final: {manifest.Assets.Count} assets)", BaseProgressPercent + 72));
             await Task.Delay(250);
 
-            // Saving manifest file
-            ProgressMessageSent?.Invoke(("Saving manifest file...", BaseProgressPercent + 10 + MaxProgressPercent + 8));
+            // Save the updated manifest
             _manifestRepository.SaveManifest(manifest);
-            await Task.Delay(250);
+        }
 
-            ProgressMessageSent?.Invoke(("Manifest file saved.", BaseProgressPercent + 10 + MaxProgressPercent + 10));
+        /// <summary>
+        /// Loads the collection into memory.
+        /// </summary>
+        public ICollection<LuxAsset> LoadAssets()
+        {
+            // Retrieve the manifest file
+            Manifest manifest = _manifestRepository.ReadManifest();
+
+            // Use a thread-safe collection to store results
+            ConcurrentBag<LuxAsset> concurrentAssets = new ConcurrentBag<LuxAsset>();
+
+            // Run indexication process in parallel
+            Parallel.ForEach(manifest.Assets, asset =>
+            {
+                Debug.WriteLine($"Loading asset: {asset.FileName} using thread: [{Environment.CurrentManagedThreadId}]");
+
+                // Load the LuxCfg model
+                LuxCfg? luxCfg = _luxCfgRepository.Load(asset.LuxCfgId);
+
+                // If LuxCfg model is null, throw an exception
+                if (luxCfg == null)
+                {
+                    throw new InvalidOperationException($"LuxCfg model with ID {asset.LuxCfgId} not found.");
+                }
+
+                // Load the image data
+                ImageData imageData;
+
+                // Ensure the relative path does not start with a directory separator
+                string sanitizedRelativePath = asset.RelativeFilePath.TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+                // Construct the full file path
+                string filePath = Path.Combine(_collectionPath, sanitizedRelativePath);
+
+                try
+                {
+                    // Load the image data using the helper
+                    imageData = ImageDataHelper.LoadFromPath(filePath);
+                }
+                catch (Exception ex)
+                {
+                    // Handle errors and include meaningful context in the exception message
+                    throw new InvalidOperationException($"Failed to load image '{asset.FileName}' from path '{filePath}': {ex.Message}", ex);
+                }
+
+                // Create a new LuxAsset object
+                LuxAsset newAsset = new LuxAsset
+                {
+                    MetaData = luxCfg,
+                    Data = imageData
+                };
+
+                // Add the new asset to the list
+                concurrentAssets.Add(newAsset);
+            });
+
+            // Return the list of assets
+            return concurrentAssets.ToList();
         }
     }
 }

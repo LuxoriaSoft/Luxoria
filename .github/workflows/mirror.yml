@@ -1,0 +1,17 @@
+name: Automatic Mirror Sync
+
+on: [push, delete]
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: pixta-dev/repository-mirroring-action@v1
+        with:
+          target_repo_url:
+            git@github.com:EpitechPromo2026/G-EIP-700-STG-7-1-eip-lucas.hoch.git
+          ssh_private_key:
+            ${{ secrets.SSH_KEY }}
