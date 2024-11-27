@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <UserControl
     x:Class="Luxoria.App.Components.MainMenuBarComponent"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -8,5 +7,71 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <MenuBar x:Name="MainMenuBar" />
+    <Grid Background="#1E1E1E" Padding="10,5">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="20">
+            <Button 
+                Content="Home" 
+                Click="Home_Click" 
+                Background="Transparent" 
+                Foreground="White" 
+                FontSize="14" 
+                Padding="8,4" 
+                BorderThickness="0" 
+                Margin="0,0,10,0"/>
+
+            <Button 
+                Content="Import" 
+                Click="Import_Click" 
+                Background="Transparent" 
+                Foreground="White" 
+                FontSize="14" 
+                Padding="8,4" 
+                BorderThickness="0" 
+                Margin="0,0,10,0"/>
+
+            <Button 
+                Content="Edit" 
+                Click="Edit_Click" 
+                Background="Transparent" 
+                Foreground="White" 
+                FontSize="14" 
+                Padding="8,4" 
+                BorderThickness="0" 
+                Margin="0,0,10,0"/>
+
+            <Button 
+                Content="Export" 
+                Click="Export_Click" 
+                Background="Transparent" 
+                Foreground="White" 
+                FontSize="14" 
+                Padding="8,4" 
+                BorderThickness="0" 
+                Margin="0,0,10,0"/>
+
+            <Button 
+                Content="Settings" 
+                Background="Transparent"
+                Foreground="White" 
+                FontSize="14" 
+                Padding="8,4" 
+                BorderThickness="0">
+
+                <Button.Flyout>
+                    <MenuFlyout Placement="Bottom">
+                        <MenuFlyoutItem 
+                            Text="Modules" 
+                            Click="Modules_Click"
+                            Background="Transparent"
+                            Foreground="White"
+                            FontSize="14" 
+                            Padding="8,4"
+                            BorderThickness="0"/>
+                    </MenuFlyout>
+                </Button.Flyout>
+
+            </Button>
+
+        </StackPanel>
+    </Grid>
 </UserControl>

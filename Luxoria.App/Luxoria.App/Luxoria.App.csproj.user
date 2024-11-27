@@ -11,6 +11,9 @@
     <None Update="App.xaml">
       <SubType>Designer</SubType>
     </None>
+    <Page Update="Views\ModuleManagerWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Views\ImportationControl.xaml">
       <SubType>Designer</SubType>
     </Page>

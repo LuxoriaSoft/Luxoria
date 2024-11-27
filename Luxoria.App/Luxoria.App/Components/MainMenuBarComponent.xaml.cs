@@ -1,21 +1,7 @@
+using Luxoria.App.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Luxoria.App.Components
 {
@@ -24,72 +10,48 @@ namespace Luxoria.App.Components
         public MainMenuBarComponent()
         {
             InitializeComponent();
-            InitializeBase();
         }
 
-        // Initialize the base component
-        private void InitializeBase()
+        private void Home_Click(object sender, RoutedEventArgs e)
         {
-            // Create a flyout menu called "Luxoria"
-            // Inside there are two items: "About" and "Exit"
-            AddMenuBarItem("Luxoria", new string [] { "About", "Exit" }, new RoutedEventHandler[] { About_Click, Exit_Click });
+            Debug.WriteLine("Navigating to Home");
+            // Add navigation logic to Home here
         }
 
-        private async void About_Click(object sender, RoutedEventArgs e)
+        private void Import_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                // Create the dialog
-                var dialog = new ContentDialog
-                {
-                    Title = "About Luxoria",
-                    Content = "Luxoria v1.0.0",
-                    CloseButtonText = "Close"
-                };
-
-                // Set the XamlRoot to the current window's XamlRoot
-                dialog.XamlRoot = this.XamlRoot;
-
-                // Show the dialog and await for the user to close it
-                await dialog.ShowAsync();
-            }
-            catch (Exception ex)
-            {
-                // Handle any exceptions that may occur
-                Debug.WriteLine($"Error showing dialog: {ex.Message}");
-            }
+            Debug.WriteLine("Starting Import");
+            // Add import start logic here
         }
 
-        private void Exit_Click(object sender, RoutedEventArgs e)
+        private void Edit_Click(object sender, RoutedEventArgs e)
         {
-            // Close the app
-            Application.Current.Exit();
+            Debug.WriteLine("Starting Edit");
+            // Add editing start logic here
         }
 
-        // Add a single menu item with an action
-        public void AddMenuBarItem(string itemTitle, RoutedEventHandler action)
+        private void Export_Click(object sender, RoutedEventArgs e)
         {
-            var menuBarItem = new MenuBarItem { Title = itemTitle };
-            var flyoutItem = new MenuFlyoutItem { Text = itemTitle };
-            flyoutItem.Click += action; // Subscribe to the click event
-
-            menuBarItem.Items.Add(flyoutItem);
-            MainMenuBar.Items.Add(menuBarItem);
+            Debug.WriteLine("Starting Export");
+            // Add export start logic here
         }
 
-        // Add a menu bar item with a flyout
-        public void AddMenuBarItem(string itemTitle, string[] flyoutItemTitles, RoutedEventHandler[] actions)
+        private void Settings_Click(object sender, RoutedEventArgs e)
         {
-            var menuBarItem = new MenuBarItem { Title = itemTitle };
-
-            for (int i = 0; i < flyoutItemTitles.Length; i++)
-            {
-                var flyoutItem = new MenuFlyoutItem { Text = flyoutItemTitles[i] };
-                flyoutItem.Click += actions[i]; // Subscribe to the specific click event
-                menuBarItem.Items.Add(flyoutItem);
-            }
-
-            MainMenuBar.Items.Add(menuBarItem);
+            Debug.WriteLine("Opening Settings");
+            // Add logic to open settings here
         }
+        private void Modules_Click(object sender, RoutedEventArgs e)
+        {
+            var moduleService = (Application.Current as App).ModuleService;
+
+            var newWindow = new Microsoft.UI.Xaml.Window();
+            var moduleManagerPage = new ModuleManagerWindow(moduleService, newWindow);
+            newWindow.Content = moduleManagerPage;
+            newWindow.Activate();
+        }
+
+
+
     }
 }
