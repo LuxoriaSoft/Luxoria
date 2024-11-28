@@ -25,6 +25,14 @@
 
 [![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-dark.svg)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
 
+</div>
+
+<h4 align="center">
+  <a href="https://github.com/Luxoria-EIP/Luxoria/releases">Download / Releases</a> |
+  <a href="./docs">Documentation</a> |
+  <a href="./docs/CONTRIBUTING.md">Contribute</a>
+</h4>
+
 ----------------
 
 Luxoria is a powerful all-in-one photography solution designed to streamline your workflow. Whether you are an individual photographer or part of a team, Luxoria makes it easy to manage and enhance your images, collaborate with clients, and deliver exceptional results.
