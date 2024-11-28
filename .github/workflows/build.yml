@@ -57,6 +57,8 @@ jobs:
           dotnet tool install -g dotnet-coverage
 
       - name: Build and analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         shell: powershell
         run: |
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"Luxoria-Desktop" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.coverage.exclusions="**/App.xaml.cs, **/MainWindow.xaml.cs, **/*.sqignore, **/Startup.cs, **/*.xaml" /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
