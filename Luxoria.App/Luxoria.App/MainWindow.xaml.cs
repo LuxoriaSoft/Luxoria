@@ -1,36 +1,64 @@
+using Luxoria.App.Components.Dialogs;
+using Luxoria.App.EventHandlers;
+using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Models.Events;
+using Luxoria.SDK.Interfaces;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Luxoria.App
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainWindow : Window
     {
-        public MainWindow()
+        private readonly IEventBus _eventBus;
+        private readonly ILoggerService _loggerService;
+
+        // Handlers for different events
+        private readonly ImageUpdatedHandler _imageUpdatedHandler;
+        private readonly CollectionUpdatedHandler _collectionUpdatedHandler;
+
+        /// <summary>
+        /// Constructor for the main window of the application.
+        /// </summary>
+        public MainWindow(IEventBus eventBus, ILoggerService loggerService)
         {
-            this.InitializeComponent();
+            InitializeComponent();
+
+            // Dependency injection
+            _eventBus = eventBus;
+            _loggerService = loggerService;
+
+            // Initialize event handlers
+            _imageUpdatedHandler = new ImageUpdatedHandler(_loggerService);
+            _collectionUpdatedHandler = new CollectionUpdatedHandler(_loggerService);
+
+            // Subscribe handlers to the event bus
+            InitializeEventBus();
         }
 
-        private void myButton_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Initialize the event bus and subscribe handlers to events.
+        /// </summary>
+        private void InitializeEventBus()
         {
-            myButton.Content = "Clicked";
+            // Subscribe to events that will be published through the event bus
+            _eventBus.Subscribe<CollectionUpdatedEvent>(_collectionUpdatedHandler.OnCollectionUpdated);
+        }
+
+        /// <summary>
+        /// Event handler for the Open Collection button.
+        /// </summary>
+        private async void OpenCollection_Click(object sender, RoutedEventArgs e)
+        {
+            // Display the Open Collection dialog
+            await OpenCollectionDialog.ShowAsync(_eventBus, _loggerService, MainGrid.XamlRoot);
+        }
+
+        /// <summary>
+        /// Event handler for the Send to Module button.
+        /// </summary>
+        private void SendToModule_Click(object sender, RoutedEventArgs e)
+        {
+            // This button will eventually trigger module-specific logic
         }
     }
 }

@@ -4,13 +4,31 @@
 ----------------  
 
 <div align="center">
+<h4 align="center">
+  Luxoria Desktop Software (Main Release)
+</h4>
 
-[![Quality Gate Status](https://sonarqube.bluepelicandev.com/api/project_badges/measure?project=Luxoria-Desktop&metric=alert_status&token=sqb_c59d628d8e6087f1d92691a8b5027264ad1405bd)](https://sonarqube.bluepelicandev.com/dashboard?id=Luxoria-Desktop) [![Lines of Code](https://sonarqube.bluepelicandev.com/api/project_badges/measure?project=Luxoria-Desktop&metric=ncloc&token=sqb_c59d628d8e6087f1d92691a8b5027264ad1405bd)](https://sonarqube.bluepelicandev.com/dashboard?id=Luxoria-Desktop) [![Duplicated Lines (%)](https://sonarqube.bluepelicandev.com/api/project_badges/measure?project=Luxoria-Desktop&metric=duplicated_lines_density&token=sqb_c59d628d8e6087f1d92691a8b5027264ad1405bd)](https://sonarqube.bluepelicandev.com/dashboard?id=Luxoria-Desktop) [![Maintainability Rating](https://sonarqube.bluepelicandev.com/api/project_badges/measure?project=Luxoria-Desktop&metric=sqale_rating&token=sqb_c59d628d8e6087f1d92691a8b5027264ad1405bd)](https://sonarqube.bluepelicandev.com/dashboard?id=Luxoria-Desktop) [![Security Rating](https://sonarqube.bluepelicandev.com/api/project_badges/measure?project=Luxoria-Desktop&metric=security_rating&token=sqb_c59d628d8e6087f1d92691a8b5027264ad1405bd)](https://sonarqube.bluepelicandev.com/dashboard?id=Luxoria-Desktop)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
+
+</div>
+
+<div align="center">
+
+[![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-dark.svg)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
 
 </div>
 
 <h4 align="center">
-  <a href="https://github.com/EpitechPromo2026/G-EIP-700-STG-7-1-eip-lucas.hoch/releases">Download / Releases</a> |
+  <a href="https://github.com/Luxoria-EIP/Luxoria/releases">Download / Releases</a> |
   <a href="./docs">Documentation</a> |
   <a href="./docs/CONTRIBUTING.md">Contribute</a>
 </h4>

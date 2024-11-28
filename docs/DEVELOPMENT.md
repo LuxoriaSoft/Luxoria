@@ -68,6 +68,9 @@ Make sure the documentation is updated for each new feature, bugfix, or hotfix:
 - Update **`CHANGELOG.md`** with the history of changes.
 - Keep the **`LICENSE.md`** up-to-date with any changes in licensing.
 
+### Testing Policy
+All code changes must adhere to the **[Luxoria Unit Testing Policy](./desktop/TESTING-POLICY.md)** to ensure high coverage, quality, and maintainability of the codebase.
+
 ### Additional Guidelines
 - **Testing**: Ensure all code changes are properly tested.
 - **Code Style**: Follow project-specific coding standards to maintain uniformity.

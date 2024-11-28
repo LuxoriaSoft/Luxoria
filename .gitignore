@@ -3,3 +3,11 @@ node_modules
 bin
 obj
 .vs
+.idea
+
+.DS_Store
+.vscode
+.vscode-test
+.editorconfig
+.env
+*.log

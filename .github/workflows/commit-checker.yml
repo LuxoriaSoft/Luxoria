@@ -3,7 +3,7 @@ name: Commit Check
 on:
   pull_request:
     branches:
-      - main  # Adjust this to your main branch if different
+      - main
 
 jobs:
   commit-lint:

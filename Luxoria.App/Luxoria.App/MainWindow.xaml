@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Window
     x:Class="Luxoria.App.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -6,9 +5,43 @@
     xmlns:local="using:Luxoria.App"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:components="using:Luxoria.App.Components"
+    Title="Luxoria App."
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
-    </StackPanel>
+    <Grid x:Name="MainGrid">
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Main Menu Bar Component -->
+            <components:MainMenuBarComponent Grid.Row="0" />
+
+            <TextBox 
+                x:Name="InputTextBox" 
+                PlaceholderText="Enter some text here..." 
+                Margin="0,0,0,10" 
+                Height="30" 
+                VerticalAlignment="Top"
+                Grid.Row="1"/>
+
+            <Button 
+                Content="Send to Module" 
+                Click="SendToModule_Click" 
+                Margin="0,0,0,20" 
+                Height="30" 
+                Grid.Row="2"/>
+
+            <Button 
+                Content="Open collection"
+                Click="OpenCollection_Click"
+                Margin="0,0,0,20" 
+                Height="30"
+                Grid.Row="3"/>
+        </Grid>
+    </Grid>
 </Window>
