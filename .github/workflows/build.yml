@@ -28,6 +28,7 @@ jobs:
       - name: Analyze with SonarQube
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
           dotnet sonarscanner begin /k:"LuxoriaSoft_Luxoria" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /o:"luxoria" /d:sonar.coverage.exclusions="**/App.xaml.cs, **/MainWindow.xaml.cs, **/*.sqignore" /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
