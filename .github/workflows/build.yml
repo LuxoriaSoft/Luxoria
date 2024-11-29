@@ -32,5 +32,5 @@ jobs:
         run: |
           dotnet sonarscanner begin /k:"LuxoriaSoft_Luxoria" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /o:"luxoria" /d:sonar.coverage.exclusions="**/App.xaml.cs, **/MainWindow.xaml.cs, **/*.sqignore" /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
           dotnet build Luxoria.App/Luxoria.App.sln --no-incremental
-          dotnet-coverage collect "dotnet test" -f xml -o "coverage.xml" Luxoria.App/Luxoria.App.sln
+          dotnet-coverage collect "dotnet test Luxoria.App/Luxoria.App.sln" -f xml -o "coverage.xml"
           dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
