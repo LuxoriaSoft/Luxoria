@@ -18,8 +18,12 @@ jobs:
       - name: Install SonarQube scanner
         shell: powershell
         run: |
-          New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool install --global dotnet-sonarscanner
+      
+      - name: Install .NET coverage tool
+        shell: powershell
+        run: |
+          dotnet tool install --global dotnet-coverage
 
       - name: Analyze with SonarQube
         env:
