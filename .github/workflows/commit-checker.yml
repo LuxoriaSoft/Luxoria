@@ -2,8 +2,7 @@ name: Commit Check
 
 on:
   pull_request:
-    branches:
-      - main
+    types: [opened, synchronize, reopened]
 
 jobs:
   commit-lint:

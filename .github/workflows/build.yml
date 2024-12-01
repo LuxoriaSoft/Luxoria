@@ -6,7 +6,7 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  build:
+  scan-sonarcloud:
     name: Build and analyze
     runs-on: windows-latest
     
