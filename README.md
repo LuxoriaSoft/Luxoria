@@ -8,22 +8,22 @@
   Luxoria Desktop Software (Main Release)
 </h4>
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
-[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=Luxoria-Desktop&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=LuxoriaSoft_Luxoria&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=LuxoriaSoft_Luxoria)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=LuxoriaSoft_Luxoria&metric=bugs)](https://sonarcloud.io/summary/new_code?id=LuxoriaSoft_Luxoria)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=LuxoriaSoft_Luxoria&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=LuxoriaSoft_Luxoria)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=LuxoriaSoft_Luxoria&metric=coverage)](https://sonarcloud.io/summary/new_code?id=LuxoriaSoft_Luxoria)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=LuxoriaSoft_Luxoria&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=LuxoriaSoft_Luxoria)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=LuxoriaSoft_Luxoria&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=LuxoriaSoft_Luxoria)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=LuxoriaSoft_Luxoria&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=LuxoriaSoft_Luxoria)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=LuxoriaSoft_Luxoria&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=LuxoriaSoft_Luxoria)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=LuxoriaSoft_Luxoria&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=LuxoriaSoft_Luxoria)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=LuxoriaSoft_Luxoria&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=LuxoriaSoft_Luxoria)
 
 </div>
 
 <div align="center">
 
-[![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-dark.svg)](https://sonarcloud.io/summary/new_code?id=Luxoria-Desktop)
+[![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-dark.svg)](https://sonarcloud.io/summary/new_code?id=LuxoriaSoft_Luxoria)
 
 </div>
 
