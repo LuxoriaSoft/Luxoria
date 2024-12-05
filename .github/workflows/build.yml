@@ -21,8 +21,6 @@ jobs:
           path: |
             ~/.nuget/packages
             ~/.dotnet
-            **/bin
-            **/obj
           key: ${{ runner.os }}-dotnet-${{ hashFiles('**/*.csproj') }}
           restore-keys: |
             ${{ runner.os }}-dotnet-
@@ -40,7 +38,7 @@ jobs:
       - name: Cache SonarCloud data
         uses: actions/cache@v3
         with:
-          path: .sonar
+          path: ~/.sonar
           key: ${{ runner.os }}-sonar-${{ hashFiles('**/*.csproj') }}
           restore-keys: |
             ${{ runner.os }}-sonar-
