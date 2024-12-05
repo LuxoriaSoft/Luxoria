@@ -13,30 +13,34 @@ namespace Luxoria.App
 {
     public class Startup
     {
+        private const string LOG_SECTION = "Startup";
+        /// <summary>
+        /// Configure services
+        /// </summary>
         public void ConfigureServices(HostBuilderContext context, IServiceCollection services)
         {
             ILoggerService logger = new LoggerService();
-            logger.Log("Configuring services...", "Startup", LogLevel.Info);
+            logger.Log("Configuring services...", LOG_SECTION, LogLevel.Info);
             // Register services here
 
             // Register services from Luxoria.Core
             
             // Register Event Bus
-            logger.Log("Registering Event Bus...", "Startup", LogLevel.Info);
+            logger.Log("Registering Event Bus...", LOG_SECTION, LogLevel.Info);
             services.AddSingleton<IEventBus, EventBus>();
-            logger.Log("Event Bus registered successfully !", "Startup", LogLevel.Info);
+            logger.Log("Event Bus registered successfully !", LOG_SECTION, LogLevel.Info);
 
             // Register Module Loader
-            logger.Log("Registering Module Loader...", "Startup", LogLevel.Info);
+            logger.Log("Registering Module Loader...", LOG_SECTION, LogLevel.Info);
             services.AddSingleton<IModuleService, ModuleService>();
-            logger.Log("Module Loader registered successfully !", "Startup", LogLevel.Info);
+            logger.Log("Module Loader registered successfully !", LOG_SECTION, LogLevel.Info);
 
             // Register Logger Service
-            logger.Log("Registering Logger Service...", "Startup", LogLevel.Info);
+            logger.Log("Registering Logger Service...", LOG_SECTION, LogLevel.Info);
             services.AddSingleton(logger);
-            logger.Log("Logger Service registered successfully !", "Startup", LogLevel.Info);
+            logger.Log("Logger Service registered successfully !", LOG_SECTION, LogLevel.Info);
 
-            logger.Log("Services registered successfully !", "Startup", LogLevel.Info);
+            logger.Log("Services registered successfully !", LOG_SECTION, LogLevel.Info);
         }
     }
 }
