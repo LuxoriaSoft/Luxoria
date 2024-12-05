@@ -37,14 +37,14 @@ namespace Luxoria.Tests
             AssertSingletonServiceRegistered<ILoggerService>(serviceCollection, mockLogger.Object);
         }
 
-        private void AssertServiceRegistered<TService>(IServiceCollection services, Type expectedImplementationType)
+        private static void AssertServiceRegistered<TService>(IServiceCollection services, Type expectedImplementationType)
         {
             var serviceDescriptor = services.FirstOrDefault(sd => sd.ServiceType == typeof(TService));
             Assert.NotNull(serviceDescriptor);
             Assert.Equal(expectedImplementationType, serviceDescriptor.ImplementationType);
         }
 
-        private void AssertSingletonServiceRegistered<TService>(IServiceCollection services, object expectedInstance)
+        private static void AssertSingletonServiceRegistered<TService>(IServiceCollection services, object expectedInstance)
         {
             var serviceDescriptor = services.FirstOrDefault(sd => sd.ServiceType == typeof(TService));
             Assert.NotNull(serviceDescriptor); // Service is registered
