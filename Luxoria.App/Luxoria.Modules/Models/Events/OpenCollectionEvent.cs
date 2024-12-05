@@ -1,6 +1,4 @@
-﻿using Luxoria.Modules.Interfaces;
-
-namespace Luxoria.Modules.Models.Events;
+﻿namespace Luxoria.Modules.Models.Events;
 
 /// <summary>
 /// Represents an event triggered when a collection is opened.

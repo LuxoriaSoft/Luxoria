@@ -1,9 +1,5 @@
-﻿using Xunit;
+﻿using Luxoria.Modules.Models.Events;
 using Moq;
-using Luxoria.Modules;
-using Luxoria.Modules.Models.Events;
-using System;
-using System.Threading.Tasks;
 
 namespace Luxoria.Modules.Tests
 {
@@ -28,7 +24,7 @@ namespace Luxoria.Modules.Tests
             _eventBus.Publish(new LogEvent("Test message"));
 
             // Assert
-            mockHandler.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Once, 
+            mockHandler.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Once,
                 "The handler should have been called once when a message is published, but it was not.");
         }
 
@@ -64,7 +60,7 @@ namespace Luxoria.Modules.Tests
             _eventBus.Publish(new LogEvent("Test message"));
 
             // Assert
-            mockHandler.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Never, 
+            mockHandler.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Never,
                 "The handler should not be called after being unsubscribed, but it was.");
         }
 
@@ -81,7 +77,7 @@ namespace Luxoria.Modules.Tests
             _eventBus.Publish(new LogEvent("Test message"));
 
             // Assert
-            mockAsyncHandler.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Never, 
+            mockAsyncHandler.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Never,
                 "The async handler should not be called after being unsubscribed, but it was.");
         }
 
@@ -99,9 +95,9 @@ namespace Luxoria.Modules.Tests
             _eventBus.Publish(new LogEvent("Test message"));
 
             // Assert
-            mockHandler1.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Never, 
+            mockHandler1.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Never,
                 "Handler1 should not be called after being unsubscribed, but it was.");
-            mockHandler2.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Once, 
+            mockHandler2.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Once,
                 "Handler2 should still be called since it was not unsubscribed.");
         }
 
@@ -133,7 +129,7 @@ namespace Luxoria.Modules.Tests
             _eventBus.Publish(new LogEvent("Test message"));
 
             // Assert
-            mockAsyncHandler.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Once, 
+            mockAsyncHandler.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Once,
                 "The async handler should be called once after one unsubscribe, but it was not.");
         }
 
@@ -189,9 +185,9 @@ namespace Luxoria.Modules.Tests
             _eventBus.Publish(new LogEvent("Test message"));
 
             // Assert
-            mockHandler1.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Once, 
+            mockHandler1.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Once,
                 "Handler1 should have been called once when the event is published, but it was not.");
-            mockHandler2.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Once, 
+            mockHandler2.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Once,
                 "Handler2 should have been called once when the event is published, but it was not.");
         }
 
@@ -207,7 +203,7 @@ namespace Luxoria.Modules.Tests
             await _eventBus.Publish(new LogEvent("Test message"));
 
             // Assert
-            mockAsyncHandler.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Once, 
+            mockAsyncHandler.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Once,
                 "The async handler should have been called once when the event is published, but it was not.");
         }
 

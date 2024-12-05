@@ -1,5 +1,4 @@
 ﻿using Luxoria.Modules.Models.Events;
-using Xunit;
 
 namespace Luxoria.Modules.Tests.Models.Events
 {
@@ -76,7 +75,7 @@ namespace Luxoria.Modules.Tests.Models.Events
             // Act & Assert
             var exception = Record.Exception(() =>
                 openCollectionEvent.SendProgressMessage("No subscribers yet", 20));
-            
+
             Assert.Null(exception);
         }
 

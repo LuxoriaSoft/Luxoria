@@ -7,7 +7,6 @@ using Luxoria.SDK.Models;
 using Luxoria.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Diagnostics;
 
 namespace Luxoria.App
 {
@@ -24,7 +23,7 @@ namespace Luxoria.App
             // Register services here
 
             // Register services from Luxoria.Core
-            
+
             // Register Event Bus
             logger.Log("Registering Event Bus...", LOG_SECTION, LogLevel.Info);
             services.AddSingleton<IEventBus, EventBus>();

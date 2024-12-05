@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace Luxoria.Modules.Interfaces
+﻿namespace Luxoria.Modules.Interfaces
 {
     public interface IEventBus
     {

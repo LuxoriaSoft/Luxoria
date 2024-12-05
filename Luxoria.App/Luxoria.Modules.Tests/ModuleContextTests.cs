@@ -1,8 +1,5 @@
 ﻿using Luxoria.Modules;
-using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models;
-using Moq;
-using Xunit;
 
 namespace Luxoria.App.Tests
 {
