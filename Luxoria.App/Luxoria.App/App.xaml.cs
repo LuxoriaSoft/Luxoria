@@ -26,6 +26,8 @@ namespace Luxoria.App
 
         private readonly Startup _startup;
         private readonly IHost _host;
+        // Logger section part
+        private const string LOG_SECTION = "General";
         private readonly ILoggerService _logger;
         
         private readonly IModuleService _moduleService;
@@ -80,100 +82,162 @@ namespace Luxoria.App
             m_window.Activate();
         }
 
+        /// <summary>
+        /// Loads all modules asynchronously and updates the splash screen with progress.
+        /// </summary>
         private async Task LoadModulesAsync(SplashScreen splashScreen)
         {
-            using (var scope = _host.Services.CreateScope())
+            // Creates a scoped service provider and ensures cleanup
+            using var scope = _host.Services.CreateScope();
+
+            // Ensures the modules directory exists and retrieves its path
+            string modulesPath = GetOrCreateModulesDirectory();
+
+            var loader = new ModuleLoader();
+
+            // Retrieves all subdirectories under the modules directory
+            string[] moduleFolders = Directory.GetDirectories(modulesPath);
+
+            // Load all modules from each folder
+            foreach (string moduleFolder in moduleFolders)
             {
-                string modulesPath = Path.Combine(AppContext.BaseDirectory, "modules");
-
-                // Check if the modules directory exists
-                if (!Directory.Exists(modulesPath))
-                {
-                    _logger.Log($"Modules directory not found: {modulesPath}", "General", LogLevel.Warning);
-
-                    // Create the modules directory if it doesn't exist
-                    Directory.CreateDirectory(modulesPath);
-
-                    _logger.Log($"Modules directory created: {modulesPath}");
-                }
-
-                var loader = new ModuleLoader();
-
-                // Get all folders in the modules directory
-                string[] moduleFolders = Directory.GetDirectories(modulesPath);
-
-                foreach (string moduleFolder in moduleFolders)
-                {
-                    // Get all module DLL files in the modules directory
-                    string[] moduleFiles = Directory.GetFiles(moduleFolder, "*.Lux.dll");
-
-                    if (moduleFiles.Length == 0)
-                    {
-                        _logger.Log($"No module DLL files found in: {moduleFolder}", "General", LogLevel.Warning);
-                    }
-
-                    foreach (string moduleFile in moduleFiles)
-                    {
-                        string moduleName = Path.GetFileNameWithoutExtension(moduleFile);
-
-                        _logger.Log("Trying to load : " + moduleName);
-
-                        // Update the splash screen with the module name being loaded
-                        splashScreen.DispatcherQueue.TryEnqueue(() =>
-                        {
-                            splashScreen.CurrentModuleTextBlock.Text = $"Loading {moduleName}...";
-                        });
-
-                        // Small delay to ensure the splash screen updates properly
-                        await Task.Delay(300); // 0.3 second delay
-
-                        try
-                        {
-                            // Load the module in a background thread
-                            await Task.Run(() =>
-                            {
-                                IModule module = loader.LoadModule(moduleFile);
-                                if (module != null)
-                                {
-                                    // Display module information
-                                    _logger.Log($"Module loaded: {moduleName}");
-                                    _logger.Log($"Module name: {module.Name}");
-                                    _logger.Log($"Module version: {module.Version}");
-                                    _logger.Log($"Module description: {module.Description}");
-                                    // Save the module to ModuleService
-                                    _moduleService.AddModule(module);
-                                }
-                                else
-                                {
-                                    _logger.Log($"No valid module found in: {moduleFile}", "General", LogLevel.Warning);
-                                }
-                            });
-                        }
-                        catch (FileNotFoundException ex)
-                        {
-                            _logger.Log($"File not found for module [{moduleFile}]: {ex.Message}", "General", LogLevel.Error);
-                        }
-                        catch (BadImageFormatException ex)
-                        {
-                            _logger.Log($"Invalid module file format for [{moduleFile}]: {ex.Message}", "General", LogLevel.Error);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.Log($"Failed to load module [{moduleFile}]: {ex.Message}", "General", LogLevel.Error);
-                        }
-                    }
-                }
-
-                // Update the splash screen with the module name being loaded
-                splashScreen.DispatcherQueue.TryEnqueue(() =>
-                {
-                    splashScreen.CurrentModuleTextBlock.Text = $"Initializing modules...";
-                });
-
-                // Small delay to ensure the splash screen updates properly
-                await Task.Delay(300); // 0.3 second delay
-                _moduleService.InitializeModules(new ModuleContext());
+                await LoadModulesFromFolderAsync(moduleFolder, loader, splashScreen);
             }
+
+            // Finalize module initialization and update the splash screen
+            await UpdateSplashScreenAsync(splashScreen, "Initializing modules...");
+            _moduleService.InitializeModules(new ModuleContext());
+        }
+
+        /// <summary>
+        /// Ensures the "modules" directory exists and returns its path.
+        /// If the directory does not exist, it is created.
+        /// </summary>
+        private string GetOrCreateModulesDirectory()
+        {
+            string modulesPath = Path.Combine(AppContext.BaseDirectory, "modules");
+
+            if (!Directory.Exists(modulesPath))
+            {
+                _logger.Log($"Modules directory not found: {modulesPath}", LOG_SECTION, LogLevel.Warning);
+                Directory.CreateDirectory(modulesPath);
+                _logger.Log($"Modules directory created: {modulesPath}");
+            }
+
+            return modulesPath;
+        }
+
+        /// <summary>
+        /// Loads all module DLL files from a specific folder.
+        /// </summary>
+        /// <param name="moduleFolder">The folder containing the module files.</param>
+        /// <param name="loader">The module loader responsible for loading modules.</param>
+        /// <param name="splashScreen">The splash screen to update with progress.</param>
+        private async Task LoadModulesFromFolderAsync(string moduleFolder, ModuleLoader loader, SplashScreen splashScreen)
+        {
+            // Find all ".Lux.dll" files in the folder
+            string[] moduleFiles = Directory.GetFiles(moduleFolder, "*.Lux.dll");
+
+            if (moduleFiles.Length == 0)
+            {
+                _logger.Log($"No module DLL files found in: {moduleFolder}", LOG_SECTION, LogLevel.Warning);
+                return;
+            }
+
+            // Load each module file
+            foreach (string moduleFile in moduleFiles)
+            {
+                string moduleName = Path.GetFileNameWithoutExtension(moduleFile);
+                await LoadModuleAsync(moduleFile, moduleName, loader, splashScreen);
+            }
+        }
+
+        /// <summary>
+        /// Attempts to load a single module DLL file asynchronously.
+        /// </summary>
+        /// <param name="moduleFile">The path to the module file.</param>
+        /// <param name="moduleName">The name of the module (derived from the file name).</param>
+        /// <param name="loader">The module loader responsible for loading the module.</param>
+        /// <param name="splashScreen">The splash screen to update with progress.</param>
+        private async Task LoadModuleAsync(string moduleFile, string moduleName, ModuleLoader loader, SplashScreen splashScreen)
+        {
+            // Update the splash screen to indicate the module being loaded
+            await UpdateSplashScreenAsync(splashScreen, $"Loading {moduleName}...");
+            _logger.Log($"Trying to load: {moduleName}");
+
+            try
+            {
+                // Load the module in a background task to prevent blocking
+                await Task.Run(() =>
+                {
+                    IModule module = loader.LoadModule(moduleFile);
+                    if (module != null)
+                    {
+                        // Log detailed information about the loaded module
+                        LogModuleInfo(module, moduleName);
+
+                        // Add the loaded module to the module service
+                        _moduleService.AddModule(module);
+                    }
+                    else
+                    {
+                        _logger.Log($"No valid module found in: {moduleFile}", LOG_SECTION, LogLevel.Warning);
+                    }
+                });
+            }
+            catch (FileNotFoundException ex)
+            {
+                // Handle cases where the file is missing
+                LogError($"File not found for module [{moduleFile}]: {ex.Message}");
+            }
+            catch (BadImageFormatException ex)
+            {
+                // Handle cases where the file format is invalid
+                LogError($"Invalid module file format for [{moduleFile}]: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                // Handle any other unexpected exceptions
+                LogError($"Failed to load module [{moduleFile}]: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Updates the splash screen's module text and applies a brief delay for smooth updates.
+        /// </summary>
+        /// <param name="splashScreen">The splash screen to update.</param>
+        /// <param name="message">The message to display on the splash screen.</param>
+        private static async Task UpdateSplashScreenAsync(SplashScreen splashScreen, string message)
+        {
+            splashScreen.DispatcherQueue.TryEnqueue(() =>
+            {
+                splashScreen.CurrentModuleTextBlock.Text = message;
+            });
+
+            // Small delay to ensure the UI has time to update
+            await Task.Delay(300);
+        }
+
+        /// <summary>
+        /// Logs information about a successfully loaded module.
+        /// </summary>
+        /// <param name="module">The loaded module instance.</param>
+        /// <param name="moduleName">The name of the module.</param>
+        private void LogModuleInfo(IModule module, string moduleName)
+        {
+            _logger.Log($"Module loaded: {moduleName}");
+            _logger.Log($"Module name: {module.Name}");
+            _logger.Log($"Module version: {module.Version}");
+            _logger.Log($"Module description: {module.Description}");
+        }
+
+        /// <summary>
+        /// Logs an error message with the appropriate log level and section.
+        /// </summary>
+        /// <param name="message">The error message to log.</param>
+        private void LogError(string message)
+        {
+            _logger.Log(message, LOG_SECTION, LogLevel.Error);
         }
     }
 }
