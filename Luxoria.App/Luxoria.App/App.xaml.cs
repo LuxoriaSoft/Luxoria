@@ -207,7 +207,7 @@ namespace Luxoria.App
         /// </summary>
         /// <param name="splashScreen">The splash screen to update.</param>
         /// <param name="message">The message to display on the splash screen.</param>
-        private async Task UpdateSplashScreenAsync(SplashScreen splashScreen, string message)
+        private static async Task UpdateSplashScreenAsync(SplashScreen splashScreen, string message)
         {
             splashScreen.DispatcherQueue.TryEnqueue(() =>
             {
