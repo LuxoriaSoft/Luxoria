@@ -1,15 +1,15 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using Luxoria.Core.Interfaces;
+using Luxoria.Core.Logics;
 using Luxoria.Modules;
-using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
-using System;
-using Luxoria.Core.Interfaces;
 using Luxoria.Modules.Interfaces;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.UI.Xaml;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -29,7 +29,7 @@ namespace Luxoria.App
         // Logger section part
         private const string LOG_SECTION = "General";
         private readonly ILoggerService _logger;
-        
+
         private readonly IModuleService _moduleService;
         public IModuleService ModuleService => _moduleService;
 

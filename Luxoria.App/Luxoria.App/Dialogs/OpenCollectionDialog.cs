@@ -1,6 +1,5 @@
 ﻿using Luxoria.App.Views;
 using Luxoria.Modules.Interfaces;
-using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Microsoft.UI.Xaml.Controls;
 using System;

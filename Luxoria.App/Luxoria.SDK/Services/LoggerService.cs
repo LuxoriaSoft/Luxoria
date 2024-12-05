@@ -1,11 +1,6 @@
 ﻿using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Luxoria.SDK.Services
 {

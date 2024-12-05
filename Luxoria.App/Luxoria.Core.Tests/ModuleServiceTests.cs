@@ -1,9 +1,7 @@
-﻿using Luxoria.Core.Interfaces;
-using Luxoria.Core.Services;
+﻿using Luxoria.Core.Services;
 using Luxoria.Modules.Interfaces;
 using Luxoria.SDK.Interfaces;
 using Moq;
-using Xunit;
 
 namespace Luxoria.Core.Tests
 {

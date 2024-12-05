@@ -1,11 +1,8 @@
 ﻿using Luxoria.Modules;
 using Luxoria.Modules.Interfaces;
-using Moq;
-using System;
-using System.IO;
-using System.Reflection;
 using Luxoria.SDK.Interfaces;
-using Xunit;
+using Moq;
+using System.Reflection;
 
 namespace Luxoria.App.Tests
 {
@@ -78,7 +75,7 @@ namespace Luxoria.App.Tests
             _fileExistsMock.Setup(f => f(It.IsAny<string>())).Returns(true);
 
             var mockAssembly = new Mock<Assembly>();
-            mockAssembly.Setup(a => a.GetTypes()).Returns(new Type[] 
+            mockAssembly.Setup(a => a.GetTypes()).Returns(new Type[]
                 { typeof(string), typeof(AbstractModule), typeof(TestModule) });
             _assemblyLoadFromMock.Setup(a => a(It.IsAny<string>())).Returns(mockAssembly.Object);
 
@@ -148,7 +145,7 @@ namespace Luxoria.App.Tests
             _fileExistsMock.Setup(f => f(It.IsAny<string>())).Returns(true);
             var mockAssembly = new Mock<Assembly>();
             mockAssembly.Setup(a => a.GetTypes()).Returns(new Type[]
-            { 
+            {
                 typeof(string), // Non valide
                 typeof(AbstractModule), // Non valide (abstrait)
                 typeof(TestModule), // Valide
@@ -179,7 +176,7 @@ namespace Luxoria.App.Tests
             var exception = Assert.Throws<InvalidOperationException>(() => _moduleLoader.LoadModule(_modulePath));
             Assert.Equal("No valid module found in assembly.", exception.Message);
         }
-        
+
         [Fact]
         public void LoadModule_ShouldSkipTypes_NotImplementingIModule()
         {
@@ -196,7 +193,7 @@ namespace Luxoria.App.Tests
             var exception = Assert.Throws<InvalidOperationException>(() => _moduleLoader.LoadModule(_modulePath));
             Assert.Equal("No valid module found in assembly.", exception.Message);
         }
-        
+
         [Fact]
         public void LoadModule_ShouldNotInstantiateAbstractTypes()
         {
@@ -245,7 +242,7 @@ namespace Luxoria.App.Tests
             public static string Name => "Not a Module";
         }
 
-        
+
         public abstract class AbstractModule : IModule
         {
             public void Initialize()
@@ -259,7 +256,7 @@ namespace Luxoria.App.Tests
             public void Execute() { }
             public void Shutdown() { }
         }
-        
+
         public abstract class AnotherAbstractModule : IModule
         {
             public void Initialize()
