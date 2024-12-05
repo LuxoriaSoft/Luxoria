@@ -23,6 +23,7 @@ jobs:
             ~/.dotnet
             **/bin
             **/obj
+            .sonar
           key: ${{ runner.os }}-dotnet-${{ hashFiles('**/*.csproj') }}
           restore-keys: |
             ${{ runner.os }}-dotnet-
