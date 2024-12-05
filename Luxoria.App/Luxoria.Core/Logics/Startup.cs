@@ -8,7 +8,7 @@ using Luxoria.SDK.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Luxoria.App
+namespace Luxoria.Core.Logics
 {
     public class Startup
     {
