@@ -11,7 +11,8 @@
         </Grid.RowDefinitions>
 
         <!-- Modules list -->
-        <ListView x:Name="ModuleListView" Grid.Row="0" Margin="0,0,0,10">
+        <ListView x:Name="ModuleListView" Grid.Row="0" Margin="0,0,0,10"
+                  SelectionMode="Single">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" Spacing="10">

@@ -1,10 +1,12 @@
+using Luxoria.App.ViewModels;
 using Luxoria.Core.Interfaces;
 using Luxoria.Modules;
 using Luxoria.Modules.Interfaces;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using System.Collections.ObjectModel;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Windows.Storage;
@@ -12,35 +14,60 @@ using Windows.Storage.Pickers;
 
 namespace Luxoria.App.Views
 {
+    /// <summary>
+    /// Represents the module manager window that allows adding and removing modules.
+    /// </summary>
     public sealed partial class ModuleManagerWindow : Page
     {
         private readonly IModuleService _moduleService;
         private readonly Window _mainWindow;
 
-        // Utilisation d'ObservableCollection pour les mises à jour automatiques de l'interface utilisateur
-        public ObservableCollection<IModule> Modules { get; private set; }
+        /// <summary>
+        /// Gets a non-generic list of modules for UI compatibility.
+        /// </summary>
+        public IList Modules { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ModuleManagerWindow"/> class.
+        /// </summary>
+        /// <param name="moduleService">The service to manage modules.</param>
+        /// <param name="mainWindow">The main application window.</param>
         public ModuleManagerWindow(IModuleService moduleService, Window mainWindow)
         {
             InitializeComponent();
-            _moduleService = moduleService;
-            _mainWindow = mainWindow;
+            _moduleService = moduleService ?? throw new ArgumentNullException(nameof(moduleService));
+            _mainWindow = mainWindow ?? throw new ArgumentNullException(nameof(mainWindow));
 
-            // Initialise la collection avec les modules actuels
-            Modules = new ObservableCollection<IModule>(_moduleService.GetModules());
-            ModuleListView.ItemsSource = Modules;  // Lier la ListView à l'ObservableCollection
+            // Initialize Modules with a non-generic representation
+            Modules = ConvertToNonGeneric(_moduleService.GetModules());
+            ModuleListView.ItemsSource = Modules;
         }
 
+        /// <summary>
+        /// Converts a collection of <see cref="IModule"/> to a non-generic list for UI binding.
+        /// </summary>
+        /// <param name="modules">The collection of modules.</param>
+        /// <returns>A non-generic list of modules wrapped in <see cref="ModuleViewModel"/>.</returns>
+        private IList ConvertToNonGeneric(IEnumerable<IModule> modules)
+        {
+            return modules.Select(m => new ModuleViewModel(m)).ToList();
+        }
+
+        /// <summary>
+        /// Handles the "Add Module" button click event.
+        /// Allows the user to add a new module to the application.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
         private async void AddModule_Click(object sender, RoutedEventArgs e)
         {
-            var picker = new FileOpenPicker();
-            picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+            var picker = new FileOpenPicker
+            {
+                SuggestedStartLocation = PickerLocationId.DocumentsLibrary
+            };
             picker.FileTypeFilter.Add(".dll");
 
-            // Obtenir le handle de la fenêtre principale
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(_mainWindow);
-
-            // Initialiser le FileOpenPicker avec le handle
             WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
 
             StorageFile file = await picker.PickSingleFileAsync();
@@ -50,58 +77,80 @@ namespace Luxoria.App.Views
                 {
                     var modulePath = file.Path;
                     IModule module = new ModuleLoader().LoadModule(modulePath);
+
                     if (module != null)
                     {
-                        // Vérification de la présence du module dans la collection
-                        if (Modules.Any(m => m.Name == module.Name && m.Version == module.Version))
+                        // Check if the module already exists
+                        if (Modules.Cast<ModuleViewModel>().Any(m => m.Name == module.Name && m.Version == module.Version))
                         {
-                            ShowError("Ce module est déjà chargé.");
+                            ShowError("This module is already loaded.");
                             return;
                         }
 
-                        // Ajoute le module s'il n'existe pas encore
                         _moduleService.AddModule(module);
-                        Modules.Add(module);  // Ajoute le module à l'ObservableCollection
-                        Debug.WriteLine($"Module '{module.Name}' ajouté avec succès.");
+                        Modules.Add(new ModuleViewModel(module));
+                        RefreshModuleList();
+                        Debug.WriteLine($"Module '{module.Name}' added successfully.");
                     }
                     else
                     {
-                        ShowError("Le fichier sélectionné n'est pas un module valide.");
+                        ShowError("The selected file is not a valid module.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Erreur lors de l'ajout du module : {ex.Message}");
-                    ShowError("Erreur lors de l'ajout du module.");
+                    Debug.WriteLine($"Error while adding the module: {ex}");
+                    ShowError("An error occurred while adding the module.");
                 }
             }
         }
 
-
+        /// <summary>
+        /// Handles the "Remove Module" button click event.
+        /// Allows the user to remove a selected module from the application.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
         private void RemoveModule_Click(object sender, RoutedEventArgs e)
         {
-            if (ModuleListView.SelectedItem is IModule selectedModule)
+            if (ModuleListView.SelectedItem is ModuleViewModel selectedModule)
             {
-                _moduleService.RemoveModule(selectedModule);
-                Modules.Remove(selectedModule);  // Supprime le module de l'ObservableCollection
-                Debug.WriteLine($"Module supprimé avec succès.");
+                _moduleService.RemoveModule(selectedModule.Module);
+                Modules.Remove(selectedModule);
+                RefreshModuleList();
+                Debug.WriteLine($"Module '{selectedModule.Name}' removed successfully.");
             }
             else
             {
-                ShowError("Veuillez sélectionner un module à supprimer.");
+                ShowError("Please select a module to remove.");
             }
         }
 
-        private void ShowError(string message)
+        /// <summary>
+        /// Refreshes the module list to update the UI.
+        /// </summary>
+        private void RefreshModuleList()
+        {
+            ModuleListView.ItemsSource = null;
+            ModuleListView.ItemsSource = Modules;
+        }
+
+        /// <summary>
+        /// Displays an error message to the user.
+        /// </summary>
+        /// <param name="message">The error message to display.</param>
+        private async void ShowError(string message)
         {
             var dialog = new ContentDialog
             {
-                Title = "Erreur",
+                Title = "Error",
                 Content = message,
                 CloseButtonText = "OK",
                 XamlRoot = this.XamlRoot
             };
-            _ = dialog.ShowAsync();
+
+            await dialog.ShowAsync();
         }
     }
+
 }
