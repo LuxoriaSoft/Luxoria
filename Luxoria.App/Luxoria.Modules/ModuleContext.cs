@@ -1,6 +1,5 @@
 ﻿using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models;
-using System;
 
 namespace Luxoria.Modules
 {

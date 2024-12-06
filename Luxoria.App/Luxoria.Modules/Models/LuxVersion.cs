@@ -1,4 +1,8 @@
-﻿namespace Luxoria.Modules.Models;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Luxoria.Modules.Models;
+
+[ExcludeFromCodeCoverage]
 public class LuxVersion
 {
     /// <summary>
