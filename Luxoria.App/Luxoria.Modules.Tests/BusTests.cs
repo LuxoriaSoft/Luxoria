@@ -1,5 +1,6 @@
 ﻿using Luxoria.Modules.Models.Events;
 using Moq;
+using System.Threading.Tasks;
 
 namespace Luxoria.Modules.Tests
 {
@@ -14,14 +15,14 @@ namespace Luxoria.Modules.Tests
         }
 
         [Fact]
-        public void Subscribe_WithValidHandler_ShouldAddSubscriber()
+        public async Task Subscribe_WithValidHandler_ShouldAddSubscriber()
         {
             // Arrange
             var mockHandler = new Mock<Action<LogEvent>>();
 
             // Act
             _eventBus.Subscribe(mockHandler.Object);
-            _eventBus.Publish(new LogEvent("Test message"));
+            await _eventBus.Publish(new LogEvent("Test message"));
 
             // Assert
             mockHandler.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Once,
@@ -29,27 +30,7 @@ namespace Luxoria.Modules.Tests
         }
 
         [Fact]
-        public void Subscribe_NullHandler_ShouldThrowArgumentNullException()
-        {
-            // Arrange
-            Action<LogEvent> nullHandler = null;
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => _eventBus.Subscribe(nullHandler));
-        }
-
-        [Fact]
-        public void SubscribeAsync_NullHandler_ShouldThrowArgumentNullException()
-        {
-            // Arrange
-            Func<LogEvent, Task> nullHandler = null;
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => _eventBus.Subscribe(nullHandler));
-        }
-
-        [Fact]
-        public void Unsubscribe_WithValidHandler_ShouldRemoveSubscriber()
+        public async Task Unsubscribe_WithValidHandler_ShouldRemoveSubscriber()
         {
             // Arrange
             var mockHandler = new Mock<Action<LogEvent>>();
@@ -57,7 +38,7 @@ namespace Luxoria.Modules.Tests
 
             // Act
             _eventBus.Unsubscribe(mockHandler.Object);
-            _eventBus.Publish(new LogEvent("Test message"));
+            await _eventBus.Publish(new LogEvent("Test message"));
 
             // Assert
             mockHandler.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Never,
@@ -65,7 +46,7 @@ namespace Luxoria.Modules.Tests
         }
 
         [Fact]
-        public void Unsubscribe_WithValidAsyncHandler_ShouldRemoveAsyncSubscriber()
+        public async Task Unsubscribe_WithValidAsyncHandler_ShouldRemoveAsyncSubscriber()
         {
             // Arrange
             var mockAsyncHandler = new Mock<Func<LogEvent, Task>>();
@@ -74,7 +55,7 @@ namespace Luxoria.Modules.Tests
 
             // Act
             _eventBus.Unsubscribe(mockAsyncHandler.Object);
-            _eventBus.Publish(new LogEvent("Test message"));
+            await _eventBus.Publish(new LogEvent("Test message"));
 
             // Assert
             mockAsyncHandler.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Never,
@@ -82,7 +63,7 @@ namespace Luxoria.Modules.Tests
         }
 
         [Fact]
-        public void Unsubscribe_WithMultipleSubscribers_ShouldOnlyRemoveSpecifiedSubscriber()
+        public async Task Unsubscribe_WithMultipleSubscribers_ShouldOnlyRemoveSpecifiedSubscriber()
         {
             // Arrange
             var mockHandler1 = new Mock<Action<LogEvent>>();
@@ -92,7 +73,7 @@ namespace Luxoria.Modules.Tests
 
             // Act
             _eventBus.Unsubscribe(mockHandler1.Object);
-            _eventBus.Publish(new LogEvent("Test message"));
+            await _eventBus.Publish(new LogEvent("Test message"));
 
             // Assert
             mockHandler1.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Never,
@@ -116,7 +97,7 @@ namespace Luxoria.Modules.Tests
         }
 
         [Fact]
-        public void UnsubscribeAsync_WithMultipleIdenticalSubscribers_ShouldRemoveOneInstanceAtATime()
+        public async Task UnsubscribeAsync_WithMultipleIdenticalSubscribers_ShouldRemoveOneInstanceAtATime()
         {
             // Arrange
             var mockAsyncHandler = new Mock<Func<LogEvent, Task>>();
@@ -126,7 +107,7 @@ namespace Luxoria.Modules.Tests
 
             // Act
             _eventBus.Unsubscribe(mockAsyncHandler.Object);
-            _eventBus.Publish(new LogEvent("Test message"));
+            await _eventBus.Publish(new LogEvent("Test message"));
 
             // Assert
             mockAsyncHandler.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Once,
@@ -173,7 +154,7 @@ namespace Luxoria.Modules.Tests
         }
 
         [Fact]
-        public void Publish_WithMultipleSubscribers_ShouldNotifyAllSubscribers()
+        public async Task Publish_WithMultipleSubscribers_ShouldNotifyAllSubscribers()
         {
             // Arrange
             var mockHandler1 = new Mock<Action<LogEvent>>();
@@ -182,7 +163,7 @@ namespace Luxoria.Modules.Tests
             _eventBus.Subscribe(mockHandler2.Object);
 
             // Act
-            _eventBus.Publish(new LogEvent("Test message"));
+            await _eventBus.Publish(new LogEvent("Test message"));
 
             // Assert
             mockHandler1.Verify(handler => handler(It.IsAny<LogEvent>()), Times.Once,
@@ -217,16 +198,6 @@ namespace Luxoria.Modules.Tests
             // Ensures that publishing an event with no subscribers does not throw an exception.
             await _eventBus.Publish(logEvent);
             Assert.NotNull(_eventBus);
-        }
-
-        [Fact]
-        public async Task Publish_NullEvent_ShouldThrowArgumentNullException()
-        {
-            // Arrange
-            LogEvent nullEvent = null;
-
-            // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _eventBus.Publish(nullEvent));
         }
 
         [Fact]

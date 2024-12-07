@@ -201,17 +201,26 @@ namespace Luxoria.SDK.Tests
     {
         public List<string> LoggedMessages { get; } = new List<string>();
 
-        public override void Write(string message)
+        // Override Write method - message cannot be nullable based on base class
+        public override void Write(string? message)
         {
-            LoggedMessages.Add(message);
+            if (message != null) // This check is optional but included for safety
+            {
+                LoggedMessages.Add(message);
+            }
         }
 
-        public override void WriteLine(string message)
+        // Override WriteLine method - message cannot be nullable based on base class
+        public override void WriteLine(string? message)
         {
-            LoggedMessages.Add(message);
+            if (message != null) // This check is optional but included for safety
+            {
+                LoggedMessages.Add(message);
+            }
         }
 
-        public void Dispose()
+        // Explicitly hide Dispose method from TraceListener with the 'new' keyword
+        public new void Dispose()
         {
             Trace.Listeners.Remove(this);
         }

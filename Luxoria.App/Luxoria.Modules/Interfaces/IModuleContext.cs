@@ -4,7 +4,7 @@ namespace Luxoria.Modules.Interfaces;
 
 public interface IModuleContext
 {
-    ImageData GetCurrentImage();
+    ImageData? GetCurrentImage();
     void UpdateImage(ImageData image);
     void LogMessage(string message);
 }
