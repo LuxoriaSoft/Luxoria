@@ -195,6 +195,31 @@ namespace Luxoria.SDK.Tests
                 Assert.Contains(message, logEntry); // Expecting an empty message
             }
         }
+
+        [Fact]
+        public async Task Log_WriteLog_Asynchronously()
+        {
+            // Arrange
+            string message = "Test message";
+            string category = "General";
+            LogLevel level = LogLevel.Info;
+            using (var listener = new TestDebugListener())
+            {
+                Trace.Listeners.Clear();
+                Trace.Listeners.Add(listener);
+                // Act
+                await _loggerService.LogAsync(message, category, level);
+                // Assert
+                Assert.Single(listener.LoggedMessages);
+                var logEntry = listener.LoggedMessages[0];
+                // Check for the correct log level, category, and message
+                Assert.Contains($"[{level}]", logEntry);
+                Assert.Contains(category, logEntry);
+                Assert.Contains(message, logEntry);
+                // Check timestamp presence
+                Assert.Contains(DateTime.Now.ToString("yyyy-MM-dd"), logEntry);
+            }
+        }
     }
 
     public class TestDebugListener : TraceListener
