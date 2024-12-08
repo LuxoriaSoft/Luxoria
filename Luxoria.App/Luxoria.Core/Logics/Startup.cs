@@ -20,7 +20,7 @@ namespace Luxoria.Core.Logics
         /// </summary>
         public void ConfigureServices(HostBuilderContext context, IServiceCollection services)
         {
-            ILoggerService logger = new LoggerService(LogLevel.Debug, new DebugLogTarget(), new FileLogTarget("log.txt"));
+            LoggerService logger = new(LogLevel.Debug, new DebugLogTarget(), new FileLogTarget("log.txt"));
             logger.Log("Configuring services...", LOG_SECTION, LogLevel.Info);
             // Register services here
 
@@ -38,7 +38,7 @@ namespace Luxoria.Core.Logics
 
             // Register Logger Service
             logger.Log("Registering Logger Service...", LOG_SECTION, LogLevel.Info);
-            services.AddSingleton(logger);
+            services.AddSingleton(logger as ILoggerService);
             logger.Log("Logger Service registered successfully !", LOG_SECTION, LogLevel.Info);
 
             logger.Log("Services registered successfully !", LOG_SECTION, LogLevel.Info);

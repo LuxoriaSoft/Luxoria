@@ -59,7 +59,7 @@ namespace Luxoria.SDK.Services
         /// <summary>
         /// Formats the log message with caller information.
         /// </summary>
-        private string FormatLog(
+        private static string FormatLog(
             string message,
             string category,
             LogLevel level,
@@ -67,7 +67,7 @@ namespace Luxoria.SDK.Services
             string callerFile,
             int callerLine)
         {
-            string fileName = System.IO.Path.GetFileName(callerFile);
+            string fileName = Path.GetFileName(callerFile);
             return $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] {category} " +
                    $"[{fileName}:{callerLine} {callerName}]: {message}";
         }
