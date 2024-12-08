@@ -33,7 +33,7 @@ public static class OpenCollectionDialog
         {
             string selectedFolderPath = openCollectionControl.SelectedFolderPath;
             string collectionName = openCollectionControl.CollectionName;
-            loggerService.Log($"Selected folder path: {selectedFolderPath}");
+            await loggerService.LogAsync($"Selected folder path: {selectedFolderPath}");
 
             await ImportationDialog.ShowAsync(eventBus, loggerService, collectionName, selectedFolderPath, xamlRoot);
         }

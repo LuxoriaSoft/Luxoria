@@ -57,13 +57,13 @@ namespace Luxoria.App
         /// <param name="args">Details about the launch request and process.</param>
         protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
-            _logger.Log("Application is starting...");
+            await _logger.LogAsync("Application is starting...");
 
             // Show splash screen
             var splashScreen = new SplashScreen();
             splashScreen.Activate();
 
-            _logger.Log("Modules loaded. Closing slasph screen...");
+            await _logger.LogAsync("Modules loaded. Closing slasph screen...");
             await Task.Delay(500);
 
             // Load modules asynchronously and update the splash screen with the module names
@@ -140,7 +140,7 @@ namespace Luxoria.App
 
             if (moduleFiles.Length == 0)
             {
-                _logger.Log($"No module DLL files found in: {moduleFolder}", LOG_SECTION, LogLevel.Warning);
+                await _logger.LogAsync($"No module DLL files found in: {moduleFolder}", LOG_SECTION, LogLevel.Warning);
                 return;
             }
 
@@ -163,7 +163,7 @@ namespace Luxoria.App
         {
             // Update the splash screen to indicate the module being loaded
             await UpdateSplashScreenAsync(splashScreen, $"Loading {moduleName}...");
-            _logger.Log($"Trying to load: {moduleName}");
+            await _logger.LogAsync($"Trying to load: {moduleName}");
 
             try
             {

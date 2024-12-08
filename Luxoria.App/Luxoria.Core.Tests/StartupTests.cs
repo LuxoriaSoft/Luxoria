@@ -23,7 +23,10 @@ namespace Luxoria.Tests
 
             // Mock ILoggerService
             var mockLogger = new Mock<ILoggerService>();
-            mockLogger.Setup(x => x.Log(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<LogLevel>()));
+            // Specify explicit setup to avoid optional arguments
+            mockLogger.Setup(x => x.Log(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<LogLevel>(), "", "", 0));
+
+            // Register mock in the service collection
             serviceCollection.AddSingleton(mockLogger.Object);
 
             var startup = new Startup();
