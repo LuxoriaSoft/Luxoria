@@ -8,7 +8,7 @@ namespace Luxoria.Modules
     /// </summary>
     public class ModuleContext : IModuleContext
     {
-        private ImageData _currentImage;
+        private ImageData? _currentImage;  // Nullable field
         private readonly object _lock = new object();
 
         /// <summary>
@@ -17,10 +17,18 @@ namespace Luxoria.Modules
         public Action<string> LogCallback { get; set; }
 
         /// <summary>
+        /// Constructor that initializes the context with an image and sets a default logging callback.
+        /// </summary>
+        public ModuleContext()
+        {
+            LogCallback = message => Console.WriteLine(message);  // Default to console logging
+        }
+
+        /// <summary>
         /// Retrieves the current image being managed by the context.
         /// </summary>
-        /// <returns>The current <see cref="ImageData"/> instance.</returns>
-        public ImageData GetCurrentImage()
+        /// <returns>The current <see cref="ImageData"/> instance, or null if not set.</returns>
+        public ImageData? GetCurrentImage()
         {
             lock (_lock)
             {
@@ -58,14 +66,7 @@ namespace Luxoria.Modules
                 throw new ArgumentNullException(nameof(message), "Log message cannot be null or empty.");
             }
 
-            if (LogCallback != null)
-            {
-                LogCallback.Invoke(message);
-            }
-            else
-            {
-                Console.WriteLine(message);
-            }
+            LogCallback.Invoke(message);  // Use the callback, which defaults to console if not set
         }
     }
 }

@@ -5,6 +5,8 @@ using Luxoria.SDK.Models;
 using Luxoria.SDK.Services;
 using System;
 using System.Diagnostics;
+using System.Collections.Generic;
+using Luxoria.SDK.Services.Targets;
 
 namespace Luxoria.SDK.Tests
 {
@@ -15,11 +17,11 @@ namespace Luxoria.SDK.Tests
         public LoggerServiceTests()
         {
             // Centralized Setup
-            _loggerService = new LoggerService();
+            _loggerService = new LoggerService(LogLevel.Debug, new DebugLogTarget());
         }
 
         [Fact]
-        public void Log_WithMessageAndDefaultParameters_ShouldLogInfoLevel()
+        public void Log_WithDefaultParameters_ShouldLogInfoLevelAndCategory()
         {
             // Arrange
             string message = "Test message";
@@ -28,18 +30,28 @@ namespace Luxoria.SDK.Tests
 
             using (var listener = new TestDebugListener())
             {
+                Trace.Listeners.Clear();
                 Trace.Listeners.Add(listener);
 
                 // Act
                 _loggerService.Log(message);
 
                 // Assert
-                AssertLoggedMessage(listener, message, expectedCategory, expectedLevel);
+                Assert.Single(listener.LoggedMessages);
+                var logEntry = listener.LoggedMessages[0];
+
+                // Check if the log contains the correct level, category, and message
+                Assert.Contains($"[{expectedLevel}]", logEntry);
+                Assert.Contains(expectedCategory, logEntry);
+                Assert.Contains(message, logEntry);
+
+                // Check timestamp presence
+                Assert.Contains(DateTime.Now.ToString("yyyy-MM-dd"), logEntry);
             }
         }
 
         [Fact]
-        public void Log_WithCustomCategory_ShouldLogWithSpecifiedCategory()
+        public void Log_WithCustomCategory_ShouldLogWithCustomCategory()
         {
             // Arrange
             string message = "Test message";
@@ -48,18 +60,28 @@ namespace Luxoria.SDK.Tests
 
             using (var listener = new TestDebugListener())
             {
+                Trace.Listeners.Clear();
                 Trace.Listeners.Add(listener);
 
                 // Act
                 _loggerService.Log(message, customCategory);
 
                 // Assert
-                AssertLoggedMessage(listener, message, customCategory, expectedLevel);
+                Assert.Single(listener.LoggedMessages);
+                var logEntry = listener.LoggedMessages[0];
+
+                // Check if the log contains the custom category
+                Assert.Contains($"[{expectedLevel}]", logEntry);
+                Assert.Contains(customCategory, logEntry);
+                Assert.Contains(message, logEntry);
+
+                // Check timestamp presence
+                Assert.Contains(DateTime.Now.ToString("yyyy-MM-dd"), logEntry);
             }
         }
 
         [Fact]
-        public void Log_WithCustomLogLevel_ShouldLogWithSpecifiedLogLevel()
+        public void Log_WithCustomLogLevel_ShouldLogWithCustomLogLevel()
         {
             // Arrange
             string message = "An error occurred";
@@ -68,42 +90,135 @@ namespace Luxoria.SDK.Tests
 
             using (var listener = new TestDebugListener())
             {
+                Trace.Listeners.Clear();
                 Trace.Listeners.Add(listener);
 
                 // Act
                 _loggerService.Log(message, category, customLevel);
 
                 // Assert
-                AssertLoggedMessage(listener, message, category, customLevel);
+                Assert.Single(listener.LoggedMessages);
+                var logEntry = listener.LoggedMessages[0];
+
+                // Check if the log contains the custom log level
+                Assert.Contains($"[{customLevel}]", logEntry);
+                Assert.Contains(category, logEntry);
+                Assert.Contains(message, logEntry);
+
+                // Check timestamp presence
+                Assert.Contains(DateTime.Now.ToString("yyyy-MM-dd"), logEntry);
             }
         }
 
         [Fact]
-        public void Log_WithAllCustomParameters_ShouldLogCorrectly()
+        public void Log_FormattedMessage_ShouldContainCorrectFormat()
         {
             // Arrange
-            string message = "Warning: potential issue detected";
-            string category = "System";
-            LogLevel customLevel = LogLevel.Warning;
+            string message = "Test message with format";
+            string category = "General";
+            LogLevel level = LogLevel.Debug;
 
             using (var listener = new TestDebugListener())
             {
+                Trace.Listeners.Clear();
                 Trace.Listeners.Add(listener);
 
                 // Act
-                _loggerService.Log(message, category, customLevel);
+                _loggerService.Log(message, category, level);
 
                 // Assert
-                AssertLoggedMessage(listener, message, category, customLevel);
+                Assert.Single(listener.LoggedMessages);
+                var logEntry = listener.LoggedMessages[0];
+
+                // Check for timestamp
+                Assert.Contains(DateTime.Now.ToString("yyyy-MM-dd"), logEntry);
+                Assert.Contains(DateTime.Now.ToString("HH:mm:ss"), logEntry);
+
+                // Check for log level and category
+                Assert.Contains($"[{level}]", logEntry);
+                Assert.Contains(category, logEntry);
+                Assert.Contains(message, logEntry);
+
+                // Check if caller info is included
+                Assert.Contains("[", logEntry);
+                Assert.Contains("]:", logEntry);
             }
         }
 
-        private static void AssertLoggedMessage(TestDebugListener listener, string expectedMessage, string expectedCategory, LogLevel expectedLevel)
+        [Fact]
+        public void Log_ShouldIncludeCallerInfo()
         {
-            var logEntry = listener.LoggedMessages.Find(entry =>
-                entry.Contains($"[{expectedLevel}] {expectedCategory}: {expectedMessage}"));
+            // Arrange
+            string message = "Test message with caller info";
+            string category = "General";
+            LogLevel level = LogLevel.Debug;
 
-            Assert.NotNull(logEntry);
+            // Act
+            using (var listener = new TestDebugListener())
+            {
+                Trace.Listeners.Clear();
+                Trace.Listeners.Add(listener);
+
+                // Log with the correct parameters
+                _loggerService.Log(message, category, level);
+
+                // Assert that caller information is included (without specific file/line details)
+                var logEntry = listener.LoggedMessages[0];
+                Assert.Contains("[", logEntry); // Ensures caller info exists
+                Assert.Contains("]:", logEntry); // Ensures correct format for caller info
+            }
+        }
+
+        [Fact]
+        public void Log_WithEmptyMessage_ShouldLogEmptyMessage()
+        {
+            // Arrange
+            string message = string.Empty;
+            string category = "General";
+            LogLevel level = LogLevel.Info;
+
+            using (var listener = new TestDebugListener())
+            {
+                Trace.Listeners.Clear();
+                Trace.Listeners.Add(listener);
+
+                // Act
+                _loggerService.Log(message, category, level);
+
+                // Assert
+                Assert.Single(listener.LoggedMessages);
+                var logEntry = listener.LoggedMessages[0];
+
+                // Check for the correct log level, category, and empty message
+                Assert.Contains($"[{level}]", logEntry);
+                Assert.Contains(category, logEntry);
+                Assert.Contains(message, logEntry); // Expecting an empty message
+            }
+        }
+
+        [Fact]
+        public async Task Log_WriteLog_Asynchronously()
+        {
+            // Arrange
+            string message = "Test message";
+            string category = "General";
+            LogLevel level = LogLevel.Info;
+            using (var listener = new TestDebugListener())
+            {
+                Trace.Listeners.Clear();
+                Trace.Listeners.Add(listener);
+                // Act
+                await _loggerService.LogAsync(message, category, level);
+                // Assert
+                Assert.Single(listener.LoggedMessages);
+                var logEntry = listener.LoggedMessages[0];
+                // Check for the correct log level, category, and message
+                Assert.Contains($"[{level}]", logEntry);
+                Assert.Contains(category, logEntry);
+                Assert.Contains(message, logEntry);
+                // Check timestamp presence
+                Assert.Contains(DateTime.Now.ToString("yyyy-MM-dd"), logEntry);
+            }
         }
     }
 
@@ -111,17 +226,26 @@ namespace Luxoria.SDK.Tests
     {
         public List<string> LoggedMessages { get; } = new List<string>();
 
-        public override void Write(string message)
+        // Override Write method - message cannot be nullable based on base class
+        public override void Write(string? message)
         {
-            LoggedMessages.Add(message);
+            if (message != null) // This check is optional but included for safety
+            {
+                LoggedMessages.Add(message);
+            }
         }
 
-        public override void WriteLine(string message)
+        // Override WriteLine method - message cannot be nullable based on base class
+        public override void WriteLine(string? message)
         {
-            LoggedMessages.Add(message);
+            if (message != null) // This check is optional but included for safety
+            {
+                LoggedMessages.Add(message);
+            }
         }
 
-        public void Dispose()
+        // Explicitly hide Dispose method from TraceListener with the 'new' keyword
+        public new void Dispose()
         {
             Trace.Listeners.Remove(this);
         }

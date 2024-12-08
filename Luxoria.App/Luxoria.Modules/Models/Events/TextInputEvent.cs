@@ -1,9 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using Luxoria.Modules.Interfaces;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Luxoria.Modules.Models.Events
 {
     [ExcludeFromCodeCoverage]
-    public class TextInputEvent
+    public class TextInputEvent : IEvent
     {
         public string Text { get; }
 
