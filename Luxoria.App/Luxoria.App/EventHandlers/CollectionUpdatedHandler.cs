@@ -39,7 +39,7 @@ namespace Luxoria.App.EventHandlers
                 // Get the pixel data from the asset
                 ReadOnlyMemory<byte> bitmap = asset.Data.PixelData;
 
-                // Show basic info about the bitmap for debugging
+                // Show basic info about the bitmap
                 Debug.WriteLine($"Bitmap data length: {bitmap.Length} bytes");
                 Debug.WriteLine($"Bitmap width: {asset.Data.Width}");
                 Debug.WriteLine($"Bitmap height: {asset.Data.Height}");
@@ -57,9 +57,7 @@ namespace Luxoria.App.EventHandlers
                 }
                 catch (Exception ex)
                 {
-                    // Log the exception details for debugging
                     _loggerService.Log($"Error processing asset {asset.MetaData.Id}: {ex.Message}");
-                    Debug.WriteLine($"Error processing asset {asset.MetaData.Id}: {ex.StackTrace}");
                 }
             }
         }
@@ -69,7 +67,7 @@ namespace Luxoria.App.EventHandlers
         {
             try
             {
-                // Log first few bytes of the bitmap to verify if it contains valid image data (e.g., PNG or JPEG header)
+                // Log first few bytes of the bitmap to verify if it contains valid image data (PNG, JPEG, ... header)
                 string bytePreview = BitConverter.ToString(bitmap.Span.Slice(0, 10).ToArray());
                 Debug.WriteLine($"First 10 bytes of image data: {bytePreview}");
 
