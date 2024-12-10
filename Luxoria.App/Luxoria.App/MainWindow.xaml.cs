@@ -41,7 +41,12 @@ namespace Luxoria.App
         private void InitializeEventBus()
         {
             // Subscribe to events that will be published through the event bus
-            _eventBus.Subscribe<CollectionUpdatedEvent>(_collectionUpdatedHandler.OnCollectionUpdated);
+            _eventBus.Subscribe<CollectionUpdatedEvent>(async (body) =>
+            {
+                // Assuming 'imageControl' is your Image UI control you want to update
+                // Pass 'imageControl' to the handler
+                await _collectionUpdatedHandler.OnCollectionUpdated(body, Image);
+            });
         }
 
         /// <summary>

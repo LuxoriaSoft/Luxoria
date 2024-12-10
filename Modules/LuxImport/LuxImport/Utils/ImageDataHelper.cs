@@ -1,89 +1,79 @@
-﻿using Luxoria.Modules.Models;
-using Luxoria.Modules.Utils;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
+﻿using SkiaSharp;
+using System;
+using System.IO;
 using System.Diagnostics;
+using Luxoria.Modules.Models;
 
-namespace LuxImport.Utils;
-
-public static class ImageDataHelper
+namespace LuxImport.Utils
 {
-    /// <summary>
-    /// Load image data from a specified path
-    /// </summary>
-    /// <param name="path">The path to the image file</param>
-    /// <returns>An ImageData object containing the loaded image's data</returns>
-    public static ImageData LoadFromPath(string path)
+    public static class ImageDataHelper
     {
-        // Check if the path is valid
-        if (string.IsNullOrWhiteSpace(path))
+        /// <summary>
+        /// Load image data from a specified path and convert it into a byte array.
+        /// </summary>
+        /// <param name="path">The path to the image file.</param>
+        /// <returns>An ImageData object containing the loaded image's data.</returns>
+        public static ImageData LoadFromPath(string path)
         {
-            throw new ArgumentException("Path cannot be null or empty.", nameof(path));
-        }
-
-        if (!File.Exists(path))
-        {
-            throw new FileNotFoundException("The specified file does not exist.", path);
-        }
-
-        // Extract the file extension and validate it
-        string extension = Path.GetExtension(path);
-        FileExtension ext = FileExtensionHelper.ConvertToEnum(extension);
-        if (ext == FileExtension.UNKNOWN)
-        {
-            throw new NotSupportedException($"File format '{extension}' is not supported.");
-        }
-
-        try
-        {
-            // Log the start of the image loading process
-            Debug.WriteLine($"Attempting to load image from path: {path}");
-
-            // Read the file bytes
-            byte[] fileBytes = File.ReadAllBytes(path);
-
-            // Log file size for debugging purposes
-            Debug.WriteLine($"Loaded {fileBytes.Length} bytes from {path}");
-
-            if (fileBytes.Length == 0)
+            // Check if the path is valid
+            if (string.IsNullOrWhiteSpace(path))
             {
-                throw new InvalidOperationException($"The file at '{path}' is empty.");
+                throw new ArgumentException("Path cannot be null or empty.", nameof(path));
             }
 
-            // Load the image using ImageSharp
-            using (MemoryStream memoryStream = new MemoryStream(fileBytes))
+            if (!File.Exists(path))
             {
-                using (Image<Rgba32> image = Image.Load<Rgba32>(memoryStream))
+                throw new FileNotFoundException("The specified file does not exist.", path);
+            }
+
+            try
+            {
+                // Log the start of the image loading process
+                Debug.WriteLine($"Attempting to load image from path: {path}");
+
+                // Load the image using SkiaSharp
+                using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
                 {
-                    // Check if the image is valid
-                    if (image == null)
+                    // Decode the image from the stream
+                    Debug.WriteLine("1/ Decoding the image using SkiaSharp...");
+                    var skData = SKData.Create(stream);
+                    Debug.WriteLine("1.1/ SKData created successfully.");
+                    var skiaImage = SKBitmap.Decode(skData);  // This will automatically detect the format
+                    Debug.WriteLine("2/ Image decoded successfully.");
+                    if (skiaImage == null)
                     {
-                        throw new InvalidOperationException($"Failed to decode image at path: {path}");
+                        throw new InvalidOperationException($"Failed to decode the image at '{path}'.");
                     }
+                    Debug.WriteLine($"Image dimensions: {skiaImage.Width}x{skiaImage.Height}");
+                    // Convert the image to a byte array (PNG format)
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        Debug.WriteLine("3/ Encoding the image as PNG...");
+                        skiaImage.Encode(SKEncodedImageFormat.Png, 100).SaveTo(memoryStream);
+                        Debug.WriteLine("4/ Image encoded successfully.");
+                        Debug.WriteLine($"Image size: {memoryStream.Length} bytes");
+                        byte[] imageBytes = memoryStream.ToArray();
+                        Debug.WriteLine("5/ Image converted to byte array successfully.");
 
-                    // Log successful decoding for debugging purposes
-                    Debug.WriteLine($"Image decoded successfully. Width: {image.Width}, Height: {image.Height}");
-
-                    // Directly access pixel data (in RGBA format) without extra encoding
-                    byte[] imageBytes = new byte[image.Width * image.Height * 4]; // RGBA32 = 4 bytes per pixel
-                    image.CopyPixelDataTo(imageBytes); // Copy the pixel data directly to the byte array
-
-                    // Create and return an ImageData object
-                    return new ImageData(
-                        imageBytes,
-                        image.Width,
-                        image.Height,
-                        ext
-                    );
+                        // Return an ImageData object with the necessary data
+                        return new ImageData(
+                            imageBytes,
+                            skiaImage.Width,
+                            skiaImage.Height,
+                            FileExtension.PNG//,
+                            //skiaImage // You can use SKBitmap for further manipulation or display
+                        );
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            // Log detailed error message and stack trace for troubleshooting
-            Debug.WriteLine($"An error occurred while loading the image at '{path}': {ex.Message}");
-            Debug.WriteLine($"Stack Trace: {ex.StackTrace}");
-            throw new InvalidOperationException($"An error occurred while loading the image at '{path}': {ex.Message}", ex);
+            catch (Exception ex)
+            {
+                // Log detailed error message and stack trace for troubleshooting
+                Debug.WriteLine($"An error occurred while loading the image at '{path}': {ex.Message}");
+                Debug.WriteLine($"Stack Trace: {ex.StackTrace}");
+                throw new InvalidOperationException($"An error occurred while loading the image at '{path}': {ex.Message}", ex);
+            }
         }
     }
 }
+

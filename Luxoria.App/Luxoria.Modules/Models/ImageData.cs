@@ -1,4 +1,6 @@
-﻿namespace Luxoria.Modules.Models;
+﻿using SkiaSharp;
+
+namespace Luxoria.Modules.Models;
 
 /// <summary>
 /// Represents an image with pixel data, dimensions, and format information.
@@ -24,6 +26,10 @@ public class ImageData
     /// Gets the format of the image (e.g., "PNG", "JPEG").
     /// </summary>
     public FileExtension Format { get; }
+
+    /// <summary>
+    /// </summary>
+    public SKImage Image { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageData"/> class.
