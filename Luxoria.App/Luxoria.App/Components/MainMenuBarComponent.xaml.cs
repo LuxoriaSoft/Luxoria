@@ -43,12 +43,12 @@ namespace Luxoria.App.Components
         }
         private void Modules_Click(object sender, RoutedEventArgs e)
         {
-            var moduleService = (Application.Current as App).ModuleService;
+            //var moduleService = (Application.Current as App).ModuleService;
 
-            var newWindow = new Microsoft.UI.Xaml.Window();
-            var moduleManagerPage = new ModuleManagerWindow(moduleService, newWindow);
-            newWindow.Content = moduleManagerPage;
-            newWindow.Activate();
+            //var newWindow = new Microsoft.UI.Xaml.Window();
+            //var moduleManagerPage = new ModuleManagerWindow(moduleService, newWindow);
+            //newWindow.Content = moduleManagerPage;
+            //newWindow.Activate();
         }
 
 

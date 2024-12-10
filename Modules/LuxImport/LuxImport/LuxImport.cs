@@ -1,13 +1,15 @@
 ﻿using LuxImport.Interfaces;
 using LuxImport.Services;
 using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.LMGUI;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
+using System.Diagnostics;
 
 namespace LuxImport;
 
-public class LuxImport : IModule
+public class LuxImport : IModule, IGuiExtension
 {
     private IEventBus? _eventBus;
     private IModuleContext? _context;
@@ -134,5 +136,57 @@ public class LuxImport : IModule
         // Send the message through the event tunnel
         if (progress.HasValue) @event.SendProgressMessage(message, progress.Value);
         else @event.SendProgressMessage(message);
+    }
+
+    public IEnumerable<IGuiElement> GetGuiElements()
+    {
+        return new List<IGuiElement>
+        {
+            new GuiButton("ImportButton", "MainMenu", "Import Collection", () => Execute()),
+            new GuiTextBox("CollectionPath", "MainMenu", "Enter Collection Path", () => Debug.WriteLine("Something happened !"))
+        };
+    }
+
+    public class GuiButton : IGuiElement
+    {
+        public string ElementType => "Button";
+
+        public string Identifier { get; }
+
+        public string TargetRegion { get; }
+
+        public Dictionary<string, object> Properties { get; }
+
+        public Action? OnEvent { get; }
+
+        public GuiButton(string identifier, string targetRegion, string label, Action? onEvent = null)
+        {
+            Identifier = identifier;
+            TargetRegion = targetRegion;
+            Properties = new Dictionary<string, object>
+                {
+                    { "Label", label }
+                };
+            OnEvent = onEvent;
+        }
+    }
+
+    public class GuiTextBox : IGuiElement
+    {
+        public string ElementType => "TextBox";
+        public string Identifier { get; }
+        public string TargetRegion { get; }
+        public Dictionary<string, object> Properties { get; }
+        public Action? OnEvent { get; }
+        public GuiTextBox(string identifier, string targetRegion, string placeholder, Action? onEvent = null)
+        {
+            Identifier = identifier;
+            TargetRegion = targetRegion;
+            Properties = new Dictionary<string, object>
+                {
+                    { "Placeholder", placeholder }
+                };
+            OnEvent = onEvent;
+        }
     }
 }

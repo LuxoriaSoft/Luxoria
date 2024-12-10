@@ -1,8 +1,14 @@
-﻿using Luxoria.Core.Interfaces;
+﻿using Luxoria.App.Core.Interfaces;
+using Luxoria.Core.LMGUI;
 using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.LMGUI;
 using Luxoria.SDK.Interfaces;
+using Luxoria.SDK.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace Luxoria.Core.Services
+namespace Luxoria.App.Core
 {
     public class ModuleService : IModuleService
     {
@@ -38,7 +44,7 @@ namespace Luxoria.Core.Services
 
         public List<IModule> GetModules() => _modules;
 
-        public void InitializeModules(IModuleContext context)
+        public void InitializeModules(GuiRenderer guiRenderer, IModuleContext context)
         {
             if (context == null)
             {
@@ -48,6 +54,13 @@ namespace Luxoria.Core.Services
             foreach (IModule module in _modules)
             {
                 module.Initialize(_eventBus, context, _logger);
+
+                if (module is IGuiExtension guiExtension)
+                {
+                    var elements = guiExtension.GetGuiElements().ToList();
+                    _logger.Log($"Rendering {elements.ToString()} GUI elements for module {module.Name}", "ModuleService", LogLevel.Info);
+                    guiRenderer.Render(elements);
+                }
             }
         }
     }

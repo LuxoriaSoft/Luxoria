@@ -4,6 +4,7 @@ using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Luxoria.App
 {
@@ -15,6 +16,12 @@ namespace Luxoria.App
         // Handlers for different events
         private readonly ImageUpdatedHandler _imageUpdatedHandler;
         private readonly CollectionUpdatedHandler _collectionUpdatedHandler;
+
+        // LMGUI regions
+        public StackPanel MainView { get; set; }
+        public StackPanel Toolbar { get; set; }
+        public StackPanel Sidebar { get; set; }
+        public StackPanel Footer { get; set; }
 
         /// <summary>
         /// Constructor for the main window of the application.
@@ -33,6 +40,20 @@ namespace Luxoria.App
 
             // Subscribe handlers to the event bus
             InitializeEventBus();
+
+            // Render the GUI elements
+            MainView = new StackPanel();
+            Toolbar = new StackPanel();
+            Sidebar = new StackPanel();
+            Footer = new StackPanel();
+
+            // Add regions to the layout
+            var grid = new Grid();
+            grid.Children.Add(MainView);
+            grid.Children.Add(Toolbar);
+            grid.Children.Add(Sidebar);
+            grid.Children.Add(Footer);
+            Content = grid;
         }
 
         /// <summary>
