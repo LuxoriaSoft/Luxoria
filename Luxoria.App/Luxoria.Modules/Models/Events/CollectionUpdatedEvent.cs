@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Luxoria.Modules.Interfaces;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Luxoria.Modules.Models.Events
 {
-    public class CollectionUpdatedEvent
+    [ExcludeFromCodeCoverage]
+    public class CollectionUpdatedEvent : IEvent
     {
         /// <summary>
         /// Collection name

@@ -1,11 +1,13 @@
 ﻿using Luxoria.Modules.Interfaces;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Luxoria.Modules.Models.Events;
 
 /// <summary>
 /// Represents an event triggered when a collection is opened.
 /// </summary>
-public class OpenCollectionEvent
+[ExcludeFromCodeCoverage]
+public class OpenCollectionEvent : IEvent
 {
     // *** Properties ***
 

@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Luxoria.SDK.Models
+﻿namespace Luxoria.SDK.Models
 {
+    /// <summary>
+    /// Enum representing the log level (severity).
+    /// </summary>
     public enum LogLevel
     {
+        Debug,
         Info,
         Warning,
-        Error
+        Error,
+        Critical
     }
 }

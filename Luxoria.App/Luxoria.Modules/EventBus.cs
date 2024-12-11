@@ -1,8 +1,4 @@
 ﻿using Luxoria.Modules.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Luxoria.Modules
 {
@@ -16,7 +12,7 @@ namespace Luxoria.Modules
         /// Publishes an event to all subscribed handlers.
         /// Supports both synchronous and asynchronous execution.
         /// </summary>
-        public async Task Publish<TEvent>(TEvent @event)
+        public async Task Publish<TEvent>(TEvent @event) where TEvent : IEvent
         {
             if (EqualityComparer<TEvent>.Default.Equals(@event, default(TEvent)))
             {
@@ -52,7 +48,7 @@ namespace Luxoria.Modules
         /// <summary>
         /// Subscribes a synchronous handler to the specified event type.
         /// </summary>
-        public void Subscribe<TEvent>(Action<TEvent> handler)
+        public void Subscribe<TEvent>(Action<TEvent> handler) where TEvent : IEvent
         {
             if (handler == null)
             {
@@ -71,7 +67,7 @@ namespace Luxoria.Modules
         /// <summary>
         /// Subscribes an asynchronous handler to the specified event type.
         /// </summary>
-        public void Subscribe<TEvent>(Func<TEvent, Task> asyncHandler)
+        public void Subscribe<TEvent>(Func<TEvent, Task> asyncHandler) where TEvent : IEvent
         {
             if (asyncHandler == null)
             {
@@ -90,7 +86,7 @@ namespace Luxoria.Modules
         /// <summary>
         /// Unsubscribes a synchronous handler from the specified event type.
         /// </summary>
-        public void Unsubscribe<TEvent>(Action<TEvent> handler)
+        public void Unsubscribe<TEvent>(Action<TEvent> handler) where TEvent : IEvent
         {
             if (handler == null)
             {
@@ -106,7 +102,7 @@ namespace Luxoria.Modules
         /// <summary>
         /// Unsubscribes an asynchronous handler from the specified event type.
         /// </summary>
-        public void Unsubscribe<TEvent>(Func<TEvent, Task> asyncHandler)
+        public void Unsubscribe<TEvent>(Func<TEvent, Task> asyncHandler) where TEvent : IEvent
         {
             if (asyncHandler == null)
             {

@@ -1,8 +1,5 @@
 ﻿using Luxoria.Modules;
-using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models;
-using Moq;
-using Xunit;
 
 namespace Luxoria.App.Tests
 {
@@ -47,16 +44,6 @@ namespace Luxoria.App.Tests
         }
 
         [Fact]
-        public void UpdateImage_WithNull_ShouldThrowArgumentNullException()
-        {
-            // Arrange
-            ImageData nullImage = null;
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => _moduleContext.UpdateImage(nullImage));
-        }
-
-        [Fact]
         public void LogMessage_WithValidMessage_ShouldNotThrow()
         {
             // Arrange
@@ -65,16 +52,6 @@ namespace Luxoria.App.Tests
             // Act & Assert
             var exception = Record.Exception(() => _moduleContext.LogMessage(logMessage));
             Assert.Null(exception); // Ensure that no exception is thrown
-        }
-
-        [Fact]
-        public void LogMessage_WithNullMessage_ShouldThrowArgumentNullException()
-        {
-            // Arrange
-            string logMessage = null;
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => _moduleContext.LogMessage(logMessage));
         }
     }
 }

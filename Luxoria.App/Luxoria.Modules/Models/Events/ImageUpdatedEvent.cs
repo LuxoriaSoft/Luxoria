@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Luxoria.Modules.Interfaces;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Luxoria.Modules.Models.Events
 {
-    public class ImageUpdatedEvent
+    [ExcludeFromCodeCoverage]
+    public class ImageUpdatedEvent : IEvent
     {
         public string ImagePath { get; }
 

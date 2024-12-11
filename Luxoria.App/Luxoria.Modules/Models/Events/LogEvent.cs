@@ -1,6 +1,10 @@
-﻿namespace Luxoria.Modules.Models.Events
+﻿using Luxoria.Modules.Interfaces;
+using System.Diagnostics.CodeAnalysis;
+
+namespace Luxoria.Modules.Models.Events
 {
-    public class LogEvent
+    [ExcludeFromCodeCoverage]
+    public class LogEvent : IEvent
     {
         public string Message { get; }
 

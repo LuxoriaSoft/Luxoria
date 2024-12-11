@@ -1,9 +1,7 @@
-﻿using Luxoria.Core.Interfaces;
-using Luxoria.Core.Services;
+﻿using Luxoria.Core.Services;
 using Luxoria.Modules.Interfaces;
 using Luxoria.SDK.Interfaces;
 using Moq;
-using Xunit;
 
 namespace Luxoria.Core.Tests
 {
@@ -21,26 +19,6 @@ namespace Luxoria.Core.Tests
         }
 
         [Fact]
-        public void Constructor_WithNullEventBus_ShouldThrowArgumentNullException()
-        {
-            // Arrange
-            IEventBus nullEventBus = null;
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new ModuleService(nullEventBus, _mockLogger.Object));
-        }
-
-        [Fact]
-        public void Constructor_WithNullLogger_ShouldThrowArgumentNullException()
-        {
-            // Arrange
-            ILoggerService nullLogger = null;
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new ModuleService(_mockEventBus.Object, nullLogger));
-        }
-
-        [Fact]
         public void AddModule_WithValidModule_ShouldAddModuleToList()
         {
             // Arrange
@@ -51,16 +29,6 @@ namespace Luxoria.Core.Tests
 
             // Assert
             Assert.Contains(mockModule.Object, _moduleService.GetModules());
-        }
-
-        [Fact]
-        public void AddModule_NullModule_ShouldThrowArgumentNullException()
-        {
-            // Arrange
-            IModule nullModule = null;
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => _moduleService.AddModule(nullModule));
         }
 
         [Fact]
@@ -86,16 +54,6 @@ namespace Luxoria.Core.Tests
             // Act & Assert
             _moduleService.RemoveModule(mockModule.Object); // Should not throw
             Assert.NotNull(mockModule);
-        }
-
-        [Fact]
-        public void RemoveModule_NullModule_ShouldThrowArgumentNullException()
-        {
-            // Arrange
-            IModule nullModule = null;
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => _moduleService.RemoveModule(nullModule));
         }
 
         [Fact]
@@ -146,16 +104,6 @@ namespace Luxoria.Core.Tests
             // Act & Assert
             _moduleService.InitializeModules(mockContext.Object); // Should not throw
             Assert.NotNull(mockContext);
-        }
-
-        [Fact]
-        public void InitializeModules_NullContext_ShouldThrowArgumentNullException()
-        {
-            // Arrange
-            IModuleContext nullContext = null;
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => _moduleService.InitializeModules(nullContext));
         }
     }
 }

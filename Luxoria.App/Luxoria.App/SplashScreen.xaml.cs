@@ -1,8 +1,7 @@
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Windowing;
-using System;
-using Microsoft.UI;
 
 namespace Luxoria.App
 {

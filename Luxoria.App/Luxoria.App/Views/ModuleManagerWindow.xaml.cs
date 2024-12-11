@@ -1,14 +1,14 @@
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml;
-using System.Diagnostics;
-using Windows.Storage.Pickers;
-using Windows.Storage;
 using Luxoria.Core.Interfaces;
-using Luxoria.Modules.Interfaces;
 using Luxoria.Modules;
+using Luxoria.Modules.Interfaces;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 
 namespace Luxoria.App.Views
 {

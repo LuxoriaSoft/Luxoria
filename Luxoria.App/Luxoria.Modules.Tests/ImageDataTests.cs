@@ -1,5 +1,4 @@
 ﻿using Luxoria.Modules.Models;
-using Xunit;
 
 namespace Luxoria.App.Tests
 {
@@ -44,7 +43,7 @@ namespace Luxoria.App.Tests
         }
 
         [Fact]
-        public void ImageData_WithNullPixelData_ShouldInitializeProperties()
+        public void ImageData_WithNullPixelData_ShouldThrowArgumentNullException()
         {
             // Arrange
             byte[] pixelData = null;
@@ -52,14 +51,11 @@ namespace Luxoria.App.Tests
             var height = 1080;
             var format = FileExtension.JPEG;
 
-            // Act
-            var imageData = new ImageData(pixelData, width, height, format);
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() => new ImageData(pixelData, width, height, format));
 
-            // Assert
-            Assert.Null(imageData.PixelData);
-            Assert.Equal(width, imageData.Width);
-            Assert.Equal(height, imageData.Height);
-            Assert.Equal(format, imageData.Format);
+            // Verify the exception message and parameter
+            Assert.Equal("Value cannot be null. (Parameter 'pixelData')", exception.Message);
         }
 
         [Fact]

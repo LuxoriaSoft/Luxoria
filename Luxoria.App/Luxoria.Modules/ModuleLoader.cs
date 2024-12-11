@@ -1,6 +1,4 @@
 ﻿using Luxoria.Modules.Interfaces;
-using System;
-using System.IO;
 using System.Reflection;
 
 namespace Luxoria.Modules
@@ -12,8 +10,8 @@ namespace Luxoria.Modules
         private readonly Func<Type, object?> _createInstance;
 
         public ModuleLoader(
-            Func<string, bool>? fileExists = null, 
-            Func<string, Assembly>? loadAssembly = null, 
+            Func<string, bool>? fileExists = null,
+            Func<string, Assembly>? loadAssembly = null,
             Func<Type, object?>? createInstance = null)
         {
             _fileExists = fileExists ?? File.Exists;
