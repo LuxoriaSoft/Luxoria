@@ -1,9 +1,5 @@
----
-
 **Name:** `Luxoria - Pull Request`  
-**About:** Use this template for contributing code, documentation, or features to Luxoria.  
 **Title:** `[L__] - (____) ...`  
-**Labels:** Contribution  
 **Assignees:**  
 
 ---
