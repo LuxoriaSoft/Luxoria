@@ -52,6 +52,9 @@ modules = {
 
 # Function to track real progress based on output
 def build_with_progress(command, desc):
+    """
+    Build a project with a progress bar based on the build output.
+    """
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     
     # Use tqdm for real progress based on the build output
@@ -76,6 +79,9 @@ def build_with_progress(command, desc):
 
 # Build main program with progress bar
 def build_main():
+    """
+    Build the main program. (Luxoria.App)
+    """
     for project in main:
         try:
             print(f"Building main project {project[0]} for {project[1]}...")
@@ -117,6 +123,9 @@ def build_luxoria_part():
 
 # Build Luxoria Modules with progress bar
 def build_and_publish_modules():
+    """
+    Build and publish the Luxoria modules.
+    """
     for module in modules:
         try:
             print(f"Building and publishing module {module}...")
@@ -127,7 +136,7 @@ def build_and_publish_modules():
             # Build the module
             build_with_progress(
                 ["dotnet", "build", module_path, "-c", "Debug"],
-                f"Building {module}"
+                f"Building {module}..."
             )
             
             # Verify if the DLL is created after building
@@ -152,6 +161,9 @@ def build_and_publish_modules():
 
 # Clear the cache
 def clear_cache():
+    """
+    Clear the cache by deleting the obj and bin folders.
+    """
     # Delete every obj and bin folder
     for root, dirs, _ in os.walk("Luxoria.App"):
         for dir in dirs:
@@ -159,7 +171,6 @@ def clear_cache():
                 dir_path = os.path.join(root, dir)
                 print(f"Removing {dir_path}")
                 try:
-                    # Delete non-empty directories (bin, obj) using shutil.rmtree
                     shutil.rmtree(dir_path)
                     print(f"Successfully removed {dir_path}")
                 except Exception as e:
