@@ -1,4 +1,6 @@
-﻿namespace Luxoria.Modules.Models;
+﻿using SkiaSharp;
+
+namespace Luxoria.Modules.Models;
 
 /// <summary>
 /// Represents an image with pixel data, dimensions, and format information.
@@ -6,19 +8,19 @@
 public class ImageData
 {
     /// <summary>
-    /// Gets the raw pixel data of the image.
+    /// Contains the bitmap data of the image.
     /// </summary>
-    public ReadOnlyMemory<byte> PixelData { get; }
+    public SKBitmap Bitmap { get; }
 
     /// <summary>
     /// Gets the width of the image in pixels.
     /// </summary>
-    public int Width { get; }
+    public int Width => Bitmap.Width;
 
     /// <summary>
     /// Gets the height of the image in pixels.
     /// </summary>
-    public int Height { get; }
+    public int Height => Bitmap.Height;
 
     /// <summary>
     /// Gets the format of the image (e.g., "PNG", "JPEG").
@@ -28,23 +30,11 @@ public class ImageData
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageData"/> class.
     /// </summary>
-    /// <param name="pixelData">The raw pixel data of the image.</param>
-    /// <param name="width">The width of the image in pixels.</param>
-    /// <param name="height">The height of the image in pixels.</param>
+    /// <param name="bitmap">The bitmap (SKBitmap) data of the image.</param>
     /// <param name="format">The format of the image (e.g., "PNG", "JPEG").</param>
-    /// <exception cref="ArgumentException">Thrown when width or height is less than or equal to zero, or format is null or empty.</exception>
-    /// <exception cref="ArgumentNullException">Thrown when pixelData is null.</exception>
-    public ImageData(byte[] pixelData, int width, int height, FileExtension format)
+    public ImageData(SKBitmap bitmap, FileExtension format)
     {
-        if (width <= 0)
-            throw new ArgumentException("Width must be greater than zero.", nameof(width));
-
-        if (height <= 0)
-            throw new ArgumentException("Height must be greater than zero.", nameof(height));
-
-        PixelData = pixelData ?? throw new ArgumentNullException(nameof(pixelData));
-        Width = width;
-        Height = height;
+        Bitmap = bitmap ?? throw new ArgumentNullException(nameof(bitmap));
         Format = format;
     }
 

@@ -1,7 +1,6 @@
 ﻿using Luxoria.Modules.Models;
 using Luxoria.Modules.Utils;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
+using SkiaSharp;
 using System.Diagnostics;
 
 namespace LuxImport.Utils;
@@ -50,33 +49,20 @@ public static class ImageDataHelper
                 throw new InvalidOperationException($"The file at '{path}' is empty.");
             }
 
-            // Load the image using ImageSharp
-            using (MemoryStream memoryStream = new MemoryStream(fileBytes))
+            // Load the image using SkiSharp
+            SKBitmap bitmap = SKBitmap.Decode(fileBytes);
+
+            // Check if the image was loaded successfully
+            if (bitmap == null)
             {
-                using (Image<Rgba32> image = Image.Load<Rgba32>(memoryStream))
-                {
-                    // Check if the image is valid
-                    if (image == null)
-                    {
-                        throw new InvalidOperationException($"Failed to decode image at path: {path}");
-                    }
-
-                    // Log successful decoding for debugging purposes
-                    Debug.WriteLine($"Image decoded successfully. Width: {image.Width}, Height: {image.Height}");
-
-                    // Directly access pixel data (in RGBA format) without extra encoding
-                    byte[] imageBytes = new byte[image.Width * image.Height * 4]; // RGBA32 = 4 bytes per pixel
-                    image.CopyPixelDataTo(imageBytes); // Copy the pixel data directly to the byte array
-
-                    // Create and return an ImageData object
-                    return new ImageData(
-                        imageBytes,
-                        image.Width,
-                        image.Height,
-                        ext
-                    );
-                }
+                throw new InvalidOperationException($"Failed to load image at '{path}'.");
             }
+
+            // Create an ImageData object from the loaded image
+            return new ImageData(
+                bitmap,
+                FileExtensionHelper.ConvertToEnum(extension)
+            );
         }
         catch (Exception ex)
         {

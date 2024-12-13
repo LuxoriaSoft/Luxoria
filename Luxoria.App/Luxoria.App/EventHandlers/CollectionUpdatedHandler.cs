@@ -1,4 +1,5 @@
-﻿using Luxoria.Modules.Models.Events;
+﻿using Luxoria.Modules.Models;
+using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using System.Linq;
 using Windows.UI.Notifications;
@@ -40,7 +41,9 @@ public class CollectionUpdatedHandler
 
         for (int i = 0; i < body.Assets.Count; i++)
         {
+            ImageData imageData = body.Assets.ElementAt(i).Data;
             _loggerService.Log($"Asset {i}: {body.Assets.ElementAt(i).MetaData.Id}");
+            _loggerService.Log($"Asset info {i} : {imageData.Height}x{imageData.Width}, pixels : {imageData.Height * imageData.Width}");
         }
     }
 }
