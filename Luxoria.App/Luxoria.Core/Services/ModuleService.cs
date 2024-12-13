@@ -1,8 +1,6 @@
 ﻿using Luxoria.Core.Interfaces;
 using Luxoria.Modules.Interfaces;
 using Luxoria.SDK.Interfaces;
-using System;
-using System.Collections.Generic;
 
 namespace Luxoria.Core.Services
 {

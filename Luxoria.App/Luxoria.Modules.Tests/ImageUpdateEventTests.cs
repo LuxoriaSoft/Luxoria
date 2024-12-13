@@ -1,5 +1,4 @@
 ﻿using Luxoria.Modules.Models.Events;
-using Xunit;
 
 namespace Luxoria.App.Tests
 {

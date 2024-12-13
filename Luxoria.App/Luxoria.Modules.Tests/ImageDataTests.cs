@@ -1,4 +1,6 @@
-﻿using Luxoria.Modules.Models;
+﻿using System;
+using Luxoria.Modules.Models;
+using SkiaSharp;
 using Xunit;
 
 namespace Luxoria.App.Tests
@@ -9,109 +11,80 @@ namespace Luxoria.App.Tests
         public void ImageData_WithValidParameters_ShouldInitializeProperties()
         {
             // Arrange
-            var pixelData = new byte[] { 0x00, 0x01, 0x02 };
-            var width = 1920;
-            var height = 1080;
+            using var bitmap = new SKBitmap(1920, 1080);
             var format = FileExtension.JPEG;
 
             // Act
-            var imageData = new ImageData(pixelData, width, height, format);
+            var imageData = new ImageData(bitmap, format);
 
             // Assert
-            Assert.Equal(pixelData, imageData.PixelData);
-            Assert.Equal(width, imageData.Width);
-            Assert.Equal(height, imageData.Height);
+            Assert.Equal(bitmap, imageData.Bitmap);
+            Assert.Equal(1920, imageData.Width);
+            Assert.Equal(1080, imageData.Height);
             Assert.Equal(format, imageData.Format);
         }
 
         [Fact]
-        public void ImageData_WithEmptyPixelData_ShouldInitializeProperties()
+        public void ImageData_WithNullBitmap_ShouldThrowArgumentNullException()
         {
             // Arrange
-            var pixelData = new byte[] { };
-            var width = 1920;
-            var height = 1080;
+            SKBitmap? bitmap = null;
             var format = FileExtension.JPEG;
 
+            // Act & Assert
+#pragma warning disable CS8604 // Possible null reference argument.
+            var exception = Assert.Throws<ArgumentNullException>(() => new ImageData(bitmap, format));
+#pragma warning restore CS8604 // Possible null reference argument.
+
+            // Verify the exception message and parameter
+            Assert.Equal("Value cannot be null. (Parameter 'bitmap')", exception.Message);
+        }
+
+        [Fact]
+        public void ImageData_WithZeroWidthBitmap_ShouldInitializeCorrectly()
+        {
+            // Arrange
+            using var bitmap = new SKBitmap(0, 1080); // Unusual case but valid SKBitmap
+            var format = FileExtension.PNG;
+
             // Act
-            var imageData = new ImageData(pixelData, width, height, format);
+            var imageData = new ImageData(bitmap, format);
 
             // Assert
-            Assert.Equal(0, imageData.PixelData.Length);
-            Assert.Equal(width, imageData.Width);
-            Assert.Equal(height, imageData.Height);
+            Assert.Equal(0, imageData.Width);
+            Assert.Equal(1080, imageData.Height);
             Assert.Equal(format, imageData.Format);
         }
 
         [Fact]
-        public void ImageData_WithNullPixelData_ShouldInitializeProperties()
+        public void ImageData_WithZeroHeightBitmap_ShouldInitializeCorrectly()
         {
             // Arrange
-            byte[] pixelData = null;
-            var width = 1920;
-            var height = 1080;
-            var format = FileExtension.JPEG;
+            using var bitmap = new SKBitmap(1920, 0); // Unusual case but valid SKBitmap
+            var format = FileExtension.PNG;
 
             // Act
-            var imageData = new ImageData(pixelData, width, height, format);
+            var imageData = new ImageData(bitmap, format);
 
             // Assert
-            Assert.Null(imageData.PixelData);
-            Assert.Equal(width, imageData.Width);
-            Assert.Equal(height, imageData.Height);
+            Assert.Equal(1920, imageData.Width);
+            Assert.Equal(0, imageData.Height);
             Assert.Equal(format, imageData.Format);
         }
 
         [Fact]
-        public void ImageData_WithNegativeWidth_ShouldThrowArgumentException()
+        public void ImageData_ToString_ShouldReturnCorrectFormat()
         {
             // Arrange
-            var pixelData = new byte[] { 0x00, 0x01, 0x02 };
-            var width = -1920;
-            var height = 1080;
+            using var bitmap = new SKBitmap(1280, 720);
             var format = FileExtension.JPEG;
 
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => new ImageData(pixelData, width, height, format));
-        }
+            // Act
+            var imageData = new ImageData(bitmap, format);
+            var result = imageData.ToString();
 
-        [Fact]
-        public void ImageData_WithNegativeHeight_ShouldThrowArgumentException()
-        {
-            // Arrange
-            var pixelData = new byte[] { 0x00, 0x01, 0x02 };
-            var width = 1920;
-            var height = -1080;
-            var format = FileExtension.JPEG;
-
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => new ImageData(pixelData, width, height, format));
-        }
-
-        [Fact]
-        public void ImageData_WithZeroWidth_ShouldThrowArgumentException()
-        {
-            // Arrange
-            var pixelData = new byte[] { 0x00, 0x01, 0x02 };
-            var width = 0;
-            var height = 1080;
-            var format = FileExtension.JPEG;
-
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => new ImageData(pixelData, width, height, format));
-        }
-
-        [Fact]
-        public void ImageData_WithZeroHeight_ShouldThrowArgumentException()
-        {
-            // Arrange
-            var pixelData = new byte[] { 0x00, 0x01, 0x02 };
-            var width = 1920;
-            var height = 0;
-            var format = FileExtension.JPEG;
-
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => new ImageData(pixelData, width, height, format));
+            // Assert
+            Assert.Equal("JPEG Image: 1280x720", result);
         }
     }
 }

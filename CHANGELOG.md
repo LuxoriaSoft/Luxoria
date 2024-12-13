@@ -1,3 +1,117 @@
+# [1.10.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.9.2...v1.10.0) (2024-12-08)
+
+
+### Bug Fixes
+
+* Add test to cover LogAsync method ([5132654](https://github.com/LuxoriaSoft/Luxoria/commit/513265465a7cb3019988ff2c5a0f6d8414b663cf))
+* All warnings about unit tests ([18cf818](https://github.com/LuxoriaSoft/Luxoria/commit/18cf81858a2607c9bd468c940c2246329417983a))
+* Fix sonar issues ([67d12a1](https://github.com/LuxoriaSoft/Luxoria/commit/67d12a12cb155a84c7fc8b668bd233a4807bc999))
+* Implementation of IEvent interface ([1ddf2b7](https://github.com/LuxoriaSoft/Luxoria/commit/1ddf2b7ef30d70cf13dbc4e078a60ed3dfcc1035))
+
+
+### Features
+
+* Improve logger system ([7de7d16](https://github.com/LuxoriaSoft/Luxoria/commit/7de7d16ae3d7c34bcc095ef566edf344679e748b))
+
+## [1.9.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.9.1...v1.9.2) (2024-12-06)
+
+
+### Bug Fixes
+
+* Add some tests to cover FileExtensionHelper class ([34349cd](https://github.com/LuxoriaSoft/Luxoria/commit/34349cdc8bb7c4a6afc1dd5f7576dde5fa253be0))
+* Add some tests to cover Manifest model ([9ccebf4](https://github.com/LuxoriaSoft/Luxoria/commit/9ccebf40c6e9d6779e012c77592f498a0aeea2dc))
+
+## [1.9.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.9.0...v1.9.1) (2024-12-06)
+
+
+### Bug Fixes
+
+* Disable tests on some Event models ([79cfabe](https://github.com/LuxoriaSoft/Luxoria/commit/79cfabe49996be94fc866c10af47181f1d2247a4))
+* Excluding some models from coverage ([6ea94b0](https://github.com/LuxoriaSoft/Luxoria/commit/6ea94b01a77c2edb994b1a8f0a58edd7088a3109))
+
+# [1.9.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.8.11...v1.9.0) (2024-12-05)
+
+
+### Bug Fixes
+
+* Remove .sonar from cache exclusions in build workflow ([32edacd](https://github.com/LuxoriaSoft/Luxoria/commit/32edacdc8109e5411f3cb1a525ba2194b4a0e712))
+* Update cache paths for SonarCloud data in build workflow ([1b80d05](https://github.com/LuxoriaSoft/Luxoria/commit/1b80d05270325388a6c8158ad7c36907d582c8f8))
+
+
+### Features
+
+* Enable caching system on Build workflow ([3d14a7d](https://github.com/LuxoriaSoft/Luxoria/commit/3d14a7d6a5ffbeee2b3ff0417be719bcb90007b9))
+* Including .sonar folder in cache ([b36c6aa](https://github.com/LuxoriaSoft/Luxoria/commit/b36c6aac3066f1ec661ccd02addc6f9645182d40))
+
+## [1.8.11](https://github.com/LuxoriaSoft/Luxoria/compare/v1.8.10...v1.8.11) (2024-12-05)
+
+
+### Bug Fixes
+
+* Execute a clean code on the overall code base ([5ae0ef6](https://github.com/LuxoriaSoft/Luxoria/commit/5ae0ef695d2ea5a54f90ea0c94a56f4b2425a570))
+* Include StartupTests file to test and cover Startup logic file ([ba078f9](https://github.com/LuxoriaSoft/Luxoria/commit/ba078f916d54fc4c62eb6ed8060638b698abd593))
+* Make private assert functions static ([3ed16e0](https://github.com/LuxoriaSoft/Luxoria/commit/3ed16e089d38c0365fbc3aaddd2682ffd151826f))
+* Run Code-cleaner on StartupTests file ([f0c59c6](https://github.com/LuxoriaSoft/Luxoria/commit/f0c59c60d7cf3a0e205704594d6c1fe88efd9dd1))
+
+## [1.8.10](https://github.com/LuxoriaSoft/Luxoria/compare/v1.8.9...v1.8.10) (2024-12-05)
+
+
+### Bug Fixes
+
+* Add mutex (multi-thread safe) on all ImageData methods ([d68b8f0](https://github.com/LuxoriaSoft/Luxoria/commit/d68b8f0004cdab265f7642fb8f942623ef79959b))
+* Clean sonar issues on Startup file ([f30794b](https://github.com/LuxoriaSoft/Luxoria/commit/f30794baa0623fe2e44973c0cb5515bb1a1e38e9))
+* Clean sonar issues on this file ([3811bfa](https://github.com/LuxoriaSoft/Luxoria/commit/3811bfa79af67bd36b8163e5b0a3d8c94ba8ceeb))
+* Make UpdateSlashScreenAsync function static ([74df2fc](https://github.com/LuxoriaSoft/Luxoria/commit/74df2fccf8c6f756d9d21e1af2a04bc23a77dcdb))
+
+## [1.8.9](https://github.com/LuxoriaSoft/Luxoria/compare/v1.8.8...v1.8.9) (2024-12-01)
+
+
+### Bug Fixes
+
+* Rename build job to scan-sonarcloud in workflow configuration ([22b4da3](https://github.com/LuxoriaSoft/Luxoria/commit/22b4da3f182956de969fdd92cdccbd7a91646f0b))
+
+## [1.8.8](https://github.com/LuxoriaSoft/Luxoria/compare/v1.8.7...v1.8.8) (2024-12-01)
+
+
+### Bug Fixes
+
+* Update commit-checker workflow to trigger on specific pull request events ([0d69964](https://github.com/LuxoriaSoft/Luxoria/commit/0d69964140845b0be526864ae6991f272532e74c))
+
+## [1.8.7](https://github.com/LuxoriaSoft/Luxoria/compare/v1.8.6...v1.8.7) (2024-12-01)
+
+
+### Bug Fixes
+
+* Change hyperlink to access to SonarCloud from main readme ([7c51bd1](https://github.com/LuxoriaSoft/Luxoria/commit/7c51bd169c9ad02e0efac1c2f2e09961e26b2e8c))
+
+## [1.8.6](https://github.com/LuxoriaSoft/Luxoria/compare/v1.8.5...v1.8.6) (2024-11-29)
+
+
+### Bug Fixes
+
+* Add SONAR_TOKEN to SonarQube analysis in GitHub Actions workflow ([a786685](https://github.com/LuxoriaSoft/Luxoria/commit/a786685960dd1823fb33c0fe8ba7c4265cf69519))
+
+## [1.8.5](https://github.com/LuxoriaSoft/Luxoria/compare/v1.8.4...v1.8.5) (2024-11-29)
+
+
+### Bug Fixes
+
+* Update dotnet-coverage command in GitHub Actions workflow for improved test coverage collection ([896d18e](https://github.com/LuxoriaSoft/Luxoria/commit/896d18ed9e36ee0be87452d0af82e6e08be942ba))
+
+## [1.8.4](https://github.com/LuxoriaSoft/Luxoria/compare/v1.8.3...v1.8.4) (2024-11-29)
+
+
+### Bug Fixes
+
+* Add installation step for .NET coverage tool in GitHub Actions workflow ([8e5d6dd](https://github.com/LuxoriaSoft/Luxoria/commit/8e5d6ddb9ec023b4e70d2ac3f19478505fc995fc))
+
+## [1.8.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.8.2...v1.8.3) (2024-11-29)
+
+
+### Bug Fixes
+
+* Update GitHub Actions workflow to use SonarCloud and improve coverage reporting ([e398f25](https://github.com/LuxoriaSoft/Luxoria/commit/e398f25c14f53e292798f1fbeec9610fad470459))
+
 ## [1.8.2](https://github.com/Luxoria-EIP/Luxoria/compare/v1.8.1...v1.8.2) (2024-11-28)
 
 
