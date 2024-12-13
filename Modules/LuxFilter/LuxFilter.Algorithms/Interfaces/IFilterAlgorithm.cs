@@ -1,4 +1,6 @@
-﻿namespace LuxFilter.Algorithms.Interfaces;
+﻿using SkiaSharp;
+
+namespace LuxFilter.Algorithms.Interfaces;
 
 public interface IFilterAlgorithm
 {
@@ -15,5 +17,5 @@ public interface IFilterAlgorithm
     /// <summary>
     /// Execute the algorithm
     /// </summary>
-    IScore Compute(byte[] pixels, int height, int width);
+    double Compute(SKBitmap bitmap, int height, int width);
 }
