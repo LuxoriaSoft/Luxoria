@@ -34,7 +34,7 @@ public class ImageData
     /// <param name="format">The format of the image (e.g., "PNG", "JPEG").</param>
     public ImageData(SKBitmap bitmap, FileExtension format)
     {
-        Bitmap = bitmap;
+        Bitmap = bitmap ?? throw new ArgumentNullException(nameof(bitmap));
         Format = format;
     }
 
