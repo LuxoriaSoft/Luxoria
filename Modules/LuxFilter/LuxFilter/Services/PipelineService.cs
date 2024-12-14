@@ -45,33 +45,57 @@ namespace LuxFilter.Services
         }
 
         /// <summary>
-        /// Compute all algorithms present in the pipeline
+        /// Compute all algorithms present in the pipeline using multithreading.
         /// </summary>
-        /// <param name="bitmap">Bitmap loaded from SkiaSharp</param>
-        /// <param name="height">Height in pixels</param>
-        /// <param name="width">Width in pixels</param>
+        /// <param name="bitmap">Bitmap loaded from SkiaSharp.</param>
+        /// <param name="height">Height in pixels.</param>
+        /// <param name="width">Width in pixels.</param>
         public void Compute(SKBitmap bitmap, int height, int width)
         {
+            if (_workflow == null || !_workflow.Any())
+            {
+                _logger.Log("Pipeline has no algorithms to execute.");
+                return;
+            }
+
             _logger.Log("Executing pipeline...");
-            int currentAlgo = 0;
+            var startTime = DateTime.UtcNow;
+
+            double fscore = 0; // Final score
             int totalAlgo = _workflow.Count;
-            double fscore = 0;
 
-            // Get the delay since the function call
+            // Lock object for safely updating shared variables
+            object lockObj = new();
 
-            foreach (var step in _workflow)
+            Parallel.ForEach(_workflow, (step, state, index) =>
             {
                 IFilterAlgorithm algorithm = step.Item1;
                 double weight = step.Item2;
 
-                _logger.Log($"[{currentAlgo}/{totalAlgo}]: Executing algorithm: [{algorithm.Name}] (w={weight})...");
-                var score = algorithm.Compute(bitmap, height, width);
-                fscore += score * weight;
-                _logger.Log($"[{algorithm.Name}]: Score: [{score}]");
-                currentAlgo++;
-            }
+                _logger.Log($"[{index + 1}/{totalAlgo}]: Executing algorithm: [{algorithm.Name}] (w={weight})...");
+                var algoStartTime = DateTime.UtcNow;
 
-            _logger.Log($"Pipeline done (fscore={fscore}) !");
+                try
+                {
+                    var score = algorithm.Compute(bitmap, height, width);
+                    var algoDuration = DateTime.UtcNow - algoStartTime;
+
+                    lock (lockObj) // Safely update shared variables
+                    {
+                        fscore += score * weight;
+                    }
+
+                    _logger.Log($"[{algorithm.Name}]: Score: [{score}], Execution time: {algoDuration}");
+                }
+                catch (Exception ex)
+                {
+                    _logger.Log($"Error executing [{algorithm.Name}]: {ex.Message}");
+                }
+            });
+
+            var endTime = DateTime.UtcNow;
+            _logger.Log($"Pipeline done (fscore={fscore})! Total execution time: {endTime - startTime}");
         }
+
     }
 }
