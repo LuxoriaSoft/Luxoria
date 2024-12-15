@@ -50,12 +50,12 @@ namespace LuxFilter.Services
         /// <param name="bitmap">Bitmap loaded from SkiaSharp.</param>
         /// <param name="height">Height in pixels.</param>
         /// <param name="width">Width in pixels.</param>
-        public void Compute(SKBitmap bitmap, int height, int width)
+        public double Compute(SKBitmap bitmap, int height, int width)
         {
             if (_workflow == null || !_workflow.Any())
             {
                 _logger.Log("Pipeline has no algorithms to execute.");
-                return;
+                throw new InvalidOperationException("Pipeline has no algorithms to execute.");
             }
 
             _logger.Log("Executing pipeline...");
@@ -96,6 +96,7 @@ namespace LuxFilter.Services
 
             var endTime = DateTime.UtcNow;
             _logger.Log($"Pipeline done (fscore={fscore})! Total execution time: {endTime - startTime}");
+            return fscore;
         }
 
     }
