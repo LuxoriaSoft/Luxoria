@@ -64,7 +64,7 @@ namespace LuxFilter.Services
             double fscore = 0; // Final score
             int totalAlgo = _workflow.Count;
 
-            // Lock object for safely updating shared variables
+            // Multithreading lock object
             object lockObj = new();
 
             Parallel.ForEach(_workflow, (step, state, index) =>
@@ -72,7 +72,7 @@ namespace LuxFilter.Services
                 IFilterAlgorithm algorithm = step.Item1;
                 double weight = step.Item2;
 
-                _logger.Log($"[{index + 1}/{totalAlgo}]: Executing algorithm: [{algorithm.Name}] (w={weight})...");
+                _logger.Log($"[{index + 1}/{totalAlgo}]: Executing algorithm: [{algorithm.Name}] (w={weight}) (thread={Thread.CurrentThread.ManagedThreadId})...");
                 var algoStartTime = DateTime.UtcNow;
 
                 try
@@ -80,7 +80,8 @@ namespace LuxFilter.Services
                     var score = algorithm.Compute(bitmap, height, width);
                     var algoDuration = DateTime.UtcNow - algoStartTime;
 
-                    lock (lockObj) // Safely update shared variables
+                    // Modify the fscore
+                    lock (lockObj)
                     {
                         fscore += score * weight;
                     }
