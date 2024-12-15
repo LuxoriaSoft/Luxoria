@@ -110,7 +110,7 @@ public class SharpnessAlgo : IFilterAlgorithm
     /// <summary>
     /// Apply Laplacian kernel to the image
     /// </summary>
-    private SKBitmap ApplyLaplacianKernel(SKBitmap bitmap)
+    private static SKBitmap ApplyLaplacianKernel(SKBitmap bitmap)
     {
         // Create a copy bitmap
         SKBitmap target = new SKBitmap(bitmap.Width, bitmap.Height);
