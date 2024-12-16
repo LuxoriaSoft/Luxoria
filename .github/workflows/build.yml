@@ -43,7 +43,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-sonar-
 
-      - name: Analyze 'Luxoria.App' on SonarCloud
+      - name: Analyze 'Luxoria' on SonarCloud
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
