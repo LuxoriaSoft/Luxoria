@@ -43,7 +43,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-sonar-
 
-      - name: Analyze with SonarQube
+      - name: Analyze 'Luxoria.App' on SonarCloud
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -52,5 +52,5 @@ jobs:
           dotnet sonarscanner begin /k:"LuxoriaSoft_Luxoria" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /o:"luxoria" /d:sonar.coverage.exclusions="**/App.xaml.cs, **/MainWindow.xaml.cs, **/*.sqignore" /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
           dotnet build Luxoria.App/Luxoria.App.sln --no-incremental
           dotnet build Modules/LuxImport/LuxImport.sln --no-incremental
-          dotnet-coverage collect "dotnet test Luxoria.App/Luxoria.App.sln" -f xml -o "coverage.xml"
+          dotnet-coverage collect "dotnet test Luxoria.App/Luxoria.App.sln --no-build" -f xml -o "coverage.xml"
           dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
