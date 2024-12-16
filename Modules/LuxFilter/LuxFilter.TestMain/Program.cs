@@ -1,6 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using LuxFilter.Algorithms.ColorVisualAesthetics;
 using LuxFilter.Services;
 using Luxoria.SDK.Models;
 using Luxoria.SDK.Services;
@@ -12,7 +11,8 @@ var loggerService = new LoggerService(LogLevel.Debug, new DebugLogTarget());
 var pipeline = new PipelineService(loggerService);
 
 
-pipeline.AddAlgorithm(new LuxFilter.Algorithms.ColorVisualAesthetics.SharpnessAlgo(), 1);
+pipeline.AddAlgorithm(new LuxFilter.Algorithms.ImageQuality.SharpnessAlgo(), 0.75);
+pipeline.AddAlgorithm(new LuxFilter.Algorithms.ImageQuality.ResolutionAlgo(), 0.25);
 
 // Initialize a 100x100 SKBitmap
 var bitmap = new SKBitmap(100, 100);

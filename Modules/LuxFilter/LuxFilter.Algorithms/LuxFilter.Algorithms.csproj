@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Algorithms\ImageQuality\" />
+    <Folder Include="Algorithms\ColorVisualAesthetics\" />
     <Folder Include="Algorithms\ContentSimilarity\" />
     <Folder Include="Algorithms\Metadata\" />
     <Folder Include="Algorithms\PerceptualMetrics\" />

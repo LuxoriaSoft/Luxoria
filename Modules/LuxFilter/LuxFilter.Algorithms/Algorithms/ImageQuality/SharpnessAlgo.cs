@@ -2,7 +2,7 @@
 using LuxFilter.Algorithms.Utils;
 using SkiaSharp;
 
-namespace LuxFilter.Algorithms.ColorVisualAesthetics;
+namespace LuxFilter.Algorithms.ImageQuality;
 
 public class SharpnessAlgo : IFilterAlgorithm
 {
