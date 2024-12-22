@@ -1,5 +1,7 @@
-﻿using Luxoria.Modules;
+﻿using System;
+using Luxoria.Modules;
 using Luxoria.Modules.Models;
+using Xunit;
 
 namespace Luxoria.App.Tests
 {
@@ -17,8 +19,8 @@ namespace Luxoria.App.Tests
         public void GetCurrentImage_ShouldReturnCurrentImage()
         {
             // Arrange
-            var pixelData = new byte[] { 0, 255, 127 };
-            var image = new ImageData(pixelData, 100, 200, FileExtension.JPEG);
+            using var bitmap = new SkiaSharp.SKBitmap(100, 200);
+            var image = new ImageData(bitmap, FileExtension.JPEG);
             _moduleContext.UpdateImage(image);
 
             // Act
@@ -32,8 +34,8 @@ namespace Luxoria.App.Tests
         public void UpdateImage_ShouldSetCurrentImage()
         {
             // Arrange
-            var pixelData = new byte[] { 1, 2, 3, 4 };
-            var newImage = new ImageData(pixelData, 300, 400, FileExtension.JPEG);
+            using var bitmap = new SkiaSharp.SKBitmap(300, 400);
+            var newImage = new ImageData(bitmap, FileExtension.JPEG);
 
             // Act
             _moduleContext.UpdateImage(newImage);
