@@ -36,6 +36,6 @@ public class LuxFilter : IModule
 
     public void Shutdown()
     {
-        throw new NotImplementedException();
+        _logger?.Log("LuxFilter module shutdown.", CATEGORY);
     }
 }

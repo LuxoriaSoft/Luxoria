@@ -2,55 +2,38 @@
 using LuxFilter.Interfaces;
 using Luxoria.SDK.Interfaces;
 using SkiaSharp;
-using System.Collections.ObjectModel;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace LuxFilter.Services
 {
     public class PipelineService : IPipelineService
     {
-        // Logger service
         private readonly ILoggerService _logger;
-        // Collection of filter algorithms
-        private Collection<(IFilterAlgorithm, double)> _workflow;
-        // Total weight
+        private ICollection<(IFilterAlgorithm, double)> _workflow;
         private double _tweight;
 
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PipelineService"/> class.
-        /// </summary>
         public PipelineService(ILoggerService loggerService)
         {
-            // Initialize the logger service
             _logger = loggerService;
-            // Initialize the collection of workflow
-            _workflow = [];
-            // Set the total weight to 0
+            _workflow = new List<(IFilterAlgorithm, double)>();
             _tweight = 0.0;
         }
 
-        /// <summary>
-        /// Add an algorithm to the pipeline
-        /// </summary>
-        /// <param name="algorithm">Algorithm to add</param>
         public void AddAlgorithm(IFilterAlgorithm algorithm, double weight)
         {
             if (_tweight + weight > 1)
             {
-                throw new ArgumentException("Pipeline error : Total weight cannot be above 1");
+                throw new ArgumentException("Pipeline error: Total weight cannot be above 1");
             }
 
             _workflow.Add((algorithm, weight));
             _tweight += weight;
         }
 
-        /// <summary>
-        /// Compute all algorithms present in the pipeline using multithreading.
-        /// </summary>
-        /// <param name="bitmap">Bitmap loaded from SkiaSharp.</param>
-        /// <param name="height">Height in pixels.</param>
-        /// <param name="width">Width in pixels.</param>
-        public double Compute(SKBitmap bitmap, int height, int width)
+        public async Task<List<double>> Compute(IEnumerable<BitmapWithSize> bitmapsWithSizes)
         {
             if (_workflow == null || !_workflow.Any())
             {
@@ -59,44 +42,38 @@ namespace LuxFilter.Services
             }
 
             _logger.Log("Executing pipeline...");
-            var startTime = DateTime.UtcNow;
+            var allBitmapScores = new List<double>(); // To store the final score for each bitmap
 
-            double fscore = 0; // Final score
-            int totalAlgo = _workflow.Count;
-
-            // Multithreading lock object
-            object lockObj = new();
-
-            Parallel.ForEach(_workflow, (step, state, index) =>
+            foreach (var bitmapWithSize in bitmapsWithSizes)
             {
-                IFilterAlgorithm algorithm = step.Item1;
-                double weight = step.Item2;
+                double fscore = 0; // Final score for this bitmap
+                int totalAlgo = _workflow.Count;
 
-                _logger.Log($"[{index + 1}/{totalAlgo}]: Executing algorithm: [{algorithm.Name}] (w={weight}) (thread={Thread.CurrentThread.ManagedThreadId})...");
-                var algoStartTime = DateTime.UtcNow;
-
-                try
+                // Execute each algorithm on the current bitmap
+                foreach (var step in _workflow)
                 {
-                    var score = algorithm.Compute(bitmap, height, width);
-                    var algoDuration = DateTime.UtcNow - algoStartTime;
+                    IFilterAlgorithm algorithm = step.Item1;
+                    double weight = step.Item2;
 
-                    // Modify the fscore
-                    lock (lockObj)
+                    _logger.Log($"Executing algorithm: [{algorithm.Name}] (w={weight}) on bitmap of size {bitmapWithSize.Width}x{bitmapWithSize.Height}...");
+                    try
                     {
+                        var score = algorithm.Compute(bitmapWithSize.Bitmap, bitmapWithSize.Height, bitmapWithSize.Width);
+                        _logger.Log($"Score for algorithm [{algorithm.Name}] on bitmap: {score}");
                         fscore += score * weight;
                     }
-
-                    _logger.Log($"[{algorithm.Name}]: Score: [{score}], Execution time: {algoDuration}");
+                    catch (Exception ex)
+                    {
+                        _logger.Log($"Error executing [{algorithm.Name}] on bitmap: {ex.Message}");
+                    }
                 }
-                catch (Exception ex)
-                {
-                    _logger.Log($"Error executing [{algorithm.Name}]: {ex.Message}");
-                }
-            });
 
-            var endTime = DateTime.UtcNow;
-            _logger.Log($"Pipeline done (fscore={fscore})! Total execution time: {endTime - startTime}");
-            return fscore;
+                _logger.Log($"Final score for bitmap: {fscore}");
+                allBitmapScores.Add(fscore);
+            }
+
+            _logger.Log("Pipeline execution completed.");
+            return allBitmapScores;
         }
 
     }
