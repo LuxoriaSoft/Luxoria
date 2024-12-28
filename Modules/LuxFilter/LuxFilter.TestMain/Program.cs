@@ -1,6 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using LuxFilter.Interfaces;
+using LuxFilter.Models;
 using LuxFilter.Services;
 using Luxoria.SDK.Models;
 using Luxoria.SDK.Services;

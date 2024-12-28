@@ -9,15 +9,12 @@
 
   <ItemGroup>
     <Compile Remove="Filters\**" />
-    <Compile Remove="Models\**" />
     <Compile Remove="Repositories\**" />
     <Compile Remove="Utils\**" />
     <EmbeddedResource Remove="Filters\**" />
-    <EmbeddedResource Remove="Models\**" />
     <EmbeddedResource Remove="Repositories\**" />
     <EmbeddedResource Remove="Utils\**" />
     <None Remove="Filters\**" />
-    <None Remove="Models\**" />
     <None Remove="Repositories\**" />
     <None Remove="Utils\**" />
   </ItemGroup>
