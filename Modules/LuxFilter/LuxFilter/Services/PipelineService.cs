@@ -1,5 +1,6 @@
 ﻿using LuxFilter.Algorithms.Interfaces;
 using LuxFilter.Interfaces;
+using LuxFilter.Models;
 using Luxoria.SDK.Interfaces;
 using System.Collections.Concurrent;
 
