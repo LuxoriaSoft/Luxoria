@@ -1,3 +1,25 @@
+# [1.11.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.10.0...v1.11.0) (2024-12-22)
+
+
+### Bug Fixes
+
+* Add build step for LuxImport solution in CI workflow ([cead092](https://github.com/LuxoriaSoft/Luxoria/commit/cead0928a8620cffe0d7aa4bd8033e63398d9aff))
+* Add docstrings to build functions for better clarity ([8845ea6](https://github.com/LuxoriaSoft/Luxoria/commit/8845ea6361f07d990e6cc494b0b405f8307a842c))
+* Add filters in indexation process ([e01f2a9](https://github.com/LuxoriaSoft/Luxoria/commit/e01f2a98da1dba290268865f36327445acb00e4f))
+* All unit tests using ImageData model ([513ec49](https://github.com/LuxoriaSoft/Luxoria/commit/513ec49ba4e4a574280065f3f8cfc314fb34227a))
+* Increment LuxImport's version from 1.0.0 to 1.0.1 ([1c0cd97](https://github.com/LuxoriaSoft/Luxoria/commit/1c0cd977739049d1ea39ef2c06c15d05ca50014b))
+* Replace buildsystem by one that build the entire solution ([2108176](https://github.com/LuxoriaSoft/Luxoria/commit/2108176cadf52394ddc195782cd537d36a4735f2))
+* Replace ReadOnlyMemory<byte> with SKBitmap ([22b893c](https://github.com/LuxoriaSoft/Luxoria/commit/22b893cba62bd8a571fa33631a8d33bb5f697bf0))
+* Update SonarCloud analysis job name in CI workflow for Luxoria ([adfe133](https://github.com/LuxoriaSoft/Luxoria/commit/adfe133d94f2410a70659e6a1a231ad792fbfdaa))
+* Update SonarCloud analysis step in CI workflow for Luxoria.App ([518c53b](https://github.com/LuxoriaSoft/Luxoria/commit/518c53be7f59856d96e3845abe6eb74781989a93))
+
+
+### Features
+
+* Add Apache License 2.0 to the repository ([1fd74b0](https://github.com/LuxoriaSoft/Luxoria/commit/1fd74b069d479c55024443fd7ded4eca9fd72a8b))
+* Add Contributor Covenant Code of Conduct ([af939e2](https://github.com/LuxoriaSoft/Luxoria/commit/af939e27a9996849de9e9edb1a09a3157d713d02))
+* Add pull request template for Luxoria contributions ([313fe5c](https://github.com/LuxoriaSoft/Luxoria/commit/313fe5cbc811281c98ac8d66e3dccddb01fafbc6))
+
 # [1.10.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.9.2...v1.10.0) (2024-12-08)
 
 
