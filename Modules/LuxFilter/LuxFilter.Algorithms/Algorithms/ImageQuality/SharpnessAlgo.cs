@@ -17,7 +17,7 @@ public class SharpnessAlgo : IFilterAlgorithm
     public string Description => "Sharpness algorithm";
 
     /// <summary>
-    /// Lacipian kernel
+    /// Laplacian kernel
     /// </summary>
     private static readonly int[,] LaplacianKernel = new int[,]
     {
@@ -35,10 +35,8 @@ public class SharpnessAlgo : IFilterAlgorithm
     /// <returns>Returns the computed score of the algorithm</returns>
     public double Compute(SKBitmap bitmap, int height, int width)
     {
-
         SKBitmap grayScaleBitmap = ImageProcessing.ConvertBitmapToGrayscale(bitmap);
         SKBitmap laplacianBitmap = ApplyLaplacianKernel(grayScaleBitmap);
-
         return ComputeVariance(laplacianBitmap);
     }
 
@@ -70,7 +68,7 @@ public class SharpnessAlgo : IFilterAlgorithm
     /// Compute the variance of the image
     /// </summary>
     /// <param name="bitmap">Grayscale image</param>
-    /// <returns></returns>
+    /// <returns>Variance of the image</returns>
     private static double ComputeVariance(SKBitmap bitmap)
     {
         double mean = 0;
@@ -93,31 +91,29 @@ public class SharpnessAlgo : IFilterAlgorithm
         mean /= pixelValues.Length;
 
         // Calculate variance
-        for (int y = 0; y < height; y++)
+        foreach (byte intensity in pixelValues)
         {
-            for (int x = 0; x < width; x++)
-            {
-                double intensity = pixelValues[y * width + x];
-                double difference = intensity - mean;
-                squaredDifferenceSum += difference * difference;
-            }
+            double difference = intensity - mean;
+            squaredDifferenceSum += difference * difference;
         }
 
         return squaredDifferenceSum / pixelValues.Length;
     }
 
-
     /// <summary>
     /// Apply Laplacian kernel to the image
     /// </summary>
+    /// <param name="bitmap">Input SKBitmap</param>
+    /// <returns>Processed SKBitmap</returns>
     private static SKBitmap ApplyLaplacianKernel(SKBitmap bitmap)
     {
-        // Create a copy bitmap
+        // Create a target bitmap
         SKBitmap target = new SKBitmap(bitmap.Width, bitmap.Height);
 
-        for (int y = 1; y < bitmap.Width - 1; y++)
+        // Apply kernel to each pixel, avoiding edges
+        for (int y = 1; y < bitmap.Height - 1; y++)
         {
-            for (int x = 1; x < bitmap.Height - 1; x++)
+            for (int x = 1; x < bitmap.Width - 1; x++)
             {
                 byte pixelValue = ApplyPixelToLaplacianKernel(bitmap, x, y);
                 target.SetPixel(x, y, new SKColor(pixelValue, pixelValue, pixelValue));

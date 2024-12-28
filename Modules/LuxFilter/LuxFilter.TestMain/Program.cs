@@ -31,7 +31,10 @@ pipe2.Compute(bitmap, bitmap.Height, bitmap.Width);
 */
 
 // Load an image from C:\Mac\Home\Downloads\NET Logo_resized copy.png
-SKBitmap image = SKBitmap.Decode(@"C:\Mac\Home\Downloads\NET Logo_resized copy.png");
+SKBitmap image = SKBitmap.Decode(@"C:\Mac\Home\Downloads\landscape_4k.jpg");
+SKBitmap image2 = SKBitmap.Decode(@"C:\Mac\Home\Downloads\EditorView2.png");
 
 var fscore = pipeline.Compute(image, image.Height, image.Width);
+var fscore2 = pipeline.Compute(image2, image2.Height, image2.Width);
 loggerService.Log($"Final score: {fscore}");
+loggerService.Log($"Final score: {fscore2}");
