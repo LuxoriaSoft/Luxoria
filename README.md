@@ -79,7 +79,7 @@ Luxoria is more than just a photo editing tool, it's a complete photography mana
 
 ## 📄 **License**
 
-`Luxoria is licensed` under the `Apache 2.0` License. See the [LICENSE](./LICENSE) file for more details.
+`Luxoria is licensed` under the `Apache 2.0` License. See the [LICENSE](./LICENSE.md) file for more details.
 
 ---
 
