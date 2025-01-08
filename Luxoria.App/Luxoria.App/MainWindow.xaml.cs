@@ -4,6 +4,7 @@ using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Microsoft.UI.Xaml;
+using System;
 
 namespace Luxoria.App
 {
@@ -59,6 +60,7 @@ namespace Luxoria.App
         private void SendToModule_Click(object sender, RoutedEventArgs e)
         {
             // This button will eventually trigger module-specific logic
+            throw new Exception("This is a test exception");
         }
     }
 }
