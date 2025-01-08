@@ -1,3 +1,10 @@
+## [1.11.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.11.0...v1.11.1) (2025-01-08)
+
+
+### Bug Fixes
+
+* Update LICENSE link in README to point to LICENSE.md ([514101a](https://github.com/LuxoriaSoft/Luxoria/commit/514101a3d41f0c8e15141fcbf03deb8c9c789f2e))
+
 # [1.11.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.10.0...v1.11.0) (2024-12-22)
 
 
