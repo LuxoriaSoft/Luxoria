@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Sentry" Version="5.0.0" />
+    <PackageReference Include="Sentry.Profiling" Version="5.0.0" />
+  </ItemGroup>
+
 </Project>
