@@ -1,14 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Sentry" Version="5.0.0" />
-    <PackageReference Include="Sentry.Profiling" Version="5.0.0" />
-  </ItemGroup>
+	<!-- Include the DLLs from the libs folder -->
+	<ItemGroup>
+		<None Include="libs\Sentry.dll" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="libs\Sentry.Profiling.dll" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
+	<!-- Optionally, you can reference the DLLs directly (for specific assembly bindings) -->
+	<ItemGroup>
+		<Reference Include="Sentry">
+			<HintPath>libs\Sentry.dll</HintPath>
+		</Reference>
+		<Reference Include="Sentry.Profiling">
+			<HintPath>libs\Sentry.Profiling.dll</HintPath>
+		</Reference>
+	</ItemGroup>
 
 </Project>

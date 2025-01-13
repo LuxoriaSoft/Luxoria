@@ -1,6 +1,7 @@
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
 using Sentry;
+using Sentry.Profiling;
 using System.Diagnostics;
 
 namespace Luxoria.SDK.Services
