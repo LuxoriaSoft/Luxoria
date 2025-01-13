@@ -6,13 +6,15 @@
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
-	<!-- Include the DLLs from the libs folder -->
+	<!-- Include the DLLs from the libs folder as Embedded Resources -->
 	<ItemGroup>
-		<None Include="libs\Sentry.dll" CopyToOutputDirectory="PreserveNewest" />
-		<None Include="libs\Sentry.Profiling.dll" CopyToOutputDirectory="PreserveNewest" />
+		<EmbeddedResource Include="libs\Sentry.dll" />
+		<EmbeddedResource Include="libs\Sentry.Profiling.dll" />
+		<EmbeddedResource Include="libs\Microsoft.Diagnostics.FastSerialization.dll" />
+		<EmbeddedResource Include="libs\Microsoft.Diagnostics.Tracing.TraceEvent.dll" />
+		<EmbeddedResource Include="libs\Microsoft.Diagnostics.NETCore.Client.dll" />
 	</ItemGroup>
 
-	<!-- Optionally, you can reference the DLLs directly (for specific assembly bindings) -->
 	<ItemGroup>
 		<Reference Include="Sentry">
 			<HintPath>libs\Sentry.dll</HintPath>
