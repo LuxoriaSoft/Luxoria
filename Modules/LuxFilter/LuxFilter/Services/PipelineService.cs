@@ -11,9 +11,25 @@ namespace LuxFilter.Services
     /// </summary>
     public class PipelineService : IPipelineService
     {
+        /// <summary>
+        /// Variables
+        /// </summary>
         private readonly ILoggerService _logger;
         private ICollection<(IFilterAlgorithm, double)> _workflow;
         private double _tweight;
+
+        /// <summary>
+        /// Event handlers
+        /// </summary>
+        /// <summary>
+        /// Event handler when the pipeline has finished computing scores
+        /// </summary>
+        public event EventHandler<TimeSpan> OnPipelineFinished;
+
+        /// <summary>
+        /// Event handler when a score has been computed
+        /// </summary>
+        public event EventHandler<(Guid, double)> OnScoreComputed;
 
         /// <summary>
         /// Constructor
@@ -24,6 +40,10 @@ namespace LuxFilter.Services
             _logger = loggerService;
             _workflow = new List<(IFilterAlgorithm, double)>();
             _tweight = 0.0;
+
+            // Event handlers to avoid null reference exceptions
+            OnPipelineFinished += (sender, e) => { };
+            OnScoreComputed += (sender, e) => { };
         }
 
         /// <summary>
@@ -49,7 +69,7 @@ namespace LuxFilter.Services
         /// <summary>
         /// Compute scores for a collection of BitmapWithSize objects
         /// </summary>
-        /// <param name="bitmapsWithSizes">Bitmap gateways</param>
+        /// <param name="bitmaps">Bitmap gateways</param>
         /// <returns>Return a list which contains each score of each bitmap</returns>
         /// <exception cref="InvalidOperationException"></exception>
         public async Task<List<(Guid, double)>> Compute(IEnumerable<(Guid, SKBitmap)> bitmaps)
@@ -122,15 +142,5 @@ namespace LuxFilter.Services
             // Return results as a list of tuples with Guid and the corresponding score, ordered by Guid
             return results.OrderBy(kvp => kvp.Key).Select(kvp => (kvp.Key, kvp.Value)).ToList();
         }
-
-
-        /// <summary>
-        /// Events handler
-        /// </summary>
-
-        /// <summary>
-        /// </summary>
-        public event EventHandler<TimeSpan> OnPipelineFinished;
-        public event EventHandler<(Guid, double)> OnScoreComputed;
     }
 }
