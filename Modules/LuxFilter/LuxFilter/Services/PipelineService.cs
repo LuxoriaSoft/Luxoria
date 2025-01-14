@@ -32,7 +32,7 @@ namespace LuxFilter.Services
         /// <param name="algorithm">Add an algorithm to the pipeline</param>
         /// <param name="weight">Apply a weight on result</param>
         /// <exception cref="ArgumentException">If weight is lower than 0 or upper than 1, throw an exception</exception>
-        public void AddAlgorithm(IFilterAlgorithm algorithm, double weight)
+        public IPipelineService AddAlgorithm(IFilterAlgorithm algorithm, double weight)
         {
             if (_tweight + weight > 1)
             {
@@ -41,6 +41,9 @@ namespace LuxFilter.Services
 
             _workflow.Add((algorithm, weight));
             _tweight += weight;
+
+            // Return this instance to allow chaining
+            return this;
         }
 
         /// <summary>

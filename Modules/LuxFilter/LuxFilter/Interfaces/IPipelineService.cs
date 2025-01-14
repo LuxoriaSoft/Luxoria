@@ -13,7 +13,7 @@ namespace LuxFilter.Interfaces
         /// </summary>
         /// <param name="algorithm">Algorithm to add to the pipeline</param>
         /// <param name="weight">Weight applied to the result of the algorithm (0-1)</param>
-        void AddAlgorithm(IFilterAlgorithm algorithm, double weight);
+        IPipelineService AddAlgorithm(IFilterAlgorithm algorithm, double weight);
 
         /// <summary>
         /// Compute scores for a collection of BitmapWithSize objects
