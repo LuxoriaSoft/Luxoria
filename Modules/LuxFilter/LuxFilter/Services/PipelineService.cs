@@ -1,7 +1,7 @@
 ﻿using LuxFilter.Algorithms.Interfaces;
 using LuxFilter.Interfaces;
-using LuxFilter.Models;
 using Luxoria.SDK.Interfaces;
+using SkiaSharp;
 using System.Collections.Concurrent;
 
 namespace LuxFilter.Services
@@ -52,12 +52,12 @@ namespace LuxFilter.Services
         /// <param name="bitmapsWithSizes">Bitmap gateways</param>
         /// <returns>Return a list which contains each score of each bitmap</returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public async Task<List<double>> Compute(IEnumerable<BitmapWithSize> bitmapsWithSizes)
+        public async Task<List<double>> Compute(IEnumerable<SKBitmap> bitmapsWithSizes)
         {
             if (_workflow == null || !_workflow.Any())
             {
                 _logger.Log("Pipeline has no algorithms to execute.");
-                throw new InvalidOperationException("Pipeline has no algorithms to execute.");
+                throw new InvalidOperationException("Pipeline has no algorxithms to execute.");
             }
 
             DateTime start = DateTime.Now;
@@ -73,7 +73,7 @@ namespace LuxFilter.Services
             {
                 Parallel.ForEach(indexedBitmaps, indexedBitmap =>
                 {
-                    var (index, bitmapWithSize) = indexedBitmap;
+                    var (index, bitmap) = indexedBitmap;
 
                     double fscore = 0;
 
@@ -86,7 +86,7 @@ namespace LuxFilter.Services
                         _logger.Log($"Executing algorithm: [{algorithm.Name}] (w={weight}) (thrd={Thread.CurrentThread.ManagedThreadId})...");
                         try
                         {
-                            var score = algorithm.Compute(bitmapWithSize.Bitmap, bitmapWithSize.Height, bitmapWithSize.Width);
+                            var score = algorithm.Compute(bitmap, bitmap.Height, bitmap.Width);
                             DateTime endingTime = DateTime.Now;
                             _logger.Log($"Score for algorithm [{algorithm.Name}] on bitmap: {score}, time consumed : ({endingTime - startingTime})s");
                             fscore += score * weight;

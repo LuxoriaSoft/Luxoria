@@ -1,5 +1,5 @@
 ﻿using LuxFilter.Algorithms.Interfaces;
-using LuxFilter.Models;
+using SkiaSharp;
 
 namespace LuxFilter.Interfaces
 {
@@ -18,6 +18,6 @@ namespace LuxFilter.Interfaces
         /// <summary>
         /// Compute scores for a collection of BitmapWithSize objects
         /// </summary>
-        Task<List<double>> Compute(IEnumerable<BitmapWithSize> bitmapsWithSizes);
+        Task<List<double>> Compute(IEnumerable<SKBitmap> bitmapsWithSizes);
     }
 }

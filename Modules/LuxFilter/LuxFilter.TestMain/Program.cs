@@ -1,6 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using LuxFilter.Models;
 using LuxFilter.Services;
 using Luxoria.SDK.Models;
 using Luxoria.SDK.Services;
@@ -35,6 +34,7 @@ loggerService.Log($"Base directory: {baseDirectory}");
  * - net_logo.png
  */
 loggerService.Log("Decoding images...");
+
 loggerService.Log("Decoding landscape_4k.jpg...");
 SKBitmap image = SKBitmap.Decode(Path.Combine(baseDirectory, "assets", "landscape_4k.jpg"));
 loggerService.Log("Decoding landscape_bad_quality.jpeg...");
@@ -42,17 +42,8 @@ SKBitmap image2 = SKBitmap.Decode(Path.Combine(baseDirectory, "assets", "landsca
 loggerService.Log("Decoding net_logo.png...");
 SKBitmap image3 = SKBitmap.Decode(Path.Combine(baseDirectory, "assets", "net_logo.png"));
 
-
-// Create a collection of BitmapWithSize objects
-List<BitmapWithSize> bitmapsWithSizes = new List<BitmapWithSize>
-{
-    new BitmapWithSize(image),
-    new BitmapWithSize(image2),
-    new BitmapWithSize(image3)
-};
-
 // Compute scores for the collection of bitmaps
-var bitmapScores = await pipeline.Compute(bitmapsWithSizes);
+var bitmapScores = await pipeline.Compute(new List<SKBitmap> { image, image2, image3});
 
 int index = 1;
 foreach (var finalScore in bitmapScores)
