@@ -1,3 +1,15 @@
+# [1.14.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.13.0...v1.14.0) (2025-01-13)
+
+
+### Bug Fixes
+
+* Load Assemblies inside Luxoria.SDK.dll ([12c4c7f](https://github.com/LuxoriaSoft/Luxoria/commit/12c4c7f903f69b982f79c93aebab799ee42a7210))
+
+
+### Features
+
+* Add sentry to Luxoria.SDK dll ([63aa028](https://github.com/LuxoriaSoft/Luxoria/commit/63aa0286afa6d0160c06c3949ee1a82cfbc206c2))
+
 # [1.13.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.12.0...v1.13.0) (2025-01-08)
 
 
