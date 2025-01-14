@@ -6,7 +6,6 @@ using Luxoria.SDK.Models;
 using Luxoria.SDK.Services;
 using Luxoria.SDK.Services.Targets;
 using SkiaSharp;
-using System.Reflection;
 
 var loggerService = new LoggerService(LogLevel.Debug, new DebugLogTarget());
 
@@ -61,4 +60,3 @@ foreach (var finalScore in bitmapScores)
     // Log the final score for each bitmap
     loggerService.Log($"Final score for image {index++}: {finalScore}");
 }
-
