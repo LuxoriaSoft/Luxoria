@@ -18,6 +18,16 @@ namespace LuxFilter.Interfaces
         /// <summary>
         /// Compute scores for a collection of BitmapWithSize objects
         /// </summary>
-        Task<List<double>> Compute(IEnumerable<SKBitmap> bitmapsWithSizes);
+        Task<List<(Guid, double)>> Compute(IEnumerable<(Guid, SKBitmap)> bitmaps);
+
+        /// <summary>
+        /// Event handler when the pipeline has finished computing scores
+        /// </summary>
+        event EventHandler<TimeSpan> OnPipelineFinished;
+
+        /// <summary>
+        /// Event handler when a score has been computed
+        /// </summary>
+        event EventHandler<(Guid, double)> OnScoreComputed;
     }
 }

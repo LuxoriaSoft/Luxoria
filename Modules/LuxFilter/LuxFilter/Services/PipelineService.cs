@@ -52,43 +52,50 @@ namespace LuxFilter.Services
         /// <param name="bitmapsWithSizes">Bitmap gateways</param>
         /// <returns>Return a list which contains each score of each bitmap</returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public async Task<List<double>> Compute(IEnumerable<SKBitmap> bitmapsWithSizes)
+        public async Task<List<(Guid, double)>> Compute(IEnumerable<(Guid, SKBitmap)> bitmaps)
         {
+            // Check if there are algorithms in the workflow
             if (_workflow == null || !_workflow.Any())
             {
                 _logger.Log("Pipeline has no algorithms to execute.");
-                throw new InvalidOperationException("Pipeline has no algorxithms to execute.");
+                throw new InvalidOperationException("Pipeline has no algorithms to execute.");
             }
 
             DateTime start = DateTime.Now;
             _logger.Log("Executing pipeline...");
 
-            var indexedBitmaps = bitmapsWithSizes
-                .Select((bitmap, index) => (Index: index, BitmapWithSize: bitmap))
-                .ToList();
+            // Convert bitmaps into indexed format
+            var indexedBitmaps = bitmaps.ToList();
 
-            var results = new ConcurrentDictionary<int, double>();
+            // Concurrent dictionary to store results
+            var results = new ConcurrentDictionary<Guid, double>();
 
+            // Execute pipeline asynchronously
             await Task.Run(() =>
             {
                 Parallel.ForEach(indexedBitmaps, indexedBitmap =>
                 {
-                    var (index, bitmap) = indexedBitmap;
-
+                    var (guid, bitmap) = indexedBitmap;
                     double fscore = 0;
 
                     foreach (var step in _workflow)
                     {
                         IFilterAlgorithm algorithm = step.Item1;
                         double weight = step.Item2;
-                        DateTime startingTime = DateTime.Now;
 
                         _logger.Log($"Executing algorithm: [{algorithm.Name}] (w={weight}) (thrd={Thread.CurrentThread.ManagedThreadId})...");
+
                         try
                         {
+                            // Measure algorithm execution time
+                            DateTime startingTime = DateTime.Now;
                             var score = algorithm.Compute(bitmap, bitmap.Height, bitmap.Width);
                             DateTime endingTime = DateTime.Now;
-                            _logger.Log($"Score for algorithm [{algorithm.Name}] on bitmap: {score}, time consumed : ({endingTime - startingTime})s");
+                            TimeSpan executionTime = endingTime - startingTime;
+
+                            _logger.Log($"Score for algorithm [{algorithm.Name}] on bitmap: {score}, time consumed: ({executionTime.TotalSeconds:F2})s");
+
+                            // Accumulate weighted score
                             fscore += score * weight;
                         }
                         catch (Exception ex)
@@ -97,17 +104,33 @@ namespace LuxFilter.Services
                         }
                     }
 
-                    _logger.Log($"Final score for bitmap at index {index}: {fscore}");
-                    results.TryAdd(index, fscore);
+                    // Store final score for the bitmap
+                    _logger.Log($"Final score for bitmap with Guid {guid}: {fscore}");
+                    results.TryAdd(guid, fscore);
+                    // Raise OnScoreComputed event
+                    OnScoreComputed?.Invoke(this, (guid, fscore));  // Trigger the OnScoreComputed event
                 });
             });
 
             DateTime end = DateTime.Now;
-            _logger.Log($"Pipeline execution completed (time consumed = {end - start})s.");
+            TimeSpan totalTime = end - start;
+            _logger.Log($"Pipeline execution completed (time consumed = {totalTime.TotalSeconds:F2})s.");
 
-            // Return results ordered by index
-            return results.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value).ToList();
+            // Raise OnPipelineFinished event
+            OnPipelineFinished?.Invoke(this, totalTime);  // Trigger the OnPipelineFinished event
+
+            // Return results as a list of tuples with Guid and the corresponding score, ordered by Guid
+            return results.OrderBy(kvp => kvp.Key).Select(kvp => (kvp.Key, kvp.Value)).ToList();
         }
 
+
+        /// <summary>
+        /// Events handler
+        /// </summary>
+
+        /// <summary>
+        /// </summary>
+        public event EventHandler<TimeSpan> OnPipelineFinished;
+        public event EventHandler<(Guid, double)> OnScoreComputed;
     }
 }

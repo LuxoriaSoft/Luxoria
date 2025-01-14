@@ -42,12 +42,29 @@ SKBitmap image2 = SKBitmap.Decode(Path.Combine(baseDirectory, "assets", "landsca
 loggerService.Log("Decoding net_logo.png...");
 SKBitmap image3 = SKBitmap.Decode(Path.Combine(baseDirectory, "assets", "net_logo.png"));
 
+// Attach handlers to the pipeline
+pipeline.OnScoreComputed += (sender, args) =>
+{
+    loggerService.Log($"Score computed for image {args.Item1}: {args.Item2}");
+};
+
+pipeline.OnPipelineFinished += (sender, args) =>
+{
+    loggerService.Log("Pipeline finished time consumed: " + args);
+};
+
 // Compute scores for the collection of bitmaps
-var bitmapScores = await pipeline.Compute(new List<SKBitmap> { image, image2, image3});
+IEnumerable<(Guid, double)> scores = await pipeline.Compute(new List<(Guid, SKBitmap)>
+{
+    (Guid.NewGuid(), image),
+    (Guid.NewGuid(), image2),
+    (Guid.NewGuid(), image3)
+});
 
 int index = 1;
-foreach (var finalScore in bitmapScores)
+foreach (var finalScore in scores)
 {
-    // Log the final score for each bitmap
-    loggerService.Log($"Final score for image {index++}: {finalScore}");
+    // Log the final score for each bitmap, including both the Guid and the score
+    loggerService.Log($"Final score for image {index++} (Guid: {finalScore.Item1}): {finalScore.Item2}");
 }
+
