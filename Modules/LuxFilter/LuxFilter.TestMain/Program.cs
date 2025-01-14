@@ -12,8 +12,9 @@ var loggerService = new LoggerService(LogLevel.Debug, new DebugLogTarget());
 var pipeline = new PipelineService(loggerService);
 
 
-pipeline.AddAlgorithm(new LuxFilter.Algorithms.ImageQuality.SharpnessAlgo(), 0.85);
+pipeline.AddAlgorithm(new LuxFilter.Algorithms.ImageQuality.SharpnessAlgo(), 0.75);
 pipeline.AddAlgorithm(new LuxFilter.Algorithms.ImageQuality.ResolutionAlgo(), 0.15);
+pipeline.AddAlgorithm(new LuxFilter.Algorithms.PerceptualMetrics.BrisqueAlgo(), 0.1);
 
 // Initialize a 100x100 SKBitmap
 var bitmap = new SKBitmap(100, 100);
