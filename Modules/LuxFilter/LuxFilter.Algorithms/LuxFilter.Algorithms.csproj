@@ -10,7 +10,6 @@
     <Folder Include="Algorithms\ColorVisualAesthetics\" />
     <Folder Include="Algorithms\ContentSimilarity\" />
     <Folder Include="Algorithms\Metadata\" />
-    <Folder Include="Algorithms\PerceptualMetrics\" />
   </ItemGroup>
 
   <ItemGroup>
