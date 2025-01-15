@@ -1,3 +1,18 @@
+# [1.15.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.14.0...v1.15.0) (2025-01-15)
+
+
+### Bug Fixes
+
+* Add null handlers to events to avoid null refs ([30e5889](https://github.com/LuxoriaSoft/Luxoria/commit/30e58897cee63d098cb4c08ffba7f63609d64aa2))
+* AddAlgorithm method returns itself ([d123bd0](https://github.com/LuxoriaSoft/Luxoria/commit/d123bd0d8180f30e1c22f0bec2267764224d94ec))
+* Removing SKBitmapWithSize, simplifying the Compute method ([5d6480a](https://github.com/LuxoriaSoft/Luxoria/commit/5d6480a8b0ce49949c22fd4ce83bc330371837c2))
+
+
+### Features
+
+* Add base of Brisque algorithm in LuxFilter ([2c9ac2f](https://github.com/LuxoriaSoft/Luxoria/commit/2c9ac2fc582b2ddd08d891abd1843798480d1412))
+* Add event handling and unique IDs to pipeline processing ([b1d12d8](https://github.com/LuxoriaSoft/Luxoria/commit/b1d12d83306929700998c979ced3990e686901b1))
+
 # [1.14.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.13.0...v1.14.0) (2025-01-13)
 
 
