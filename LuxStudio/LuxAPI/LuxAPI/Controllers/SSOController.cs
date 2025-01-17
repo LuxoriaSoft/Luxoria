@@ -3,6 +3,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
+using LuxAPI.DAL;
+using LuxAPI.Models;
 
 namespace LuxAPI.Controllers;
 
@@ -12,112 +15,150 @@ public class SSOController : ControllerBase
 {
     private readonly ILogger<SSOController> _logger;
     private readonly IConfiguration _configuration;
-    private static Dictionary<string, string> AuthorizationCodes = new();
-    private static Dictionary<string, string> Tokens = new();
+    private readonly AppDbContext _context;
 
-    public SSOController(ILogger<SSOController> logger, IConfiguration configuration)
+    public SSOController(ILogger<SSOController> logger, IConfiguration configuration, AppDbContext context)
     {
         _logger = logger;
         _configuration = configuration;
+        _context = context;
     }
 
-    // STEP 1: Authorize endpoint
+    // Authorize endpoint
     [HttpGet("authorize")]
-    public IActionResult Authorize([FromQuery] string client_id, [FromQuery] string response_type, [FromQuery] string redirect_uri, [FromQuery] string state)
+    public IActionResult Authorize([FromQuery] Guid clientId, [FromQuery] string responseType, [FromQuery] string redirectUri, [FromQuery] string state)
     {
-        if (response_type != "code")
+        if (responseType != "code")
         {
-            return BadRequest("Unsupported response_type. Only 'code' is allowed.");
+            _logger.LogWarning("Unsupported response_type: {ResponseType}", responseType);
+            return BadRequest(new { error = "Unsupported response_type. Only 'code' is allowed." });
         }
 
-        // Validate the client_id (you can replace this with a database or a more robust validation)
-        if (client_id != "lux-app")
+        var client = _context.Clients.FirstOrDefault(c => c.ClientId == clientId);
+        if (client == null)
         {
-            return BadRequest("Invalid client_id.");
+            _logger.LogWarning("Invalid client_id: {ClientId}", clientId);
+            return BadRequest(new { error = "Invalid client_id." });
         }
 
-        // Simulate user login and generate an authorization code
         var authorizationCode = Guid.NewGuid().ToString();
-        AuthorizationCodes[authorizationCode] = client_id; // Store the code for later validation
+        _context.AuthorizationCodes.Add(new AuthorizationCode
+        {
+            Code = authorizationCode,
+            ClientId = client.ClientId,
+            Expiry = DateTime.UtcNow.AddMinutes(10)
+        });
+        _context.SaveChanges();
 
-        // Redirect to the provided redirect_uri with the code and state
-        var redirectUrl = $"{redirect_uri}?code={authorizationCode}&state={state}";
-
-        _logger.LogInformation($"Redirecting to: {redirectUrl}");
+        var redirectUrl = $"{redirectUri}?code={authorizationCode}&state={state}";
+        _logger.LogInformation("Authorization successful. Redirecting to: {RedirectUrl}", redirectUrl);
         return Redirect(redirectUrl);
     }
 
-    // STEP 2: Token endpoint
+    // Token endpoint
     [HttpPost("token")]
-    public IActionResult Token(string client_id, string client_secret, string code, string grant_type, string redirect_uri)
+    public IActionResult Token([FromForm] Guid clientId, [FromForm] string clientSecret, [FromForm] string code, [FromForm] string grantType, [FromForm] string redirectUri)
     {
-        if (grant_type != "authorization_code")
+        if (grantType != "authorization_code")
         {
-            return BadRequest("Unsupported grant_type. Only 'authorization_code' is allowed.");
+            _logger.LogWarning("Unsupported grant_type: {GrantType}", grantType);
+            return BadRequest(new { error = "Unsupported grant_type. Only 'authorization_code' is allowed." });
         }
 
-        // Validate the authorization code
-        if (!AuthorizationCodes.ContainsKey(code) || AuthorizationCodes[code] != client_id)
+        var client = _context.Clients.FirstOrDefault(c => c.ClientId == clientId && c.ClientSecret == clientSecret);
+        if (client == null)
         {
-            return BadRequest("Invalid or expired authorization code.");
+            _logger.LogWarning("Invalid client credentials for client_id: {ClientId}", clientId);
+            return BadRequest(new { error = "Invalid client credentials." });
         }
 
-        // Remove the authorization code after usage
-        AuthorizationCodes.Remove(code);
+        var authorizationCode = _context.AuthorizationCodes.FirstOrDefault(c => c.Code == code);
+        if (authorizationCode == null || authorizationCode.ClientId != client.Id || authorizationCode.Expiry < DateTime.UtcNow)
+        {
+            _logger.LogWarning("Invalid or expired authorization code: {Code}", code);
+            return BadRequest(new { error = "Invalid or expired authorization code." });
+        }
 
-        // Generate tokens
-        var accessToken = GenerateJwtToken(client_id);
+        _context.AuthorizationCodes.Remove(authorizationCode);
+        _context.SaveChanges();
+
+        var accessToken = GenerateJwtToken(client.Id.ToString());
         var refreshToken = Guid.NewGuid().ToString();
-        Tokens[refreshToken] = client_id;
 
+        _context.Tokens.Add(new Token
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            ClientId = client.Id,
+            Expiry = DateTime.UtcNow.AddHours(1)
+        });
+        _context.SaveChanges();
+
+        _logger.LogInformation("Token issued for client_id: {ClientId}", clientId);
         return Ok(new
         {
             access_token = accessToken,
             token_type = "Bearer",
-            expires_in = 3600, // 1 hour
+            expires_in = 3600,
             refresh_token = refreshToken
         });
     }
 
-    // STEP 3: User info endpoint
+    // User info endpoint
     [HttpGet("userinfo")]
     public IActionResult UserInfo([FromHeader(Name = "Authorization")] string authorization)
     {
         if (string.IsNullOrEmpty(authorization) || !authorization.StartsWith("Bearer "))
         {
-            return Unauthorized("Invalid token.");
+            _logger.LogWarning("Invalid Authorization header.");
+            return Unauthorized(new { error = "Invalid token." });
         }
 
         var token = authorization.Substring("Bearer ".Length);
 
-        // Validate the access token
-        var handler = new JwtSecurityTokenHandler();
         try
         {
+            var handler = new JwtSecurityTokenHandler();
             var jwtToken = handler.ReadJwtToken(token);
             var clientId = jwtToken.Claims.FirstOrDefault(c => c.Type == "client_id")?.Value;
 
-            if (string.IsNullOrEmpty(clientId) || clientId != "lux-app")
+            if (clientId == null)
             {
-                return Unauthorized("Invalid access token.");
+                _logger.LogWarning("Invalid client_id in token.");
+                return Unauthorized(new { error = "Invalid token." });
+            }
+            
+            var storedToken = _context.Tokens.Include(t => t.Client).FirstOrDefault(t => t.AccessToken == token);
+            if (storedToken == null || storedToken.ClientId != Guid.Parse(clientId) || storedToken.Expiry < DateTime.UtcNow)
+            {
+                _logger.LogWarning("Invalid or expired token: {Token}", token);
+                return Unauthorized(new { error = "Invalid or expired token." });
+            }
+
+            var user = _context.Users.FirstOrDefault(u => u.Id.ToString() == clientId);
+            if (user == null)
+            {
+                _logger.LogWarning("No user found for client_id: {ClientId}", clientId);
+                return NotFound(new { error = "User not found." });
             }
 
             return Ok(new
             {
                 client_id = clientId,
-                username = "lux-user", // Dummy data
-                email = "user@example.com"
+                username = user.Username,
+                email = user.Email
             });
         }
-        catch
+        catch (Exception ex)
         {
-            return Unauthorized("Invalid token.");
+            _logger.LogError(ex, "Error processing user info request.");
+            return Unauthorized(new { error = "Invalid token." });
         }
     }
 
     private string GenerateJwtToken(string clientId)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? throw new ArgumentNullException("Jwt:Key")));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
