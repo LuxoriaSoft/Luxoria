@@ -1,5 +1,5 @@
 ﻿using LuxFilter.Algorithms.Interfaces;
-using LuxFilter.Models;
+using SkiaSharp;
 
 namespace LuxFilter.Interfaces
 {
@@ -13,11 +13,21 @@ namespace LuxFilter.Interfaces
         /// </summary>
         /// <param name="algorithm">Algorithm to add to the pipeline</param>
         /// <param name="weight">Weight applied to the result of the algorithm (0-1)</param>
-        void AddAlgorithm(IFilterAlgorithm algorithm, double weight);
+        IPipelineService AddAlgorithm(IFilterAlgorithm algorithm, double weight);
 
         /// <summary>
         /// Compute scores for a collection of BitmapWithSize objects
         /// </summary>
-        Task<List<double>> Compute(IEnumerable<BitmapWithSize> bitmapsWithSizes);
+        Task<List<(Guid, double)>> Compute(IEnumerable<(Guid, SKBitmap)> bitmaps);
+
+        /// <summary>
+        /// Event handler when the pipeline has finished computing scores
+        /// </summary>
+        event EventHandler<TimeSpan> OnPipelineFinished;
+
+        /// <summary>
+        /// Event handler when a score has been computed
+        /// </summary>
+        event EventHandler<(Guid, double)> OnScoreComputed;
     }
 }
