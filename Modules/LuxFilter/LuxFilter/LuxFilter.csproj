@@ -36,4 +36,8 @@
     <ProjectReference Include="..\LuxFilter.Algorithms\LuxFilter.Algorithms.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
+
 </Project>
