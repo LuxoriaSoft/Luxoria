@@ -1,3 +1,20 @@
+# [1.16.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.15.0...v1.16.0) (2025-01-18)
+
+
+### Bug Fixes
+
+* Disable PublishReadyToRun during application build in LDA workflow ([c14bc04](https://github.com/LuxoriaSoft/Luxoria/commit/c14bc04b142b0a265d1ff35e0169fb21c4a6b174))
+* Remove publish step from LDA build workflow ([4665b5b](https://github.com/LuxoriaSoft/Luxoria/commit/4665b5b53577c44b4985a68b62b2e2f8dbee452e))
+* Remove redundant environment variable declaration in build workflow ([8d8d634](https://github.com/LuxoriaSoft/Luxoria/commit/8d8d634eac0d3b3d9c23ea6dd2e9adb9b493a9e9))
+* Remove runtime identifier from build command in LDA workflow ([935b12d](https://github.com/LuxoriaSoft/Luxoria/commit/935b12db7a58689df6b8bdf85d619ca3c0d19474))
+* Set working directory for build and publish steps in LDA workflow ([7c1d3c5](https://github.com/LuxoriaSoft/Luxoria/commit/7c1d3c5e13a6bd7bd9cc7c9e53af051c5207e3cc))
+* Specify runtime identifier for LDA project build in workflow ([2dd9a1a](https://github.com/LuxoriaSoft/Luxoria/commit/2dd9a1a6e4ebfd7856480c8cbd27880e7cd639cb))
+
+
+### Features
+
+* Add build and release workflows for Luxoria Desktop App ([091bc25](https://github.com/LuxoriaSoft/Luxoria/commit/091bc25db4b9918f570118a3a5f47e323bed59c4))
+
 # [1.15.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.14.0...v1.15.0) (2025-01-15)
 
 
