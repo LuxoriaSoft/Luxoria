@@ -33,10 +33,3 @@ jobs:
         env:
           Configuration: ${{ matrix.configuration }}
         working-directory: ./Luxoria.App
-
-      # Publish the application
-      - name: Publish application
-        run: dotnet publish Luxoria.App.sln --no-restore --configuration ${{ matrix.configuration }} -r win-${{ matrix.platform }} --output ./publish-${{ matrix.platform }}
-        env:
-          Configuration: ${{ matrix.configuration }}
-        working-directory: ./Luxoria.App
