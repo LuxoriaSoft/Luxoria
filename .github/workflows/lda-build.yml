@@ -34,7 +34,7 @@ jobs:
       
       # Build LDA project
       - name: Build LDA project
-        run: dotnet build --no-restore $env:Solution_Name --configuration $env:Configuration
+        run: dotnet build --no-restore $env:Solution_Name --configuration $env:Configuration -r win-x64
         env:
           Configuration: ${{ matrix.configuration }}
         working-directory: ./Luxoria.App
