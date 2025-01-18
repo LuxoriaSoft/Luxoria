@@ -29,7 +29,7 @@ jobs:
 
       # Build the application
       - name: Build application
-        run: dotnet build Luxoria.App.sln --no-restore --configuration ${{ matrix.configuration }}
+        run: dotnet build Luxoria.App.sln --no-restore --configuration ${{ matrix.configuration }} -p:PublishReadyToRun=false
         env:
           Configuration: ${{ matrix.configuration }}
         working-directory: ./Luxoria.App
