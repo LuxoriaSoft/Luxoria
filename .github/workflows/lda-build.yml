@@ -1,4 +1,4 @@
-name: Luxoria Desktop App Build
+name: Luxoria App Build
 
 on:
   pull_request:
@@ -7,17 +7,12 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-
     strategy:
       matrix:
-        configuration: [Release]
-        platform: [x64]
-
-    env:
-      Solution_Name: Luxoria.App.sln
-
+        platform: [x64, x86] # Define both x64 and x86 platforms
+        configuration: [Release] # Add Debug here if you need both configurations
     steps:
-      # Checkout the code from the repository
+      # Checkout the code
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -25,24 +20,20 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '9.x'  # Specify the .NET SDK version you are using
-      
-      # Restore the nugget packages
-      - name: Restore LDA nuget packages
-        run: dotnet restore $env:Solution_Name
-        working-directory: ./Luxoria.App
-      
-      # Build LDA project
-      - name: Build LDA project
-        run: dotnet build --no-restore $env:Solution_Name --configuration $env:Configuration -r win-x64
+          dotnet-version: '9.x' # Specify the required .NET version
+
+      # Restore NuGet packages
+      - name: Restore dependencies
+        run: dotnet restore Luxoria.App.sln
+
+      # Build the application
+      - name: Build application
+        run: dotnet build Luxoria.App.sln --no-restore --configuration ${{ matrix.configuration }} -r win-${{ matrix.platform }}
         env:
           Configuration: ${{ matrix.configuration }}
-        working-directory: ./Luxoria.App
-      
-      # Publish LDA project
-      - name: Publish LDA project
-        run: dotnet publish --no-restore $env:Solution_Name --configuration $env:Configuration --output $env:Publish_Output
+
+      # Publish the application
+      - name: Publish application
+        run: dotnet publish Luxoria.App.sln --no-restore --configuration ${{ matrix.configuration }} -r win-${{ matrix.platform }} --output ./publish-${{ matrix.platform }}
         env:
           Configuration: ${{ matrix.configuration }}
-          Publish_Output: ./publish
-        working-directory: ./Luxoria.App
