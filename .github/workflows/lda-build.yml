@@ -1,0 +1,35 @@
+name: Luxoria App Build
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        platform: [x64, x86] # Define both x64 and x86 platforms
+        configuration: [Release] # Add Debug here if you need both configurations
+    steps:
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up .NET SDK
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.x' # Specify the required .NET version
+
+      # Restore NuGet packages
+      - name: Restore dependencies
+        run: dotnet restore Luxoria.App.sln
+        working-directory: ./Luxoria.App
+
+      # Build the application
+      - name: Build application
+        run: dotnet build Luxoria.App.sln --no-restore --configuration ${{ matrix.configuration }} -p:PublishReadyToRun=false
+        env:
+          Configuration: ${{ matrix.configuration }}
+        working-directory: ./Luxoria.App
