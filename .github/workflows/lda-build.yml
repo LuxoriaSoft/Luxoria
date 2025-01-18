@@ -30,8 +30,6 @@ jobs:
       # Restore the nugget packages
       - name: Restore LDA nuget packages
         run: dotnet restore $env:Solution_Name
-        env:
-          Solution_Name: $env:Solution_Name
         working-directory: ./Luxoria.App
       
       # Build LDA project
