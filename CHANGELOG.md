@@ -1,3 +1,85 @@
+# [1.16.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.15.0...v1.16.0) (2025-01-18)
+
+
+### Bug Fixes
+
+* Disable PublishReadyToRun during application build in LDA workflow ([c14bc04](https://github.com/LuxoriaSoft/Luxoria/commit/c14bc04b142b0a265d1ff35e0169fb21c4a6b174))
+* Remove publish step from LDA build workflow ([4665b5b](https://github.com/LuxoriaSoft/Luxoria/commit/4665b5b53577c44b4985a68b62b2e2f8dbee452e))
+* Remove redundant environment variable declaration in build workflow ([8d8d634](https://github.com/LuxoriaSoft/Luxoria/commit/8d8d634eac0d3b3d9c23ea6dd2e9adb9b493a9e9))
+* Remove runtime identifier from build command in LDA workflow ([935b12d](https://github.com/LuxoriaSoft/Luxoria/commit/935b12db7a58689df6b8bdf85d619ca3c0d19474))
+* Set working directory for build and publish steps in LDA workflow ([7c1d3c5](https://github.com/LuxoriaSoft/Luxoria/commit/7c1d3c5e13a6bd7bd9cc7c9e53af051c5207e3cc))
+* Specify runtime identifier for LDA project build in workflow ([2dd9a1a](https://github.com/LuxoriaSoft/Luxoria/commit/2dd9a1a6e4ebfd7856480c8cbd27880e7cd639cb))
+
+
+### Features
+
+* Add build and release workflows for Luxoria Desktop App ([091bc25](https://github.com/LuxoriaSoft/Luxoria/commit/091bc25db4b9918f570118a3a5f47e323bed59c4))
+
+# [1.15.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.14.0...v1.15.0) (2025-01-15)
+
+
+### Bug Fixes
+
+* Add null handlers to events to avoid null refs ([30e5889](https://github.com/LuxoriaSoft/Luxoria/commit/30e58897cee63d098cb4c08ffba7f63609d64aa2))
+* AddAlgorithm method returns itself ([d123bd0](https://github.com/LuxoriaSoft/Luxoria/commit/d123bd0d8180f30e1c22f0bec2267764224d94ec))
+* Removing SKBitmapWithSize, simplifying the Compute method ([5d6480a](https://github.com/LuxoriaSoft/Luxoria/commit/5d6480a8b0ce49949c22fd4ce83bc330371837c2))
+
+
+### Features
+
+* Add base of Brisque algorithm in LuxFilter ([2c9ac2f](https://github.com/LuxoriaSoft/Luxoria/commit/2c9ac2fc582b2ddd08d891abd1843798480d1412))
+* Add event handling and unique IDs to pipeline processing ([b1d12d8](https://github.com/LuxoriaSoft/Luxoria/commit/b1d12d83306929700998c979ced3990e686901b1))
+
+# [1.14.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.13.0...v1.14.0) (2025-01-13)
+
+
+### Bug Fixes
+
+* Load Assemblies inside Luxoria.SDK.dll ([12c4c7f](https://github.com/LuxoriaSoft/Luxoria/commit/12c4c7f903f69b982f79c93aebab799ee42a7210))
+
+
+### Features
+
+* Add sentry to Luxoria.SDK dll ([63aa028](https://github.com/LuxoriaSoft/Luxoria/commit/63aa0286afa6d0160c06c3949ee1a82cfbc206c2))
+
+# [1.13.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.12.0...v1.13.0) (2025-01-08)
+
+
+### Features
+
+* Add sentry to project in LoggerService ([5469dcb](https://github.com/LuxoriaSoft/Luxoria/commit/5469dcb54ecc761d48f67e3d13e26b02674cbbb9))
+
+# [1.12.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.11.1...v1.12.0) (2025-01-08)
+
+
+### Bug Fixes
+
+* Add explanations inside PipelineService file & remove unused libs ([2d5a25c](https://github.com/LuxoriaSoft/Luxoria/commit/2d5a25cb668f52909567567d4ec5469cbf3904db))
+* Add multi-thread process on compute function ([c9e2d1f](https://github.com/LuxoriaSoft/Luxoria/commit/c9e2d1f840d57aa4fa6abd111e13b460eea23816))
+* Compute function now takes a collection of bitmaps ([1fe57b5](https://github.com/LuxoriaSoft/Luxoria/commit/1fe57b503211df4dbee8d5bc7ff55be03f610e18))
+* ComputeVariance function and improve code readability ([001b18f](https://github.com/LuxoriaSoft/Luxoria/commit/001b18fd70d8ae5d92fadb83ac11b5a6ef74c529))
+* IPipeline.Compute return fscore as double instead of void ([b21f8d4](https://github.com/LuxoriaSoft/Luxoria/commit/b21f8d45c21a4bc2e267a2154f243d5d34ce3d68))
+* Make ApplyLaplacianKernel function as static ([8e3b2ec](https://github.com/LuxoriaSoft/Luxoria/commit/8e3b2ec1398f8855f77b3a95d48e62fe6fa40d36))
+* Move BitmapWithSize model to its unique file & remove unused model ([3df6b1c](https://github.com/LuxoriaSoft/Luxoria/commit/3df6b1ca942a0cfa1ba879eb45d1265ce9044ab1))
+* Use Multi-Thread in pipeline computation ([e384533](https://github.com/LuxoriaSoft/Luxoria/commit/e384533b4a4fc989c0b2e7469c1e95d26b921d94))
+
+
+### Features
+
+* Add base of LuxFilter module ([1ea066a](https://github.com/LuxoriaSoft/Luxoria/commit/1ea066a529d907373966195f99a20ffb8cb89197))
+* Add compute sharpness of a bitmap ([f52b935](https://github.com/LuxoriaSoft/Luxoria/commit/f52b935e1b803ab918b59564647b77e8b613d038))
+* Add Filter Pipeline base ([296a0b3](https://github.com/LuxoriaSoft/Luxoria/commit/296a0b3e61217f7ffcc7b18b5d5c54a5a3dbcc54))
+* Add LuxFilter independant buildsystem & Add models ns in PipeSvc ([36221d5](https://github.com/LuxoriaSoft/Luxoria/commit/36221d598ff1f7a0e2ba09608f268c4147775700))
+* Add Resolution Algorithm to Algorithms code-base ([9d0cd9d](https://github.com/LuxoriaSoft/Luxoria/commit/9d0cd9d5960cb352999adea2b488cb151ad6f466))
+* Add Rust logic functions for LuxFilter ([cdf3b36](https://github.com/LuxoriaSoft/Luxoria/commit/cdf3b36ce73c26394f1f5ed7c961a7fa56583120))
+
+## [1.11.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.11.0...v1.11.1) (2025-01-08)
+
+
+### Bug Fixes
+
+* Update LICENSE link in README to point to LICENSE.md ([514101a](https://github.com/LuxoriaSoft/Luxoria/commit/514101a3d41f0c8e15141fcbf03deb8c9c789f2e))
+
 # [1.11.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.10.0...v1.11.0) (2024-12-22)
 
 
