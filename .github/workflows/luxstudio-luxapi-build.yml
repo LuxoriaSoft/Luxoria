@@ -1,4 +1,4 @@
-name: LuxAPI Build
+name: LuxStudio/LuxAPI Build
 
 on:
   push:
