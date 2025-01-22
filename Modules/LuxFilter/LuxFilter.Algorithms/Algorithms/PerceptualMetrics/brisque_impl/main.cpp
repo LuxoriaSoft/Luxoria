@@ -1,13 +1,14 @@
-#include <opencv2/quality.hpp>
-#include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 
 #include <string>
 #include <filesystem>
 #include <iostream>
 
+#include "BrisqueAlgorithm.hpp"
+
 #define DEFAULT_MODEL_PATH "./models/brisque_model_live.yml"
 #define DEFAULT_RANGE_PATH "./models/brisque_range_live.yml"
+
 
 int main(int ac, char **av) {
     if (ac < 2) {
@@ -38,16 +39,18 @@ int main(int ac, char **av) {
         return -1;
     }
 
-    // Convert image to grayscale for consistency
+    // Convert image to grayscale
     cv::Mat grayImg;
     cv::cvtColor(img, grayImg, cv::COLOR_BGR2GRAY);
+
+    // Create a BRISQUE algorithm instance
+    BrisqueAlgorithm brisque(modelPath, rangePath);
 
     try {
         // Compute BRISQUE score
         std::cout << "Computing BRISQUE score..." << std::endl;
-        auto brisque = cv::quality::QualityBRISQUE::create(modelPath, rangePath);
-        cv::Scalar scoreInstance = brisque->compute(grayImg);
-        std::cout << "BRISQUE Score: " << scoreInstance[0] << std::endl;
+        double scoreInstance = brisque.compute(grayImg);
+        std::cout << "BRISQUE Score: " << scoreInstance << std::endl;
     } catch (const cv::Exception& e) {
         std::cerr << "Error during BRISQUE computation: " << e.what() << std::endl;
         return -1;

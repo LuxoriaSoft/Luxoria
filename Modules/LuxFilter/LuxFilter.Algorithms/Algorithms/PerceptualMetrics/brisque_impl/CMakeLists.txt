@@ -16,6 +16,9 @@ find_package(OpenCV REQUIRED)
 # Add the executable
 add_executable(brisque_quality main.cpp)
 
+# Add the includes folder to the include directories
+target_include_directories(brisque_quality PUBLIC ${CMAKE_SOURCE_DIR}/includes)
+
 # Link the OpenCV libraries
 target_link_libraries(brisque_quality ${OpenCV_LIBS})
 
@@ -24,5 +27,5 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 
 # Set the output directory for the built executable
 set_target_properties(brisque_quality PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
