@@ -44,7 +44,7 @@ int main(int ac, char **av) {
     cv::cvtColor(img, grayImg, cv::COLOR_BGR2GRAY);
 
     // Create a BRISQUE algorithm instance
-    BrisqueAlgorithm brisque(modelPath, rangePath);
+    luxoria::filter::algorithms::BrisqueAlgorithm brisque(modelPath, rangePath);
 
     try {
         // Compute BRISQUE score
