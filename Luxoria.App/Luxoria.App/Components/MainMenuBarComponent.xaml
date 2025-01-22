@@ -7,13 +7,13 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="#1E1E1E" Padding="10,5">
+    <Grid Background="{ThemeResource SystemControlBackgroundBaseLowBrush}" Padding="10,5">
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Spacing="20">
             <Button 
                 Content="Home" 
                 Click="Home_Click" 
                 Background="Transparent" 
-                Foreground="White" 
+                Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
                 FontSize="14" 
                 Padding="8,4" 
                 BorderThickness="0" 
@@ -23,7 +23,7 @@
                 Content="Import" 
                 Click="Import_Click" 
                 Background="Transparent" 
-                Foreground="White" 
+                Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
                 FontSize="14" 
                 Padding="8,4" 
                 BorderThickness="0" 
@@ -33,7 +33,7 @@
                 Content="Edit" 
                 Click="Edit_Click" 
                 Background="Transparent" 
-                Foreground="White" 
+                Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
                 FontSize="14" 
                 Padding="8,4" 
                 BorderThickness="0" 
@@ -43,7 +43,7 @@
                 Content="Export" 
                 Click="Export_Click" 
                 Background="Transparent" 
-                Foreground="White" 
+                Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
                 FontSize="14" 
                 Padding="8,4" 
                 BorderThickness="0" 
@@ -52,7 +52,7 @@
             <Button 
                 Content="Settings" 
                 Background="Transparent"
-                Foreground="White" 
+                Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
                 FontSize="14" 
                 Padding="8,4" 
                 BorderThickness="0">
@@ -63,7 +63,7 @@
                             Text="Modules" 
                             Click="Modules_Click"
                             Background="Transparent"
-                            Foreground="White"
+                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                             FontSize="14" 
                             Padding="8,4"
                             BorderThickness="0"/>
