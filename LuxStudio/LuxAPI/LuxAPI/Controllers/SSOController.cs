@@ -6,11 +6,13 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using LuxAPI.DAL;
 using LuxAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LuxAPI.Controllers;
 
 [ApiController]
 [Route("[controller]")]
+[Authorize]
 public class SSOController : ControllerBase
 {
     private readonly ILogger<SSOController> _logger;

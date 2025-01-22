@@ -44,6 +44,7 @@
         const authService = new AuthService();
         try {
           const token = await authService.login(this.username, this.password);
+          console.info(token);
           localStorage.setItem('token', token); // Stocker le token pour une utilisation future
           this.$router.push('/dashboard'); // Rediriger après la connexion réussie
         } catch (error) {

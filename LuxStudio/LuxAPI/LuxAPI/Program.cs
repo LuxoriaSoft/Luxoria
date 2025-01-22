@@ -1,5 +1,10 @@
 using LuxAPI.DAL;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Any;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +16,27 @@ builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Configure JWT Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    var configuration = builder.Configuration;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"])),
+        ValidateIssuer = true,
+        ValidIssuer = configuration["Jwt:Issuer"],
+        ValidateAudience = true,
+        ValidAudience = configuration["Jwt:Audience"],
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
+});
 // Add controllers
 builder.Services.AddControllers();
 
@@ -23,6 +49,34 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials(); // Si vous utilisez des cookies ou des sessions
+    });
+});
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Your API", Version = "v1" });
+
+    // Configuration to include the token schema in Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] { }
+        }
     });
 });
 
