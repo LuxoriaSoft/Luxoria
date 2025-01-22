@@ -106,6 +106,7 @@ public class SSOController : ControllerBase
 
     // User info endpoint
     [HttpGet("userinfo")]
+    //[Authorize]
     public IActionResult UserInfo([FromHeader(Name = "Authorization")] string authorization)
     {
         if (string.IsNullOrEmpty(authorization) || !authorization.StartsWith("Bearer "))

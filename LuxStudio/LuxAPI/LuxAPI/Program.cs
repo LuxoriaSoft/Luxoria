@@ -14,6 +14,18 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Add controllers
 builder.Services.AddControllers();
 
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // Autorise le frontend sur ce port
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials(); // Si vous utilisez des cookies ou des sessions
+    });
+});
+
 // Enable OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -28,6 +40,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Enable CORS
+app.UseCors(); // Ajoutez ceci avant `UseAuthorization`
+
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
