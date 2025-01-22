@@ -1,5 +1,4 @@
 ﻿using LuxFilter.Algorithms.Interfaces;
-using LuxFilter.Algorithms.Utils;
 using SkiaSharp;
 
 namespace LuxFilter.Algorithms.ImageQuality;
