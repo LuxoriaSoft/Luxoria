@@ -1,5 +1,10 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.23)
 project(BRISQUEQuality)
+
+# Set C++23 standard
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Set OpenCV_DIR to the location of your OpenCV build directory
 # Update this path to where your OpenCVConfig.cmake file is located
