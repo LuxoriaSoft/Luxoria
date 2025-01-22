@@ -1,4 +1,5 @@
 ﻿using LuxFilter.Algorithms.Interfaces;
+using LuxFilter.Algorithms.Utils;
 using SkiaSharp;
 
 namespace LuxFilter.Algorithms.ImageQuality;
@@ -35,35 +36,9 @@ public class SharpnessAlgo : IFilterAlgorithm
     /// <returns>Returns the computed sharpness score.</returns>
     public double Compute(SKBitmap bitmap, int height, int width)
     {
-        using SKBitmap grayScaleBitmap = ConvertToGrayscale(bitmap); // Convert the image to grayscale for processing.
+        using SKBitmap grayScaleBitmap = ImageProcessing.ConvertBitmapToGrayscale(bitmap); // Convert the image to grayscale.
         using SKBitmap laplacianBitmap = ApplyLaplacianKernel(grayScaleBitmap); // Apply the Laplacian kernel to highlight edges.
         return ComputeVariance(laplacianBitmap); // Calculate the variance of the resulting image as the sharpness score.
-    }
-
-    /// <summary>
-    /// Converts the given image to grayscale.
-    /// Grayscale simplifies processing by reducing the image to a single intensity channel.
-    /// </summary>
-    /// <param name="bitmap">The input image.</param>
-    /// <returns>Returns the grayscale version of the image.</returns>
-    private static SKBitmap ConvertToGrayscale(SKBitmap bitmap)
-    {
-        SKBitmap grayBitmap = new SKBitmap(bitmap.Width, bitmap.Height);
-        using (SKCanvas canvas = new SKCanvas(grayBitmap))
-        {
-            var paint = new SKPaint
-            {
-                ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
-                {
-                    0.299f, 0.587f, 0.114f, 0, 0, // Red channel contribution.
-                    0.299f, 0.587f, 0.114f, 0, 0, // Green channel contribution.
-                    0.299f, 0.587f, 0.114f, 0, 0, // Blue channel contribution.
-                    0,      0,      0,      1, 0  // Alpha channel
-                })
-            };
-            canvas.DrawBitmap(bitmap, 0, 0, paint);
-        }
-        return grayBitmap;
     }
 
     /// <summary>
