@@ -6,6 +6,7 @@ using LuxAPI.DAL;
 using LuxAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LuxAPI.Controllers;
 
@@ -85,32 +86,49 @@ public class AuthController : ControllerBase
         }
 
         // Générer le token JWT
-        var token = GenerateJwtToken(user.Username);
+        var token = GenerateJwtToken(user.Id, user.Username);
 
         _logger.LogInformation("User logged in successfully: {Username}", login.Username);
         return Ok(new { token }); // Retourner le token dans la réponse
     }
 
-    private string GenerateJwtToken(string username)
+    private string GenerateJwtToken(Guid userId, string username, int expiryHours = 48)
     {
+        // Generate security key from the JWT secret key
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
+        // Add claims to the token
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, username),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString()), // User ID as NameIdentifier
+            new Claim(ClaimTypes.Name, username), // Username as Name claim
+            new Claim(JwtRegisteredClaimNames.Sub, username), // Subject claim
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // Unique token ID
         };
 
+        // Create the token
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(1), // Expire dans 1 heure
+            expires: DateTime.UtcNow.AddHours(expiryHours), // Token expiration time
             signingCredentials: credentials
         );
 
+        // Serialize and return the token
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+
+
+    [HttpGet("whoami")]
+    [Authorize]
+    public IActionResult WhoAmI()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var username = User.FindFirst(ClaimTypes.Name)?.Value;
+        return Ok(new { userId, username });
     }
 }
 
