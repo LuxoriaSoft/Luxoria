@@ -8,10 +8,10 @@
     Title="Luxoria App. | Loading..."
     mc:Ignorable="d">
 
-    <Grid Background="White">
+    <Grid Background="{ThemeResource SystemControlBackgroundBaseLowBrush}">
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="Luxoria App" FontSize="32" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
-            <TextBlock x:Name="CurrentModuleText" Text="Loading modules..." FontSize="24" HorizontalAlignment="Center"/>
+            <TextBlock Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}" Text="Luxoria App" FontSize="32" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+            <TextBlock Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}" x:Name="CurrentModuleText" Text="Loading modules..." FontSize="24" HorizontalAlignment="Center"/>
             <ProgressBar IsIndeterminate="True" Width="300" Margin="0,20,0,0"/>
         </StackPanel>
     </Grid>

@@ -1,11 +1,16 @@
-﻿using Luxoria.Modules.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+
+using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
-using System.Diagnostics;
-using Microsoft.UI.Xaml;
 
-namespace TestModule1
+namespace TestModule3
 {
     /// <summary>
     /// A basic module for testing purposes that interacts with the EventBus.
@@ -75,7 +80,7 @@ namespace TestModule1
 
             // Perform some processing logic with the input text (e.g., update an image)
             string updatedImagePath = ProcessInputText(textInputEvent.Text);
-            
+
             // Publish an event to notify that an image has been updated
             _eventBus?.Publish(new ImageUpdatedEvent(updatedImagePath));
         }
