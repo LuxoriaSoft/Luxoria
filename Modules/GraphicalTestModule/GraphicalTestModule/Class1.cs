@@ -42,12 +42,12 @@ namespace GraphicalTestModule
 
             List<ISmartButton> smartButtons = new List<ISmartButton>();
             Dictionary<SmartButtonType, Page> Pages = new Dictionary<SmartButtonType, Page>();
-            Pages.Add(SmartButtonType.MainPanel, new BlankPage1());
+            Pages.Add(SmartButtonType.Window, new BlankPage1());
 
 
             smartButtons.Add(new SmartButton("ButtonOfTestItem", "I'm just a button of TestItem", Pages));
 
-            Items.Add(new LuxMenuBarItem("TestItem", true, new Guid(), new List<ISmartButton>()));
+            Items.Add(new LuxMenuBarItem("TestItem", true, new Guid(), smartButtons));
 
 
 

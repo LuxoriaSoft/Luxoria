@@ -79,7 +79,7 @@ namespace Luxoria.App
             var loggerService = _host.Services.GetRequiredService<ILoggerService>();
             var iModuleUIService = _host.Services.GetRequiredService<IModuleUIService>();
 
-            m_window = new NewMainWindow(eventBus, loggerService, iModuleUIService);
+            m_window = new NewMainWindow(eventBus, loggerService, _moduleService, iModuleUIService);
             m_window.Activate();
             m_window.EnableEasyLoader();
         }

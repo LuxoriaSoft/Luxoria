@@ -1,11 +1,16 @@
+using Luxoria.App.Components;
 using Luxoria.App.Components.Dialogs;
 using Luxoria.App.EventHandlers;
 using Luxoria.App.Interfaces;
+using Luxoria.App.Views;
+using Luxoria.GModules.Interfaces;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Microsoft.UI.Xaml;
 using System;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Luxoria.App
 {
@@ -17,13 +22,14 @@ namespace Luxoria.App
         // Handlers for different events
         private readonly ImageUpdatedHandler _imageUpdatedHandler;
         private readonly CollectionUpdatedHandler _collectionUpdatedHandler;
+        private readonly IModuleService _moduleService;
         private readonly IModuleUIService _uiService;
 
 
         /// <summary>
         /// Constructor for the main window of the application.
         /// </summary>
-        public NewMainWindow(IEventBus eventBus, ILoggerService loggerService, IModuleUIService uiService)
+        public NewMainWindow(IEventBus eventBus, ILoggerService loggerService, IModuleService moduleService, IModuleUIService uiService)
         {
             InitializeComponent();
 
@@ -35,6 +41,7 @@ namespace Luxoria.App
             _imageUpdatedHandler = new ImageUpdatedHandler(_loggerService);
             _collectionUpdatedHandler = new CollectionUpdatedHandler(_loggerService);
 
+            _moduleService = moduleService;
             _uiService = uiService;
 
             // Subscribe handlers to the event bus
@@ -64,6 +71,39 @@ namespace Luxoria.App
         /// </summary>
         private void LoadComponents()
         {
+            foreach (var item in _moduleService
+                .GetModules()
+                .Where(m => m is IModuleUI)
+                .SelectMany(m => ((IModuleUI)m).Items))
+            {
+                if (item.IsLeftLocated)
+                {
+                    MainMenu.AddLeftButton(item.Name, () =>
+                    {
+
+                        var newWindow = new Microsoft.UI.Xaml.Window();
+                        var moduleManagerPage = item.SmartButtons[0].Pages[GModules.SmartButtonType.Window];
+
+                        Debug.WriteLine(moduleManagerPage);
+
+                        newWindow.Content = moduleManagerPage;
+                        newWindow.Activate();
+                    });
+                }
+                else
+                {
+                    MainMenu.AddRightButton(item.Name, () =>
+                    {
+
+                        var newWindow = new Microsoft.UI.Xaml.Window();
+                        var moduleManagerPage = item.SmartButtons[0].Pages[GModules.SmartButtonType.Window];
+                        newWindow.Content = moduleManagerPage;
+                        newWindow.Activate();
+                    });
+                }
+
+                //item.SmartButtons[0].Pages[GModules.SmartButtonType.Window]
+            }
 
         }
     }
