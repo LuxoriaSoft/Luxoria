@@ -1,6 +1,5 @@
 using Luxoria.GModules;
 using Luxoria.GModules.Interfaces;
-using Luxoria.Modules;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
@@ -8,9 +7,6 @@ using Luxoria.SDK.Models;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.

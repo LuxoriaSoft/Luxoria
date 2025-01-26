@@ -1,5 +1,6 @@
 import os
 import shutil
+import time
 
 # Constants
 LUX_DLL_NAME = "GraphicalTestModule.dll"
@@ -37,3 +38,4 @@ def copy_files():
 if __name__ == "__main__":
     build_project()
     copy_files()
+    time.sleep(5)

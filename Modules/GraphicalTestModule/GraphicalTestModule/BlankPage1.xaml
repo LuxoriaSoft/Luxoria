@@ -10,7 +10,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <TextBlock Text="Center Panel"/>
-
+        <TextBlock Text="Center Panel" x:Name="youhou"/>
+        <Button Content="Je suis un petit bouton avec un nom un peu long" Click="Button_Click"/>
     </Grid>
 </Page>
