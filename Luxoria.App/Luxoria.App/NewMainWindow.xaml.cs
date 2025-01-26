@@ -1,5 +1,6 @@
 using Luxoria.App.Components.Dialogs;
 using Luxoria.App.EventHandlers;
+using Luxoria.App.Interfaces;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
@@ -16,12 +17,13 @@ namespace Luxoria.App
         // Handlers for different events
         private readonly ImageUpdatedHandler _imageUpdatedHandler;
         private readonly CollectionUpdatedHandler _collectionUpdatedHandler;
+        private readonly IModuleUIService _uiService;
 
 
         /// <summary>
         /// Constructor for the main window of the application.
         /// </summary>
-        public NewMainWindow(IEventBus eventBus, ILoggerService loggerService)
+        public NewMainWindow(IEventBus eventBus, ILoggerService loggerService, IModuleUIService uiService)
         {
             InitializeComponent();
 
@@ -33,8 +35,13 @@ namespace Luxoria.App
             _imageUpdatedHandler = new ImageUpdatedHandler(_loggerService);
             _collectionUpdatedHandler = new CollectionUpdatedHandler(_loggerService);
 
+            _uiService = uiService;
+
             // Subscribe handlers to the event bus
             InitializeEventBus();
+
+            // LoadComponents
+            LoadComponents();
         }
 
         /// <summary>
@@ -44,6 +51,20 @@ namespace Luxoria.App
         {
             // Subscribe to events that will be published through the event bus
             _eventBus.Subscribe<CollectionUpdatedEvent>(_collectionUpdatedHandler.OnCollectionUpdated);
+        }
+
+        /// <summmary>
+        /// </summmary>
+        public void EnableEasyLoader()
+        {
+
+        }
+
+        /// <summary>
+        /// </summary>
+        private void LoadComponents()
+        {
+
         }
     }
 }

@@ -1,5 +1,5 @@
-﻿using Luxoria.Core.Interfaces;
-using Luxoria.Core.Logics;
+﻿using Luxoria.App.Interfaces;
+using Luxoria.App.Logics;
 using Luxoria.Modules;
 using Luxoria.Modules.Interfaces;
 using Luxoria.SDK.Interfaces;
@@ -77,9 +77,11 @@ namespace Luxoria.App
 
             var eventBus = _host.Services.GetRequiredService<IEventBus>();
             var loggerService = _host.Services.GetRequiredService<ILoggerService>();
+            var iModuleUIService = _host.Services.GetRequiredService<IModuleUIService>();
 
-            m_window = new NewMainWindow(eventBus, loggerService);
+            m_window = new NewMainWindow(eventBus, loggerService, iModuleUIService);
             m_window.Activate();
+            m_window.EnableEasyLoader();
         }
 
         /// <summary>

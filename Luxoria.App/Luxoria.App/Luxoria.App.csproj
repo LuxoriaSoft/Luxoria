@@ -63,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Luxoria.Core\Luxoria.Core.csproj" />
+    <ProjectReference Include="..\Luxoria.GModules\Luxoria.GModules.csproj" />
     <ProjectReference Include="..\Luxoria.Modules\Luxoria.Modules.csproj" />
     <ProjectReference Include="..\Luxoria.SDK\Luxoria.SDK.csproj" />
   </ItemGroup>
@@ -90,6 +91,9 @@
     <Page Update="Components\MainMenuBarComponent.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Models\" />
   </ItemGroup>
 
   <!--

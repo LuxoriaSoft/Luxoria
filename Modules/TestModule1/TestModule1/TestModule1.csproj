@@ -24,10 +24,4 @@
     </Reference>
   </ItemGroup>
 
-	<ItemGroup>
-	  <None Update="BlankPage1.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </None>
-	</ItemGroup>
-
 </Project>

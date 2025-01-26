@@ -2,10 +2,10 @@ import os
 import shutil
 
 # Constants
-LUX_DLL_NAME = "TestModule3.dll"
-LUX_FINAL_NAME = "TestModule3.Lux.dll"
-LUX_MOD_FOLDER = "TestModule3"
-SOURCE_DIR = "./TestModule3/bin/Debug/net9.0-windows10.0.26100.0/publish"
+LUX_DLL_NAME = "GraphicalTestModule.dll"
+LUX_FINAL_NAME = "GraphicalTestModule.Lux.dll"
+LUX_MOD_FOLDER = "GraphicalTestModule"
+SOURCE_DIR = "./GraphicalTestModule/bin/Debug/net9.0-windows10.0.26100.0/publish"
 DEST_DIR = "../../Luxoria.App/Luxoria.App/bin/x64/Debug/net9.0-windows10.0.26100.0/win-x64/AppX/modules/" + LUX_MOD_FOLDER
 
 # Function to build the project
