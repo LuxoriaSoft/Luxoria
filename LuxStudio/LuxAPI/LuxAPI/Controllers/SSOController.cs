@@ -86,67 +86,75 @@ public class SSOController : ControllerBase
         }
     }
 
-    // Token endpoint
-    [HttpPost("token")]
-    public IActionResult Token([FromForm] Guid clientId, [FromForm] string clientSecret, [FromForm] string code, [FromForm] string grantType)
+[HttpPost("token")]
+public IActionResult Token([FromBody] TokenRequestDto request)
+{
+    try
     {
-        try
+        if (request == null)
         {
-            if (grantType != "authorization_code")
-            {
-                _logger.LogWarning("Unsupported grant_type: {GrantType}", grantType);
-                return BadRequest(new { error = "Unsupported grant_type. Only 'authorization_code' is allowed." });
-            }
-
-            var client = _context.Clients.FirstOrDefault(c => c.ClientId == clientId && c.ClientSecret == clientSecret);
-            if (client == null)
-            {
-                _logger.LogWarning("Invalid client credentials for client_id: {ClientId}", clientId);
-                return BadRequest(new { error = "Invalid client credentials." });
-            }
-
-            var authorizationCode = _context.AuthorizationCodes.FirstOrDefault(c => c.Code == code);
-            if (authorizationCode == null || authorizationCode.Expiry < DateTime.UtcNow)
-            {
-                _logger.LogWarning("Invalid or expired authorization code: {Code}", code);
-                return BadRequest(new { error = "Invalid or expired authorization code." });
-            }
-
-            _context.AuthorizationCodes.Remove(authorizationCode);
-            _context.SaveChanges();
-
-            var user = _context.Users.FirstOrDefault(u => u.Id == authorizationCode.UserId);
-            if (user == null)
-            {
-                return BadRequest(new { error = "User not found." });
-            }
-
-            var accessToken = GenerateJwtToken(user.Id.ToString());
-            var refreshToken = Guid.NewGuid().ToString();
-
-            _context.Tokens.Add(new Token
-            {
-                AccessToken = accessToken,
-                RefreshToken = refreshToken,
-                ClientId = client.Id,
-                Expiry = DateTime.UtcNow.AddHours(1)
-            });
-            _context.SaveChanges();
-
-            return Ok(new
-            {
-                access_token = accessToken,
-                token_type = "Bearer",
-                expires_in = 3600,
-                refresh_token = refreshToken
-            });
+            return BadRequest(new { error = "Invalid request payload." });
         }
-        catch (Exception ex)
+
+        if (request.GrantType != "authorization_code")
         {
-            _logger.LogError(ex, "An error occurred while processing the token request.");
-            return StatusCode(500, new { error = "An error occurred while processing your request." });
+            _logger.LogWarning("Unsupported grant_type: {GrantType}", request.GrantType);
+            return BadRequest(new { error = "Unsupported grant_type. Only 'authorization_code' is allowed." });
         }
+
+        var client = _context.Clients.FirstOrDefault(c => c.ClientId == request.ClientId && c.ClientSecret == request.ClientSecret);
+        if (client == null)
+        {
+            _logger.LogWarning("Invalid client credentials for client_id: {ClientId}", request.ClientId);
+            return BadRequest(new { error = "Invalid client credentials." });
+        }
+
+        var authorizationCode = _context.AuthorizationCodes.FirstOrDefault(c => c.Code == request.Code);
+        if (authorizationCode == null || authorizationCode.Expiry < DateTime.UtcNow)
+        {
+            _logger.LogWarning("Invalid or expired authorization code: {Code}", request.Code);
+            return BadRequest(new { error = "Invalid or expired authorization code." });
+        }
+
+        // Vérifier si l'utilisateur existe
+        var user = _context.Users.FirstOrDefault(u => u.Id == authorizationCode.UserId);
+        if (user == null)
+        {
+            return BadRequest(new { error = "User not found." });
+        }
+
+        // Supprimer le code d'autorisation après validation
+        _context.AuthorizationCodes.Remove(authorizationCode);
+        _context.SaveChanges();
+
+        // Générer un nouvel access token et refresh token
+        var accessToken = GenerateJwtToken(user.Id.ToString());
+        var refreshToken = Guid.NewGuid().ToString();
+
+        _context.Tokens.Add(new Token
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            ClientId = client.Id,
+            Expiry = DateTime.UtcNow.AddHours(1)
+        });
+        _context.SaveChanges();
+
+        return Ok(new
+        {
+            access_token = accessToken,
+            token_type = "Bearer",
+            expires_in = 3600,
+            refresh_token = refreshToken
+        });
     }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "An error occurred while processing the token request.");
+        return StatusCode(500, new { error = "An error occurred while processing your request." });
+    }
+}
+
 
     private string GenerateJwtToken(string userId)
     {
@@ -168,4 +176,12 @@ public class SSOController : ControllerBase
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+    // DTO pour recevoir les paramètres de la requête
+public class TokenRequestDto
+{
+    public Guid ClientId { get; set; }
+    public string ClientSecret { get; set; }
+    public string Code { get; set; }
+    public string GrantType { get; set; }
+}
 }

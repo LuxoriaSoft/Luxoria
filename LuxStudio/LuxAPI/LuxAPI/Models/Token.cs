@@ -11,11 +11,11 @@ public class Token
     public Guid Id { get; set; }
 
     [Required]
-    [MaxLength(200)]
+    [Column(TypeName = "TEXT")] // Permet de stocker un token de longueur variable
     public string AccessToken { get; set; }
 
     [Required]
-    [MaxLength(200)]
+    [Column(TypeName = "TEXT")] // Permet de stocker un refresh token de longueur variable
     public string RefreshToken { get; set; }
 
     [Required]
