@@ -18,5 +18,8 @@ public class AuthorizationCode
     public Guid ClientId { get; set; }
 
     [Required]
+    public Guid UserId { get; set; }
+
+    [Required]
     public DateTime Expiry { get; set; }
 }

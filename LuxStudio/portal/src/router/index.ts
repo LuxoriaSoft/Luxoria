@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
 import Dashboard from '../views/Dashboard.vue';
+import LinkAccount from '../views/SSO_Authorize.vue';
 
 function isTokenValid(token:string): boolean {
   try {
@@ -27,6 +28,12 @@ const routes = [
     path: '/dashboard',
     name: 'Dashboard',
     component: Dashboard,
+    meta: { requiresAuth: true }, // Route protégée
+  },
+  { 
+    path: '/sso/authorize',
+    name: 'LinkAccount',
+    component: LinkAccount,
     meta: { requiresAuth: true }, // Route protégée
   },
 ];

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuxAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250117221424_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250128191542_InitialCreation")]
+    partial class InitialCreation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,6 +41,9 @@ namespace LuxAPI.Migrations
 
                     b.Property<DateTime>("Expiry")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 

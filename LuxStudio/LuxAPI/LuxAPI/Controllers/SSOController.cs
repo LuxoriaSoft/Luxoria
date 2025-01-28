@@ -12,7 +12,6 @@ namespace LuxAPI.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-[Authorize]
 public class SSOController : ControllerBase
 {
     private readonly ILogger<SSOController> _logger;
@@ -28,145 +27,135 @@ public class SSOController : ControllerBase
 
     // Authorize endpoint
     [HttpGet("authorize")]
+    [Authorize] // Vérifie que l'utilisateur est authentifié
     public IActionResult Authorize([FromQuery] Guid clientId, [FromQuery] string responseType, [FromQuery] string redirectUri, [FromQuery] string state)
     {
-        if (responseType != "code")
+        try
         {
-            _logger.LogWarning("Unsupported response_type: {ResponseType}", responseType);
-            return BadRequest(new { error = "Unsupported response_type. Only 'code' is allowed." });
+            // Extraire l'ID de l'utilisateur authentifié depuis le token
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                _logger.LogWarning("Unauthorized access attempt.");
+                return Unauthorized(new { error = "User is not authenticated." });
+            }
+
+            // Vérification du paramètre responseType
+            if (responseType != "code")
+            {
+                _logger.LogWarning("Unsupported response_type: {ResponseType}", responseType);
+                return BadRequest(new { error = "Unsupported response_type. Only 'code' is allowed." });
+            }
+
+            // Valider le client ID
+            var client = _context.Clients.FirstOrDefault(c => c.ClientId == clientId);
+            if (client == null)
+            {
+                _logger.LogWarning("Invalid client_id: {ClientId}", clientId);
+                return BadRequest(new { error = "Invalid client_id." });
+            }
+
+            // Vérifier l'URI de redirection
+            if (client.RedirectUri != redirectUri)
+            {
+                _logger.LogWarning("Invalid redirect_uri: {RedirectUri}", redirectUri);
+                return BadRequest(new { error = "Invalid redirect_uri." });
+            }
+
+            // Générer un code d'autorisation
+            var authorizationCode = Guid.NewGuid().ToString();
+            _context.AuthorizationCodes.Add(new AuthorizationCode
+            {
+                Code = authorizationCode,
+                ClientId = client.ClientId,
+                UserId = Guid.Parse(userId),
+                Expiry = DateTime.UtcNow.AddMinutes(10)
+            });
+            _context.SaveChanges();
+
+            // Redirection vers l'URI avec le code et l'état
+            var redirectUrl = $"{redirectUri}?code={authorizationCode}&state={state}";
+            _logger.LogInformation("Authorization successful. Redirecting to: {RedirectUrl}", redirectUrl);
+            return Ok(new { redirectUrl = redirectUrl });
         }
-
-        var client = _context.Clients.FirstOrDefault(c => c.ClientId == clientId);
-        if (client == null)
+        catch (Exception ex)
         {
-            _logger.LogWarning("Invalid client_id: {ClientId}", clientId);
-            return BadRequest(new { error = "Invalid client_id." });
+            _logger.LogError(ex, "An error occurred during authorization.");
+            return StatusCode(500, new { error = "An error occurred while processing your request." });
         }
-
-        var authorizationCode = Guid.NewGuid().ToString();
-        _context.AuthorizationCodes.Add(new AuthorizationCode
-        {
-            Code = authorizationCode,
-            ClientId = client.ClientId,
-            Expiry = DateTime.UtcNow.AddMinutes(10)
-        });
-        _context.SaveChanges();
-
-        var redirectUrl = $"{redirectUri}?code={authorizationCode}&state={state}";
-        _logger.LogInformation("Authorization successful. Redirecting to: {RedirectUrl}", redirectUrl);
-        return Redirect(redirectUrl);
     }
 
     // Token endpoint
     [HttpPost("token")]
-    public IActionResult Token([FromForm] Guid clientId, [FromForm] string clientSecret, [FromForm] string code, [FromForm] string grantType, [FromForm] string redirectUri)
+    public IActionResult Token([FromForm] Guid clientId, [FromForm] string clientSecret, [FromForm] string code, [FromForm] string grantType)
     {
-        if (grantType != "authorization_code")
-        {
-            _logger.LogWarning("Unsupported grant_type: {GrantType}", grantType);
-            return BadRequest(new { error = "Unsupported grant_type. Only 'authorization_code' is allowed." });
-        }
-
-        var client = _context.Clients.FirstOrDefault(c => c.ClientId == clientId && c.ClientSecret == clientSecret);
-        if (client == null)
-        {
-            _logger.LogWarning("Invalid client credentials for client_id: {ClientId}", clientId);
-            return BadRequest(new { error = "Invalid client credentials." });
-        }
-
-        var authorizationCode = _context.AuthorizationCodes.FirstOrDefault(c => c.Code == code);
-        if (authorizationCode == null || authorizationCode.ClientId != client.Id || authorizationCode.Expiry < DateTime.UtcNow)
-        {
-            _logger.LogWarning("Invalid or expired authorization code: {Code}", code);
-            return BadRequest(new { error = "Invalid or expired authorization code." });
-        }
-
-        _context.AuthorizationCodes.Remove(authorizationCode);
-        _context.SaveChanges();
-
-        var accessToken = GenerateJwtToken(client.Id.ToString());
-        var refreshToken = Guid.NewGuid().ToString();
-
-        _context.Tokens.Add(new Token
-        {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken,
-            ClientId = client.Id,
-            Expiry = DateTime.UtcNow.AddHours(1)
-        });
-        _context.SaveChanges();
-
-        _logger.LogInformation("Token issued for client_id: {ClientId}", clientId);
-        return Ok(new
-        {
-            access_token = accessToken,
-            token_type = "Bearer",
-            expires_in = 3600,
-            refresh_token = refreshToken
-        });
-    }
-
-    // User info endpoint
-    [HttpGet("userinfo")]
-    //[Authorize]
-    public IActionResult UserInfo([FromHeader(Name = "Authorization")] string authorization)
-    {
-        if (string.IsNullOrEmpty(authorization) || !authorization.StartsWith("Bearer "))
-        {
-            _logger.LogWarning("Invalid Authorization header.");
-            return Unauthorized(new { error = "Invalid token." });
-        }
-
-        var token = authorization.Substring("Bearer ".Length);
-
         try
         {
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(token);
-            var clientId = jwtToken.Claims.FirstOrDefault(c => c.Type == "client_id")?.Value;
-
-            if (clientId == null)
+            if (grantType != "authorization_code")
             {
-                _logger.LogWarning("Invalid client_id in token.");
-                return Unauthorized(new { error = "Invalid token." });
-            }
-            
-            var storedToken = _context.Tokens.Include(t => t.Client).FirstOrDefault(t => t.AccessToken == token);
-            if (storedToken == null || storedToken.ClientId != Guid.Parse(clientId) || storedToken.Expiry < DateTime.UtcNow)
-            {
-                _logger.LogWarning("Invalid or expired token: {Token}", token);
-                return Unauthorized(new { error = "Invalid or expired token." });
+                _logger.LogWarning("Unsupported grant_type: {GrantType}", grantType);
+                return BadRequest(new { error = "Unsupported grant_type. Only 'authorization_code' is allowed." });
             }
 
-            var user = _context.Users.FirstOrDefault(u => u.Id.ToString() == clientId);
+            var client = _context.Clients.FirstOrDefault(c => c.ClientId == clientId && c.ClientSecret == clientSecret);
+            if (client == null)
+            {
+                _logger.LogWarning("Invalid client credentials for client_id: {ClientId}", clientId);
+                return BadRequest(new { error = "Invalid client credentials." });
+            }
+
+            var authorizationCode = _context.AuthorizationCodes.FirstOrDefault(c => c.Code == code);
+            if (authorizationCode == null || authorizationCode.Expiry < DateTime.UtcNow)
+            {
+                _logger.LogWarning("Invalid or expired authorization code: {Code}", code);
+                return BadRequest(new { error = "Invalid or expired authorization code." });
+            }
+
+            _context.AuthorizationCodes.Remove(authorizationCode);
+            _context.SaveChanges();
+
+            var user = _context.Users.FirstOrDefault(u => u.Id == authorizationCode.UserId);
             if (user == null)
             {
-                _logger.LogWarning("No user found for client_id: {ClientId}", clientId);
-                return NotFound(new { error = "User not found." });
+                return BadRequest(new { error = "User not found." });
             }
+
+            var accessToken = GenerateJwtToken(user.Id.ToString());
+            var refreshToken = Guid.NewGuid().ToString();
+
+            _context.Tokens.Add(new Token
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                ClientId = client.Id,
+                Expiry = DateTime.UtcNow.AddHours(1)
+            });
+            _context.SaveChanges();
 
             return Ok(new
             {
-                client_id = clientId,
-                username = user.Username,
-                email = user.Email
+                access_token = accessToken,
+                token_type = "Bearer",
+                expires_in = 3600,
+                refresh_token = refreshToken
             });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error processing user info request.");
-            return Unauthorized(new { error = "Invalid token." });
+            _logger.LogError(ex, "An error occurred while processing the token request.");
+            return StatusCode(500, new { error = "An error occurred while processing your request." });
         }
     }
 
-    private string GenerateJwtToken(string clientId)
+    private string GenerateJwtToken(string userId)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? throw new ArgumentNullException("Jwt:Key")));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
         {
-            new Claim("client_id", clientId),
+            new Claim(ClaimTypes.NameIdentifier, userId),
             new Claim("scope", "openid profile email")
         };
 
@@ -180,13 +169,3 @@ public class SSOController : ControllerBase
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
-
-
-//voir comment un SSO fonctionne et si ce que l'on a fait est correct
-
-// rajouter un middleware pour définir quel route on a accès sans être login et inversement
-
-// rajouter dans le login l'url initialement souhaité, exemple si je voulais accéder à /account alors si je me
-// login je suis redirigé vers /account
-
-//rajouter une route aouth/authorize qui prend un client id et un redirect uri et qui redirige vers le redirect uri avec un code

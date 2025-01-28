@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LuxAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialCreation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,6 +18,7 @@ namespace LuxAPI.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Code = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     ClientId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     Expiry = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
