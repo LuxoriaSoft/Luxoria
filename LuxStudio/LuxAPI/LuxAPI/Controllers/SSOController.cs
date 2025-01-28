@@ -180,3 +180,13 @@ public class SSOController : ControllerBase
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
+
+
+//voir comment un SSO fonctionne et si ce que l'on a fait est correct
+
+// rajouter un middleware pour définir quel route on a accès sans être login et inversement
+
+// rajouter dans le login l'url initialement souhaité, exemple si je voulais accéder à /account alors si je me
+// login je suis redirigé vers /account
+
+//rajouter une route aouth/authorize qui prend un client id et un redirect uri et qui redirige vers le redirect uri avec un code

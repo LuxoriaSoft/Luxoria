@@ -111,6 +111,8 @@ app.UseHttpsRedirection();
 // Enable CORS
 app.UseCors(); // Ajoutez ceci avant `UseAuthorization`
 
+
+
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
