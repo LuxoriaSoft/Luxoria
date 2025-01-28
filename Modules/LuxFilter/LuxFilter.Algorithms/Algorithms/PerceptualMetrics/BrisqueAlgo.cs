@@ -1,4 +1,5 @@
 ﻿using LuxFilter.Algorithms.Interfaces;
+using Luxoria.Algorithm.BrisqueScore;
 using SkiaSharp;
 
 namespace LuxFilter.Algorithms.PerceptualMetrics;
