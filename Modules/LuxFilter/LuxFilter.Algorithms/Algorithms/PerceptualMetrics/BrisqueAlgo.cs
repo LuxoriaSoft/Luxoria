@@ -25,6 +25,14 @@ public class BrisqueAlgo : IFilterAlgorithm
     /// <returns>Returns the computed score of the algorithm</returns>
     public double Compute(SKBitmap bitmap, int height, int width)
     {
+        try
+        {
+            using var brisque = new BrisqueInterop("", "");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
         return 0;
     }
 }

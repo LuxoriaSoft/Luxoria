@@ -1,3 +1,0 @@
-[submodule "Modules/LuxFilter/LuxFilter.Algorithms/Algorithms/PerceptualMetrics/brisque_impl_netlib"]
-	path = Modules/LuxFilter/LuxFilter.Algorithms/Algorithms/PerceptualMetrics/brisque_impl_netlib
-	url = https://github.com/LuxoriaSoft/brisque_impl_netlib.git
