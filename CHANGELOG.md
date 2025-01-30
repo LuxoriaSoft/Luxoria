@@ -1,3 +1,21 @@
+# [1.17.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.16.0...v1.17.0) (2025-01-30)
+
+
+### Bug Fixes
+
+* Remove unused lib on LuxFilter ([053216e](https://github.com/LuxoriaSoft/Luxoria/commit/053216e85322c7bcfb15ff6af7f465915a1401e1))
+
+
+### Features
+
+* Add all test cases for LuxFilter ([809085c](https://github.com/LuxoriaSoft/Luxoria/commit/809085cb9a05b8d49625ba75e745b2991561d338))
+* Add brisque_impl_netlib submodule for enhanced BRISQUE implementation ([9c4f74b](https://github.com/LuxoriaSoft/Luxoria/commit/9c4f74b7b75ab97c9fe978fd898f483311fec3d5))
+* Add OpenCV & OpenCV-contrib libs for C++ ([55c837b](https://github.com/LuxoriaSoft/Luxoria/commit/55c837b9249b9856a47a06ec8f8285f0ae3f005c))
+* Add unit tests for ImageProcessing and SharpnessAlgo ([41a4f9a](https://github.com/LuxoriaSoft/Luxoria/commit/41a4f9acbfe43abcf31c923a88ccd8d66ea09e54))
+* Encapsulate BrisqueAlgorithm inside BrisqueAlgorithm.hpp ([ad8272c](https://github.com/LuxoriaSoft/Luxoria/commit/ad8272c316d962c18506dbd9cc6983d74f35b649))
+* Update build workflow to include LuxFilter and merge coverage reports ([efaa01d](https://github.com/LuxoriaSoft/Luxoria/commit/efaa01d2c83dd7973e12d84507edc5eb8172e72a))
+* Update CMake configuration and enhance BRISQUE implementation with error handling ([3fa70a2](https://github.com/LuxoriaSoft/Luxoria/commit/3fa70a2d83ad0bd8556fbd53b67cde4d4779b6e2))
+
 # [1.16.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.15.0...v1.16.0) (2025-01-18)
 
 
