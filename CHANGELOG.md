@@ -1,3 +1,10 @@
+# [1.18.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.17.0...v1.18.0) (2025-01-30)
+
+
+### Features
+
+* Add unit tests for LuxImport module and update build workflow for coverage reports ([672dcb1](https://github.com/LuxoriaSoft/Luxoria/commit/672dcb10472f584550933fde204e012f65175ef6))
+
 # [1.17.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.16.0...v1.17.0) (2025-01-30)
 
 
