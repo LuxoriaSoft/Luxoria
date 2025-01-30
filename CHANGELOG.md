@@ -1,3 +1,10 @@
+## [1.18.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.18.0...v1.18.1) (2025-01-30)
+
+
+### Bug Fixes
+
+* Correct typo in dotnet test command for LuxFilter module in build workflow ([ea3d510](https://github.com/LuxoriaSoft/Luxoria/commit/ea3d51022b2a9a2d7235679cfe472f914b05cf9b))
+
 # [1.18.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.17.0...v1.18.0) (2025-01-30)
 
 
