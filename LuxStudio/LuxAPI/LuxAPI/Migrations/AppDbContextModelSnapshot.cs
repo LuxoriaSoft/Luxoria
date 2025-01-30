@@ -72,6 +72,30 @@ namespace LuxAPI.Migrations
                     b.ToTable("Clients");
                 });
 
+            modelBuilder.Entity("LuxAPI.Models.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Expiry")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RTokens");
+                });
+
             modelBuilder.Entity("LuxAPI.Models.Token", b =>
                 {
                     b.Property<Guid>("Id")
@@ -83,9 +107,6 @@ namespace LuxAPI.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("ClientId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("Expiry")
                         .HasColumnType("timestamp with time zone");
 
@@ -94,9 +115,12 @@ namespace LuxAPI.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Tokens");
                 });
@@ -132,15 +156,26 @@ namespace LuxAPI.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("LuxAPI.Models.Token", b =>
+            modelBuilder.Entity("LuxAPI.Models.RefreshToken", b =>
                 {
-                    b.HasOne("LuxAPI.Models.Client", "Client")
+                    b.HasOne("LuxAPI.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("ClientId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Client");
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LuxAPI.Models.Token", b =>
+                {
+                    b.HasOne("LuxAPI.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

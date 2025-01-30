@@ -14,6 +14,7 @@ namespace LuxAPI.DAL
         public DbSet<Client> Clients { get; set; }
         public DbSet<AuthorizationCode> AuthorizationCodes { get; set; }
         public DbSet<Token> Tokens { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -53,10 +54,25 @@ namespace LuxAPI.DAL
                 .HasMaxLength(200);
 
             modelBuilder.Entity<Token>()
-                .HasOne(t => t.Client) // One Token references one Client
+                .HasOne(t => t.User) // User is the principal entity
                 .WithMany() // A Client can have many Tokens
-                .HasForeignKey(t => t.ClientId)
+                .HasForeignKey(t => t.UserId) // Foreign key
                 .OnDelete(DeleteBehavior.Cascade); // Cascade delete Tokens when a Client is removed
+
+            // Configure RToken
+            modelBuilder.Entity<RefreshToken>()
+                .HasKey(t => t.Id);
+
+            modelBuilder.Entity<RefreshToken>()
+                .Property(t => t.Token)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            modelBuilder.Entity<RefreshToken>()
+                .HasOne(t => t.User) // User is the principal entity
+                .WithMany() // A Client can have many Tokens
+                .HasForeignKey(t => t.UserId) // Foreign key
+                .OnDelete(DeleteBehavior.Cascade); // Cascade delete Tokens when a Client is removed     
 
             // Configure AuthorizationCode
             modelBuilder.Entity<AuthorizationCode>()

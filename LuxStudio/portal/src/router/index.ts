@@ -3,6 +3,7 @@ import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
 import Dashboard from '../views/Dashboard.vue';
 import LinkAccount from '../views/SSO_Authorize.vue';
+import Protected from '../views/Protected.vue';
 
 function isTokenValid(token:string): boolean {
   try {
@@ -36,6 +37,12 @@ const routes = [
     component: LinkAccount,
     meta: { requiresAuth: true }, // Route protégée
   },
+  {
+    path: '/protected',
+    name: 'Protected',
+    component: Protected,
+    meta: { requiresAuth: true }, // Route protégée
+  },
 ];
 
 const router = createRouter({
@@ -43,20 +50,32 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token');
-  const isAuthenticated = token && isTokenValid(token);
+router.beforeEach(async (to, from, next) => {
+  let token = localStorage.getItem("token");
 
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    // Si la route est protégée et le token est invalide ou absent
-    next({ path: '/', query: { redirect: to.fullPath } }); // Redirige vers Login
-  } else if ((to.name === 'Login' || to.name === 'Register') && isAuthenticated) {
-    // Si l'utilisateur est connecté, empêcher l'accès à Login ou Register
-    next('/dashboard');
-  } else {
-    // Autorise la navigation
-    next();
+  if (to.meta.requiresAuth) {
+    const isTokenExpired = (token) => {
+      if (!token) return true;
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        return payload.exp * 1000 < Date.now();
+      } catch (e) {
+        return true;
+      }
+    };
+
+    if (!token || isTokenExpired(token)) {
+      console.log("Token expired, trying to refresh...");
+
+      const newToken = await authService.refreshToken();
+      if (!newToken) {
+        console.log("Redirecting to login...");
+        return next({ path: "/", query: { redirect: to.fullPath } });
+      }
+    }
   }
+
+  next();
 });
 
 export default router;

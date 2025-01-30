@@ -3,20 +3,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LuxAPI.Models;
 
-[Table("Tokens")]
-public class Token
+[Table("RTokens")]
+public class RefreshToken
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
 
     [Required]
-    [Column(TypeName = "TEXT")] // Permet de stocker un token de longueur variable
-    public string AccessToken { get; set; }
-
-    [Required]
     [Column(TypeName = "TEXT")] // Permet de stocker un refresh token de longueur variable
-    public string RefreshToken { get; set; }
+    public string Token { get; set; }
 
     [Required]
     public Guid UserId { get; set; }
