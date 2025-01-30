@@ -8,9 +8,13 @@ using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Luxoria.App
 {
@@ -69,6 +73,21 @@ namespace Luxoria.App
 
         /// <summary>
         /// </summary>
+        private async Task ShowModalAsync(UIElement content, string title)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = title,
+                Content = content,
+                CloseButtonText = "Close",
+                XamlRoot = this.Content.XamlRoot
+            };
+
+            await dialog.ShowAsync();
+        }
+
+        /// <summary>
+        /// </summary>
         private void LoadComponents()
         {
             foreach (var item in _moduleService
@@ -76,35 +95,128 @@ namespace Luxoria.App
                 .Where(m => m is IModuleUI)
                 .SelectMany(m => ((IModuleUI)m).Items))
             {
-                if (item.IsLeftLocated)
+                Debug.WriteLine("Item: " + item.Name);
+
+                Action act = () =>
                 {
-                    MainMenu.AddLeftButton(item.Name, () =>
+
+                    var button = item.IsLeftLocated ? MainMenu.GetLeftButton(item.Name) : MainMenu.GetRightButton(item.Name);
+
+                    if (button == null)
                     {
+                        Debug.WriteLine($"Button not found for item: {item.Name}");
+                        return;
+                    }
 
-                        var newWindow = new Microsoft.UI.Xaml.Window();
-                        var moduleManagerPage = item.SmartButtons[0].Pages[GModules.SmartButtonType.Window];
 
-                        Debug.WriteLine(moduleManagerPage);
+                    if (item.SmartButtons.Count > 1)
+                    {
+                        var flyout = new MenuFlyout();
 
-                        newWindow.Content = moduleManagerPage;
-                        newWindow.Activate();
-                    });
+                        foreach (var smartButton in item.SmartButtons)
+                        {
+                            var flyoutItem = new MenuFlyoutItem
+                            {
+                                Text = smartButton.Name
+                            };
+
+                            flyoutItem.Click += async (sender, e) =>
+                            {
+                                foreach (var gmodule in smartButton.Pages)
+                                {
+                                    if (gmodule.Value == null)
+                                    {
+                                        Debug.WriteLine($"[FlyoutItem Click] Page null for type {gmodule.Key}");
+                                        continue;
+                                    }
+
+                                    switch (gmodule.Key)
+                                    {
+                                        case GModules.SmartButtonType.Window:
+                                            var newWindow = new Microsoft.UI.Xaml.Window();
+                                            newWindow.Content = gmodule.Value;
+                                            newWindow.Activate();
+                                            break;
+
+                                        case GModules.SmartButtonType.LeftPanel:
+                                            LeftPanelContent.Content = gmodule.Value;
+                                            break;
+
+                                        case GModules.SmartButtonType.MainPanel:
+                                            CenterPanelContent.Content = gmodule.Value;
+                                            break;
+
+                                        case GModules.SmartButtonType.RightPanel:
+                                            RightPanelContent.Content = gmodule.Value;
+                                            break;
+
+                                        case GModules.SmartButtonType.BottomPanel:
+                                            BottomPanelContent.Content = gmodule.Value;
+                                            break;
+
+                                        case GModules.SmartButtonType.Modal:
+                                            var modalContent = gmodule.Value;
+                                            await ShowModalAsync(modalContent, item.Name);
+                                            break;
+                                    }
+                                }
+                            };
+
+                            flyout.Items.Add(flyoutItem);
+                        }
+
+                        FlyoutBase.SetAttachedFlyout(button, flyout);
+
+                        button.Click += (sender, e) =>
+                        {
+                            FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
+                        };
+                    }
+                    else if (item.SmartButtons.Count == 1)
+                    {
+                        foreach (var gmodule in item.SmartButtons[0].Pages)
+                        {
+                            switch (gmodule.Key)
+                            {
+                                case GModules.SmartButtonType.Window:
+                                    var newWindow = new Microsoft.UI.Xaml.Window();
+                                    newWindow.Content = gmodule.Value;
+                                    newWindow.Activate();
+                                    break;
+
+                                case GModules.SmartButtonType.LeftPanel:
+                                    LeftPanelContent.Content = gmodule.Value;
+                                    break;
+
+                                case GModules.SmartButtonType.MainPanel:
+                                    CenterPanelContent.Content = gmodule.Value;
+                                    break;
+
+                                case GModules.SmartButtonType.RightPanel:
+                                    RightPanelContent.Content = gmodule.Value;
+                                    break;
+
+                                case GModules.SmartButtonType.BottomPanel:
+                                    BottomPanelContent.Content = gmodule.Value;
+                                    break;
+
+                                case GModules.SmartButtonType.Modal:
+                                    var modalContent = gmodule.Value;
+                                    ShowModalAsync(modalContent, item.Name).GetAwaiter().GetResult();
+                                    break;
+                            }
+                        }
+                    }
+                };
+                if (item.IsLeftLocated)
+                {    
+                    MainMenu.AddLeftButton(item.Name, act);
                 }
                 else
                 {
-                    MainMenu.AddRightButton(item.Name, () =>
-                    {
-
-                        var newWindow = new Microsoft.UI.Xaml.Window();
-                        var moduleManagerPage = item.SmartButtons[0].Pages[GModules.SmartButtonType.Window];
-                        newWindow.Content = moduleManagerPage;
-                        newWindow.Activate();
-                    });
+                    MainMenu.AddRightButton(item.Name, act);
                 }
-
-                //item.SmartButtons[0].Pages[GModules.SmartButtonType.Window]
             }
-
         }
     }
 }

@@ -37,14 +37,33 @@ namespace GraphicalTestModule
             _logger = logger;
 
             List<ISmartButton> smartButtons = new List<ISmartButton>();
-            Dictionary<SmartButtonType, Page> Pages = new Dictionary<SmartButtonType, Page>();
-            Pages.Add(SmartButtonType.Window, new BlankPage1());
+            List<ISmartButton> smartButtons2 = new List<ISmartButton>();
+            Dictionary<SmartButtonType, Page> Pages1 = new Dictionary<SmartButtonType, Page>();
+            Dictionary<SmartButtonType, Page> Pages2 = new Dictionary<SmartButtonType, Page>();
+            Dictionary<SmartButtonType, Page> Pages3 = new Dictionary<SmartButtonType, Page>();
+            Dictionary<SmartButtonType, Page> Pages4 = new Dictionary<SmartButtonType, Page>();
 
 
-            smartButtons.Add(new SmartButton("ButtonOfTestItem", "I'm just a button of TestItem", Pages));
+
+            Pages1.Add(SmartButtonType.MainPanel, new BlankPage1());
+            Pages2.Add(SmartButtonType.Window, new BlankPage1());
+            Pages3.Add(SmartButtonType.Modal, new BlankPage1());
+
+            Pages4.Add(SmartButtonType.LeftPanel, new BlankPage1());
+
+
+            smartButtons.Add(new SmartButton("Main Panel", "I'm just a button of TestItem", Pages1));
+            smartButtons.Add(new SmartButton("Window", "I'm just a button of TestItem", Pages2));
+            smartButtons.Add(new SmartButton("Modal", "I'm just a button of TestItem", Pages3));
+
+
+
+            smartButtons2.Add(new SmartButton("Left Panel", "I'm just a button of TestItem", Pages4));
+
 
             Items.Add(new LuxMenuBarItem("TestItem", true, new Guid(), smartButtons));
 
+            Items.Add(new LuxMenuBarItem("TestItem2", false, new Guid(), smartButtons2));
 
 
             // Subscribe to the TextInputEvent to process text input

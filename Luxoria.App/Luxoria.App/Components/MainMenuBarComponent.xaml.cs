@@ -44,6 +44,34 @@ namespace Luxoria.App.Components
             RightMenu.Children.Add(button);
         }
 
+        public Button GetLeftButton(string text)
+        {
+            foreach (var button in LeftButtons)
+            {
+                if (button.Content?.ToString() == text)
+                {
+                    return button;
+                }
+            }
+
+            Debug.WriteLine($"[GetLeftButton] No button found with: '{text}'.");
+            return null;
+        }
+
+        public Button GetRightButton(string text)
+        {
+            foreach (var button in RightButtons)
+            {
+                if (button.Content?.ToString() == text)
+                {
+                    return button;
+                }
+            }
+
+            Debug.WriteLine($"[GetRightButton] No button found with: '{text}'.");
+            return null;
+        }
+
         private Button CreateButton(string text, Action onClick)
         {
             var button = new Button
@@ -60,5 +88,6 @@ namespace Luxoria.App.Components
             button.Click += (s, e) => onClick?.Invoke();
             return button;
         }
+
     }
 }
