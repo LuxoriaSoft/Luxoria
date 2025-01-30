@@ -52,5 +52,10 @@ jobs:
           dotnet sonarscanner begin /k:"LuxoriaSoft_Luxoria" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /o:"luxoria" /d:sonar.coverage.exclusions="**/App.xaml.cs, **/MainWindow.xaml.cs, **/*.sqignore" /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
           dotnet build Luxoria.App/Luxoria.App.sln --no-incremental
           dotnet build Modules/LuxImport/LuxImport.sln --no-incremental
-          dotnet-coverage collect "dotnet test Luxoria.App/Luxoria.App.sln --no-build" -f xml -o "coverage.xml"
+          dotnet build Modules/LuxFilter/LuxFilter.sln --no-incremental
+          dotnet-coverage collect "dotnet test Luxoria.App/Luxoria.App.sln --no-build" -f xml -o "coverage-luxoria.xml"
+          dotnet-coverage collect "dontet test Modules/LuxFilter/LuxFilter.sln --no-build" -f xml -o "coverage-luxfilter.xml"
+
+          dotnet-coverage merge coverage-luxoria.xml coverage-luxfilter.xml -o coverage.xml -f xml
+
           dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
