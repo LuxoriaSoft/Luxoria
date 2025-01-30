@@ -53,9 +53,11 @@ jobs:
           dotnet build Luxoria.App/Luxoria.App.sln --no-incremental
           dotnet build Modules/LuxImport/LuxImport.sln --no-incremental
           dotnet build Modules/LuxFilter/LuxFilter.sln --no-incremental
+
           dotnet-coverage collect "dotnet test Luxoria.App/Luxoria.App.sln --no-build" -f xml -o "coverage-luxoria.xml"
+          dotnet-coverage collect "dotnet test Modules/LuxImport/LuxImport.sln --no-build" -f xml -o "coverage-luximport.xml"
           dotnet-coverage collect "dontet test Modules/LuxFilter/LuxFilter.sln --no-build" -f xml -o "coverage-luxfilter.xml"
 
-          dotnet-coverage merge coverage-luxoria.xml coverage-luxfilter.xml -o coverage.xml -f xml
+          dotnet-coverage merge coverage-luxoria.xml coverage-luximport.xml coverage-luxfilter.xml -o coverage.xml -f xml
 
           dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
