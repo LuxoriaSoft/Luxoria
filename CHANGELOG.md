@@ -1,3 +1,15 @@
+# [1.19.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.18.1...v1.19.0) (2025-01-31)
+
+
+### Bug Fixes
+
+* Remove Exception and Add explanations in LuxFilter.cs file ([bab93d4](https://github.com/LuxoriaSoft/Luxoria/commit/bab93d4c2e2119851361e3a156e727480a6655a3))
+
+
+### Features
+
+* Add tests for all services & repositories inside LuxImport ([4bca6b0](https://github.com/LuxoriaSoft/Luxoria/commit/4bca6b03ca6f0f31d991e08d975178ca35800c1c))
+
 ## [1.18.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.18.0...v1.18.1) (2025-01-30)
 
 
