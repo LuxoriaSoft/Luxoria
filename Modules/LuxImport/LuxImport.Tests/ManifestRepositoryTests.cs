@@ -1,17 +1,19 @@
 ﻿using LuxImport.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LuxImport.Tests
 {
+    /// <summary>
+    /// Unit tests for the <see cref="ManifestRepository"/> class.
+    /// </summary>
     public class ManifestRepositoryTests : IDisposable
     {
         private readonly string _testCollectionPath;
         private readonly string _luxDirectory;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ManifestRepositoryTests"/> class.
+        /// Sets up a temporary test collection directory and the .lux directory.
+        /// </summary>
         public ManifestRepositoryTests()
         {
             _testCollectionPath = Path.Combine(Path.GetTempPath(), "LuxImportManifestTest");
@@ -21,6 +23,9 @@ namespace LuxImport.Tests
             Directory.CreateDirectory(_luxDirectory);
         }
 
+        /// <summary>
+        /// Tests whether <see cref="ManifestRepository.CreateManifest"/> correctly returns a valid manifest.
+        /// </summary>
         [Fact]
         public void CreateManifest_ShouldReturnValidManifest()
         {
@@ -30,6 +35,9 @@ namespace LuxImport.Tests
             Assert.Equal("TestCollection", manifest.Name);
         }
 
+        /// <summary>
+        /// Tests whether <see cref="ManifestRepository.SaveManifest"/> correctly persists the manifest file.
+        /// </summary>
         [Fact]
         public void SaveManifest_ShouldPersistManifest()
         {
@@ -39,6 +47,9 @@ namespace LuxImport.Tests
             Assert.True(File.Exists(Path.Combine(_luxDirectory, "manifest.json")));
         }
 
+        /// <summary>
+        /// Tests whether <see cref="ManifestRepository.ReadManifest"/> correctly loads the saved manifest.
+        /// </summary>
         [Fact]
         public void ReadManifest_ShouldReturnCorrectManifest()
         {
@@ -49,6 +60,9 @@ namespace LuxImport.Tests
             Assert.Equal(manifest.Name, loadedManifest.Name);
         }
 
+        /// <summary>
+        /// Cleans up the test environment by deleting the temporary collection directory.
+        /// </summary>
         public void Dispose()
         {
             if (Directory.Exists(_testCollectionPath))
