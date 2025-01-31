@@ -7,17 +7,18 @@ namespace LuxFilter.Algorithms.ImageQuality;
 public class SharpnessAlgo : IFilterAlgorithm
 {
     /// <summary>
-    /// Get the algorithm name
+    /// Gets the name of the algorithm.
     /// </summary>
     public string Name => "Sharpness";
 
     /// <summary>
-    /// Get the algorithm description
+    /// Gets the description of the algorithm.
     /// </summary>
     public string Description => "Sharpness algorithm";
 
     /// <summary>
-    /// Laplacian kernel
+    /// Laplacian kernel used for edge detection.
+    /// This kernel emphasizes areas of rapid intensity change (edges).
     /// </summary>
     private static readonly int[,] LaplacianKernel = new int[,]
     {
@@ -27,26 +28,27 @@ public class SharpnessAlgo : IFilterAlgorithm
     };
 
     /// <summary>
-    /// Compute the sharpness of the image
+    /// Computes the sharpness score of the image based on the variance of the Laplacian.
     /// </summary>
-    /// <param name="bitmap"></param>
-    /// <param name="height"></param>
-    /// <param name="width"></param>
-    /// <returns>Returns the computed score of the algorithm</returns>
+    /// <param name="bitmap">The input image.</param>
+    /// <param name="height">The height of the image.</param>
+    /// <param name="width">The width of the image.</param>
+    /// <returns>Returns the computed sharpness score.</returns>
     public double Compute(SKBitmap bitmap, int height, int width)
     {
-        SKBitmap grayScaleBitmap = ImageProcessing.ConvertBitmapToGrayscale(bitmap);
-        SKBitmap laplacianBitmap = ApplyLaplacianKernel(grayScaleBitmap);
-        return ComputeVariance(laplacianBitmap);
+        using SKBitmap grayScaleBitmap = ImageProcessing.ConvertBitmapToGrayscale(bitmap); // Convert the image to grayscale.
+        using SKBitmap laplacianBitmap = ApplyLaplacianKernel(grayScaleBitmap); // Apply the Laplacian kernel to highlight edges.
+        return ComputeVariance(laplacianBitmap); // Calculate the variance of the resulting image as the sharpness score.
     }
 
     /// <summary>
-    /// Apply the pixel to the Laplacian kernel
+    /// Applies the Laplacian kernel to a single pixel.
+    /// This function calculates the intensity of edges by summing weighted neighboring pixel intensities.
     /// </summary>
-    /// <param name="bitmap">SKBitmap</param>
-    /// <param name="x">Position x of the pixel</param>
-    /// <param name="y">Position y of the pixel</param>
-    /// <returns>New pixel value in byte</returns>
+    /// <param name="bitmap">The grayscale image.</param>
+    /// <param name="x">The x-coordinate of the pixel.</param>
+    /// <param name="y">The y-coordinate of the pixel.</param>
+    /// <returns>Returns the new pixel intensity after applying the kernel.</returns>
     private static byte ApplyPixelToLaplacianKernel(SKBitmap bitmap, int x, int y)
     {
         int pixelValue = 0;
@@ -55,68 +57,60 @@ public class SharpnessAlgo : IFilterAlgorithm
         {
             for (int lkx = -1; lkx <= 1; lkx++)
             {
-                int kValue = LaplacianKernel[lky + 1, lkx + 1];
-                byte intensity = bitmap.GetPixel(x + lkx, y + lky).Red;
-                pixelValue += intensity * kValue;
+                int kValue = LaplacianKernel[lky + 1, lkx + 1]; // Kernel value at the current position.
+                byte intensity = bitmap.GetPixel(x + lkx, y + lky).Red; // Intensity of the neighboring pixel.
+                pixelValue += intensity * kValue; // Weighted sum.
             }
         }
 
-        return (byte)Math.Clamp(pixelValue, 0, 255);
+        return (byte)Math.Clamp(pixelValue, 0, 255); // Clamp the result to valid pixel range (0-255).
     }
 
     /// <summary>
-    /// Compute the variance of the image
+    /// Computes the variance of pixel intensities in the image.
+    /// Variance measures the spread of intensity values, indicating sharpness.
     /// </summary>
-    /// <param name="bitmap">Grayscale image</param>
-    /// <returns>Variance of the image</returns>
+    /// <param name="bitmap">The grayscale image after applying the Laplacian.</param>
+    /// <returns>Returns the variance of the pixel intensities.</returns>
     private static double ComputeVariance(SKBitmap bitmap)
     {
         double mean = 0;
-        double squaredDifferenceSum = 0;
+        double squaredSum = 0;
         int width = bitmap.Width;
         int height = bitmap.Height;
+        int totalPixels = width * height;
 
-        // Calculate mean intensity
-        byte[] pixelValues = new byte[width * height];
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
             {
-                byte pixelValue = bitmap.GetPixel(x, y).Red;
-                pixelValues[y * width + x] = pixelValue;
-                mean += pixelValue;
+                byte pixelValue = bitmap.GetPixel(x, y).Red; // Grayscale intensity.
+                mean += pixelValue; // Sum of pixel values.
+                squaredSum += pixelValue * pixelValue; // Sum of squared pixel values.
             }
         }
 
-        mean /= pixelValues.Length;
-
-        // Calculate variance
-        foreach (byte intensity in pixelValues)
-        {
-            double difference = intensity - mean;
-            squaredDifferenceSum += difference * difference;
-        }
-
-        return squaredDifferenceSum / pixelValues.Length;
+        mean /= totalPixels; // Calculate the mean intensity.
+        return (squaredSum / totalPixels) - (mean * mean); // Variance formula: E[X^2] - (E[X])^2.
     }
 
     /// <summary>
-    /// Apply Laplacian kernel to the image
+    /// Applies the Laplacian kernel to the entire image.
+    /// This highlights edges by calculating intensity changes for each pixel.
     /// </summary>
-    /// <param name="bitmap">Input SKBitmap</param>
-    /// <returns>Processed SKBitmap</returns>
+    /// <param name="bitmap">The input grayscale image.</param>
+    /// <returns>Returns the processed image with edges highlighted.</returns>
     private static SKBitmap ApplyLaplacianKernel(SKBitmap bitmap)
     {
-        // Create a target bitmap
         SKBitmap target = new SKBitmap(bitmap.Width, bitmap.Height);
 
-        // Apply kernel to each pixel, avoiding edges
+        // Skip edge pixels to avoid out-of-bound errors.
         for (int y = 1; y < bitmap.Height - 1; y++)
         {
             for (int x = 1; x < bitmap.Width - 1; x++)
             {
-                byte pixelValue = ApplyPixelToLaplacianKernel(bitmap, x, y);
-                target.SetPixel(x, y, new SKColor(pixelValue, pixelValue, pixelValue));
+                byte pixelValue = ApplyPixelToLaplacianKernel(bitmap, x, y); // Apply kernel to each pixel.
+                target.SetPixel(x, y, new SKColor(pixelValue, pixelValue, pixelValue)); // Set the result.
             }
         }
 

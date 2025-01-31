@@ -133,7 +133,7 @@ namespace LuxImport.Services
             var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp" };
             // Retrieve all files in the collection
             string[] files = Directory.GetFiles(_collectionPath, "*.*", SearchOption.AllDirectories)
-                .Where(file => 
+                .Where(file =>
                     !Path.GetFileName(file).StartsWith("._")
                     &&
                     imageExtensions.Contains(Path.GetExtension(file).ToLower())
