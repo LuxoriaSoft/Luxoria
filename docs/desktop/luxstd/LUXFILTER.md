@@ -31,6 +31,17 @@ LuxFilter is a modular filtering system designed for processing and scoring digi
 
 ---
 
+## Implemented Filtering Algorithms
+
+### **Image Quality Algorithms**
+- **ResolutionAlgo**: Evaluates the resolution of an image.
+- **SharpnessAlgo**: Measures the sharpness level in an image.
+
+### **Perceptual Metrics Algorithms**
+- **BrisqueAlgo**: Uses the BRISQUE metric to assess perceptual quality.
+
+---
+
 ## How to Use
 
 ### Prerequisites
