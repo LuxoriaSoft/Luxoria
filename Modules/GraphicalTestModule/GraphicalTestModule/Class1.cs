@@ -1,24 +1,29 @@
-﻿using Luxoria.Modules.Interfaces;
+using Luxoria.GModules;
+using Luxoria.GModules.Interfaces;
+using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
-using System.Diagnostics;
-using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using System;
+using System.Collections.Generic;
 
-namespace TestModule1
+// To learn more about WinUI, the WinUI project structure,
+// and more about our project templates, see: http://aka.ms/winui-project-info.
+
+namespace GraphicalTestModule
 {
-    /// <summary>
-    /// A basic module for testing purposes that interacts with the EventBus.
-    /// </summary>
-    public class TestModule1 : IModule
+    public class GraphicalTestModule : IModule, IModuleUI
     {
         private IEventBus? _eventBus;
         private IModuleContext? _context;
         private ILoggerService? _logger;
 
-        public string Name => "Test Module1";
+        public string Name => "Graphical Test Module";
         public string Description => "Basic module for testing purposes.";
         public string Version => "1.0.1";
+
+        public List<ILuxMenuBarItem> Items { get; set; } = new List<ILuxMenuBarItem>();
 
         /// <summary>
         /// Initializes the module with the provided EventBus and ModuleContext.
@@ -30,6 +35,36 @@ namespace TestModule1
             _eventBus = eventBus;
             _context = context;
             _logger = logger;
+
+            List<ISmartButton> smartButtons = new List<ISmartButton>();
+            List<ISmartButton> smartButtons2 = new List<ISmartButton>();
+            Dictionary<SmartButtonType, Page> Pages1 = new Dictionary<SmartButtonType, Page>();
+            Dictionary<SmartButtonType, Page> Pages2 = new Dictionary<SmartButtonType, Page>();
+            Dictionary<SmartButtonType, Page> Pages3 = new Dictionary<SmartButtonType, Page>();
+            Dictionary<SmartButtonType, Page> Pages4 = new Dictionary<SmartButtonType, Page>();
+
+
+
+            Pages1.Add(SmartButtonType.MainPanel, new BlankPage1());
+            Pages2.Add(SmartButtonType.Window, new BlankPage1());
+            Pages3.Add(SmartButtonType.Modal, new BlankPage1());
+
+            Pages4.Add(SmartButtonType.LeftPanel, new BlankPage1());
+
+
+            smartButtons.Add(new SmartButton("Main Panel", "I'm just a button of TestItem", Pages1));
+            smartButtons.Add(new SmartButton("Window", "I'm just a button of TestItem", Pages2));
+            smartButtons.Add(new SmartButton("Modal", "I'm just a button of TestItem", Pages3));
+
+
+
+            smartButtons2.Add(new SmartButton("Left Panel", "I'm just a button of TestItem", Pages4));
+
+
+            Items.Add(new LuxMenuBarItem("TestItem", true, new Guid(), smartButtons));
+
+            Items.Add(new LuxMenuBarItem("TestItem2", false, new Guid(), smartButtons2));
+
 
             // Subscribe to the TextInputEvent to process text input
             _eventBus.Subscribe<TextInputEvent>(OnTextInputReceived);
@@ -75,7 +110,7 @@ namespace TestModule1
 
             // Perform some processing logic with the input text (e.g., update an image)
             string updatedImagePath = ProcessInputText(textInputEvent.Text);
-            
+
             // Publish an event to notify that an image has been updated
             _eventBus?.Publish(new ImageUpdatedEvent(updatedImagePath));
         }

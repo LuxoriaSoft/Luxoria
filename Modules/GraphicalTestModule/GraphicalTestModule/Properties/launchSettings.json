@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "GraphicalTestModule": {
+      "commandName": "Project"
+    },
+    "Profile 1": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\pastcque\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "commandLineArgs": "buildsystem.py",
+      "workingDirectory": "C:\\Users\\pastcque\\source\\repos\\LuxoriaSoft\\Luxoria\\Modules\\GraphicalTestModule"
+    }
+  }
+}
