@@ -29,11 +29,17 @@ public class LuxFilter : IModule
         _logger?.Log("LuxFilter module initialized.", CATEGORY);
     }
 
+    /// <summary>
+    /// Executes the module logic.
+    /// </summary>
     public void Execute()
     {
-        throw new NotImplementedException();
+        _logger?.Log("LuxFilter module executed.", CATEGORY);
     }
 
+    /// <summary>
+    /// Shuts down the module and releases any resources.
+    /// </summary>
     public void Shutdown()
     {
         _logger?.Log("LuxFilter module shutdown.", CATEGORY);
