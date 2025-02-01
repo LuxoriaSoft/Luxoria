@@ -22,7 +22,7 @@ namespace Luxoria.App
     public partial class App : Application
     {
         public Window Window => m_window;
-        private NewMainWindow m_window;
+        private MainWindow m_window;
 
         private readonly Startup _startup;
         private readonly IHost _host;
@@ -79,7 +79,7 @@ namespace Luxoria.App
             var loggerService = _host.Services.GetRequiredService<ILoggerService>();
             var iModuleUIService = _host.Services.GetRequiredService<IModuleUIService>();
 
-            m_window = new NewMainWindow(eventBus, loggerService, _moduleService, iModuleUIService);
+            m_window = new MainWindow(eventBus, loggerService, _moduleService, iModuleUIService);
             m_window.Activate();
             m_window.EnableEasyLoader();
         }
