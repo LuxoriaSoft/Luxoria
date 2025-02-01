@@ -1,42 +1,27 @@
 import axios from 'axios';
 
+/**
+ * Authentication Service
+ * This class handles user authentication by communicating with the backend API.
+ */
 export class AuthService {
   private readonly apiUrl: string;
 
+  /**
+   * Initializes the authentication service with the API base URL.
+   */
   constructor() {
-    this.apiUrl = 'http://localhost:5269'; // Replace with your API URL
+    this.apiUrl = 'http://localhost:5269'; // Update this URL according to your API environment
   }
 
-  async refreshToken(): Promise<{ token: string; refreshToken: string } | null> {
-    const refreshToken = localStorage.getItem("refreshToken");
-
-    if (!refreshToken) {
-      console.error("No refresh token found.");
-      return null;
-    }
-
-    try {
-      const response = await axios.post(`${this.apiUrl}/sso/refresh`, {
-        refreshToken,
-      });
-
-      if (response.status === 200) {
-        console.log("Token refreshed:", response.data);
-        localStorage.setItem("token", response.data.access_token);
-        localStorage.setItem("refreshToken", response.data.refresh_token);
-        return {
-          token: response.data.access_token,
-          refreshToken: response.data.refresh_token,
-        };
-      } else {
-        throw new Error("Failed to refresh token.");
-      }
-    } catch (error: any) {
-      console.error("Error refreshing token:", error.response?.data?.error || error.message);
-      return null;
-    }
-  }
-
+  /**
+   * Registers a new user by sending their details to the API.
+   * @param username - The username of the new user.
+   * @param email - The email address of the new user.
+   * @param password - The password chosen by the new user.
+   * @returns A success message if the registration is successful.
+   * @throws An error message if the registration fails.
+   */
   async register(username: string, email: string, password: string): Promise<string> {
     try {
       const response = await axios.post(`${this.apiUrl}/Auth/register`, {
@@ -44,9 +29,9 @@ export class AuthService {
         email,
         password,
       });
-  
+
       if (response.status === 200) {
-        return response.data; // Message de succès
+        return response.data; // Success message from the API
       } else {
         throw new Error("Registration failed.");
       }
@@ -54,18 +39,25 @@ export class AuthService {
       throw new Error(error.response?.data || "An error occurred during registration.");
     }
   }
-  
 
+  /**
+   * Logs in a user by sending their credentials to the API.
+   * @param username - The username of the user.
+   * @param password - The password of the user.
+   * @param captchaToken - The CAPTCHA verification token.
+   * @returns A JWT token if the login is successful.
+   * @throws An error message if the login fails.
+   */
   async login(username: string, password: string, captchaToken: string): Promise<string> {
     try {
       const response = await axios.post(`${this.apiUrl}/Auth/login`, {
         username,
         password,
-        captchaToken
+        captchaToken,
       });
 
       if (response.status === 200) {
-        return response.data.token;
+        return response.data.token; // Return the JWT token
       } else {
         throw new Error('Login failed.');
       }
@@ -74,4 +66,3 @@ export class AuthService {
     }
   }
 }
-

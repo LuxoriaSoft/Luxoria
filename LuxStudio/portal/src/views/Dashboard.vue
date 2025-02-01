@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-100 text-gray-800">
-    <!-- Header -->
+    <!-- Header Section -->
     <header class="bg-blue-600 text-white shadow">
       <div class="container mx-auto flex justify-between items-center py-4 px-6">
         <h1 class="text-2xl font-bold">Dashboard</h1>
@@ -13,7 +13,7 @@
       </div>
     </header>
 
-    <!-- Main Content -->
+    <!-- Main Content Section -->
     <main class="container mx-auto py-8 px-6">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div class="bg-white rounded-lg shadow p-6">
@@ -47,20 +47,24 @@
 <script>
 export default {
   methods: {
+    /**
+     * Logs out the user by removing the stored token
+     * and redirecting to the login page.
+     */
     logout() {
       const token = localStorage.getItem('token');
       if (token) {
         console.log('Logging out and clearing token...');
       }
 
-      // Supprime le token et redirige vers la page de connexion
+      // Remove token from storage and redirect to login page
       localStorage.removeItem('token');
-      this.$router.push('/'); // Redirection
+      this.$router.push('/'); // Redirection to login
     },
   },
 };
 </script>
 
 <style scoped>
-/* Styles globaux ou spécifiques à la page */
+/* Scoped styles for the dashboard */
 </style>

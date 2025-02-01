@@ -16,36 +16,40 @@
 export default {
   data() {
     return {
-      clientId: "fece71c8-afe9-4a35-bbed-267f6995f8f3", // Remplacez par votre client ID
-      redirectUri: "http://localhost:5678", // URL de redirection après succès
-      state: null, // Valeur aléatoire pour la sécurité
+      clientId: "fece71c8-afe9-4a35-bbed-267f6995f8f3", // Replace with your client ID
+      redirectUri: "http://localhost:5678", // URL to redirect after successful authorization
+      state: null, // Random state value for security
     };
   },
   methods: {
+    /**
+     * Redirects the user to the SSO authorization endpoint.
+     * Ensures the user is authenticated before proceeding.
+     */
     async redirectToSSO() {
-      const token = localStorage.getItem("token"); // Récupérer le token JWT depuis le localStorage
+      const token = localStorage.getItem("token"); // Retrieve JWT token from localStorage
 
       if (!token) {
-        // Si l'utilisateur n'est pas connecté, redirigez vers la page de connexion
+        // If the user is not logged in, redirect to the login page
         this.$router.push({ path: "/", query: { redirect: this.$route.fullPath } });
         return;
       }
 
-      // Construire l'URL d'autorisation sans le token JWT dans la query
+      // Construct the authorization URL without appending the JWT token in the query
       const authorizationUrl = `http://localhost:5269/sso/authorize?clientId=${this.clientId}&responseType=code&redirectUri=${encodeURIComponent(this.redirectUri)}&state=${this.state}`;
 
       try {
         const response = await fetch(authorizationUrl, {
           method: "GET",
           headers: {
-            Authorization: `Bearer ${token}`, // Envoyer le token dans l'en-tête
+            Authorization: `Bearer ${token}`, // Send the token in the header
           },
         });
 
         if (response.ok) {
           const data = await response.json();
           if (data.redirectUrl) {
-            window.location.href = data.redirectUrl; // Se téléporter vers l'URL renvoyée par l'API
+            window.location.href = data.redirectUrl; // Redirect to the API-provided URL
           }
         } else {
           console.error("Authorization failed", await response.json());
@@ -54,20 +58,24 @@ export default {
         console.error("Error during authorization request:", error);
       }
     },
+    
+    /**
+     * Generates a random string for the "state" parameter to enhance security.
+     * @returns {string} A unique random string.
+     */
     generateState() {
-      // Générer une chaîne aléatoire pour le paramètre "state"
       return Math.random().toString(36).substring(2) + Date.now().toString(36);
     },
   },
   created() {
-    // Générer un état aléatoire lors de la création du composant
+    // Generate a random state value when the component is created
     this.state = this.generateState();
   },
   beforeRouteEnter(to, from, next) {
-    // Vérifier si l'utilisateur est connecté avant d'accéder à la page
+    // Ensure the user is logged in before allowing access to the page
     const token = localStorage.getItem("token");
     if (!token) {
-      next({ path: "/", query: { redirect: to.fullPath } }); // Rediriger vers la page de connexion si non connecté
+      next({ path: "/", query: { redirect: to.fullPath } }); // Redirect to login page if not authenticated
     } else {
       next();
     }
@@ -76,5 +84,5 @@ export default {
 </script>
 
 <style scoped>
-/* Ajoutez des styles personnalisés si nécessaire */
+/* Add custom styles if needed */
 </style>
