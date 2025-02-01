@@ -43,20 +43,15 @@ namespace GraphicalTestModule
             Dictionary<SmartButtonType, Page> Pages3 = new Dictionary<SmartButtonType, Page>();
             Dictionary<SmartButtonType, Page> Pages4 = new Dictionary<SmartButtonType, Page>();
 
-
-
             Pages1.Add(SmartButtonType.MainPanel, new BlankPage1());
             Pages2.Add(SmartButtonType.Window, new BlankPage1());
             Pages3.Add(SmartButtonType.Modal, new BlankPage1());
 
             Pages4.Add(SmartButtonType.LeftPanel, new BlankPage1());
 
-
             smartButtons.Add(new SmartButton("Main Panel", "I'm just a button of TestItem", Pages1));
             smartButtons.Add(new SmartButton("Window", "I'm just a button of TestItem", Pages2));
             smartButtons.Add(new SmartButton("Modal", "I'm just a button of TestItem", Pages3));
-
-
 
             smartButtons2.Add(new SmartButton("Left Panel", "I'm just a button of TestItem", Pages4));
 

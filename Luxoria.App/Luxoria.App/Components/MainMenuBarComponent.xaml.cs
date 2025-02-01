@@ -16,8 +16,6 @@ namespace Luxoria.App.Components
         public MainMenuBarComponent()
         {
             InitializeComponent();
-            AddLeftButton("PetitBoutonGauche", null);
-            AddRightButton("PetitBoutonDroit", null);
         }
 
         private void ModuleManagement_Click(object sender, RoutedEventArgs e)

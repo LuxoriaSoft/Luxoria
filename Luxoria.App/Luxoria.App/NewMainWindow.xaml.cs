@@ -108,7 +108,6 @@ namespace Luxoria.App
                         return;
                     }
 
-
                     if (item.SmartButtons.Count > 1)
                     {
                         var flyout = new MenuFlyout();
@@ -167,10 +166,7 @@ namespace Luxoria.App
 
                         FlyoutBase.SetAttachedFlyout(button, flyout);
 
-                        button.Click += (sender, e) =>
-                        {
-                            FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
-                        };
+                        FlyoutBase.ShowAttachedFlyout(button);
                     }
                     else if (item.SmartButtons.Count == 1)
                     {
