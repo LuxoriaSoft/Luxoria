@@ -43,15 +43,15 @@ const router = createRouter({
 /**
  * Global navigation guard to check authentication before entering protected routes.
  */
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _, next) => {
   let token = localStorage.getItem("token");
 
-    /**
+  /**
    * Checks if the provided JWT token is expired.
    * @param {string} token - The JWT token.
    * @returns {boolean} - True if token is expired, false otherwise.
    */
-  const isTokenExpired = (token) => {
+  const isTokenExpired = (token: string | null): boolean => {
     if (!token) return true;
     try {
       const payload = JSON.parse(atob(token.split(".")[1]));
@@ -64,18 +64,13 @@ router.beforeEach(async (to, from, next) => {
   // If the route requires authentication, check the token validity
   if (to.meta.requiresAuth) {
     if (!token || isTokenExpired(token)) {
-      console.log("Token expired, trying to refresh...");
-
-      // Try to refresh the token
-      const newToken = await authService.refreshToken();
-      if (!newToken) {
-        console.log("Redirecting to login...");
-        return next({ path: "/", query: { redirect: to.fullPath } });
-      }
+      console.log("Token expired, redirecting to login...");
+      return next({ path: "/", query: { redirect: to.fullPath } });
     }
   }
 
   next(); // Proceed to the next route
 });
+
 
 export default router;
