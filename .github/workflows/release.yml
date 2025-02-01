@@ -1,9 +1,10 @@
-name: Release
+name: Luxoria Desktop App Release
 
 on:
   push:
     branches:
       - main
+      - develop
       - release/*
 
 jobs:
@@ -69,4 +70,4 @@ jobs:
         with:
           name: Luxoria.App.${{matrix.platform}}
           path: ./Luxoria.App.${{matrix.platform}}.zip
-          retention-days: 1
+          retention-days: 7

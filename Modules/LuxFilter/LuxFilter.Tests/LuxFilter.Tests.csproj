@@ -1,38 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	<OutputType>Library</OutputType>
-  </PropertyGroup>
-
-  <PropertyGroup>
-	<WindowsSdkPackageVersion>10.0.26100.57</WindowsSdkPackageVersion>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Filters\**" />
-    <Compile Remove="Repositories\**" />
-    <Compile Remove="Utils\**" />
-    <EmbeddedResource Remove="Filters\**" />
-    <EmbeddedResource Remove="Repositories\**" />
-    <EmbeddedResource Remove="Utils\**" />
-    <None Remove="Filters\**" />
-    <None Remove="Repositories\**" />
-    <None Remove="Utils\**" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="SkiaSharp" Version="3.116.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\LuxFilter.Algorithms\LuxFilter.Algorithms.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\" />
+    <ProjectReference Include="..\LuxFilter\LuxFilter.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,6 +28,10 @@
     <Reference Include="Luxoria.SDK">
       <HintPath>..\..\..\Luxoria.App\Luxoria.Modules\bin\Debug\net9.0\Luxoria.SDK.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
   </ItemGroup>
 
 </Project>
