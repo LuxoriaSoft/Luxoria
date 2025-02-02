@@ -4,11 +4,17 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Exporters.Json;
 using BenchmarkDotNet.Diagnosers;
-using LuxImport.Services;
 using BenchmarkDotNet.Exporters.Csv;
+using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Columns;
+using BenchmarkDotNet.Environments;
+using LuxImport.Services;
 
 Console.WriteLine("LuxImport Benchmark Program");
 var config = ManualConfig.Create(DefaultConfig.Instance)
+    .AddColumnProvider(DefaultColumnProviders.Instance) // Adds more performance-related columns
+    .AddDiagnoser(MemoryDiagnoser.Default) // Tracks memory allocation & GC events
+    .AddDiagnoser(ThreadingDiagnoser.Default) // Monitors multi-threaded behavior
     .AddExporter(RPlotExporter.Default)  // Visual performance plots
     .AddExporter(HtmlExporter.Default)   // HTML output
     .AddExporter(MarkdownExporter.GitHub) // Markdown output
@@ -20,6 +26,8 @@ var summary = BenchmarkRunner.Run<ImportServiceBenchmark>(config);
 
 [MemoryDiagnoser]  // Tracks memory allocation & GC events
 [ThreadingDiagnoser] // Monitors multi-threaded behavior
+[HardwareCounters(HardwareCounter.BranchMispredictions, HardwareCounter.CacheMisses)] // Enables CPU cache and branch misprediction tracking
+[DisassemblyDiagnoser(printSource: true)] // Analyze JIT optimizations
 public class ImportServiceBenchmark
 {
     private ImportService _importService;
@@ -40,24 +48,28 @@ public class ImportServiceBenchmark
     }
 
     [Benchmark]
+    [BenchmarkCategory("Initialization")] // Categorizes benchmarks for better analysis
     public bool BenchmarkIsInitialized()
     {
         return _importService.IsInitialized();
     }
 
     [Benchmark]
+    [BenchmarkCategory("Database")] // Categorizes benchmarks
     public void BenchmarkInitializeDatabase()
     {
         _importService.InitializeDatabase();
     }
 
     [Benchmark]
+    [BenchmarkCategory("Indexing")] // Categorizes benchmarks
     public async Task BenchmarkIndexCollectionAsync()
     {
         await _importService.IndexCollectionAsync();
     }
 
     [Benchmark]
+    [BenchmarkCategory("Loading")] // Categorizes benchmarks
     public void BenchmarkLoadAssets()
     {
         _importService.LoadAssets();
