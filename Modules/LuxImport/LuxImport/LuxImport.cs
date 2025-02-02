@@ -59,13 +59,10 @@ public class LuxImport : IModule
     {
         _logger?.Log($"Importing collection [{@event.CollectionName}] at path: {@event.CollectionPath}", "Mods/LuxImport", LogLevel.Info);
 
-        // Simulate some delay in the import process
-        await Task.Delay(1000);
-
         // Send a message back through the event tunnel
         SendProgressMessage(@event, "Initiating import process...");
 
-        await Task.Delay(1000);
+        await Task.Delay(100);
 
         try
         {
@@ -78,8 +75,6 @@ public class LuxImport : IModule
                 SendProgressMessage(@event, messageTuple.message, messageTuple.progress);
             };
 
-            await Task.Delay(500);
-
             // Check if the collection is already initialized
             SendProgressMessage(@event, "Checking collection initialization...");
             if (importService.IsInitialized())
@@ -91,7 +86,6 @@ public class LuxImport : IModule
                 // Initializing collection's database
                 SendProgressMessage(@event, "Initializing collection's database...", 20);
                 importService.InitializeDatabase();
-                await Task.Delay(1000);
             }
 
             // Update indexing files
@@ -99,10 +93,6 @@ public class LuxImport : IModule
             importService.BaseProgressPercent = 25;
             await importService.IndexCollectionAsync();
 
-            await Task.Delay(1000);
-
-            // Additional simulated delay
-            await Task.Delay(1000);
             SendProgressMessage(@event, "Loading in memory...");
 
             // Load assets into memory

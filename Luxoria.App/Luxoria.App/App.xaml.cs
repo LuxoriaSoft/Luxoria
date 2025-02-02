@@ -64,7 +64,7 @@ namespace Luxoria.App
             splashScreen.Activate();
 
             await _logger.LogAsync("Modules loaded. Closing slasph screen...");
-            await Task.Delay(500);
+            await Task.Delay(200);
 
             // Load modules asynchronously and update the splash screen with the module names
             await LoadModulesAsync(splashScreen);
