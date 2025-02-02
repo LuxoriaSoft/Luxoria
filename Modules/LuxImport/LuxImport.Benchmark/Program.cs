@@ -9,6 +9,7 @@ using BenchmarkDotNet.Columns;
 using LuxImport.Services;
 
 Console.WriteLine("LuxImport Benchmark Program");
+
 var config = ManualConfig.Create(DefaultConfig.Instance)
     .AddColumnProvider(DefaultColumnProviders.Instance) // Adds more performance-related columns
     .AddDiagnoser(MemoryDiagnoser.Default) // Tracks memory allocation & GC events
@@ -31,19 +32,30 @@ public class ImportServiceBenchmark
 {
     private ImportService _importService;
 
+    /// <summary>
+    /// Benchmark will run separately for each dataset.
+    /// </summary>
+    [Params(
+        "\\Mac\\Home\\Downloads\\dataset_50",
+        "\\Mac\\Home\\Downloads\\dataset_100",
+        "\\Mac\\Home\\Downloads\\dataset_200"
+    )]
+    public string TestCollectionPath { get; set; }
+
     [GlobalSetup]
     public void Setup()
     {
-        string testCollectionName = "BenchmarkCollection";
-        string testCollectionPath = "\\Mac\\Home\\Downloads\\test";
+        string testCollectionName = "BenchmarkCollection_" + Path.GetFileName(TestCollectionPath);
 
         // Ensure the test directory exists
-        if (!Directory.Exists(testCollectionPath))
+        if (!Directory.Exists(TestCollectionPath))
         {
-            Directory.CreateDirectory(testCollectionPath);
+            Directory.CreateDirectory(TestCollectionPath);
         }
 
-        _importService = new ImportService(testCollectionName, testCollectionPath);
+        _importService = new ImportService(testCollectionName, TestCollectionPath);
+
+        Console.WriteLine($"Initialized ImportService for: {TestCollectionPath}");
     }
 
     [Benchmark]
