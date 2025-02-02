@@ -17,6 +17,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace Luxoria.App;
@@ -222,7 +223,8 @@ public sealed partial class MainWindow : Window
 
     private void LoadDefaultCollection()
     {
-        var openCollectionEvt = new OpenCollectionEvent("testCollection", "C:\\Users\\pastcque\\source\\repos\\LuxoriaSoft\\Luxoria\\assets\\BaseCollection");
+        //var openCollectionEvt = new OpenCollectionEvent("testCollection", "C:\\Users\\pastcque\\source\\repos\\LuxoriaSoft\\Luxoria\\assets\\BaseCollection");
+        var openCollectionEvt = new OpenCollectionEvent("base", "\\Mac\\Home\\Downloads\\test_10");
 
         openCollectionEvt.OnEventCompleted += (_, _) =>
         {

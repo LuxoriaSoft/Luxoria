@@ -8,6 +8,12 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
+    <Grid x:Name="MainGrid">
+        <ScrollViewer HorizontalScrollMode="Enabled"
+                  HorizontalScrollBarVisibility="Auto"
+                  VerticalScrollMode="Disabled"
+                  VerticalScrollBarVisibility="Hidden">
+            <StackPanel x:Name="CanvasContainer" Orientation="Horizontal"/>
+        </ScrollViewer>
     </Grid>
 </Page>

@@ -101,6 +101,15 @@ namespace LuxEditor
                 //CollectionExplorer.BitmapImages.Add( imageData.Bitmap );
             }
             List<SKBitmap> lst = body.Assets.Select(x => x.Data.Bitmap).ToList();
+
+            Debug.WriteLine("Calling function ....");
+
+            Debug.WriteLine("Lst count : " + lst.Count);
+            Debug.WriteLine(lst);
+
+            _cExplorer?.SetBitmaps(lst);
+
+            Debug.WriteLine("Function called ....");
             //await _cExplorer?.LoadBitmaps(lst);
             Debug.WriteLine("IYAWDHIBAIBHDW IWUHADIWUBHD IBHUBWAHDWH BJDHJB WAJBHDWAJHD WBDA MBVHJ ABWJHDABWJ DHGAVWDJK HGAVWD JHAGWVDAW JHGDVAJHD GVAWDJ HGVAWD JHAWVDAJHGVWD AJHGDVAWJ HDGAVDA JHDV AWDJHAWVDAWJHGDVAJHDGVAW DJHGAVWDJHG");
             //_cExplorer?.LoadBitmaps(lst);
