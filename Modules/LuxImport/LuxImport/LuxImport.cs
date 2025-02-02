@@ -62,7 +62,7 @@ public class LuxImport : IModule
 
         // Send a message back through the event tunnel
         SendProgressMessage(@event, "Initiating import process...");
-        
+
         await Task.Delay(100);
 
         Stopwatch totalStopwatch = Stopwatch.StartNew();

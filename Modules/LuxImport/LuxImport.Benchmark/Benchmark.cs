@@ -1,35 +1,8 @@
 ﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Running;
-using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Exporters;
-using BenchmarkDotNet.Exporters.Json;
 using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Exporters.Csv;
-using BenchmarkDotNet.Columns;
 using LuxImport.Services;
 
-Console.WriteLine("LuxImport Benchmark Program");
-
-/// <summary>
-/// Configures BenchmarkDotNet to use various exporters, diagnosers, and performance analysis tools.
-/// </summary>
-var config = ManualConfig.Create(DefaultConfig.Instance)
-    .AddColumnProvider(DefaultColumnProviders.Instance) // Adds more performance-related columns
-    .AddDiagnoser(MemoryDiagnoser.Default) // Tracks memory allocation & GC events
-    .AddDiagnoser(ThreadingDiagnoser.Default) // Monitors multi-threaded behavior
-    .AddExporter(RPlotExporter.Default)  // Visual performance plots
-    .AddExporter(HtmlExporter.Default)   // HTML output
-    .AddExporter(MarkdownExporter.GitHub) // Markdown output
-    .AddExporter(CsvExporter.Default)    // CSV output
-    .AddExporter(JsonExporter.Full)      // JSON output
-    .AddExporter(AsciiDocExporter.Default) // AsciiDoc output
-    .AddExporter(PlainExporter.Default) // Plain text output
-    .WithOptions(ConfigOptions.DisableOptimizationsValidator);
-
-/// <summary>
-/// Runs the benchmark tests using the configured settings.
-/// </summary>
-var summary = BenchmarkRunner.Run<ImportServiceBenchmark>(config);
+namespace LuxImport.Benchmark;
 
 /// <summary>
 /// Benchmark class for testing the performance of ImportService operations.
@@ -39,7 +12,9 @@ var summary = BenchmarkRunner.Run<ImportServiceBenchmark>(config);
 [DisassemblyDiagnoser(printSource: true)] // Analyze JIT optimizations
 public class ImportServiceBenchmark
 {
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     private ImportService _importService;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
     /// <summary>
     /// Specifies different dataset paths to be used in benchmarks.
@@ -50,7 +25,7 @@ public class ImportServiceBenchmark
         "\\Mac\\Home\\Downloads\\dataset_100",  // Dataset with 100 images
         "\\Mac\\Home\\Downloads\\dataset_200"   // Dataset with 200 images
     )]
-    public string TestCollectionPath { get; set; }
+    public required string TestCollectionPath { get; set; }
 
     /// <summary>
     /// Sets up the benchmark environment before execution.
