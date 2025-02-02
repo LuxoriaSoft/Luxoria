@@ -5,9 +5,7 @@ using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Exporters.Json;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Exporters.Csv;
-using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Columns;
-using BenchmarkDotNet.Environments;
 using LuxImport.Services;
 
 Console.WriteLine("LuxImport Benchmark Program");
@@ -20,13 +18,14 @@ var config = ManualConfig.Create(DefaultConfig.Instance)
     .AddExporter(MarkdownExporter.GitHub) // Markdown output
     .AddExporter(CsvExporter.Default)    // CSV output
     .AddExporter(JsonExporter.Full)      // JSON output
+    .AddExporter(AsciiDocExporter.Default) // AsciiDoc output
+    .AddExporter(PlainExporter.Default) // Plain text output
     .WithOptions(ConfigOptions.DisableOptimizationsValidator);
 
 var summary = BenchmarkRunner.Run<ImportServiceBenchmark>(config);
 
 [MemoryDiagnoser]  // Tracks memory allocation & GC events
 [ThreadingDiagnoser] // Monitors multi-threaded behavior
-[HardwareCounters(HardwareCounter.BranchMispredictions, HardwareCounter.CacheMisses)] // Enables CPU cache and branch misprediction tracking
 [DisassemblyDiagnoser(printSource: true)] // Analyze JIT optimizations
 public class ImportServiceBenchmark
 {
