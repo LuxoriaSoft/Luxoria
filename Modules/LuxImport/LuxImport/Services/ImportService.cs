@@ -276,8 +276,6 @@ namespace LuxImport.Services
             // Run indexication process in parallel
             Parallel.ForEach(manifest.Assets, asset =>
             {
-                Debug.WriteLine($"Loading asset: {asset.FileName} using thread: [{Environment.CurrentManagedThreadId}]");
-
                 // Load the LuxCfg model
                 LuxCfg? luxCfg = _luxCfgRepository.Load(asset.LuxCfgId);
 
