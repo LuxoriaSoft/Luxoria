@@ -124,7 +124,6 @@ namespace LuxImport.Services
             // Notify progress: Retrieving the manifest
             ProgressMessageSent?.Invoke(("Retrieving manifest file...", BaseProgressPercent + 5));
             Manifest manifest = _manifestRepository.ReadManifest();
-            await Task.Delay(100);
 
             // Notify progress: Updating indexing files
             ProgressMessageSent?.Invoke(("Updating indexing files...", BaseProgressPercent + 10));
@@ -173,9 +172,6 @@ namespace LuxImport.Services
                 // Compute hash and handle assets
                 string hash256 = _fileHasherService.ComputeFileHash(file);
                 await HandleAsset(manifest, filename, relativePath, hash256);
-
-                // Simulate processing delay
-                await Task.Delay(25);
             }
 
             // Finalize indexing process
@@ -222,7 +218,6 @@ namespace LuxImport.Services
             var newLuxCfg = new LuxCfg(LUXCFG_VERSION, luxCfgId, fileNameWithoutExtension, filename, string.Empty, FileExtensionHelper.ConvertToEnum(Path.GetExtension(filename)));
 
             _luxCfgRepository.Save(newLuxCfg);
-            await Task.Delay(10);
         }
 
         /// <summary>
@@ -236,7 +231,6 @@ namespace LuxImport.Services
             var updatedLuxCfg = new LuxCfg(LUXCFG_VERSION, existingAsset.LuxCfgId, fileNameWithoutExtension, filename, string.Empty, FileExtensionHelper.ConvertToEnum(Path.GetExtension(filename)));
 
             _luxCfgRepository.Save(updatedLuxCfg);
-            await Task.Delay(10);
         }
 
         /// <summary>
@@ -262,7 +256,7 @@ namespace LuxImport.Services
             }
 
             ProgressMessageSent?.Invoke(($"Cleanup complete. (final: {manifest.Assets.Count} assets)", BaseProgressPercent + 72));
-            await Task.Delay(250);
+            await Task.Delay(200);
 
             // Save the updated manifest
             _manifestRepository.SaveManifest(manifest);
