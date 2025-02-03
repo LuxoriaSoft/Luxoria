@@ -1,3 +1,10 @@
+# [1.21.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.20.0...v1.21.0) (2025-02-03)
+
+
+### Features
+
+* Adding BrisqueInterop (C++) to BrisqueAlgo (IFilter .NET) ([a0771b7](https://github.com/LuxoriaSoft/Luxoria/commit/a0771b793119bddb581e742daf079b0cf5ff9613))
+
 # [1.20.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.19.0...v1.20.0) (2025-02-03)
 
 
