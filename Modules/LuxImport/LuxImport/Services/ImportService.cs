@@ -128,7 +128,7 @@ namespace LuxImport.Services
             ProgressMessageSent?.Invoke(("Updating indexing files...", BaseProgressPercent + 10));
 
             // Image extensions allowed in the collection, if extension is not in this list, it will be ignored
-            var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp" };
+            var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp", ".arw", ".raw" };
             // Retrieve all files in the collection
             string[] files = Directory.GetFiles(_collectionPath, "*.*", SearchOption.AllDirectories)
                 .Where(file =>
