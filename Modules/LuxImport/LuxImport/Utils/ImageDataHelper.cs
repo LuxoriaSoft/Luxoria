@@ -52,8 +52,9 @@ public static class ImageDataHelper
             if (bitmap == null)
                 throw new InvalidOperationException($"Failed to load image at '{path}'.");
 
+            // Get orientation from EXIF metadata
             // Apply EXIF orientation correction
-            bitmap = ApplyExifOrientation(bitmap, codec.EncodedOrigin);
+            bitmap = ApplyExifOrientation(bitmap, GetExifOrientation(metadata));
 
             // Create ImageData object containing both image and EXIF metadata
             return new ImageData(bitmap, ext, exifData);
@@ -85,77 +86,109 @@ public static class ImageDataHelper
     }
 
     /// <summary>
+    /// Extracts EXIF orientation from the metadata.
+    /// </summary>
+    private static SKEncodedOrigin GetExifOrientation(IReadOnlyList<MetadataExtractor.Directory> metadata)
+    {
+        foreach (var directory in metadata)
+        {
+            if (directory is ExifIfd0Directory exifDirectory)
+            {
+                if (exifDirectory.TryGetUInt16(ExifDirectoryBase.TagOrientation, out ushort orientation))
+                {
+                    return orientation switch
+                    {
+                        1 => SKEncodedOrigin.TopLeft,      // Normal (No Rotation)
+                        2 => SKEncodedOrigin.TopRight,     // Flip Horizontal
+                        3 => SKEncodedOrigin.BottomRight,  // Rotate 180
+                        4 => SKEncodedOrigin.BottomLeft,   // Flip Vertical
+                        5 => SKEncodedOrigin.LeftTop,      // Transpose (Rotate 90 + Flip)
+                        6 => SKEncodedOrigin.RightBottom,  // Rotate 90
+                        7 => SKEncodedOrigin.RightTop,     // Transverse (Rotate 270 + Flip)
+                        8 => SKEncodedOrigin.LeftBottom,   // Rotate 270
+                        _ => SKEncodedOrigin.TopLeft       // Default to No Rotation
+                    };
+                }
+            }
+        }
+
+        return SKEncodedOrigin.TopLeft; // Default if orientation not found
+    }
+
+
+    /// <summary>
     /// Adjusts the image based on EXIF orientation.
     /// </summary>
     private static SKBitmap ApplyExifOrientation(SKBitmap bitmap, SKEncodedOrigin origin)
     {
-        SKBitmap rotatedBitmap;
+        if (bitmap == null || origin == SKEncodedOrigin.TopLeft)
+            return bitmap; // No transformation needed
+
+        bool swapDimensions = origin is SKEncodedOrigin.LeftTop or SKEncodedOrigin.RightBottom
+                                    or SKEncodedOrigin.LeftBottom or SKEncodedOrigin.RightTop;
+
+        int newWidth = swapDimensions ? bitmap.Height : bitmap.Width;
+        int newHeight = swapDimensions ? bitmap.Width : bitmap.Height;
+
+        SKBitmap rotatedBitmap = new SKBitmap(newWidth, newHeight);
+
+        using (SKCanvas canvas = new SKCanvas(rotatedBitmap))
+        {
+            // Set the transformation
+            using SKPaint paint = new();
+            SKMatrix matrix = GetExifTransformMatrix(origin, bitmap.Width, bitmap.Height);
+            canvas.SetMatrix(matrix);
+            canvas.DrawBitmap(bitmap, 0, 0, paint);
+        }
+
+        return rotatedBitmap;
+    }
+
+    /// <summary>
+    /// Generates the transformation matrix for EXIF orientation.
+    /// </summary>
+    private static SKMatrix GetExifTransformMatrix(SKEncodedOrigin origin, int width, int height)
+    {
+        SKMatrix matrix = SKMatrix.CreateIdentity();
 
         switch (origin)
         {
-            case SKEncodedOrigin.TopRight: // 2 - Flip Horizontal
-                rotatedBitmap = new SKBitmap(bitmap.Width, bitmap.Height);
-                using (var canvas = new SKCanvas(rotatedBitmap))
-                {
-                    canvas.Scale(-1, 1, bitmap.Width / 2f, bitmap.Height / 2f);
-                    canvas.DrawBitmap(bitmap, 0, 0);
-                }
-                bitmap.Dispose();
-                return rotatedBitmap;
+            case SKEncodedOrigin.TopRight: // Flip Horizontal
+                matrix = SKMatrix.CreateScale(-1, 1);
+                matrix = SKMatrix.Concat(matrix, SKMatrix.CreateTranslation(width, 0));
+                break;
 
-            case SKEncodedOrigin.BottomRight: // 3 - Rotate 180
-                rotatedBitmap = new SKBitmap(bitmap.Width, bitmap.Height);
-                using (var canvas = new SKCanvas(rotatedBitmap))
-                {
-                    canvas.RotateDegrees(180, bitmap.Width / 2f, bitmap.Height / 2f);
-                    canvas.DrawBitmap(bitmap, 0, 0);
-                }
-                bitmap.Dispose();
-                return rotatedBitmap;
+            case SKEncodedOrigin.BottomRight: // Rotate 180
+                matrix = SKMatrix.CreateRotationDegrees(180, width / 2f, height / 2f);
+                break;
 
-            case SKEncodedOrigin.BottomLeft: // 4 - Flip Vertical
-                rotatedBitmap = new SKBitmap(bitmap.Width, bitmap.Height);
-                using (var canvas = new SKCanvas(rotatedBitmap))
-                {
-                    canvas.Scale(1, -1, bitmap.Width / 2f, bitmap.Height / 2f);
-                    canvas.DrawBitmap(bitmap, 0, 0);
-                }
-                bitmap.Dispose();
-                return rotatedBitmap;
+            case SKEncodedOrigin.BottomLeft: // Flip Vertical
+                matrix = SKMatrix.CreateScale(1, -1);
+                matrix = SKMatrix.Concat(matrix, SKMatrix.CreateTranslation(0, height));
+                break;
 
-            case SKEncodedOrigin.LeftTop: // 5 - Transpose
-            case SKEncodedOrigin.RightTop: // 7 - Transverse
-                rotatedBitmap = new SKBitmap(bitmap.Height, bitmap.Width);
-                using (var canvas = new SKCanvas(rotatedBitmap))
-                {
-                    canvas.RotateDegrees(90, rotatedBitmap.Width / 2f, rotatedBitmap.Height / 2f);
-                    canvas.DrawBitmap(bitmap, 0, 0);
-                }
-                bitmap.Dispose();
-                return rotatedBitmap;
+            case SKEncodedOrigin.LeftTop: // Transpose (Rotate 90 + Flip)
+                matrix = SKMatrix.CreateRotationDegrees(90);
+                matrix = SKMatrix.Concat(matrix, SKMatrix.CreateScale(1, -1));
+                matrix = SKMatrix.Concat(matrix, SKMatrix.CreateTranslation(0, width));
+                break;
 
-            case SKEncodedOrigin.RightBottom: // 6 - Rotate 90
-                rotatedBitmap = new SKBitmap(bitmap.Height, bitmap.Width);
-                using (var canvas = new SKCanvas(rotatedBitmap))
-                {
-                    canvas.RotateDegrees(90, rotatedBitmap.Width / 2f, rotatedBitmap.Height / 2f);
-                    canvas.DrawBitmap(bitmap, 0, 0);
-                }
-                bitmap.Dispose();
-                return rotatedBitmap;
+            case SKEncodedOrigin.RightBottom: // Rotate 90
+                matrix = SKMatrix.CreateRotationDegrees(90);
+                matrix = SKMatrix.Concat(matrix, SKMatrix.CreateTranslation(0, -width));
+                break;
 
-            case SKEncodedOrigin.LeftBottom: // 8 - Rotate 270
-                rotatedBitmap = new SKBitmap(bitmap.Height, bitmap.Width);
-                using (var canvas = new SKCanvas(rotatedBitmap))
-                {
-                    canvas.RotateDegrees(270, rotatedBitmap.Width / 2f, rotatedBitmap.Height / 2f);
-                    canvas.DrawBitmap(bitmap, 0, 0);
-                }
-                bitmap.Dispose();
-                return rotatedBitmap;
+            case SKEncodedOrigin.RightTop: // Transverse (Rotate 270 + Flip)
+                matrix = SKMatrix.CreateRotationDegrees(270);
+                matrix = SKMatrix.Concat(matrix, SKMatrix.CreateScale(1, -1));
+                matrix = SKMatrix.Concat(matrix, SKMatrix.CreateTranslation(height, width));
+                break;
 
-            default:
-                return bitmap;
+            case SKEncodedOrigin.LeftBottom: // Rotate 270
+                matrix = SKMatrix.CreateRotationDegrees(270);
+                matrix = SKMatrix.Concat(matrix, SKMatrix.CreateTranslation(-height, 0));
+                break;
         }
+        return matrix;
     }
 }
