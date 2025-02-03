@@ -7,7 +7,6 @@ using Luxoria.Modules.Utils;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Services;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 
 namespace LuxImport.Services
 {
@@ -276,8 +275,6 @@ namespace LuxImport.Services
             // Run indexication process in parallel
             Parallel.ForEach(manifest.Assets, asset =>
             {
-                Debug.WriteLine($"Loading asset: {asset.FileName} using thread: [{Environment.CurrentManagedThreadId}]");
-
                 // Load the LuxCfg model
                 LuxCfg? luxCfg = _luxCfgRepository.Load(asset.LuxCfgId);
 

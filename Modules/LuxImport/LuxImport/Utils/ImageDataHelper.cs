@@ -35,14 +35,8 @@ public static class ImageDataHelper
 
         try
         {
-            // Log the start of the image loading process
-            Debug.WriteLine($"Attempting to load image from path: {path}");
-
             // Read the file bytes
             byte[] fileBytes = File.ReadAllBytes(path);
-
-            // Log file size for debugging purposes
-            Debug.WriteLine($"Loaded {fileBytes.Length} bytes from {path}");
 
             if (fileBytes.Length == 0)
             {
