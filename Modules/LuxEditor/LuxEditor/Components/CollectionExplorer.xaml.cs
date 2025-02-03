@@ -1,3 +1,4 @@
+using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Xaml.Controls;
 using SkiaSharp;
 using SkiaSharp.Views.Windows;
@@ -10,10 +11,46 @@ public sealed partial class CollectionExplorer : Page
 {
     private List<SKBitmap> _bitmaps = new(); // Store bitmaps dynamically
     private List<SKXamlCanvas> _canvases = new(); // Keep track of SKXamlCanvas instances
+    private WrapPanel _canvasContainer; // WrapPanel container for images
 
     public CollectionExplorer()
     {
-        this.InitializeComponent();
+        InitializeComponent();
+        BuildUI(); // Dynamically create UI
+    }
+
+
+    /// <summary>
+    /// Dynamically builds the UI using C#.
+    /// </summary>
+    private void BuildUI()
+    {
+        // Create the root Grid
+        var mainGrid = new Grid();
+
+        // Create a ScrollViewer to enable scrolling
+        var scrollViewer = new ScrollViewer
+        {
+            HorizontalScrollMode = ScrollMode.Enabled,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollMode = ScrollMode.Auto,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+        };
+
+        // Create a WrapPanel (CommunityToolkit)
+        _canvasContainer = new WrapPanel
+        {
+            Orientation = Orientation.Horizontal, // Arrange items horizontally first
+        };
+
+        // Add WrapPanel inside ScrollViewer
+        scrollViewer.Content = _canvasContainer;
+
+        // Add ScrollViewer to the Grid
+        mainGrid.Children.Add(scrollViewer);
+
+        // Set the page's content to our dynamically created Grid
+        Content = mainGrid;
     }
 
     /// <summary>
@@ -21,6 +58,12 @@ public sealed partial class CollectionExplorer : Page
     /// </summary>
     public void SetBitmaps(List<SKBitmap> bitmaps)
     {
+        if (bitmaps == null || bitmaps.Count == 0)
+        {
+            Debug.WriteLine("SetBitmaps: No bitmaps provided.");
+            return;
+        }
+
         Debug.WriteLine($"SetBitmaps: {bitmaps.Count} bitmaps");
 
         // Run UI updates on the main thread
@@ -30,7 +73,7 @@ public sealed partial class CollectionExplorer : Page
             _bitmaps = bitmaps;
 
             // Clear previous canvases
-            CanvasContainer.Children.Clear();
+            _canvasContainer.Children.Clear();
             _canvases.Clear();
 
             // Add new canvases based on the provided bitmaps
@@ -39,10 +82,9 @@ public sealed partial class CollectionExplorer : Page
                 var skiaCanvas = InitializeSkiaCanvas(i);
                 skiaCanvas.Width = 200;
                 skiaCanvas.Height = 150;
-                //skiaCanvas.Margin = new Thickness(10, 0, 10, 0);
 
                 _canvases.Add(skiaCanvas);
-                CanvasContainer.Children.Add(skiaCanvas);
+                _canvasContainer.Children.Add(skiaCanvas);
 
                 // Force an initial draw
                 skiaCanvas.Invalidate();
