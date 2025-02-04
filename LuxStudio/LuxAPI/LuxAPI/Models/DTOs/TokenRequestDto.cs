@@ -16,18 +16,18 @@ namespace LuxAPI.Models.DTOs
         /// The secret key of the client application used for authentication.
         /// This should match the stored client secret in the system.
         /// </summary>
-        public string ClientSecret { get; set; }
+        public required string ClientSecret { get; set; }
 
         /// <summary>
         /// The authorization code received after user authentication.
         /// This code is exchanged for an access token.
         /// </summary>
-        public string Code { get; set; }
+        public required string Code { get; set; }
 
         /// <summary>
         /// The type of grant requested.
         /// Should be "authorization_code" as per OAuth 2.0 standards.
         /// </summary>
-        public string GrantType { get; set; }
+        public required string GrantType { get; set; }
     }
 }

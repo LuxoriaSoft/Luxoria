@@ -24,7 +24,7 @@ namespace LuxAPI.Models
         /// </summary>
         [Required(ErrorMessage = "Authorization code is required.")]
         [MaxLength(100, ErrorMessage = "Authorization code cannot exceed 100 characters.")]
-        public string Code { get; set; }
+        public required string Code { get; set; }
 
         /// <summary>
         /// The unique identifier of the client application that requested authorization.

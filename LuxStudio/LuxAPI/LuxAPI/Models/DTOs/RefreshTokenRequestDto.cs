@@ -9,6 +9,6 @@ namespace LuxAPI.Models.DTOs
         /// <summary>
         /// The refresh token provided by the client to obtain a new access token.
         /// </summary>
-        public string RefreshToken { get; set; }
+        public required string RefreshToken { get; set; }
     }
 }

@@ -14,7 +14,7 @@ namespace LuxAPI.Models.DTOs
         /// </summary>
         [Required(ErrorMessage = "Username is required.")]
         [MaxLength(50, ErrorMessage = "Username cannot exceed 50 characters.")]
-        public string Username { get; set; }
+        public required string Username { get; set; }
 
         /// <summary>
         /// The email address of the user.
@@ -23,7 +23,7 @@ namespace LuxAPI.Models.DTOs
         [Required(ErrorMessage = "Email is required.")]
         [EmailAddress(ErrorMessage = "Invalid email format.")]
         [MaxLength(100, ErrorMessage = "Email cannot exceed 100 characters.")]
-        public string Email { get; set; }
+        public required string Email { get; set; }
 
         /// <summary>
         /// The password for the new user.
@@ -31,6 +31,6 @@ namespace LuxAPI.Models.DTOs
         /// </summary>
         [Required(ErrorMessage = "Password is required.")]
         [MinLength(6, ErrorMessage = "Password must be at least 6 characters long.")]
-        public string Password { get; set; }
+        public required string Password { get; set; }
     }
 }

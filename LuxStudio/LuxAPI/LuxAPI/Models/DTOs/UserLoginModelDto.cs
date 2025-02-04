@@ -9,11 +9,11 @@ namespace LuxAPI.Models.DTOs
         /// <summary>
         /// The username of the user.
         /// </summary>
-        public string Username { get; set; }
+        public required string Username { get; set; }
 
         /// <summary>
         /// The password of the user.
         /// </summary>
-        public string Password { get; set; }
+        public required string Password { get; set; }
     }
 }

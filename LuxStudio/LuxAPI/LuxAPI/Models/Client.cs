@@ -31,7 +31,7 @@ namespace LuxAPI.Models
         /// </summary>
         [Required(ErrorMessage = "Client secret is required.")]
         [MaxLength(100, ErrorMessage = "Client secret cannot exceed 100 characters.")]
-        public string ClientSecret { get; set; }
+        public required string ClientSecret { get; set; }
 
         /// <summary>
         /// The authorized redirect URI for the client.
@@ -39,6 +39,6 @@ namespace LuxAPI.Models
         /// </summary>
         [Required(ErrorMessage = "Redirect URI is required.")]
         [MaxLength(200, ErrorMessage = "Redirect URI cannot exceed 200 characters.")]
-        public string RedirectUri { get; set; }
+        public required string RedirectUri { get; set; }
     }
 }

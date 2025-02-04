@@ -24,7 +24,7 @@ namespace LuxAPI.Models
         /// </summary>
         [Required(ErrorMessage = "Refresh token is required.")]
         [Column(TypeName = "TEXT")]
-        public string Token { get; set; }
+        public string? Token { get; set; }
 
         /// <summary>
         /// The unique identifier of the user associated with this refresh token.
@@ -38,7 +38,7 @@ namespace LuxAPI.Models
         /// Establishes a foreign key relationship with the User table.
         /// </summary>
         [ForeignKey(nameof(UserId))]
-        public User User { get; set; }
+        public User? User { get; set; } 
 
         /// <summary>
         /// The expiration date and time of the refresh token.

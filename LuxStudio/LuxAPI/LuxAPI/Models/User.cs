@@ -21,7 +21,7 @@ public class User
     /// </summary>
     [Required]
     [MaxLength(50)]
-    public string Username { get; set; }
+    public required string Username { get; set; }
 
     /// <summary>
     /// Gets or sets the email address of the user.
@@ -29,13 +29,13 @@ public class User
     [Required]
     [MaxLength(100)]
     [EmailAddress]
-    public string Email { get; set; }
+    public required string Email { get; set; }
 
     /// <summary>
     /// Gets or sets the hashed password of the user.
     /// </summary>
     [Required]
-    public string PasswordHash { get; set; }
+    public required string PasswordHash { get; set; }
 
     /// <summary>
     /// Gets or sets the date and time when the user was created.
