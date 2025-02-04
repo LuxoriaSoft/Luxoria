@@ -5,9 +5,9 @@ namespace LuxFilter;
 
 public class LuxFilter : IModule
 {
-    private IEventBus? _eventBus;
-    private IModuleContext? _context;
-    private ILoggerService? _logger;
+    private IEventBus _eventBus;
+    private IModuleContext _context;
+    private ILoggerService _logger;
 
     public string Name => "LuxFilter";
     public string Description => "Generic Luxoria Filtering Module";

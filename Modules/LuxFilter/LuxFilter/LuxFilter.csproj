@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
 	<OutputType>Library</OutputType>
   </PropertyGroup>
 
@@ -35,9 +34,10 @@
     <Reference Include="Luxoria.Modules">
       <HintPath>..\..\..\Luxoria.App\Luxoria.Modules\bin\Debug\net9.0\Luxoria.Modules.dll</HintPath>
     </Reference>
-    <Reference Include="Luxoria.SDK">
-      <HintPath>..\..\..\Luxoria.App\Luxoria.Modules\bin\Debug\net9.0\Luxoria.SDK.dll</HintPath>
-    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+	<PackageReference Include="Luxoria.SDK" Version="1.0.0" />
   </ItemGroup>
 
 </Project>
