@@ -1,3 +1,20 @@
+# [1.21.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.20.0...v1.21.0) (2025-02-03)
+
+
+### Features
+
+* Adding BrisqueInterop (C++) to BrisqueAlgo (IFilter .NET) ([a0771b7](https://github.com/LuxoriaSoft/Luxoria/commit/a0771b793119bddb581e742daf079b0cf5ff9613))
+
+# [1.20.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.19.0...v1.20.0) (2025-02-03)
+
+
+### Features
+
+* Add additional diagnostics and exporters to ImportService benchmarking ([5e5ad07](https://github.com/LuxoriaSoft/Luxoria/commit/5e5ad07e80cc01df43a0ca2aed099b6f9e2b77fc))
+* Add benchmarks & metrics on ImportService ([280581e](https://github.com/LuxoriaSoft/Luxoria/commit/280581eb9d141a159d1215aa76b2fdbd7eb5277d))
+* Enhance benchmarking for ImportService with additional diagnostics and categorization ([ca45740](https://github.com/LuxoriaSoft/Luxoria/commit/ca457407153167d2e3643a3b0c35d701487fbac6))
+* Update ImportServiceBenchmark to support multiple dataset paths ([ab8a351](https://github.com/LuxoriaSoft/Luxoria/commit/ab8a351bf13cfe2280ebaa900348ec508cf61214))
+
 # [1.19.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.18.1...v1.19.0) (2025-01-31)
 
 

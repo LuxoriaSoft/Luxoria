@@ -1,4 +1,4 @@
-﻿namespace Luxoria.Modules.Models
+namespace Luxoria.Modules.Models
 {
     /// <summary>
     /// Represents a file extension.
@@ -25,6 +25,9 @@
         /// Represents a RAW file extension.
         /// </summary>
         RAW,
+        /// <summary>
+        /// Represents an ARW file extension.
+        /// </summary>
         ARW
     }
 }

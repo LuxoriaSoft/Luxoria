@@ -1,4 +1,4 @@
-﻿using LuxImport.Interfaces;
+using LuxImport.Interfaces;
 using LuxImport.Models;
 using LuxImport.Repositories;
 using LuxImport.Utils;
@@ -7,7 +7,6 @@ using Luxoria.Modules.Utils;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Services;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 
 namespace LuxImport.Services
 {
@@ -124,13 +123,12 @@ namespace LuxImport.Services
             // Notify progress: Retrieving the manifest
             ProgressMessageSent?.Invoke(("Retrieving manifest file...", BaseProgressPercent + 5));
             Manifest manifest = _manifestRepository.ReadManifest();
-            await Task.Delay(100);
 
             // Notify progress: Updating indexing files
             ProgressMessageSent?.Invoke(("Updating indexing files...", BaseProgressPercent + 10));
 
             // Image extensions allowed in the collection, if extension is not in this list, it will be ignored
-            var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp", ".RAW", ".ARW", ".raw", ".arw" };
+            var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp", ".arw", ".raw" };
             // Retrieve all files in the collection
             string[] files = Directory.GetFiles(_collectionPath, "*.*", SearchOption.AllDirectories)
                 .Where(file =>
@@ -173,9 +171,6 @@ namespace LuxImport.Services
                 // Compute hash and handle assets
                 string hash256 = _fileHasherService.ComputeFileHash(file);
                 await HandleAsset(manifest, filename, relativePath, hash256);
-
-                // Simulate processing delay
-                await Task.Delay(25);
             }
 
             // Finalize indexing process
@@ -222,7 +217,6 @@ namespace LuxImport.Services
             var newLuxCfg = new LuxCfg(LUXCFG_VERSION, luxCfgId, fileNameWithoutExtension, filename, string.Empty, FileExtensionHelper.ConvertToEnum(Path.GetExtension(filename)));
 
             _luxCfgRepository.Save(newLuxCfg);
-            await Task.Delay(10);
         }
 
         /// <summary>
@@ -236,7 +230,6 @@ namespace LuxImport.Services
             var updatedLuxCfg = new LuxCfg(LUXCFG_VERSION, existingAsset.LuxCfgId, fileNameWithoutExtension, filename, string.Empty, FileExtensionHelper.ConvertToEnum(Path.GetExtension(filename)));
 
             _luxCfgRepository.Save(updatedLuxCfg);
-            await Task.Delay(10);
         }
 
         /// <summary>
@@ -262,7 +255,7 @@ namespace LuxImport.Services
             }
 
             ProgressMessageSent?.Invoke(($"Cleanup complete. (final: {manifest.Assets.Count} assets)", BaseProgressPercent + 72));
-            await Task.Delay(250);
+            await Task.Delay(200);
 
             // Save the updated manifest
             _manifestRepository.SaveManifest(manifest);
@@ -282,8 +275,6 @@ namespace LuxImport.Services
             // Run indexication process in parallel
             Parallel.ForEach(manifest.Assets, asset =>
             {
-                Debug.WriteLine($"Loading asset: {asset.FileName} using thread: [{Environment.CurrentManagedThreadId}]");
-
                 // Load the LuxCfg model
                 LuxCfg? luxCfg = _luxCfgRepository.Load(asset.LuxCfgId);
 

@@ -1,4 +1,5 @@
 ﻿using SkiaSharp;
+using System.Collections.ObjectModel;
 
 namespace Luxoria.Modules.Models;
 
@@ -28,14 +29,21 @@ public class ImageData
     public FileExtension Format { get; }
 
     /// <summary>
+    /// EXIF metadata for the image.
+    /// </summary>
+    public ReadOnlyDictionary<string, string> EXIF { get; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ImageData"/> class.
     /// </summary>
     /// <param name="bitmap">The bitmap (SKBitmap) data of the image.</param>
     /// <param name="format">The format of the image (e.g., "PNG", "JPEG").</param>
-    public ImageData(SKBitmap bitmap, FileExtension format)
+    /// <param name="exifMetaData">The EXIF metadata dictionary.</param>
+    public ImageData(SKBitmap bitmap, FileExtension format, Dictionary<string, string>? exifMetaData = null)
     {
         Bitmap = bitmap ?? throw new ArgumentNullException(nameof(bitmap));
         Format = format;
+        EXIF = new ReadOnlyDictionary<string, string>(exifMetaData ?? new Dictionary<string, string>());
     }
 
     /// <summary>
@@ -44,6 +52,6 @@ public class ImageData
     /// <returns>A string representation of the image.</returns>
     public override string ToString()
     {
-        return $"{Format} Image: {Width}x{Height}";
+        return $"{Format} Image: {Width}x{Height}, EXIF Entries: {EXIF.Count}";
     }
 }
