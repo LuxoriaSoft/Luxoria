@@ -24,6 +24,7 @@
         /// <summary>
         /// Represents a RAW file extension.
         /// </summary>
-        RAW
+        RAW,
+        ARW
     }
 }

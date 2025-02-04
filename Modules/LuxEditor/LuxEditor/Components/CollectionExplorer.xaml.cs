@@ -1,135 +1,111 @@
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Shapes;
+using Microsoft.UI.Xaml.Input;
 using SkiaSharp;
 using SkiaSharp.Views.Windows;
-using System.IO;
-using Windows.Storage.Streams;
+using System.Collections.Generic;
+using System.Diagnostics;
+using Windows.Foundation;
 
 namespace LuxEditor;
 
 public sealed partial class CollectionExplorer : Page
 {
-    private Image _image;
+    private List<SKBitmap> _bitmaps = new();
+    private ScrollViewer _scrollViewer;
+    private StackPanel _imagePanel;
 
     public CollectionExplorer()
     {
-        this.InitializeComponent();
-        InitializeSkiaCanvas();
+        InitializeComponent();
+        BuildUI();
     }
 
-    private void DrawWithSkiaSharp()
+    /// <summary>
+    /// Crée dynamiquement l'interface utilisateur avec un ScrollViewer et un StackPanel.
+    /// </summary>
+    private void BuildUI()
     {
-        /*
-        int width = 500, height = 300;
-
-        // Création du bitmap SkiaSharp
-        using var surface = SKSurface.Create(new SKImageInfo(width, height));
-        var canvas = surface.Canvas;
-        canvas.Clear(SKColors.White);
-
-        // Dessiner du texte
-        using var paint = new SKPaint
+        _scrollViewer = new ScrollViewer
         {
-            Color = SKColors.Black,
-            IsAntialias = true,
-            Style = SKPaintStyle.Fill,
-            TextSize = 24
+            HorizontalScrollMode = ScrollMode.Enabled,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollMode = ScrollMode.Disabled,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
+            Padding = new Thickness(10)
         };
-        canvas.DrawText("SkiaSharp", width / 2, height / 2, paint);
 
-        // Conversion en bitmap
-        using var image = surface.Snapshot();
-        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-        using var stream = new MemoryStream();
-        data.SaveTo(stream);
-        stream.Seek(0, SeekOrigin.Begin);
-
-        // Affichage dans le Canvas
-        var bitmap = new BitmapImage();
-        var randomStream = new InMemoryRandomAccessStream();
-        stream.CopyTo(randomStream.AsStream());
-        randomStream.Seek(0);
-
-        bitmap.SetSource(randomStream);
-        _image.Source = bitmap;
-        */
-        /*
-        int width = 500, height = 300;
-        using var surface = SKSurface.Create(new SKImageInfo(width, height));
-        var canvas = surface.Canvas;
-        canvas.Clear(SKColors.White);
-
-        // draw some text
-        using var paint = new SKPaint
+        _imagePanel = new StackPanel
         {
-            Color = SKColors.Black,
-            IsAntialias = true,
-            Style = SKPaintStyle.Fill
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Left
         };
-        using var font = new SKFont
-        {
-            Size = 24
-        };
-        var coord = new SKPoint(e.Info.Width / 2, (e.Info.Height + font.Size) / 2);
-        canvas.DrawText("SkiaSharp", coord, SKTextAlign.Center, font, paint);
-        */
 
-
+        _scrollViewer.Content = _imagePanel;
+        RootGrid.Children.Add(_scrollViewer);
     }
 
-    private void InitializeSkiaCanvas()
+    /// <summary>
+    /// Charge et affiche une liste d'images dans le carrousel.
+    /// </summary>
+    public void SetBitmaps(List<SKBitmap> bitmaps)
     {
-        // Create SKXamlCanvas
-        var skiaCanvas = new SKXamlCanvas
+        if (bitmaps == null || bitmaps.Count == 0)
         {
-            IgnorePixelScaling = true // Same as in XAML
-        };
+            Debug.WriteLine("SetBitmaps: No bitmaps provided.");
+            return;
+        }
 
-        // Attach PaintSurface event
-        skiaCanvas.PaintSurface += OnPaintSurface;
+        Debug.WriteLine($"SetBitmaps: {bitmaps.Count} bitmaps");
 
-        // Add to the main Grid
-        Content = skiaCanvas;
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            _bitmaps = bitmaps;
+            _imagePanel.Children.Clear();
+
+            foreach (var bitmap in _bitmaps)
+            {
+                var border = new Border
+                {
+                    Width = 300,
+                    Height = 200,
+                    Margin = new Thickness(5),
+                    CornerRadius = new CornerRadius(5),
+                };
+
+                var skiaCanvas = new SKXamlCanvas
+                {
+                    IgnorePixelScaling = true,
+                    Width = 300,
+                    Height = 200
+                };
+                skiaCanvas.PaintSurface += (sender, e) => OnPaintSurface(sender, e, _bitmaps.IndexOf(bitmap));
+                skiaCanvas.Invalidate();
+
+                border.Child = skiaCanvas;
+                _imagePanel.Children.Add(border);
+            }
+        });
     }
 
-    private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
+    private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e, int index)
     {
         SKCanvas canvas = e.Surface.Canvas;
         canvas.Clear(SKColors.White);
 
-        using (SKPaint paint = new SKPaint())
+        if (index < _bitmaps.Count)
         {
-            paint.Color = SKColors.Red;
-            paint.IsAntialias = true;
-            paint.StrokeWidth = 5;
-            canvas.DrawCircle(e.Info.Width / 2, e.Info.Height / 2, 50, paint);
+            var bitmap = _bitmaps[index];
+            Debug.WriteLine($"Rendering image {index} with size {bitmap.Width}x{bitmap.Height}");
+
+            float scale = System.Math.Min((float)e.Info.Width / bitmap.Width, (float)e.Info.Height / bitmap.Height);
+            float offsetX = (e.Info.Width - bitmap.Width * scale) / 2;
+            float offsetY = (e.Info.Height - bitmap.Height * scale) / 2;
+
+            canvas.Translate(offsetX, offsetY);
+            canvas.Scale(scale);
+            canvas.DrawBitmap(bitmap, 0, 0);
         }
     }
-
-    /*
-    private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
-    {
-        // the the canvas and properties
-        var canvas = e.Surface.Canvas;
-
-        // make sure the canvas is blank
-        canvas.Clear(SKColors.White);
-
-        // draw some text
-        using var paint = new SKPaint
-        {
-            Color = SKColors.Black,
-            IsAntialias = true,
-            Style = SKPaintStyle.Fill
-        };
-        using var font = new SKFont
-        {
-            Size = 24
-        };
-        var coord = new SKPoint(e.Info.Width / 2, (e.Info.Height + font.Size) / 2);
-        canvas.DrawText("SkiaSharp", coord, SKTextAlign.Center, font, paint);
-    }
-    */
 }

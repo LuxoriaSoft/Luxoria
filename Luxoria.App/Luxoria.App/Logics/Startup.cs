@@ -9,6 +9,7 @@ using Luxoria.SDK.Services;
 using Luxoria.SDK.Services.Targets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Reflection;
 
 namespace Luxoria.App.Logics
 {
@@ -46,6 +47,9 @@ namespace Luxoria.App.Logics
             services.AddSingleton<IModuleUIService, ModuleUIService>();
             logger.Log("IModuleUI registered successfully !", LOG_SECTION, LogLevel.Info);
 
+            Assembly.LoadFrom("C:/Users/pastcque/source/repos/LuxoriaSoft/Luxoria/Modules/LuxEditor/LuxEditor/bin/Debug/net9.0-windows10.0.26100.0/publish/CommunityToolkit.WinUI.Controls.Primitives.dll");
+            Assembly.LoadFrom("C:/Users/pastcque/source/repos/LuxoriaSoft/Luxoria/Modules/LuxEditor/LuxEditor/bin/Debug/net9.0-windows10.0.26100.0/publish/CommunityToolkit.Common.dll");
+            Assembly.LoadFrom("C:/Users/pastcque/source/repos/LuxoriaSoft/Luxoria/Modules/LuxEditor/LuxEditor/bin/Debug/net9.0-windows10.0.26100.0/publish/CommunityToolkit.WinUI.Extensions.dll");
 
             logger.Log("Services registered successfully !", LOG_SECTION, LogLevel.Info);
         }

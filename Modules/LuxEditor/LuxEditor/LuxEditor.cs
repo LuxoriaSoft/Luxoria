@@ -1,16 +1,16 @@
-using Microsoft.UI.Xaml.Controls;
-using System.Collections.Generic;
 using Luxoria.GModules;
 using Luxoria.GModules.Interfaces;
 using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Models;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
-using Luxoria.Modules.Models;
-using System.Linq;
-using System;
+using Microsoft.UI.Xaml.Controls;
 using SkiaSharp;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace LuxEditor
 {
@@ -48,7 +48,7 @@ namespace LuxEditor
             }
 
             List<ISmartButton> smartButtons = new List<ISmartButton>();
-            
+
             Dictionary<SmartButtonType, Page> mainPage = new Dictionary<SmartButtonType, Page>();
 
             // Init sub-components
@@ -101,9 +101,18 @@ namespace LuxEditor
                 //CollectionExplorer.BitmapImages.Add( imageData.Bitmap );
             }
             List<SKBitmap> lst = body.Assets.Select(x => x.Data.Bitmap).ToList();
+
+            Debug.WriteLine("Calling function ....");
+
+            Debug.WriteLine("Lst count : " + lst.Count);
+            Debug.WriteLine(lst);
+
+            _cExplorer?.SetBitmaps(lst);
+
+            Debug.WriteLine("Function called ....");
             //await _cExplorer?.LoadBitmaps(lst);
             Debug.WriteLine("IYAWDHIBAIBHDW IWUHADIWUBHD IBHUBWAHDWH BJDHJB WAJBHDWAJHD WBDA MBVHJ ABWJHDABWJ DHGAVWDJK HGAVWD JHAGWVDAW JHGDVAJHD GVAWDJ HGVAWD JHAWVDAJHGVWD AJHGDVAWJ HDGAVDA JHDV AWDJHAWVDAWJHGDVAJHDGVAW DJHGAVWDJHG");
-            //_cExplorer?.LoadBitmaps(lst);
+            _cExplorer?.SetBitmaps(lst);
         }
 
         /// <summary>
