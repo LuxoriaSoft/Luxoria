@@ -124,71 +124,72 @@ public static class ImageDataHelper
         if (bitmap == null || origin == SKEncodedOrigin.TopLeft)
             return bitmap; // No transformation needed
 
+        // Determine new dimensions based on rotation
         bool swapDimensions = origin is SKEncodedOrigin.LeftTop or SKEncodedOrigin.RightBottom
-                                    or SKEncodedOrigin.LeftBottom or SKEncodedOrigin.RightTop;
+                                        or SKEncodedOrigin.LeftBottom or SKEncodedOrigin.RightTop;
 
         int newWidth = swapDimensions ? bitmap.Height : bitmap.Width;
         int newHeight = swapDimensions ? bitmap.Width : bitmap.Height;
 
-        SKBitmap rotatedBitmap = new SKBitmap(newWidth, newHeight);
+        SKBitmap transformedBitmap = new SKBitmap(newWidth, newHeight);
 
-        using (SKCanvas canvas = new SKCanvas(rotatedBitmap))
+        using (SKCanvas canvas = new SKCanvas(transformedBitmap))
         {
-            // Set the transformation
-            using SKPaint paint = new();
-            SKMatrix matrix = GetExifTransformMatrix(origin, bitmap.Width, bitmap.Height);
-            canvas.SetMatrix(matrix);
-            canvas.DrawBitmap(bitmap, 0, 0, paint);
+            // Clear canvas to avoid black images
+            canvas.Clear(SKColors.Transparent);
+
+            SKPaint paint = new SKPaint { FilterQuality = SKFilterQuality.High };
+
+            switch (origin)
+            {
+                case SKEncodedOrigin.TopLeft:
+                    canvas.DrawBitmap(bitmap, 0, 0, paint);
+                    break;
+
+                case SKEncodedOrigin.TopRight: // Flip Horizontal
+                    canvas.Scale(-1, 1);
+                    canvas.Translate(-bitmap.Width, 0);
+                    canvas.DrawBitmap(bitmap, 0, 0, paint);
+                    break;
+
+                case SKEncodedOrigin.BottomRight: // Rotate 180
+                    canvas.RotateDegrees(180, bitmap.Width / 2f, bitmap.Height / 2f);
+                    canvas.DrawBitmap(bitmap, 0, 0, paint);
+                    break;
+
+                case SKEncodedOrigin.BottomLeft: // Flip Vertical
+                    canvas.Scale(1, -1);
+                    canvas.Translate(0, -bitmap.Height);
+                    canvas.DrawBitmap(bitmap, 0, 0, paint);
+                    break;
+
+                case SKEncodedOrigin.LeftTop: // Rotate 90 CW
+                    canvas.Translate(bitmap.Height, 0);
+                    canvas.RotateDegrees(90);
+                    canvas.DrawBitmap(bitmap, 0, 0, paint);
+                    break;
+
+                case SKEncodedOrigin.RightBottom: // Rotate 90 CCW
+                    canvas.Translate(0, bitmap.Width);
+                    canvas.RotateDegrees(-90);
+                    canvas.DrawBitmap(bitmap, 0, 0, paint);
+                    break;
+
+                case SKEncodedOrigin.RightTop: // Rotate 270 CW + Flip Horizontal
+                    canvas.Scale(-1, 1);
+                    canvas.Translate(-bitmap.Height, 0);
+                    canvas.RotateDegrees(270);
+                    canvas.DrawBitmap(bitmap, 0, 0, paint);
+                    break;
+
+                case SKEncodedOrigin.LeftBottom: // Rotate 270 CW
+                    canvas.Translate(0, bitmap.Width);
+                    canvas.RotateDegrees(270);
+                    canvas.DrawBitmap(bitmap, 0, 0, paint);
+                    break;
+            }
         }
 
-        return rotatedBitmap;
-    }
-
-    /// <summary>
-    /// Generates the transformation matrix for EXIF orientation.
-    /// </summary>
-    private static SKMatrix GetExifTransformMatrix(SKEncodedOrigin origin, int width, int height)
-    {
-        SKMatrix matrix = SKMatrix.CreateIdentity();
-
-        switch (origin)
-        {
-            case SKEncodedOrigin.TopRight: // Flip Horizontal
-                matrix = SKMatrix.CreateScale(-1, 1);
-                matrix = SKMatrix.Concat(matrix, SKMatrix.CreateTranslation(width, 0));
-                break;
-
-            case SKEncodedOrigin.BottomRight: // Rotate 180
-                matrix = SKMatrix.CreateRotationDegrees(180, width / 2f, height / 2f);
-                break;
-
-            case SKEncodedOrigin.BottomLeft: // Flip Vertical
-                matrix = SKMatrix.CreateScale(1, -1);
-                matrix = SKMatrix.Concat(matrix, SKMatrix.CreateTranslation(0, height));
-                break;
-
-            case SKEncodedOrigin.LeftTop: // Transpose (Rotate 90 + Flip)
-                matrix = SKMatrix.CreateRotationDegrees(90);
-                matrix = SKMatrix.Concat(matrix, SKMatrix.CreateScale(1, -1));
-                matrix = SKMatrix.Concat(matrix, SKMatrix.CreateTranslation(0, width));
-                break;
-
-            case SKEncodedOrigin.RightBottom: // Rotate 90
-                matrix = SKMatrix.CreateRotationDegrees(90);
-                matrix = SKMatrix.Concat(matrix, SKMatrix.CreateTranslation(0, -width));
-                break;
-
-            case SKEncodedOrigin.RightTop: // Transverse (Rotate 270 + Flip)
-                matrix = SKMatrix.CreateRotationDegrees(270);
-                matrix = SKMatrix.Concat(matrix, SKMatrix.CreateScale(1, -1));
-                matrix = SKMatrix.Concat(matrix, SKMatrix.CreateTranslation(height, width));
-                break;
-
-            case SKEncodedOrigin.LeftBottom: // Rotate 270
-                matrix = SKMatrix.CreateRotationDegrees(270);
-                matrix = SKMatrix.Concat(matrix, SKMatrix.CreateTranslation(-height, 0));
-                break;
-        }
-        return matrix;
+        return transformedBitmap;
     }
 }
