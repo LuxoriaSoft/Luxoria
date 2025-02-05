@@ -1,3 +1,10 @@
+# [1.23.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.22.0...v1.23.0) (2025-02-05)
+
+
+### Features
+
+* Add metrics on LuxFilter & Create Luxoria.SDK nuget ([c42c718](https://github.com/LuxoriaSoft/Luxoria/commit/c42c718760bf0f1f73fb780acc4ea477adb8ae50))
+
 # [1.22.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.21.0...v1.22.0) (2025-02-05)
 
 
