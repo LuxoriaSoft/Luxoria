@@ -1,3 +1,31 @@
+# [1.24.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.23.0...v1.24.0) (2025-02-05)
+
+
+### Bug Fixes
+
+* Correct formatting and style in HelloWorld.vue ([1dc7292](https://github.com/LuxoriaSoft/Luxoria/commit/1dc7292127f44c9da6b0c9dfd3f4a40a32cba18d))
+
+
+### Features
+
+* Add base of SSO ([02a1844](https://github.com/LuxoriaSoft/Luxoria/commit/02a184423d5f077a19f1afc033003242ddf186f1))
+* Add Dashboard component with authentication guard and logout functionality ([7e6c316](https://github.com/LuxoriaSoft/Luxoria/commit/7e6c31661d462e52504291814ac125119e447ec3))
+* Add Docker configuration and initialization scripts for Luxoria database ([c99de0d](https://github.com/LuxoriaSoft/Luxoria/commit/c99de0d6b64fb87048cfdbed843382ce927a3047))
+* Add DTOs for user login, registration, and refresh token requests; implement TokenService for secure token generation and comment in code ([110ce25](https://github.com/LuxoriaSoft/Luxoria/commit/110ce259fe48ba3df76bdc100c480385c566b7ab))
+* Add EF connection to LuxAPI ([8a9e395](https://github.com/LuxoriaSoft/Luxoria/commit/8a9e3957372087028284b8380387dd5c9bb14d3e))
+* Add GitHub Actions workflow for LuxAPI build process ([981ee30](https://github.com/LuxoriaSoft/Luxoria/commit/981ee300872e40fddc10f3cbb8417f6218aecc56))
+* Add initial implementation of LuxAPI ([b552d7c](https://github.com/LuxoriaSoft/Luxoria/commit/b552d7cdb54f646ec5ea69f118306bffb0706c33))
+* Add TailwindCSS + DaisyUI on LuxStudio Portal ([2b54396](https://github.com/LuxoriaSoft/Luxoria/commit/2b5439693a01bafd24b15ee684850dcf52621089))
+* Add UserId to AuthorizationCode model and implement SSO authorization view ([bf5d767](https://github.com/LuxoriaSoft/Luxoria/commit/bf5d767ae6c0ab1756435d1eeb2298c527262e4f))
+* Enhance JWT token generation with user ID and add WhoAmI endpoint for user info retrieval ([1579f96](https://github.com/LuxoriaSoft/Luxoria/commit/1579f96d2be1fff4c00b94a8cc1c5895df7fbfe8))
+* Implement authentication with login and registration views, add router, and configure CORS ([3d539c9](https://github.com/LuxoriaSoft/Luxoria/commit/3d539c96c67d1052ddd507668898af1173c6b59e))
+* Implement JWT authentication and configure Swagger for API security ([799c33b](https://github.com/LuxoriaSoft/Luxoria/commit/799c33bb9a19a695c7e1ae838a0abd6a14d17f8b))
+* Increase token field size to TEXT for AccessToken and RefreshToken in Token model ([9a1e2f3](https://github.com/LuxoriaSoft/Luxoria/commit/9a1e2f3a1d7681356d927eea639539076d6d3b33))
+* Initialize Vue 3 + TypeScript + Vite project with basic structure and configuration ([909aace](https://github.com/LuxoriaSoft/Luxoria/commit/909aacea9840b210ed99978c44fc2f8130ad807c))
+* Refactor Token model to use UserId and add RefreshToken model with related functionality ([96e9634](https://github.com/LuxoriaSoft/Luxoria/commit/96e9634dc6c0240c8412eaaf58830c5ccb4fc594))
+* Update models to use required properties for better validation; adjust nullable types where necessary ([83f82bf](https://github.com/LuxoriaSoft/Luxoria/commit/83f82bf2c09fbc2a28bd6fa290bd4d4c6b9066a5))
+* Update package dependencies and add Vue type definitions; enhance router token handling ([73350d5](https://github.com/LuxoriaSoft/Luxoria/commit/73350d5fe46cd602f304ee92e03950589f8ff18e))
+
 # [1.23.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.22.0...v1.23.0) (2025-02-05)
 
 
