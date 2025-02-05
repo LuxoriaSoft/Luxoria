@@ -1,3 +1,12 @@
+# [1.22.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.21.0...v1.22.0) (2025-02-05)
+
+
+### Features
+
+* Add EXIF data on ImageData and Include RAW/ARW file extension inside Filter ([8d1b390](https://github.com/LuxoriaSoft/Luxoria/commit/8d1b3907a12d2e61480cd3d82fe79a5694d074cf))
+* Enhance EXIF orientation handling in ImageData processing ([64602cb](https://github.com/LuxoriaSoft/Luxoria/commit/64602cbee6474f0438028b727830eaf78ea8ac2a))
+* Refactor EXIF orientation handling in ImageData ([e9098b8](https://github.com/LuxoriaSoft/Luxoria/commit/e9098b89c0c6bd97c344430a00dd0528a28e0721))
+
 # [1.21.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.20.0...v1.21.0) (2025-02-03)
 
 
