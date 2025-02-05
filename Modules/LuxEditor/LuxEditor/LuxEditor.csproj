@@ -36,6 +36,21 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Components\Infos.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Components\Editor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Components\PhotoViewer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="Editor.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -45,9 +60,6 @@
     <Page Update="CollectionExplorer.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Components\" />
   </ItemGroup>
   
 </Project>

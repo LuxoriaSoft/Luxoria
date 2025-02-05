@@ -4,9 +4,13 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Input;
 using SkiaSharp;
 using SkiaSharp.Views.Windows;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.Foundation;
+using CommunityToolkit.WinUI.Controls;
+using Windows.Media.Devices;
+using System.Collections.ObjectModel;
 
 namespace LuxEditor;
 
@@ -14,17 +18,19 @@ public sealed partial class CollectionExplorer : Page
 {
     private List<SKBitmap> _bitmaps = new();
     private ScrollViewer _scrollViewer;
-    private StackPanel _imagePanel;
+    private WrapPanel _imagePanel;
+    private Border? _selectedBorder;
+
+    public event Action<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>>? OnImageSelected;
+    private List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> _originalBitmaps = new();
 
     public CollectionExplorer()
     {
         InitializeComponent();
         BuildUI();
+        SizeChanged += (s, e) => AdjustImageSizes(e.NewSize);
     }
 
-    /// <summary>
-    /// Crée dynamiquement l'interface utilisateur avec un ScrollViewer et un StackPanel.
-    /// </summary>
     private void BuildUI()
     {
         _scrollViewer = new ScrollViewer
@@ -36,20 +42,51 @@ public sealed partial class CollectionExplorer : Page
             Padding = new Thickness(10)
         };
 
-        _imagePanel = new StackPanel
+        _imagePanel = new WrapPanel
         {
             Orientation = Orientation.Horizontal,
-            HorizontalAlignment = HorizontalAlignment.Left
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            HorizontalSpacing = 5,
         };
 
         _scrollViewer.Content = _imagePanel;
         RootGrid.Children.Add(_scrollViewer);
     }
 
-    /// <summary>
-    /// Charge et affiche une liste d'images dans le carrousel.
-    /// </summary>
-    public void SetBitmaps(List<SKBitmap> bitmaps)
+    private void AdjustImageSizes(Size newSize)
+    {
+        if (_imagePanel.Children.Count == 0) return;
+
+        double availableHeight = newSize.Height * 0.8;
+
+        foreach (var child in _imagePanel.Children)
+        {
+            if (child is Border border && border.Child is SKXamlCanvas canvas)
+            {
+                int index = _imagePanel.Children.IndexOf(border);
+                if (index < _bitmaps.Count)
+                {
+                    var bitmap = _bitmaps[index];
+                    double scale = availableHeight / bitmap.Height;
+                    double width = bitmap.Width * scale;
+
+                    border.Width = width;
+                    border.Height = availableHeight;
+                    canvas.Width = width;
+                    canvas.Height = availableHeight;
+                    canvas.Invalidate();
+                }
+                else
+                {
+                    Debug.WriteLine($"AdjustImageSizes: Index {index} out of range (bitmaps count = {_bitmaps.Count})");
+                    continue;
+                }
+            }
+        }
+    }
+
+    public void SetBitmaps(List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> bitmaps)
     {
         if (bitmaps == null || bitmaps.Count == 0)
         {
@@ -57,55 +94,106 @@ public sealed partial class CollectionExplorer : Page
             return;
         }
 
-        Debug.WriteLine($"SetBitmaps: {bitmaps.Count} bitmaps");
-
         DispatcherQueue.TryEnqueue(() =>
         {
-            _bitmaps = bitmaps;
+            _bitmaps.Clear();
+            _originalBitmaps.Clear();
             _imagePanel.Children.Clear();
 
-            foreach (var bitmap in _bitmaps)
+            foreach (var bitmap in bitmaps)
             {
+
+                int previewHeight = 200;
+                int previewWidth = (int)((float)bitmap.Key.Width / bitmap.Key.Height * previewHeight);
+                var lowResBitmap = CreateLowResBitmap(bitmap.Key, previewWidth, previewHeight);
+
+                previewHeight = int.Min(bitmap.Key.Height, 1000);
+                previewWidth = (int)((float)bitmap.Key.Width / bitmap.Key.Height * previewHeight);
+                var mediumResBitmap = CreateLowResBitmap(bitmap.Key, previewWidth, previewHeight);
+                _bitmaps.Add(lowResBitmap);
+                _originalBitmaps.Add(new KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>(mediumResBitmap, bitmap.Value));
+
                 var border = new Border
                 {
-                    Width = 300,
-                    Height = 200,
-                    Margin = new Thickness(5),
+                    Margin = new Thickness(3),
                     CornerRadius = new CornerRadius(5),
+                    BorderThickness = new Thickness(2),
+                    BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0)),
+                    Background = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0))
                 };
 
                 var skiaCanvas = new SKXamlCanvas
                 {
-                    IgnorePixelScaling = true,
-                    Width = 300,
-                    Height = 200
+                    IgnorePixelScaling = true
                 };
-                skiaCanvas.PaintSurface += (sender, e) => OnPaintSurface(sender, e, _bitmaps.IndexOf(bitmap));
-                skiaCanvas.Invalidate();
+                int index = _bitmaps.Count - 1;
+                skiaCanvas.PaintSurface += (sender, e) => OnPaintSurface(sender, e, index);
 
                 border.Child = skiaCanvas;
+                border.PointerEntered += (s, e) => OnHover(border, true);
+                border.PointerExited += (s, e) => OnHover(border, false);
+                border.Tapped += (s, e) => OnImageTapped(border, index);
+
                 _imagePanel.Children.Add(border);
             }
+
+            AdjustImageSizes(new Size(ActualWidth, ActualHeight));
         });
     }
+
+
+    private void OnHover(Border border, bool isHovered)
+    {
+        if (border != _selectedBorder)
+        {
+            border.BorderBrush = new SolidColorBrush(isHovered ? Windows.UI.Color.FromArgb(255, 200, 200, 200) : Windows.UI.Color.FromArgb(0, 0, 0, 0));
+        }
+    }
+
+    private void OnImageTapped(Border border, int index)
+    {
+        if (index >= _originalBitmaps.Count) return;
+
+        if (_selectedBorder != null)
+            _selectedBorder.BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0));
+
+        _selectedBorder = border;
+        _selectedBorder.BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 3, 169, 244));
+
+        OnImageSelected?.Invoke(_originalBitmaps[index]);
+    }
+
 
     private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e, int index)
     {
         SKCanvas canvas = e.Surface.Canvas;
-        canvas.Clear(SKColors.White);
+        canvas.Clear(SKColors.Transparent);
 
-        if (index < _bitmaps.Count)
+        if (index < _bitmaps.Count && index >= 0)
         {
             var bitmap = _bitmaps[index];
-            Debug.WriteLine($"Rendering image {index} with size {bitmap.Width}x{bitmap.Height}");
-
-            float scale = System.Math.Min((float)e.Info.Width / bitmap.Width, (float)e.Info.Height / bitmap.Height);
+            float scale = Math.Min((float)e.Info.Width / bitmap.Width, (float)e.Info.Height / bitmap.Height);
             float offsetX = (e.Info.Width - bitmap.Width * scale) / 2;
             float offsetY = (e.Info.Height - bitmap.Height * scale) / 2;
-
             canvas.Translate(offsetX, offsetY);
             canvas.Scale(scale);
             canvas.DrawBitmap(bitmap, 0, 0);
         }
+    }
+
+    private SKBitmap CreateLowResBitmap(SKBitmap original, int targetWidth, int targetHeight)
+    {
+        var resizedBitmap = new SKBitmap(targetWidth, targetHeight);
+        using (var surface = SKSurface.Create(new SKImageInfo(targetWidth, targetHeight)))
+        {
+            var canvas = surface.Canvas;
+            canvas.Clear(SKColors.Transparent);
+            var sampling = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None);
+            canvas.DrawImage(SKImage.FromBitmap(original), new SKRect(0, 0, targetWidth, targetHeight), sampling);
+            canvas.Flush();
+            var image = surface.Snapshot();
+            image.ReadPixels(resizedBitmap.Info, resizedBitmap.GetPixels(), resizedBitmap.RowBytes, 0, 0);
+        }
+        return resizedBitmap;
     }
 }

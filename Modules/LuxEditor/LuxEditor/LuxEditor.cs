@@ -1,3 +1,4 @@
+using LuxEditor.Components;
 using Luxoria.GModules;
 using Luxoria.GModules.Interfaces;
 using Luxoria.Modules.Interfaces;
@@ -9,6 +10,7 @@ using Microsoft.UI.Xaml.Controls;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 
@@ -26,6 +28,9 @@ namespace LuxEditor
 
         public List<ILuxMenuBarItem> Items { get; set; } = new List<ILuxMenuBarItem>();
         private CollectionExplorer? _cExplorer;
+        private PhotoViewer? _photoViewer;
+        private Infos? _infos;
+        private Editor? _editor;
 
         //CollectionExplorer CollectionExplorer = new CollectionExplorer();
 
@@ -52,11 +57,29 @@ namespace LuxEditor
             Dictionary<SmartButtonType, Page> mainPage = new Dictionary<SmartButtonType, Page>();
 
             // Init sub-components
-            _cExplorer = new CollectionExplorer();
 
-            //mainPage.Add(SmartButtonType.MainPanel, new Viewer());
+            _photoViewer = new PhotoViewer();
+            _cExplorer = new CollectionExplorer();
+            _editor = new Editor();
+            _infos = new Infos();
+
+            _editor.OnEditorImageUpdated += (updatedBitmap) =>
+            {
+                _photoViewer.SetImage(updatedBitmap);
+            };
+
+            _cExplorer.OnImageSelected += (bitmap) =>
+            {
+                _editor.SetOriginalBitmap(bitmap.Key);
+                _photoViewer.SetImage(bitmap.Key);
+
+                _infos?.DisplayExifData(bitmap.Value);
+            };
+
+            mainPage.Add(SmartButtonType.MainPanel, _photoViewer);
             mainPage.Add(SmartButtonType.BottomPanel, _cExplorer);
-            //mainPage.Add(SmartButtonType.RightPanel, new Editor());
+            mainPage.Add(SmartButtonType.RightPanel, _editor);
+            mainPage.Add(SmartButtonType.LeftPanel, _infos);
 
             smartButtons.Add(new SmartButton("Editor", "Editor module", mainPage));
 
@@ -74,7 +97,6 @@ namespace LuxEditor
         public void Execute()
         {
             _logger?.Log($"{Name} executed", "Mods/TestModule1", LogLevel.Info);
-            // You can add more logic here if needed
         }
 
         /// <summary>
@@ -100,8 +122,9 @@ namespace LuxEditor
                 _logger?.Log($"Asset info {i} : {imageData.Height}x{imageData.Width}, pixels : {imageData.Height * imageData.Width}");
                 //CollectionExplorer.BitmapImages.Add( imageData.Bitmap );
             }
-            List<SKBitmap> lst = body.Assets.Select(x => x.Data.Bitmap).ToList();
-
+            List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> lst = body.Assets
+                .Select(x => new KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>(x.Data.Bitmap, x.Data.EXIF))
+                .ToList();
             Debug.WriteLine("Calling function ....");
 
             Debug.WriteLine("Lst count : " + lst.Count);
