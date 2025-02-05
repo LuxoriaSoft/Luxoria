@@ -1,3 +1,36 @@
+# [1.23.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.22.0...v1.23.0) (2025-02-05)
+
+
+### Features
+
+* Add metrics on LuxFilter & Create Luxoria.SDK nuget ([c42c718](https://github.com/LuxoriaSoft/Luxoria/commit/c42c718760bf0f1f73fb780acc4ea477adb8ae50))
+
+# [1.22.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.21.0...v1.22.0) (2025-02-05)
+
+
+### Features
+
+* Add EXIF data on ImageData and Include RAW/ARW file extension inside Filter ([8d1b390](https://github.com/LuxoriaSoft/Luxoria/commit/8d1b3907a12d2e61480cd3d82fe79a5694d074cf))
+* Enhance EXIF orientation handling in ImageData processing ([64602cb](https://github.com/LuxoriaSoft/Luxoria/commit/64602cbee6474f0438028b727830eaf78ea8ac2a))
+* Refactor EXIF orientation handling in ImageData ([e9098b8](https://github.com/LuxoriaSoft/Luxoria/commit/e9098b89c0c6bd97c344430a00dd0528a28e0721))
+
+# [1.21.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.20.0...v1.21.0) (2025-02-03)
+
+
+### Features
+
+* Adding BrisqueInterop (C++) to BrisqueAlgo (IFilter .NET) ([a0771b7](https://github.com/LuxoriaSoft/Luxoria/commit/a0771b793119bddb581e742daf079b0cf5ff9613))
+
+# [1.20.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.19.0...v1.20.0) (2025-02-03)
+
+
+### Features
+
+* Add additional diagnostics and exporters to ImportService benchmarking ([5e5ad07](https://github.com/LuxoriaSoft/Luxoria/commit/5e5ad07e80cc01df43a0ca2aed099b6f9e2b77fc))
+* Add benchmarks & metrics on ImportService ([280581e](https://github.com/LuxoriaSoft/Luxoria/commit/280581eb9d141a159d1215aa76b2fdbd7eb5277d))
+* Enhance benchmarking for ImportService with additional diagnostics and categorization ([ca45740](https://github.com/LuxoriaSoft/Luxoria/commit/ca457407153167d2e3643a3b0c35d701487fbac6))
+* Update ImportServiceBenchmark to support multiple dataset paths ([ab8a351](https://github.com/LuxoriaSoft/Luxoria/commit/ab8a351bf13cfe2280ebaa900348ec508cf61214))
+
 # [1.19.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.18.1...v1.19.0) (2025-01-31)
 
 

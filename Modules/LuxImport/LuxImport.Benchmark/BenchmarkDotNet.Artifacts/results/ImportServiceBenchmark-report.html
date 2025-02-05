@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>ImportServiceBenchmark-20250202-133255</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.14.0, Windows 11 (10.0.22631.4751/23H2/2023Update/SunValley3)
+Apple Silicon, 6 CPU, 6 logical and 6 physical cores
+.NET SDK 9.0.102
+  [Host]     : .NET 9.0.1 (9.0.124.61010), Arm64 RyuJIT AdvSIMD
+  DefaultJob : .NET 9.0.1 (9.0.124.61010), Arm64 RyuJIT AdvSIMD
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>Method                 </th><th>TestCollectionPath</th><th>Mean    </th><th>Error  </th><th>StdDev </th><th>Median  </th><th>Completed Work Items</th><th>Lock Contentions</th><th>Gen0</th><th>Gen1</th><th>Gen2</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>BenchmarkInitializeDatabase</td><td>\\Mac\\(...)t_100 [31]</td><td>212.5 &mu;s</td><td>2.50 &mu;s</td><td>2.34 &mu;s</td><td>212.7 &mu;s</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>544 B</td>
+</tr><tr><td>BenchmarkInitializeDatabase</td><td>\\Mac\\(...)t_200 [31]</td><td>222.3 &mu;s</td><td>1.69 &mu;s</td><td>1.41 &mu;s</td><td>221.9 &mu;s</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>544 B</td>
+</tr><tr><td>BenchmarkInitializeDatabase</td><td>\\Mac\\(...)et_50 [30]</td><td>221.9 &mu;s</td><td>1.64 &mu;s</td><td>1.45 &mu;s</td><td>221.7 &mu;s</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>528 B</td>
+</tr><tr><td>BenchmarkIndexCollectionAsync</td><td>\\Mac\\(...)t_100 [31]</td><td>363,789.4 &mu;s</td><td>7,220.64 &mu;s</td><td>10,355.63 &mu;s</td><td>362,619.7 &mu;s</td><td>1.0000</td><td>-</td><td>-</td><td>-</td><td>-</td><td>835440 B</td>
+</tr><tr><td>BenchmarkIndexCollectionAsync</td><td>\\Mac\\(...)t_200 [31]</td><td>401,680.5 &mu;s</td><td>8,007.05 &mu;s</td><td>19,940.34 &mu;s</td><td>404,522.2 &mu;s</td><td>1.0000</td><td>-</td><td>-</td><td>-</td><td>-</td><td>835440 B</td>
+</tr><tr><td>BenchmarkIndexCollectionAsync</td><td>\\Mac\\(...)et_50 [30]</td><td>392,667.6 &mu;s</td><td>7,837.67 &mu;s</td><td>12,656.39 &mu;s</td><td>391,574.4 &mu;s</td><td>1.0000</td><td>-</td><td>-</td><td>-</td><td>-</td><td>872432 B</td>
+</tr><tr><td>BenchmarkIsInitialized</td><td>\\Mac\\(...)t_100 [31]</td><td>216.9 &mu;s</td><td>4.15 &mu;s</td><td>3.88 &mu;s</td><td>215.5 &mu;s</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>544 B</td>
+</tr><tr><td>BenchmarkIsInitialized</td><td>\\Mac\\(...)t_200 [31]</td><td>215.8 &mu;s</td><td>2.21 &mu;s</td><td>1.85 &mu;s</td><td>215.7 &mu;s</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>544 B</td>
+</tr><tr><td>BenchmarkIsInitialized</td><td>\\Mac\\(...)et_50 [30]</td><td>218.9 &mu;s</td><td>4.38 &mu;s</td><td>6.14 &mu;s</td><td>216.2 &mu;s</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>528 B</td>
+</tr><tr><td>BenchmarkLoadAssets</td><td>\\Mac\\(...)t_100 [31]</td><td>2,746,052.2 &mu;s</td><td>115,195.76 &mu;s</td><td>330,518.24 &mu;s</td><td>2,627,569.7 &mu;s</td><td>140.0000</td><td>-</td><td>8000.0000</td><td>7000.0000</td><td>5000.0000</td><td>46234408 B</td>
+</tr><tr><td>BenchmarkLoadAssets</td><td>\\Mac\\(...)t_200 [31]</td><td>2,688,051.4 &mu;s</td><td>100,639.20 &mu;s</td><td>282,203.13 &mu;s</td><td>2,655,953.1 &mu;s</td><td>134.0000</td><td>1.0000</td><td>10000.0000</td><td>8000.0000</td><td>7000.0000</td><td>46710912 B</td>
+</tr><tr><td>BenchmarkLoadAssets</td><td>\\Mac\\(...)et_50 [30]</td><td>2,843,692.2 &mu;s</td><td>100,855.93 &mu;s</td><td>274,386.03 &mu;s</td><td>2,781,623.8 &mu;s</td><td>132.0000</td><td>-</td><td>8000.0000</td><td>7000.0000</td><td>4000.0000</td><td>46168160 B</td>
+</tr></tbody></table>
+</body>
+</html>

@@ -4,6 +4,7 @@ using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
+using System.Diagnostics;
 
 namespace LuxImport;
 
@@ -59,26 +60,30 @@ public class LuxImport : IModule
     {
         _logger?.Log($"Importing collection [{@event.CollectionName}] at path: {@event.CollectionPath}", "Mods/LuxImport", LogLevel.Info);
 
-        // Simulate some delay in the import process
-        await Task.Delay(1000);
-
         // Send a message back through the event tunnel
         SendProgressMessage(@event, "Initiating import process...");
 
-        await Task.Delay(1000);
+        await Task.Delay(100);
+
+        Stopwatch totalStopwatch = Stopwatch.StartNew();
+        Stopwatch stepStopwatch = new Stopwatch();
 
         try
         {
+            stepStopwatch.Start();
+
             // Initialize the import service with the collection name and path
-            _logger?.Log("Importing collection...", "Mods/LuxImport", LogLevel.Info);
-            SendProgressMessage(@event, $"Importing [{@event.CollectionName}] collection...");
+            _logger?.Log("Initializing ImportService...", "Mods/LuxImport", LogLevel.Info);
             IImportService importService = new ImportService(@event.CollectionName, @event.CollectionPath);
             importService.ProgressMessageSent += (messageTuple) =>
             {
                 SendProgressMessage(@event, messageTuple.message, messageTuple.progress);
             };
 
-            await Task.Delay(500);
+            stepStopwatch.Stop();
+            _logger?.Log($"ImportService initialized in {stepStopwatch.ElapsedMilliseconds} ms", "Mods/LuxImport", LogLevel.Debug);
+
+            stepStopwatch.Restart();
 
             // Check if the collection is already initialized
             SendProgressMessage(@event, "Checking collection initialization...");
@@ -91,24 +96,32 @@ public class LuxImport : IModule
                 // Initializing collection's database
                 SendProgressMessage(@event, "Initializing collection's database...", 20);
                 importService.InitializeDatabase();
-                await Task.Delay(1000);
             }
+
+            stepStopwatch.Stop();
+            _logger?.Log($"Collection initialization checked in {stepStopwatch.ElapsedMilliseconds} ms", "Mods/LuxImport", LogLevel.Debug);
+
+            stepStopwatch.Restart();
 
             // Update indexing files
             SendProgressMessage(@event, "Updating indexing files...", 25);
             importService.BaseProgressPercent = 25;
             await importService.IndexCollectionAsync();
 
-            await Task.Delay(1000);
+            stepStopwatch.Stop();
+            _logger?.Log($"Indexing completed in {stepStopwatch.ElapsedMilliseconds} ms", "Mods/LuxImport", LogLevel.Debug);
 
-            // Additional simulated delay
-            await Task.Delay(1000);
+            stepStopwatch.Restart();
+
             SendProgressMessage(@event, "Loading in memory...");
 
             // Load assets into memory
             _logger?.Log("Loading assets into memory...", "Mods/LuxImport", LogLevel.Info);
             var assets = importService.LoadAssets();
-            _logger?.Log($"Loaded {assets.Count} assets into memory.", "Mods/LuxImport", LogLevel.Info);
+
+            stepStopwatch.Stop();
+            _logger?.Log($"Loaded {assets.Count} assets into memory in {stepStopwatch.ElapsedMilliseconds} ms", "Mods/LuxImport", LogLevel.Debug);
+
             SendProgressMessage(@event, "Assets loaded into memory.", 100);
             _eventBus?.Publish(new CollectionUpdatedEvent(@event.CollectionName, @event.CollectionPath, assets));
 
@@ -122,7 +135,13 @@ public class LuxImport : IModule
             SendProgressMessage(@event, $"Error importing collection: {ex.Message}");
             @event.MarkAsFailed();
         }
+        finally
+        {
+            totalStopwatch.Stop();
+            _logger?.Log($"Import process completed in {totalStopwatch.ElapsedMilliseconds} ms", "Mods/LuxImport", LogLevel.Info);
+        }
     }
+
 
     /// <summary>
     /// Sends a progress message to the logger and the event tunnel.

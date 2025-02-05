@@ -3,25 +3,17 @@
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageId>Luxoria.SDK</PackageId>
+		<Version>1.0.0</Version>
+		<Authors>Luxoria</Authors>
+		<Description>Luxoria SDK</Description>
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+		<RepositoryUrl>https://github.com/LuxoriaSoft/Luxoria</RepositoryUrl>
 	</PropertyGroup>
 
-	<!-- Include the DLLs from the libs folder as Embedded Resources -->
 	<ItemGroup>
-		<EmbeddedResource Include="libs\Sentry.dll" />
-		<EmbeddedResource Include="libs\Sentry.Profiling.dll" />
-		<EmbeddedResource Include="libs\Microsoft.Diagnostics.FastSerialization.dll" />
-		<EmbeddedResource Include="libs\Microsoft.Diagnostics.Tracing.TraceEvent.dll" />
-		<EmbeddedResource Include="libs\Microsoft.Diagnostics.NETCore.Client.dll" />
+	  <PackageReference Include="Sentry" Version="5.1.0" />
+	  <PackageReference Include="Sentry.Profiling" Version="5.1.0" />
 	</ItemGroup>
-
-	<ItemGroup>
-		<Reference Include="Sentry">
-			<HintPath>libs\Sentry.dll</HintPath>
-		</Reference>
-		<Reference Include="Sentry.Profiling">
-			<HintPath>libs\Sentry.Profiling.dll</HintPath>
-		</Reference>
-	</ItemGroup>
-
 </Project>

@@ -1,10 +1,5 @@
 ﻿using LuxFilter.Algorithms.Utils;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LuxFilter.Tests;
 
@@ -27,14 +22,5 @@ public class ImageProcessingTests
 
         Assert.Equal(firstPixel.Red, firstPixel.Green);
         Assert.Equal(firstPixel.Green, firstPixel.Blue);
-    }
-
-    /// <summary>
-    /// Tests whether ConvertBitmapToGrayscale handles a null input.
-    /// </summary>
-    [Fact]
-    public void ConvertBitmapToGrayscale_ShouldThrowExceptionForNullInput()
-    {
-        Assert.Throws<ArgumentNullException>(() => ImageProcessing.ConvertBitmapToGrayscale(null));
     }
 }

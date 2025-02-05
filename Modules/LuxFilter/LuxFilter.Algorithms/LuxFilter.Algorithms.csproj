@@ -7,6 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Algorithms\PerceptualMetrics\brisque_model_live.yml" />
+    <None Remove="Algorithms\PerceptualMetrics\brisque_range_live.yml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Algorithms\PerceptualMetrics\brisque_model_live.yml" />
+    <EmbeddedResource Include="Algorithms\PerceptualMetrics\brisque_range_live.yml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Algorithms\ColorVisualAesthetics\" />
     <Folder Include="Algorithms\ContentSimilarity\" />
     <Folder Include="Algorithms\Metadata\" />
