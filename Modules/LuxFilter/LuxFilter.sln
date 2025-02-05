@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuxFilter.TestMain", "LuxFi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuxFilter.Tests", "LuxFilter.Tests\LuxFilter.Tests.csproj", "{BE7E6522-F51F-4319-B8C4-E07A2B45777B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuxFilter.Benchmark", "LuxFilter.Benchmark\LuxFilter.Benchmark.csproj", "{353EA237-9047-4B88-99F3-7BD64C6B7FC8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{BE7E6522-F51F-4319-B8C4-E07A2B45777B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE7E6522-F51F-4319-B8C4-E07A2B45777B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BE7E6522-F51F-4319-B8C4-E07A2B45777B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{353EA237-9047-4B88-99F3-7BD64C6B7FC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{353EA237-9047-4B88-99F3-7BD64C6B7FC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{353EA237-9047-4B88-99F3-7BD64C6B7FC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{353EA237-9047-4B88-99F3-7BD64C6B7FC8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

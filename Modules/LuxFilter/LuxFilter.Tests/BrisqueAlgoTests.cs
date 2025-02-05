@@ -1,7 +1,5 @@
 ﻿using LuxFilter.Algorithms.PerceptualMetrics;
 using SkiaSharp;
-using Xunit;
-using System;
 
 namespace LuxFilter.Tests
 {
