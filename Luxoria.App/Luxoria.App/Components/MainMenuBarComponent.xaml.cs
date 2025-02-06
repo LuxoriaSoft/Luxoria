@@ -1,4 +1,3 @@
-using Luxoria.App.Logics;
 using Luxoria.App.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;

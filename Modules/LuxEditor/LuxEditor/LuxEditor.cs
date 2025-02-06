@@ -79,7 +79,7 @@ namespace LuxEditor
             smartButtons.Add(new SmartButton("Editor", "Editor module", mainPage));
 
             Items.Add(new LuxMenuBarItem("LuxEditor", false, new Guid(), smartButtons));
-            
+
             _eventBus.Subscribe<CollectionUpdatedEvent>(OnCollectionUpdated);
 
             _logger?.Log($"{Name} initialized", "Mods/TestModule1", LogLevel.Info);

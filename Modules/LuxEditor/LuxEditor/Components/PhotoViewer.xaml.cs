@@ -4,7 +4,6 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
 using SkiaSharp;
 using System.IO;
-using System.Diagnostics;
 
 namespace LuxEditor.Components
 {
