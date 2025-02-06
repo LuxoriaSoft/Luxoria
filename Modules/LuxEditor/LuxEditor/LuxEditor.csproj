@@ -1,0 +1,65 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>LuxEditor</RootNamespace>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <UseWinUI>true</UseWinUI>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+
+  <PropertyGroup>
+    <WindowsSdkPackageVersion>10.0.26100.57</WindowsSdkPackageVersion>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <GenerateLibraryLayout>true</GenerateLibraryLayout>
+  </PropertyGroup>
+
+
+	<ItemGroup>
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.1.240916" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250108002" />
+    <PackageReference Include="SkiaSharp" Version="3.116.1" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.116.1" />
+    <PackageReference Include="SkiaSharp.Views.WinUI" Version="3.116.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Luxoria.GModules">
+      <HintPath>..\..\..\Luxoria.App\Luxoria.GModules\bin\Debug\net9.0-windows10.0.26100.0\Luxoria.GModules.dll</HintPath>
+    </Reference>
+    <Reference Include="Luxoria.Modules">
+      <HintPath>..\..\..\Luxoria.App\Luxoria.GModules\bin\Debug\net9.0-windows10.0.26100.0\Luxoria.Modules.dll</HintPath>
+    </Reference>
+    <Reference Include="Luxoria.SDK">
+      <HintPath>..\..\..\Luxoria.App\Luxoria.GModules\bin\Debug\net9.0-windows10.0.26100.0\Luxoria.SDK.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Components\Infos.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Components\Editor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Components\PhotoViewer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Editor.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Viewer.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CollectionExplorer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  
+</Project>

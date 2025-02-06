@@ -1,0 +1,54 @@
+<Page
+    x:Class="GraphicalTestModule.BlankPage1"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:GraphicalTestModule"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <!-- Header -->
+            <RowDefinition Height="*" />
+            <!-- Main Content -->
+            <RowDefinition Height="Auto" />
+            <!-- Footer -->
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <!-- Full width -->
+        </Grid.ColumnDefinitions>
+
+        <!-- Header Section -->
+        <StackPanel Orientation="Horizontal" Background="LightGray" Padding="10">
+            <TextBlock Text="Luxoria Module Vitrine" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+            <Button Content="Action 1" Margin="20,0,0,0"/>
+            <Button Content="Action 2" Margin="10,0,0,0"/>
+        </StackPanel>
+
+        <!-- Main Content Section -->
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock Text="Dynamic Content" FontWeight="Bold" FontSize="18" Margin="0,10"/>
+                <ProgressBar Minimum="0" Maximum="100" Value="50" Height="20" Margin="0,5"/>
+                <Slider Minimum="0" Maximum="100" Value="75" Margin="0,10"/>
+                <ListView Margin="0,10">
+                    <ListViewItem Content="Item 1"/>
+                    <ListViewItem Content="Item 2"/>
+                    <ListViewItem Content="Item 3"/>
+                </ListView>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer Section -->
+        <StackPanel Grid.Row="2" Background="LightGray" Padding="10">
+            <TextBlock Text="Footer Content" HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Grid>
+</Page>

@@ -1,4 +1,4 @@
-﻿using LuxImport.Interfaces;
+using LuxImport.Interfaces;
 using LuxImport.Models;
 using LuxImport.Repositories;
 using LuxImport.Utils;

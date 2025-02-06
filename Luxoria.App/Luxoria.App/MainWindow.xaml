@@ -2,46 +2,99 @@
     x:Class="Luxoria.App.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Luxoria.App"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:components="using:Luxoria.App.Components"
     Title="Luxoria App."
     mc:Ignorable="d">
 
-    <Grid x:Name="MainGrid">
-        <Grid Margin="20">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
+    <Grid>
+        <!-- Grid Definitions -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <!-- Main Menu Bar -->
+            <RowDefinition Height="*" />
+            <!-- Top Section -->
+            <RowDefinition Height="Auto" />
+            <!-- Splitter -->
+            <RowDefinition Height="150" MinHeight="100" MaxHeight="300" />
+            <!-- Bottom Panel -->
+        </Grid.RowDefinitions>
 
-            <!-- Main Menu Bar Component -->
-            <components:MainMenuBarComponent Grid.Row="0" />
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" MinWidth="150" MaxWidth="500" />
+            <!-- Left Panel -->
+            <ColumnDefinition Width="Auto" />
+            <!-- Splitter -->
+            <ColumnDefinition Width="*" />
+            <!-- Center Area -->
+            <ColumnDefinition Width="Auto" />
+            <!-- Splitter -->
+            <ColumnDefinition Width="200" MinWidth="150" MaxWidth="500" />
+            <!-- Right Panel -->
+        </Grid.ColumnDefinitions>
 
-            <TextBox 
-                x:Name="InputTextBox" 
-                PlaceholderText="Enter some text here..." 
-                Margin="0,0,0,10" 
-                Height="30" 
-                VerticalAlignment="Top"
-                Grid.Row="1"/>
+        <!-- Main Menu Bar -->
+        <components:MainMenuBarComponent Grid.Row="0" Grid.ColumnSpan="5" x:Name="MainMenu" />
 
-            <Button 
-                Content="Send to Module" 
-                Click="SendToModule_Click" 
-                Margin="0,0,0,20" 
-                Height="30" 
-                Grid.Row="2"/>
+        <!-- Left Panel -->
+        <Border Grid.Row="1" Grid.RowSpan="3" Grid.Column="0" Background="{ThemeResource SystemControlBackgroundBaseLowBrush}" Margin="10, 10, 0, 10" CornerRadius="8, 0, 0, 8">
+            <UserControl x:Name="LeftPanelContent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+        </Border>
 
-            <Button 
-                Content="Open collection"
-                Click="OpenCollection_Click"
-                Margin="0,0,0,20" 
-                Height="30"
-                Grid.Row="3"/>
-        </Grid>
+        <!-- Vertical Splitter Between Left and Center -->
+        <controls:GridSplitter 
+            Grid.Row="1" 
+            Grid.RowSpan="3" 
+            Grid.Column="1" 
+            Width="1" 
+            HorizontalAlignment="Stretch" 
+            VerticalAlignment="Stretch" 
+            ResizeBehavior="PreviousAndNext"
+            Background="{ThemeResource ControlStrongFillColorDisabledBrush}" 
+            Margin="0, 10, 0, 10"
+            CornerRadius="0, 10, 10, 0" />
+
+        <!-- Center Panel -->
+        <Border Grid.Row="1" Grid.Column="2" Background="{ThemeResource SystemControlBackgroundBaseLowBrush}" Margin="10, 10, 10, 0" CornerRadius="8" >
+            <UserControl x:Name="CenterPanelContent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Aqua"/>
+        </Border>
+
+        <!-- Horizontal Splitter Between Center and Bottom -->
+        <controls:GridSplitter 
+            Grid.Row="2" 
+            Grid.Column="2" 
+            Height="5" 
+            HorizontalAlignment="Stretch" 
+            VerticalAlignment="Stretch" 
+            ResizeBehavior="PreviousAndNext"
+            Background="{ThemeResource ControlStrongFillColorDisabledBrush}"
+            Margin="10, 10, 10, 0"
+            CornerRadius="10, 10, 0, 0" />
+
+        <!-- Bottom Panel -->
+        <Border Grid.Row="3" Grid.Column="2" Background="{ThemeResource SystemControlBackgroundBaseLowBrush}" Margin="10, 0, 10, 10" CornerRadius="0, 0, 8, 8">
+            <UserControl x:Name="BottomPanelContent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+        </Border>
+
+        <!-- Vertical Splitter Between Center and Right -->
+        <controls:GridSplitter 
+            Grid.Row="1" 
+            Grid.RowSpan="3" 
+            Grid.Column="3" 
+            Width="1" 
+            HorizontalAlignment="Stretch" 
+            VerticalAlignment="Stretch" 
+            ResizeBehavior="PreviousAndNext" 
+            Background="{ThemeResource ControlStrongFillColorDisabledBrush}" 
+            Margin="0, 10, 0, 10"
+            CornerRadius="10, 0, 0, 10" />
+
+        <!-- Right Panel -->
+        <Border Grid.Row="1" Grid.RowSpan="3" Grid.Column="4" Background="{ThemeResource SystemControlBackgroundBaseLowBrush}" Margin="0, 10, 10, 10" CornerRadius="0, 8, 8, 0">
+            <UserControl x:Name="RightPanelContent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+        </Border>
+
     </Grid>
 </Window>

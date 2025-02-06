@@ -3,6 +3,7 @@ using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
 using System.Diagnostics;
+using Microsoft.UI.Xaml;
 
 namespace TestModule1
 {
