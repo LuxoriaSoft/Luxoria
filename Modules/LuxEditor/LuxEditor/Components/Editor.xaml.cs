@@ -1,8 +1,13 @@
+/* 
+  Explanation for "F0" etc.:
+  - "F0" in the string format displays the slider value as an integer (no decimals).
+  - "F2" would show two decimal places.
+  Choose the format that best represents each slider's range and usage.
+*/
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using SkiaSharp;
 using System;
 
@@ -20,47 +25,42 @@ namespace LuxEditor.Components
         }
 
         /// <summary>
-        /// Sets the original unmodified SKBitmap that we will process.
+        /// Sets the original SKBitmap that we will process.
         /// </summary>
-        /// <param name="bitmap">The SKBitmap to edit.</param>
         public void SetOriginalBitmap(SKBitmap bitmap)
         {
             _originalBitmap = bitmap;
         }
 
         // -----------------------
-        //    Slider Handlers
+        // Slider Handlers
         // -----------------------
 
         private void ExposureSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
             if (ExposureValueLabel != null)
-                ExposureValueLabel.Text = e.NewValue.ToString("F2");
-
+                ExposureValueLabel.Text = (e.NewValue / 1000).ToString("F2");
             ProcessImage();
         }
 
         private void ContrastSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
             if (ContrastValueLabel != null)
-                ContrastValueLabel.Text = e.NewValue.ToString("F2");
-
+                ContrastValueLabel.Text = (e.NewValue / 1000).ToString("F2");
             ProcessImage();
         }
 
         private void HighlightsSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
             if (HighlightsValueLabel != null)
-                HighlightsValueLabel.Text = e.NewValue.ToString("F2");
-
+                HighlightsValueLabel.Text = (e.NewValue / 1000).ToString("F2");
             ProcessImage();
         }
 
         private void ShadowsSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
             if (ShadowsValueLabel != null)
-                ShadowsValueLabel.Text = e.NewValue.ToString("F2");
-
+                ShadowsValueLabel.Text = (e.NewValue / 1000).ToString("F2");
             ProcessImage();
         }
 
@@ -68,7 +68,6 @@ namespace LuxEditor.Components
         {
             if (TemperatureValueLabel != null)
                 TemperatureValueLabel.Text = e.NewValue.ToString("F0");
-
             ProcessImage();
         }
 
@@ -76,7 +75,6 @@ namespace LuxEditor.Components
         {
             if (TintValueLabel != null)
                 TintValueLabel.Text = e.NewValue.ToString("F0");
-
             ProcessImage();
         }
 
@@ -84,99 +82,74 @@ namespace LuxEditor.Components
         {
             if (SaturationValueLabel != null)
                 SaturationValueLabel.Text = e.NewValue.ToString("F0");
-
             ProcessImage();
         }
 
         /// <summary>
-        /// Applies the current slider adjustments to the original image,
-        /// then raises an event so subscribers can display the updated SKBitmap.
+        /// Applies all adjustments to the original image, then raises an event.
         /// </summary>
         private void ProcessImage()
         {
             if (_originalBitmap == null)
                 return;
 
-            // 1) Gather current slider values
-            float exposure = (float)ExposureSlider.Value;       // Range: -2 to +2
-            float contrast = (float)ContrastSlider.Value;       // Range: -1 to +1
-            float highlights = (float)HighlightsSlider.Value;     // Range: -1 to +1 (stub)
-            float shadows = (float)ShadowsSlider.Value;        // Range: -1 to +1 (stub)
-            float temperature = (float)TemperatureSlider.Value;    // Range: -100 to +100 (stub)
-            float tint = (float)TintSlider.Value;           // Range: -100 to +100 (stub)
-            float saturation = (float)SaturationSlider.Value;     // Range: -100 to +100
+            // 1) Retrieve slider values
+            float exposure = (float)ExposureSlider.Value / 1000;
+            float contrast = (float)ContrastSlider.Value / 1000;
+            float highlights = (float)HighlightsSlider.Value / 1000;
+            float shadows = (float)ShadowsSlider.Value / 1000;
+            float temperature = (float)TemperatureSlider.Value;
+            float tint = (float)TintSlider.Value;
+            float saturation = (float)SaturationSlider.Value;
 
-            // 2) Create a new SKBitmap to draw into
-            SKBitmap adjustedBitmap = new SKBitmap(_originalBitmap.Width, _originalBitmap.Height);
-
-            using (var canvas = new SKCanvas(adjustedBitmap))
+            // 2) First pass with color filters (exposure, contrast, saturation)
+            SKBitmap firstPassBitmap = new SKBitmap(_originalBitmap.Width, _originalBitmap.Height);
+            using (var canvas = new SKCanvas(firstPassBitmap))
             {
                 canvas.Clear(SKColors.Transparent);
 
-                // We'll compose multiple filters for demonstration:
-                //    a) Exposure  (simple "lighting" approach)
-                //    b) Contrast  (color matrix)
-                //    c) Saturation (color matrix)
-                //    * Additional stubs for highlights, shadows, temperature, tint
-
-                // a) Exposure: We treat exposure as a brightness shift using a "lighting" filter.
-                //    Real-world exposure might require more advanced logic.
+                // Exposure with lighting filter
                 float exposureScale = (float)Math.Pow(2, exposure);
-                SKColorFilter exposureFilter = SKColorFilter.CreateLighting(
+                var exposureFilter = SKColorFilter.CreateLighting(
                     new SKColor(
                         (byte)(255 * exposureScale),
                         (byte)(255 * exposureScale),
                         (byte)(255 * exposureScale)),
                     new SKColor(0, 0, 0));
 
-                // b) Contrast: We'll construct a color matrix for contrast. 
-                //    Typical formula around pivot 0.5 is:
-                //    newValue = (oldValue - 0.5)*contrastFactor + 0.5
+                // Contrast with color matrix
                 float contrastFactor = 1f + contrast;
                 float translate = 0.5f * (1f - contrastFactor);
-
-                float[] contrastMatrix = {
+                float[] contrastMatrix =
+                {
                     contrastFactor, 0,             0,             0, translate,
                     0,             contrastFactor, 0,             0, translate,
                     0,             0,             contrastFactor, 0, translate,
                     0,             0,             0,             1, 0
                 };
-                SKColorFilter contrastFilter = SKColorFilter.CreateColorMatrix(contrastMatrix);
+                var contrastFilter = SKColorFilter.CreateColorMatrix(contrastMatrix);
 
-                // c) Saturation: Use a color matrix approach.
-                //    If slider is -100..+100, let's convert that to [0..2] around 1.0
-                float saturationFactor = 1f + (saturation / 100f);  // e.g. 0 = grayscale, 1 = normal, 2 = double
+                // Saturation with color matrix
+                float saturationFactor = 1f + (saturation / 100f);
                 float lumR = 0.3086f;
                 float lumG = 0.6094f;
                 float lumB = 0.0820f;
-
                 float oneMinusS = 1f - saturationFactor;
                 float r = (oneMinusS * lumR);
                 float g = (oneMinusS * lumG);
                 float b = (oneMinusS * lumB);
-
-                float[] saturationMatrix = {
+                float[] saturationMatrix =
+                {
                     r + saturationFactor, g,                     b,                     0, 0,
                     r,                     g + saturationFactor, b,                     0, 0,
                     r,                     g,                     b + saturationFactor, 0, 0,
                     0,                     0,                     0,                     1, 0
                 };
-                SKColorFilter saturationFilter = SKColorFilter.CreateColorMatrix(saturationMatrix);
+                var saturationFilter = SKColorFilter.CreateColorMatrix(saturationMatrix);
 
-                // d) Highlights/Shadows, Temperature, Tint:
-                //    For demonstration, we'll skip or do minimal. 
-                //    In advanced scenarios, implement correct color shifting or curves.
-                //    We'll pass them as a "no-op" for now.
-                SKColorFilter highlightShadowFilter = null; // TODO
-                SKColorFilter temperatureTintFilter = null; // TODO
-
-                // 3) Compose the filters. If you have multiple, chain them:
-                //    finalFilter = Filter1 + Filter2 + ...
-                //    We'll chain exposure -> contrast -> saturation (others omitted).
-                //    "Compose" merges filters in order (the output of the first 
-                //    becomes input of the second, etc.).
-                SKColorFilter contrastSaturation = SKColorFilter.CreateCompose(contrastFilter, saturationFilter);
-                SKColorFilter finalFilter = SKColorFilter.CreateCompose(exposureFilter, contrastSaturation);
+                // Compose exposure->contrast->saturation
+                var contrastSaturation = SKColorFilter.CreateCompose(contrastFilter, saturationFilter);
+                var finalFilter = SKColorFilter.CreateCompose(exposureFilter, contrastSaturation);
 
                 using (var paint = new SKPaint())
                 {
@@ -185,8 +158,85 @@ namespace LuxEditor.Components
                 }
             }
 
-            // 4) Notify subscribers (e.g., main page) that we have a new SKBitmap
-            OnEditorImageUpdated?.Invoke(adjustedBitmap);
+            // 3) Second pass (CPU) for highlights, shadows, temperature, and tint
+            SKBitmap finalBitmap = new SKBitmap(firstPassBitmap.Width, firstPassBitmap.Height);
+            for (int y = 0; y < firstPassBitmap.Height; y++)
+            {
+                for (int x = 0; x < firstPassBitmap.Width; x++)
+                {
+                    uint pixel = (uint)firstPassBitmap.GetPixel(x, y);
+                    byte alpha = (byte)((pixel >> 24) & 0xFF);
+                    byte red = (byte)((pixel >> 16) & 0xFF);
+                    byte green = (byte)((pixel >> 8) & 0xFF);
+                    byte blue = (byte)(pixel & 0xFF);
+
+                    float fr = red / 255f;
+                    float fg = green / 255f;
+                    float fb = blue / 255f;
+
+                    // Highlights
+                    float brightness = (fr + fg + fb) / 3f;
+                    if (brightness > 0.5f)
+                    {
+                        float factor = (brightness - 0.5f) * 2f;
+                        float amount = highlights * factor;
+                        fr = fr + amount * (1f - fr);
+                        fg = fg + amount * (1f - fg);
+                        fb = fb + amount * (1f - fb);
+                    }
+
+                    // Shadows
+                    brightness = (fr + fg + fb) / 3f;
+                    if (brightness < 0.5f)
+                    {
+                        float factor = (0.5f - brightness) * 2f;
+                        float amount = shadows * factor;
+                        fr = fr + amount * (1f - fr);
+                        fg = fg + amount * (1f - fg);
+                        fb = fb + amount * (1f - fb);
+                    }
+
+                    // Temperature and tint
+                    float tempFactor = temperature / 100f;
+                    float tintFactor = tint / 100f;
+
+                    // Simple scale for red and blue (temperature)
+                    float rScale = 1f + (tempFactor * 0.3f);
+                    float bScale = 1f - (tempFactor * 0.3f);
+                    fr *= rScale;
+                    fb *= bScale;
+
+                    // Simple scale for green (tint)
+                    float gScale = 1f + (tintFactor * 0.3f);
+                    fg *= gScale;
+
+                    // Optional partial compensation for red/blue with tint
+                    float inverseTintScale = 1f - (Math.Abs(tintFactor) * 0.1f);
+                    fr *= inverseTintScale;
+                    fb *= inverseTintScale;
+
+                    // Clamp
+                    fr = Math.Clamp(fr, 0f, 1f);
+                    fg = Math.Clamp(fg, 0f, 1f);
+                    fb = Math.Clamp(fb, 0f, 1f);
+
+                    // Convert to byte
+                    byte nr = (byte)(fr * 255f);
+                    byte ng = (byte)(fg * 255f);
+                    byte nb = (byte)(fb * 255f);
+
+                    uint newPixel =
+                          ((uint)alpha << 24)
+                        | ((uint)nr << 16)
+                        | ((uint)ng << 8)
+                        | (uint)nb;
+
+                    finalBitmap.SetPixel(x, y, newPixel);
+                }
+            }
+
+            // 4) Send final bitmap
+            OnEditorImageUpdated?.Invoke(finalBitmap);
         }
     }
 }

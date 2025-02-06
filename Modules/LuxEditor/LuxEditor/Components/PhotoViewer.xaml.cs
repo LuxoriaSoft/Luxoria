@@ -21,7 +21,6 @@ namespace LuxEditor.Components
         /// <summary>
         /// Sets the SKBitmap image into the Image control for viewing.
         /// </summary>
-        /// <param name="bitmap">The bitmap from SkiaSharp to be displayed.</param>
         public void SetImage(SKBitmap bitmap)
         {
             using (MemoryStream ms = new MemoryStream())

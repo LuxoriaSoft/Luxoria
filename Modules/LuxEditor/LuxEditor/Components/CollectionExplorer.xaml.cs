@@ -31,6 +31,9 @@ public sealed partial class CollectionExplorer : Page
         SizeChanged += (s, e) => AdjustImageSizes(e.NewSize);
     }
 
+    /// <summary>
+    /// Build UI in code-behind, because xaml doesnt work with external libraries.
+    /// </summary>
     private void BuildUI()
     {
         _scrollViewer = new ScrollViewer
@@ -54,6 +57,9 @@ public sealed partial class CollectionExplorer : Page
         RootGrid.Children.Add(_scrollViewer);
     }
 
+    /// <summary>
+    /// Adjusts the size of the images based on the new size of the control.
+    /// </summary>
     private void AdjustImageSizes(Size newSize)
     {
         if (_imagePanel.Children.Count == 0) return;
@@ -86,6 +92,9 @@ public sealed partial class CollectionExplorer : Page
         }
     }
 
+    /// <summary>
+    /// Set the bitmaps to display in the collection explorer.
+    /// </summary>
     public void SetBitmaps(List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> bitmaps)
     {
         if (bitmaps == null || bitmaps.Count == 0)
@@ -107,7 +116,7 @@ public sealed partial class CollectionExplorer : Page
                 int previewWidth = (int)((float)bitmap.Key.Width / bitmap.Key.Height * previewHeight);
                 var lowResBitmap = CreateLowResBitmap(bitmap.Key, previewWidth, previewHeight);
 
-                previewHeight = int.Min(bitmap.Key.Height, 1000);
+                previewHeight = int.Min(bitmap.Key.Height, 600);
                 previewWidth = (int)((float)bitmap.Key.Width / bitmap.Key.Height * previewHeight);
                 var mediumResBitmap = CreateLowResBitmap(bitmap.Key, previewWidth, previewHeight);
                 _bitmaps.Add(lowResBitmap);
@@ -141,7 +150,9 @@ public sealed partial class CollectionExplorer : Page
         });
     }
 
-
+    /// <summary>
+    /// 
+    /// </summary>
     private void OnHover(Border border, bool isHovered)
     {
         if (border != _selectedBorder)
@@ -150,6 +161,9 @@ public sealed partial class CollectionExplorer : Page
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     private void OnImageTapped(Border border, int index)
     {
         if (index >= _originalBitmaps.Count) return;
@@ -163,7 +177,9 @@ public sealed partial class CollectionExplorer : Page
         OnImageSelected?.Invoke(_originalBitmaps[index]);
     }
 
-
+    /// <summary>
+    /// 
+    /// </summary>
     private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e, int index)
     {
         SKCanvas canvas = e.Surface.Canvas;
@@ -181,6 +197,9 @@ public sealed partial class CollectionExplorer : Page
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     private SKBitmap CreateLowResBitmap(SKBitmap original, int targetWidth, int targetHeight)
     {
         var resizedBitmap = new SKBitmap(targetWidth, targetHeight);

@@ -22,6 +22,9 @@ namespace LuxEditor.Components
             ExifListView.ItemsSource = ExifData;
         }
 
+        /// <summary>
+        /// Sets the EXIF data into the ListView for viewing.
+        /// </summary>
         public void DisplayExifData(
             System.Collections.ObjectModel.ReadOnlyDictionary<string, string> metadata)
         {
