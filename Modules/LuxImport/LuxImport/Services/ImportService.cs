@@ -170,7 +170,7 @@ namespace LuxImport.Services
 
                 // Compute hash and handle assets
                 string hash256 = _fileHasherService.ComputeFileHash(file);
-                await HandleAsset(manifest, filename, relativePath, hash256);
+                HandleAsset(manifest, filename, relativePath, hash256);
             }
 
             // Finalize indexing process
@@ -182,7 +182,7 @@ namespace LuxImport.Services
         /// <summary>
         /// Handles the asset by adding or updating it in the manifest.
         /// </summary>
-        private async Task HandleAsset(Manifest manifest, string filename, string relativePath, string hash256)
+        private void HandleAsset(Manifest manifest, string filename, string relativePath, string hash256)
         {
             // Check for existing asset in the manifest
             var existingAsset = manifest.Assets
@@ -191,18 +191,18 @@ namespace LuxImport.Services
             // Handle new or updated assets
             if (existingAsset == null)
             {
-                await AddNewAsset(manifest, filename, relativePath, hash256);
+                AddNewAsset(manifest, filename, relativePath, hash256);
             }
             else if (existingAsset.Hash != hash256)
             {
-                await UpdateExistingAsset(existingAsset, filename, hash256);
+                UpdateExistingAsset(existingAsset, filename, hash256);
             }
         }
 
         /// <summary>
         /// Adds a new asset to the manifest.
         /// </summary>
-        private async Task AddNewAsset(Manifest manifest, string filename, string relativePath, string hash256)
+        private void AddNewAsset(Manifest manifest, string filename, string relativePath, string hash256)
         {
             Guid luxCfgId = Guid.NewGuid();
             manifest.Assets.Add(new LuxCfg.AssetInterface
@@ -222,7 +222,7 @@ namespace LuxImport.Services
         /// <summary>
         /// Updates an existing asset in the manifest.
         /// </summary>
-        private async Task UpdateExistingAsset(LuxCfg.AssetInterface existingAsset, string filename, string hash256)
+        private void UpdateExistingAsset(LuxCfg.AssetInterface existingAsset, string filename, string hash256)
         {
             existingAsset.Hash = hash256;
 
