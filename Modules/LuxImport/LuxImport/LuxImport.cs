@@ -44,31 +44,13 @@ public class LuxImport : IModule, IModuleUI
 
         // Add a menu bar item to the main menu bar
         List<ISmartButton> smartButtons = new List<ISmartButton>();
-        List<ISmartButton> smartButtons2 = new List<ISmartButton>();
-        Dictionary<SmartButtonType, Page> Pages1 = new Dictionary<SmartButtonType, Page>();
-        Dictionary<SmartButtonType, Page> Pages2 = new Dictionary<SmartButtonType, Page>();
-        Dictionary<SmartButtonType, Page> Pages3 = new Dictionary<SmartButtonType, Page>();
-        Dictionary<SmartButtonType, Page> Pages4 = new Dictionary<SmartButtonType, Page>();
+        Dictionary<SmartButtonType, Page> page = new Dictionary<SmartButtonType, Page>
+        {
+            { SmartButtonType.Modal, new ImportView() }
+        };
 
-        Pages1.Add(SmartButtonType.MainPanel, new ImportView());
-        Pages2.Add(SmartButtonType.Window, new ImportView());
-        Pages3.Add(SmartButtonType.Modal, new ImportView());
-
-        Pages4.Add(SmartButtonType.LeftPanel, new ImportView());
-
-        //smartButtons.Add(new SmartButton("Main Panel", "I'm just a button of TestItem", Pages1));
-        //smartButtons.Add(new SmartButton("Window", "I'm just a button of TestItem", Pages2));
-        smartButtons.Add(new SmartButton("Modal", "I'm just a button of TestItem", Pages3));
-
-        smartButtons2.Add(new SmartButton("Left Panel", "I'm just a button of TestItem", Pages4));
-
-
-        Items.Add(new LuxMenuBarItem("1TestItem", true, new Guid(), smartButtons));
-
-        Items.Add(new LuxMenuBarItem("1TestItem2", false, new Guid(), smartButtons2));
-
-
-        //Items.Add(new LuxMenuBarItem("Import", true, new Guid(), new { new SmartButton("Import", "Import module", ) }));
+        smartButtons.Add(new SmartButton("Import", "ImportDialog", page));
+        Items.Add(new LuxMenuBarItem("Import", true, new Guid(), smartButtons));
     }
 
     /// <summary>

@@ -19,7 +19,7 @@ namespace LuxImport.Views
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine("Le bouton a ete clique");
+            Debug.WriteLine("The button has been clicked");
         }
     }
 }
