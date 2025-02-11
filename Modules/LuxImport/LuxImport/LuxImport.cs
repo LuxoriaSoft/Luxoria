@@ -16,7 +16,7 @@ public class LuxImport : IModule
 
     public string Name => "LuxImport";
     public string Description => "Generic Luxoria Importation Module";
-    public string Version => "1.0.1";
+    public string Version => "1.0.2";
 
     /// <summary>
     /// Initializes the module with the provided EventBus and ModuleContext.

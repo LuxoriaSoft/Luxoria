@@ -4,6 +4,8 @@
     <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
+	  <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+	  <GenerateLibraryLayout>true</GenerateLibraryLayout>
   </PropertyGroup>
 
   <ItemGroup>
