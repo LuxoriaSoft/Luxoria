@@ -46,7 +46,7 @@
 
 	<ItemGroup>
 	  <Folder Include="Components\" />
-	  <Folder Include="NewFolder\" />
+	  <Folder Include="Views\" />
 	</ItemGroup>
 
 

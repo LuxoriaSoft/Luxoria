@@ -46,7 +46,7 @@ public class LuxImport : IModule, IModuleUI
         List<ISmartButton> smartButtons = new List<ISmartButton>();
         Dictionary<SmartButtonType, Page> page = new Dictionary<SmartButtonType, Page>
         {
-            { SmartButtonType.Modal, new ImportView() }
+            { SmartButtonType.Modal, new ImportView(_eventBus) }
         };
 
         smartButtons.Add(new SmartButton("Import", "ImportDialog", page));

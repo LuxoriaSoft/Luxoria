@@ -11,6 +11,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using WinRT.Interop;
 
 namespace Luxoria.App;
 
@@ -60,6 +61,9 @@ public sealed partial class MainWindow : Window
     {
         // Subscribe to events that will be published through the event bus
         _eventBus.Subscribe<CollectionUpdatedEvent>(_collectionUpdatedHandler.OnCollectionUpdated);
+
+        // Subscribe to the window handle request event
+        _eventBus.Subscribe<RequestWindowHandleEvent>(OnRequestWindowHandle);
     }
 
     /// <summmary>
@@ -211,6 +215,13 @@ public sealed partial class MainWindow : Window
                 MainMenu.AddRightButton(item.Name, act);
             }
         }
+    }
+
+    private void OnRequestWindowHandle(RequestWindowHandleEvent e)
+    {
+        var handle = WindowNative.GetWindowHandle(this);
+        Debug.WriteLine($"/SENDING Window Handle: {handle}");
+        e.OnHandleReceived?.Invoke(handle); // Send back the handle
     }
 
     private void LoadDefaultCollection()
