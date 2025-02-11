@@ -3,88 +3,99 @@ using Microsoft.UI.Xaml.Controls;
 using System.Diagnostics;
 using Windows.Storage.Pickers;
 using Windows.Storage;
-using System.Collections.ObjectModel;
 using WinRT.Interop;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace LuxImport.Views
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class ImportView : Page
     {
-        public ObservableCollection<string> SelectedFiles { get; } = new();
         private IEventBus _eventBus;
+        private StorageFolder? _selectedFolder;
+        public string? CollectionName { get; set; }
 
         public ImportView(IEventBus eventBus)
         {
             this.InitializeComponent();
-            FileListView.ItemsSource = SelectedFiles;
             _eventBus = eventBus;
+            CreateCollectionButton.Click += CreateCollectionButton_Click;
+
+            // Set the initial state of the UI
+            this.Height = 300;
+            this.Width = 500;
         }
 
-        private async void BrowseFiles_Click(object sender, RoutedEventArgs e)
+        private async void BrowseFolder_Click(object sender, RoutedEventArgs e)
         {
             var tcs = new TaskCompletionSource<nint>();
-
-            // Publish the event to request the window handle
-            _eventBus.Publish(new RequestWindowHandleEvent(handle => tcs.SetResult(handle)));
-
-            // Await the window handle
+            await _eventBus.Publish(new RequestWindowHandleEvent(handle => tcs.SetResult(handle)));
             nint _windowHandle = await tcs.Task;
-
-            Debug.WriteLine($"/OK Window Handle: {_windowHandle}");
-
-            if (_windowHandle == 0)
-            {
-                Debug.WriteLine("Failed to get window handle.");
-                return;
-            }
+            if (_windowHandle == 0) return;
 
             var picker = new FolderPicker();
             picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
             picker.FileTypeFilter.Add("*");
-            picker.ViewMode = PickerViewMode.Thumbnail;
-
-            // Attach picker to the correct window
             InitializeWithWindow.Initialize(picker, _windowHandle);
 
-            StorageFolder folder = await picker.PickSingleFolderAsync();
-            if (folder != null)
+            _selectedFolder = await picker.PickSingleFolderAsync();
+            if (_selectedFolder != null)
             {
-                Debug.WriteLine($"Folder selected: {folder.Path}");
+                Debug.WriteLine($"Folder selected: {_selectedFolder.Path}");
+                await CheckInitialization();
             }
         }
 
-
-
-        private async void StartImport_Click(object sender, RoutedEventArgs e)
+        private async Task CheckInitialization()
         {
-            if (SelectedFiles.Count == 0) return;
-            ImportProgress.Visibility = Visibility.Visible;
-            ImportProgress.Value = 0;
+            var initFile = await _selectedFolder?.TryGetItemAsync("init.lux");
 
-            for (int i = 0; i < SelectedFiles.Count; i++)
+            DispatcherQueue.TryEnqueue(async () =>
             {
-                Debug.WriteLine($"Importing: {SelectedFiles[i]}");
-                await Task.Delay(500); // Simulate file processing
-                ImportProgress.Value = ((i + 1) / (double)SelectedFiles.Count) * 100;
-            }
-
-            Debug.WriteLine("Import Completed");
-            ImportProgress.Visibility = Visibility.Collapsed;
+                if (initFile == null)
+                {
+                    CollectionInputPanel.Visibility = Visibility.Visible;
+                    IndexingText.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    await RunIndexing();
+                }
+            });
         }
 
-        private void CancelImport_Click(object sender, RoutedEventArgs e)
+        private async void CreateCollectionButton_Click(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine("Import Canceled");
-            ImportProgress.Visibility = Visibility.Collapsed;
-            ImportProgress.Value = 0;
+            if (_selectedFolder == null) return;
+
+            CollectionName = CollectionNameInput.Text;
+            if (!string.IsNullOrWhiteSpace(CollectionName))
+            {
+                //var initFile = await _selectedFolder.CreateFileAsync("init.lux", CreationCollisionOption.ReplaceExisting);
+                //await FileIO.WriteTextAsync(initFile, CollectionName);
+                Debug.WriteLine($"Collection '{CollectionName}' created.");
+                await RunIndexing();
+            }
+        }
+
+        private async Task RunIndexing()
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                CollectionInputPanel.Visibility = Visibility.Collapsed;
+                IndexingText.Visibility = Visibility.Visible;
+                Debug.WriteLine("Folder already initialized. Indexing in progress...");
+            });
+
+            if (_selectedFolder == null) return;
+
+            await Task.Delay(2000);
+            //await _eventBus.Publish(new IndexCollectionEvent(_selectedFolder.Path, CollectionName));
+
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                Debug.WriteLine("Indexing completed.");
+            });
         }
     }
 }
