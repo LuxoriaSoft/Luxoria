@@ -49,7 +49,7 @@ LUX_FINAL_NAME = "LuxImport.Lux.dll"
 LUX_MOD_FOLDER = "LuxImport"
 SOURCE_DIR = "./LuxImport/bin/Debug/net9.0-windows10.0.26100.0/" + current_arch + "/publish"
 DEST_DIR = "../../Luxoria.App/Luxoria.App/bin/" + short_arch + "/Debug/net9.0-windows10.0.26100.0/" + current_arch + "/AppX/modules/" + LUX_MOD_FOLDER
-MODULE_SOURCE_DIR = "./LuxImport/bin/Debug/net9.0-windows10.0.26100.0/LuxImport"
+MODULE_SOURCE_DIR = "./LuxImport/bin/Debug/net9.0-windows10.0.26100.0/" + current_arch + "/LuxImport"
 MODULE_DEST_DIR = "../../Luxoria.App/Luxoria.App/bin/" + short_arch + "/Debug/net9.0-windows10.0.26100.0/" + current_arch + "/AppX/LuxImport"
 
 # Function to build the project

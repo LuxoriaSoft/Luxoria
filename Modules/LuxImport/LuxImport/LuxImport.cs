@@ -1,14 +1,18 @@
 ﻿using LuxImport.Interfaces;
 using LuxImport.Services;
+using LuxImport.Views;
+using Luxoria.GModules;
+using Luxoria.GModules.Interfaces;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
+using Microsoft.UI.Xaml.Controls;
 using System.Diagnostics;
 
 namespace LuxImport;
 
-public class LuxImport : IModule
+public class LuxImport : IModule, IModuleUI
 {
     private IEventBus? _eventBus;
     private IModuleContext? _context;
@@ -17,6 +21,11 @@ public class LuxImport : IModule
     public string Name => "LuxImport";
     public string Description => "Generic Luxoria Importation Module";
     public string Version => "1.0.2";
+
+    /// <summary>
+    /// The list of menu bar items to be added to the main menu bar.
+    /// </summary>
+    public List<ILuxMenuBarItem> Items { get; set; } = new List<ILuxMenuBarItem>();
 
     /// <summary>
     /// Initializes the module with the provided EventBus and ModuleContext.
@@ -32,6 +41,34 @@ public class LuxImport : IModule
 
         // Subscribe to mandatory events with an async handler
         _eventBus.Subscribe<OpenCollectionEvent>(HandleOnOpenCollectionAsync);
+
+        // Add a menu bar item to the main menu bar
+        List<ISmartButton> smartButtons = new List<ISmartButton>();
+        List<ISmartButton> smartButtons2 = new List<ISmartButton>();
+        Dictionary<SmartButtonType, Page> Pages1 = new Dictionary<SmartButtonType, Page>();
+        Dictionary<SmartButtonType, Page> Pages2 = new Dictionary<SmartButtonType, Page>();
+        Dictionary<SmartButtonType, Page> Pages3 = new Dictionary<SmartButtonType, Page>();
+        Dictionary<SmartButtonType, Page> Pages4 = new Dictionary<SmartButtonType, Page>();
+
+        Pages1.Add(SmartButtonType.MainPanel, new ImportView());
+        Pages2.Add(SmartButtonType.Window, new ImportView());
+        Pages3.Add(SmartButtonType.Modal, new ImportView());
+
+        Pages4.Add(SmartButtonType.LeftPanel, new ImportView());
+
+        //smartButtons.Add(new SmartButton("Main Panel", "I'm just a button of TestItem", Pages1));
+        //smartButtons.Add(new SmartButton("Window", "I'm just a button of TestItem", Pages2));
+        smartButtons.Add(new SmartButton("Modal", "I'm just a button of TestItem", Pages3));
+
+        smartButtons2.Add(new SmartButton("Left Panel", "I'm just a button of TestItem", Pages4));
+
+
+        Items.Add(new LuxMenuBarItem("1TestItem", true, new Guid(), smartButtons));
+
+        Items.Add(new LuxMenuBarItem("1TestItem2", false, new Guid(), smartButtons2));
+
+
+        //Items.Add(new LuxMenuBarItem("Import", true, new Guid(), new { new SmartButton("Import", "Import module", ) }));
     }
 
     /// <summary>

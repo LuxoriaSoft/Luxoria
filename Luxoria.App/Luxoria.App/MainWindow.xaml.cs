@@ -95,7 +95,7 @@ public sealed partial class MainWindow : Window
         {
             Debug.WriteLine("Item: " + item.Name);
 
-            Action act = () =>
+            Action act = async () =>
             {
 
                 var button = item.IsLeftLocated ? MainMenu.GetLeftButton(item.Name) : MainMenu.GetRightButton(item.Name);
@@ -196,7 +196,7 @@ public sealed partial class MainWindow : Window
 
                             case GModules.SmartButtonType.Modal:
                                 var modalContent = gmodule.Value;
-                                ShowModalAsync(modalContent, item.Name).GetAwaiter().GetResult();
+                                await ShowModalAsync(modalContent, item.Name);
                                 break;
                         }
                     }
@@ -215,7 +215,7 @@ public sealed partial class MainWindow : Window
 
     private void LoadDefaultCollection()
     {
-        var openCollectionEvt = new OpenCollectionEvent("testCollection", "C:\\Users\\pastcque\\source\\repos\\LuxoriaSoft\\Luxoria\\assets\\BaseCollection");
+        /*var openCollectionEvt = new OpenCollectionEvent("testCollection", "C:\\Users\\pastcque\\source\\repos\\LuxoriaSoft\\Luxoria\\assets\\BaseCollection");
 
         openCollectionEvt.OnEventCompleted += (_, _) =>
         {
@@ -225,6 +225,6 @@ public sealed partial class MainWindow : Window
         Task.Run(async () =>
         {
             await _eventBus.Publish(openCollectionEvt);
-        });
+        });*/
     }
 }
