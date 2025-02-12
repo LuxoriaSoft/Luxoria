@@ -74,7 +74,13 @@ public sealed partial class MainWindow : Window
     }
 
     /// <summary>
+    /// Displays a modal dialog with the specified content and title.
+    /// Ensures the content is properly detached when the dialog closes 
+    /// to prevent reusing issues in future dialogs.
     /// </summary>
+    /// <param name="content">The UI element to display inside the modal.</param>
+    /// <param name="title">The title of the modal dialog.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     private async Task ShowModalAsync(UIElement content, string title)
     {
         var dialog = new ContentDialog
@@ -83,6 +89,11 @@ public sealed partial class MainWindow : Window
             Content = content,
             CloseButtonText = "Close",
             XamlRoot = this.Content.XamlRoot
+        };
+
+        dialog.Closed += (_, _) =>
+        {
+            dialog.Content = null; // Manually remove content before reusing it
         };
 
         await dialog.ShowAsync();
