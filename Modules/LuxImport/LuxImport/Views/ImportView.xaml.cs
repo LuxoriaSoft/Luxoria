@@ -103,14 +103,11 @@ namespace LuxImport.Views
             RecentsList.Children.Add(button);
         }
 
-        private async void OnRecentCollectionSelected(string name, string path)
+        private void OnRecentCollectionSelected(string name, string path)
         {
             Debug.WriteLine($"Recent Collection Selected: {name} - {path}");
 
-            // Ensure modal is shown on UI thread
-            await DispatcherQueue.EnqueueAsync(async () =>
-            {
-            });
+            _Parent.SetIndexicationView(name, path);
         }
     }
 }

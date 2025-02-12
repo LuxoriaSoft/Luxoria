@@ -51,6 +51,7 @@ public sealed partial class MainWindow : Window
         // LoadComponents
         LoadComponents();
 
+        // Load the default collection
         LoadDefaultCollection();
     }
 
