@@ -6,6 +6,8 @@ using Windows.Storage;
 using WinRT.Interop;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
+using Microsoft.UI.Text;
+using Microsoft.UI.Xaml.Media;
 
 namespace LuxImport.Views
 {
@@ -13,17 +15,16 @@ namespace LuxImport.Views
     {
         private IEventBus _eventBus;
         private StorageFolder? _selectedFolder;
-        public string? CollectionName { get; set; }
 
         public ImportView(IEventBus eventBus)
         {
             this.InitializeComponent();
             _eventBus = eventBus;
-            CreateCollectionButton.Click += CreateCollectionButton_Click;
 
-            // Set the initial state of the UI
-            this.Height = 300;
-            this.Width = 500;
+            // Modal Properties
+            Width = 500;
+
+            LoadRecentCollections();
         }
 
         private async void BrowseFolder_Click(object sender, RoutedEventArgs e)
@@ -42,60 +43,64 @@ namespace LuxImport.Views
             if (_selectedFolder != null)
             {
                 Debug.WriteLine($"Folder selected: {_selectedFolder.Path}");
-                await CheckInitialization();
             }
         }
 
-        private async Task CheckInitialization()
+        private void LoadRecentCollections()
         {
-            var initFile = await _selectedFolder?.TryGetItemAsync("init.lux");
+            RecentsList.Children.Clear();
+            AddToRecents("Example Collection 1", "C:\\Photos\\Collection1");
+            AddToRecents("Example Collection 2", "C:\\Documents\\Collection2");
+            AddToRecents("Example Collection 3", "D:\\Work\\Collection3");
+            AddToRecents("Example Collection 4", "D:\\Work\\Collection3");
+            AddToRecents("Example Collection 5", "D:\\Work\\Collection3");
+        }
 
-            DispatcherQueue.TryEnqueue(async () =>
+        private void AddToRecents(string name, string path)
+        {
+            var button = new Button
             {
-                if (initFile == null)
+                Content = new Grid
                 {
-                    CollectionInputPanel.Visibility = Visibility.Visible;
-                    IndexingText.Visibility = Visibility.Collapsed;
-                }
-                else
-                {
-                    await RunIndexing();
-                }
-            });
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Children =
+                    {
+                        new StackPanel
+                        {
+                            Orientation = Orientation.Vertical,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            Children =
+                            {
+                                new TextBlock
+                                {
+                                    Text = name,
+                                    FontWeight = FontWeights.SemiBold,
+                                    FontSize = 14,
+                                    HorizontalAlignment = HorizontalAlignment.Center
+                                },
+                                new TextBlock
+                                {
+                                    Text = path,
+                                    FontSize = 12,
+                                    Opacity = 0.6,
+                                    HorizontalAlignment = HorizontalAlignment.Center
+                                }
+                            }
+                        }
+                    }
+                },
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                Margin = new Thickness(0, 2, 0, 2)
+            };
+
+            button.Click += (s, e) => OnRecentCollectionSelected(name, path);
+            RecentsList.Children.Add(button);
         }
 
-        private async void CreateCollectionButton_Click(object sender, RoutedEventArgs e)
+        private void OnRecentCollectionSelected(string name, string path)
         {
-            if (_selectedFolder == null) return;
-
-            CollectionName = CollectionNameInput.Text;
-            if (!string.IsNullOrWhiteSpace(CollectionName))
-            {
-                //var initFile = await _selectedFolder.CreateFileAsync("init.lux", CreationCollisionOption.ReplaceExisting);
-                //await FileIO.WriteTextAsync(initFile, CollectionName);
-                Debug.WriteLine($"Collection '{CollectionName}' created.");
-                await RunIndexing();
-            }
+            Debug.WriteLine($"Recent Collection Selected: {name} - {path}");
         }
 
-        private async Task RunIndexing()
-        {
-            DispatcherQueue.TryEnqueue(() =>
-            {
-                CollectionInputPanel.Visibility = Visibility.Collapsed;
-                IndexingText.Visibility = Visibility.Visible;
-                Debug.WriteLine("Folder already initialized. Indexing in progress...");
-            });
-
-            if (_selectedFolder == null) return;
-
-            await Task.Delay(2000);
-            //await _eventBus.Publish(new IndexCollectionEvent(_selectedFolder.Path, CollectionName));
-
-            DispatcherQueue.TryEnqueue(() =>
-            {
-                Debug.WriteLine("Indexing completed.");
-            });
-        }
     }
 }
