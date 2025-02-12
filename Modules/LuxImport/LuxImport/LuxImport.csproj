@@ -18,6 +18,8 @@
 
   <ItemGroup>
     <None Remove="ImportView.xaml" />
+    <None Remove="Views\IndexicationView.xaml" />
+    <None Remove="Views\PropertiesView.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -47,13 +49,38 @@
 
 	<ItemGroup>
 	  <Folder Include="Components\" />
-	  <Folder Include="Views\" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Page Update="Views\IndexicationView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Page Update="Views\PropertiesView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
 
 
 	<ItemGroup>
 	  <Page Update="ImportView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Page>
+	  <Page Update="MainImportView.xaml">
+		<Generator>MSBuild:Compile</Generator>
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Page>
+      <Page Update="PropertiesView.xaml">
+		<Generator>MSBuild:Compile</Generator>
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Page>
+	  <Page Update="IndexicationView.xaml">
+		<Generator>MSBuild:Compile</Generator>
 		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Page>
 	</ItemGroup>

@@ -8,18 +8,23 @@ using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml.Media;
+using CommunityToolkit.WinUI;
+using System.Reflection.Metadata;
 
 namespace LuxImport.Views
 {
     public sealed partial class ImportView : Page
     {
-        private IEventBus _eventBus;
+        private readonly IEventBus _eventBus;
+        private readonly MainImportView _Parent;
         private StorageFolder? _selectedFolder;
 
-        public ImportView(IEventBus eventBus)
+        public ImportView(IEventBus eventBus, MainImportView parent)
         {
             this.InitializeComponent();
+
             _eventBus = eventBus;
+            _Parent = parent;
 
             // Modal Properties
             Width = 500;
@@ -43,6 +48,7 @@ namespace LuxImport.Views
             if (_selectedFolder != null)
             {
                 Debug.WriteLine($"Folder selected: {_selectedFolder.Path}");
+                _Parent.SetPropertiesView(_selectedFolder.Path);
             }
         }
 
@@ -97,10 +103,14 @@ namespace LuxImport.Views
             RecentsList.Children.Add(button);
         }
 
-        private void OnRecentCollectionSelected(string name, string path)
+        private async void OnRecentCollectionSelected(string name, string path)
         {
             Debug.WriteLine($"Recent Collection Selected: {name} - {path}");
-        }
 
+            // Ensure modal is shown on UI thread
+            await DispatcherQueue.EnqueueAsync(async () =>
+            {
+            });
+        }
     }
 }
