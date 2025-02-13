@@ -1,3 +1,17 @@
+# [1.26.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.25.0...v1.26.0) (2025-02-13)
+
+
+### Bug Fixes
+
+* Rename artifact using matrix.platform to Luxoria.App.xARCH ([902a93e](https://github.com/LuxoriaSoft/Luxoria/commit/902a93e6b204bb987fb671d310e03369047c59e3))
+* Update artifact upload name to include configuration and platform ([f00babb](https://github.com/LuxoriaSoft/Luxoria/commit/f00babb92d668ba975552404aefb040890545a6c))
+
+
+### Features
+
+* Add feat/unpackaged-version branch to release workflow ([9aed874](https://github.com/LuxoriaSoft/Luxoria/commit/9aed874ac784438dfe37e7ecd09a9da35f4baa23))
+* Add upload step for Luxoria.App in release workflow ([269a2cb](https://github.com/LuxoriaSoft/Luxoria/commit/269a2cbc03aa41f3aecdf176460653ac29c41ae9))
+
 # [1.25.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.24.0...v1.25.0) (2025-02-13)
 
 
