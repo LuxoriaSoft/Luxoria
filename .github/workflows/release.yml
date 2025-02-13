@@ -42,8 +42,12 @@ jobs:
           Configuration: ${{ matrix.configuration }}
         working-directory: ./Luxoria.App
 
+      # Define a custom publish directory
+      - name: Set publish directory
+        run: echo "PUBLISH_DIR=./Luxoria.App/PublishedOutput/${{ matrix.configuration }}/${{ matrix.platform }}/" >> $GITHUB_ENV
+
       # Create the app by building and publishing the project
-      - name: Create the app
+      - name: Build Luxoria.App
         run: msbuild $env:Solution_Name /t:Publish /p:Configuration=$env:Configuration /p:Platform=$env:Platform
         env:
           Configuration: ${{ matrix.configuration }}
@@ -55,8 +59,19 @@ jobs:
         run: ls -R ./Luxoria.App/Luxoria.App/bin
 
       # Upload the app as an artifact
-      - name: Upload the app
+      - name: Upload Luxoria.App as an artifact
         uses: actions/upload-artifact@v4
         with:
           name: Luxoria.App.$env:Configuration.$env:Platform
           path: ./Luxoria.App/Luxoria.App/bin
+      
+      # Set a dynamic artifact name
+      - name: Set artifact name
+        run: echo "ARTIFACT_NAME=Luxoria.App.${{ matrix.configuration }}.${{ matrix.platform }}" >> $GITHUB_ENV
+
+      # Upload the app as an artifact
+      - name: Upload the app
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.PUBLISH_DIR }}
