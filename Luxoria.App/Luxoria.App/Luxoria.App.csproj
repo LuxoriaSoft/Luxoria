@@ -45,10 +45,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.1.240916" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" Version="8.1.240916" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.241114003" />
+    <PackageReference Include="SkiaSharp" Version="3.116.1" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.116.1" />
+    <PackageReference Include="SkiaSharp.Views.WinUI" Version="3.116.1" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
@@ -62,6 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Luxoria.Core\Luxoria.Core.csproj" />
+    <ProjectReference Include="..\Luxoria.GModules\Luxoria.GModules.csproj" />
     <ProjectReference Include="..\Luxoria.Modules\Luxoria.Modules.csproj" />
     <ProjectReference Include="..\Luxoria.SDK\Luxoria.SDK.csproj" />
   </ItemGroup>
@@ -89,6 +95,9 @@
     <Page Update="Components\MainMenuBarComponent.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Models\" />
   </ItemGroup>
 
   <!--

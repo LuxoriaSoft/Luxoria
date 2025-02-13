@@ -1,8 +1,12 @@
-﻿using Luxoria.Core.Interfaces;
+﻿using Luxoria.App.Interfaces;
+using Luxoria.GModules.Interfaces;
 using Luxoria.Modules.Interfaces;
 using Luxoria.SDK.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
-namespace Luxoria.Core.Services
+namespace Luxoria.App.Services
 {
     public class ModuleService : IModuleService
     {
@@ -48,6 +52,12 @@ namespace Luxoria.Core.Services
             foreach (IModule module in _modules)
             {
                 module.Initialize(_eventBus, context, _logger);
+                if (module is IModuleUI moduleGUI)
+                {
+                    _logger.Log("Hello i'm a module named: " + moduleGUI.Name);
+
+                    Debug.WriteLine(moduleGUI.Items);
+                }
             }
         }
     }
