@@ -50,9 +50,13 @@ jobs:
           Platform: ${{ matrix.platform }}
         working-directory: ./Luxoria.App
 
-      # Upload the app
+      # (debug) List the files in the publish folder
+      - name: List the files in the publish folder
+        run: ls -R ./Luxoria.App/bin/${{ matrix.configuration }}/${{ matrix.platform }}/publish/
+
+      # Upload the app as an artifact
       - name: Upload the app
         uses: actions/upload-artifact@v4
         with:
           name: Luxoria.App
-          path: ./Luxoria.App/bin/
+          path: ./Luxoria.App/bin/${{ matrix.configuration }}/${{ matrix.platform }}/publish/
