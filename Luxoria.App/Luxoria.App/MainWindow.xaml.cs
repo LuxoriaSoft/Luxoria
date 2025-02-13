@@ -215,6 +215,7 @@ public sealed partial class MainWindow : Window
 
     private void LoadDefaultCollection()
     {
+        /*
         var openCollectionEvt = new OpenCollectionEvent("testCollection", "C:\\Users\\pastcque\\source\\repos\\LuxoriaSoft\\Luxoria\\assets\\BaseCollection");
 
         openCollectionEvt.OnEventCompleted += (_, _) =>
@@ -226,5 +227,6 @@ public sealed partial class MainWindow : Window
         {
             await _eventBus.Publish(openCollectionEvt);
         });
+        */
     }
 }

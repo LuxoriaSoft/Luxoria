@@ -2,7 +2,7 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <_LastSelectedProfileId>C:\Users\quentin\Code\%40dev\G-EIP-700-STG-7-1-eip-lucas.hoch-main\G-EIP-700-STG-7-1-eip-lucas.hoch-main\Luxoria.App\Luxoria.App\Properties\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
-    <ActiveDebugProfile>Luxoria.App (Package)</ActiveDebugProfile>
+    <ActiveDebugProfile>Luxoria.App (Unpackaged)</ActiveDebugProfile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
