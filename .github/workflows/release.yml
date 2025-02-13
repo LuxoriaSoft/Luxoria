@@ -57,20 +57,13 @@ jobs:
       # (debug) List the files in the publish folder
       - name: List the files in the publish folder
         run: ls -R ./Luxoria.App/Luxoria.App/bin
-
-      # Upload the app as an artifact
-      - name: Upload Luxoria.App as an artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Luxoria.App.$env:Configuration.$env:Platform
-          path: ./Luxoria.App/Luxoria.App/bin
       
       # Set a dynamic artifact name
       - name: Set artifact name
         run: echo "ARTIFACT_NAME=Luxoria.App.${{ matrix.configuration }}.${{ matrix.platform }}" >> $GITHUB_ENV
 
       # Upload the app as an artifact
-      - name: Upload the app
+      - name: Upload Luxoria.App as an artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARTIFACT_NAME }}
