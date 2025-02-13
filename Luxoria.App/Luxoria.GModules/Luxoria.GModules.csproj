@@ -9,12 +9,15 @@
     <OutputType>Library</OutputType>
   </PropertyGroup>
 
-    <PropertyGroup>
-      <WindowsPackageType>None</WindowsPackageType>
-      <WindowsSdkPackageVersion>10.0.26100.57</WindowsSdkPackageVersion>
-      <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-      <GenerateLibraryLayout>true</GenerateLibraryLayout>
-    </PropertyGroup>
+  <PropertyGroup>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsSdkPackageVersion>10.0.26100.57</WindowsSdkPackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' != 'true'">
+		<GenerateLibraryLayout>true</GenerateLibraryLayout>
+		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+	</PropertyGroup>
 
 	<ItemGroup>
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.1.240916" />
