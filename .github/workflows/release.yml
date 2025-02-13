@@ -49,3 +49,10 @@ jobs:
           Configuration: ${{ matrix.configuration }}
           Platform: ${{ matrix.platform }}
         working-directory: ./Luxoria.App
+
+      # Upload the app
+      - name: Upload the app
+        uses: actions/upload-artifact@v4
+        with:
+          name: Luxoria.App
+          path: ./Luxoria.App/bin/$env:Configuration/$env:Platform/publish/
