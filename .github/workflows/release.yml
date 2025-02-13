@@ -44,7 +44,7 @@ jobs:
 
       # Create the app by building and publishing the project
       - name: Create the app
-        run: msbuild $env:Solution_Name /t:Publish /p:Configuration=$env:Configuration /p:Platform=$env:Platform /p:PublishDir=/output
+        run: msbuild $env:Solution_Name /t:Publish /p:Configuration=$env:Configuration /p:Platform=$env:Platform
         env:
           Configuration: ${{ matrix.configuration }}
           Platform: ${{ matrix.platform }}
@@ -52,11 +52,11 @@ jobs:
 
       # (debug) List the files in the publish folder
       - name: List the files in the publish folder
-        run: ls -R /output
+        run: ls -R ./Luxoria.App/Luxoria.App/bin
 
       # Upload the app as an artifact
       - name: Upload the app
         uses: actions/upload-artifact@v4
         with:
           name: Luxoria.App
-          path: /output
+          path: ./Luxoria.App/Luxoria.App/bin
