@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - develop
+      - fix/release
       - release/*
 
 jobs:
@@ -18,6 +19,9 @@ jobs:
 
     env:
       Solution_Name: Luxoria.App.sln
+      Certificate_Name: "CN=Luxoria Signing Cert"
+      Pfx_File: "Luxoria.pfx"
+      Pfx_Password: "YourSecurePassword" # Change this to a secure value or store it in GitHub secrets
 
     steps:
       # Checkout the code from the repository
@@ -29,29 +33,29 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '9.x'  # Specify the .NET SDK version you are using
-      
-      # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
+
+      # Add MSBuild to the PATH
       - name: Setup MSBuild.exe
         uses: microsoft/setup-msbuild@v1.0.2
-      
-      # Restore the application to populate the obj folder with RuntimeIdentifiers
-      - name: Restore the application
+
+      # Restore dependencies
+      - name: Restore dependencies
         run: msbuild $env:Solution_Name /t:Restore /p:Configuration=$env:Configuration
         env:
           Configuration: ${{ matrix.configuration }}
         working-directory: ./Luxoria.App
-      
-      # Decode the base 64 encoded pfx and save the Signing_Certificate
-      - name: Decode the pfx
+
+      # Create a self-signed certificate
+      - name: Create Self-Signed Certificate
         run: |
-          $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.BASE64_ENCODED_PFX }}")
-          $certificatePath = "GitHubActionsWorkflow.pfx"
-          [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
-        working-directory: ./Luxoria.App
-      
-      # Create the app package by building and packaging the project
+          $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject "$env:Certificate_Name" -CertStoreLocation "Cert:\CurrentUser\My"
+          $certPassword = ConvertTo-SecureString -String "$env:Pfx_Password" -Force -AsPlainText
+          Export-PfxCertificate -Cert $cert -FilePath "$env:Pfx_File" -Password $certPassword
+        shell: pwsh
+
+      # Build and package the application
       - name: Create the app package
-        run: msbuild $env:Solution_Name /p:Configuration=$env:Configuration /p:Platform=$env:Platform /p:UapAppxPackageBuildMode=$env:Appx_Package_Build_Mode /p:AppxBundle=$env:Appx_Bundle /p:PackageCertificateKeyFile=GitHubActionsWorkflow.pfx /p:AppxPackageDir="$env:Appx_Package_Dir" /p:GenerateAppxPackageOnBuild=true
+        run: msbuild $env:Solution_Name /p:Configuration=$env:Configuration /p:Platform=$env:Platform /p:UapAppxPackageBuildMode=$env:Appx_Package_Build_Mode /p:AppxBundle=$env:Appx_Bundle /p:PackageCertificateKeyFile=$env:Pfx_File /p:AppxPackageDir="$env:Appx_Package_Dir" /p:GenerateAppxPackageOnBuild=true
         env:
           Appx_Bundle: Never
           Appx_Package_Build_Mode: SideloadOnly
@@ -59,12 +63,25 @@ jobs:
           Configuration: ${{ matrix.configuration }}
           Platform: ${{ matrix.platform }}
         working-directory: ./Luxoria.App
-      
+
+      # Sign the MSIX package using signtool
+      - name: Sign the MSIX package
+        run: |
+          & "C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe" sign /fd SHA256 /a /f "$env:Pfx_File" /p "$env:Pfx_Password" "Packages/Luxoria.App_1.0.0.0_x64.msix"
+        shell: pwsh
+
+      # Verify the signature
+      - name: Verify the signed package
+        run: |
+          & "C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe" verify /pa "Packages/Luxoria.App_1.0.0.0_x64.msix"
+        shell: pwsh
+
+      # Zip the signed app package
       - name: Zip the published app
         run: Compress-Archive -Path ./Luxoria.App/Luxoria.App/Packages -DestinationPath ./Luxoria.App.${{matrix.platform}}.zip
         shell: pwsh
-      
-      # Upload the published app
+
+      # Upload the signed MSIX package
       - name: Upload app
         uses: actions/upload-artifact@v4
         with:
