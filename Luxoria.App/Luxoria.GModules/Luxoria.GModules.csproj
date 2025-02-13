@@ -10,6 +10,7 @@
   </PropertyGroup>
 
     <PropertyGroup>
+      <WindowsPackageType>None</WindowsPackageType>
       <WindowsSdkPackageVersion>10.0.26100.57</WindowsSdkPackageVersion>
       <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
       <GenerateLibraryLayout>true</GenerateLibraryLayout>
