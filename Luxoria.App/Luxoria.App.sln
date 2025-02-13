@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luxoria.Modules.Tests", "Lu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luxoria.Core.Tests", "Luxoria.Core.Tests\Luxoria.Core.Tests.csproj", "{417447CF-93F5-41B1-B0E1-D8C443B67580}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luxoria.GModules", "Luxoria.GModules\Luxoria.GModules.csproj", "{339C1F86-FAF1-4A38-AC98-4036F4715B9D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -149,6 +151,22 @@ Global
 		{417447CF-93F5-41B1-B0E1-D8C443B67580}.Release|x64.Build.0 = Release|Any CPU
 		{417447CF-93F5-41B1-B0E1-D8C443B67580}.Release|x86.ActiveCfg = Release|Any CPU
 		{417447CF-93F5-41B1-B0E1-D8C443B67580}.Release|x86.Build.0 = Release|Any CPU
+		{339C1F86-FAF1-4A38-AC98-4036F4715B9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{339C1F86-FAF1-4A38-AC98-4036F4715B9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{339C1F86-FAF1-4A38-AC98-4036F4715B9D}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{339C1F86-FAF1-4A38-AC98-4036F4715B9D}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{339C1F86-FAF1-4A38-AC98-4036F4715B9D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{339C1F86-FAF1-4A38-AC98-4036F4715B9D}.Debug|x64.Build.0 = Debug|Any CPU
+		{339C1F86-FAF1-4A38-AC98-4036F4715B9D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{339C1F86-FAF1-4A38-AC98-4036F4715B9D}.Debug|x86.Build.0 = Debug|Any CPU
+		{339C1F86-FAF1-4A38-AC98-4036F4715B9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{339C1F86-FAF1-4A38-AC98-4036F4715B9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{339C1F86-FAF1-4A38-AC98-4036F4715B9D}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{339C1F86-FAF1-4A38-AC98-4036F4715B9D}.Release|ARM64.Build.0 = Release|Any CPU
+		{339C1F86-FAF1-4A38-AC98-4036F4715B9D}.Release|x64.ActiveCfg = Release|Any CPU
+		{339C1F86-FAF1-4A38-AC98-4036F4715B9D}.Release|x64.Build.0 = Release|Any CPU
+		{339C1F86-FAF1-4A38-AC98-4036F4715B9D}.Release|x86.ActiveCfg = Release|Any CPU
+		{339C1F86-FAF1-4A38-AC98-4036F4715B9D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

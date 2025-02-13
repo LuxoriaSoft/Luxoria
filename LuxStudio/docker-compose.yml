@@ -1,0 +1,32 @@
+version: '3.7'
+
+services:
+  luxdb:
+    image: postgres:17.2-alpine3.21
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
+    networks:
+      - luxnet
+    ports:
+      - 5432:5432
+    command: >
+      postgres -c 'hba_file=/var/lib/postgresql/data/pg_hba.conf'
+  
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - luxnet
+ 
+volumes:
+  pgdata:
+
+networks:
+  luxnet:

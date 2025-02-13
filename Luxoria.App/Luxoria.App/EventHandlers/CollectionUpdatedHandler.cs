@@ -1,4 +1,4 @@
-﻿using Luxoria.Modules.Models;
+using Luxoria.Modules.Models;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using System.Linq;

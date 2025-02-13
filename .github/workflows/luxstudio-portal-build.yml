@@ -1,0 +1,32 @@
+name: LuxStudio/Portal Build
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      # Checkout the repository
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      # Install node.js 20.X.X
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+      
+      # Install packages
+      - name: Install packages
+        run: npm install
+        working-directory: ./LuxStudio/portal
+      
+      # Build the project
+      - name: Build project
+        run: npm run build
+        working-directory: ./LuxStudio/portal
