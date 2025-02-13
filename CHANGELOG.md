@@ -1,3 +1,25 @@
+# [1.25.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.24.0...v1.25.0) (2025-02-13)
+
+
+### Bug Fixes
+
+* Code cleanup using visual studio profile 1 ([c0a4697](https://github.com/LuxoriaSoft/Luxoria/commit/c0a4697c56746879636390a9dc29d9747e43bcbd))
+* Collection Explorer carrousel ([13e76fd](https://github.com/LuxoriaSoft/Luxoria/commit/13e76fd0f863b23088abf7601e2a57c8b1977d7e))
+* Collection Explorer carrousel ([d43fe66](https://github.com/LuxoriaSoft/Luxoria/commit/d43fe66220715a2cc1d32d198390025df79d6fba))
+* Display flyout menu on click ([15b9f8b](https://github.com/LuxoriaSoft/Luxoria/commit/15b9f8bcda3d8721fe767e5c9a3bb694e21d5f0c))
+* SkiaSharp library ([5ebd5cf](https://github.com/LuxoriaSoft/Luxoria/commit/5ebd5cfff653573423b6322e37e504fea0dc5c6a))
+* Sliders in Editor pannel ([3853302](https://github.com/LuxoriaSoft/Luxoria/commit/3853302db5e4b7061be7098f6dd82b80cbfdd9bc))
+
+
+### Features
+
+* Backend behind Graphical Test Module XAML ([bc1162f](https://github.com/LuxoriaSoft/Luxoria/commit/bc1162fac220744f8c2621a030241e92ac46ac5c))
+* EXIFS metada pannel ([32f6a1b](https://github.com/LuxoriaSoft/Luxoria/commit/32f6a1ba9523d106f739c4c9d297abe1657b445b))
+* IModuleUI Integration ([699b91e](https://github.com/LuxoriaSoft/Luxoria/commit/699b91eb92a0956839a50f3bd46927c99f04b3ee))
+* Load component function ([203ed08](https://github.com/LuxoriaSoft/Luxoria/commit/203ed081208b3fa794580ab148c83e528448c4b3))
+* Module in panel integration ([0a503e9](https://github.com/LuxoriaSoft/Luxoria/commit/0a503e977f20357d4233380a5e591d32c0e15037))
+* Upgrade Modules SDK to include Windows SDK ([3d78906](https://github.com/LuxoriaSoft/Luxoria/commit/3d78906233d32a1078e3af6c469ba8f701acb1a0))
+
 # [1.24.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.23.0...v1.24.0) (2025-02-05)
 
 
