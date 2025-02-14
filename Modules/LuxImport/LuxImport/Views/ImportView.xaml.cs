@@ -10,6 +10,7 @@ using Microsoft.UI.Text;
 using Microsoft.UI.Xaml.Media;
 using CommunityToolkit.WinUI;
 using System.Reflection.Metadata;
+using LuxImport.Services;
 
 namespace LuxImport.Views
 {
@@ -19,6 +20,11 @@ namespace LuxImport.Views
         private readonly MainImportView _Parent;
         private StorageFolder? _selectedFolder;
 
+        /// <summary>
+        /// Constructor for the ImportView
+        /// </summary>
+        /// <param name="eventBus">Event bus for internal communications (IPC)</param>
+        /// <param name="parent">Parent view</param>
         public ImportView(IEventBus eventBus, MainImportView parent)
         {
             this.InitializeComponent();
@@ -32,6 +38,11 @@ namespace LuxImport.Views
             LoadRecentCollections();
         }
 
+        /// <summary>
+        /// Event handler for the Browse button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void BrowseFolder_Click(object sender, RoutedEventArgs e)
         {
             var tcs = new TaskCompletionSource<nint>();
@@ -48,10 +59,20 @@ namespace LuxImport.Views
             if (_selectedFolder != null)
             {
                 Debug.WriteLine($"Folder selected: {_selectedFolder.Path}");
+
+                if (ImportService.IsCollectionInitialized(_selectedFolder.Path))
+                {
+                    Debug.WriteLine("Collection already initialized.");
+                    _Parent.SetIndexicationView(_selectedFolder.Name, _selectedFolder.Path);
+                    return;
+                }
                 _Parent.SetPropertiesView(_selectedFolder.Path);
             }
         }
 
+        /// <summary>
+        /// Load recent collections into the RecentsList
+        /// </summary>
         private void LoadRecentCollections()
         {
             RecentsList.Children.Clear();
@@ -103,6 +124,11 @@ namespace LuxImport.Views
             RecentsList.Children.Add(button);
         }
 
+        /// <summary>
+        /// Event handler for selecting a recent collection
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="path"></param>
         private void OnRecentCollectionSelected(string name, string path)
         {
             Debug.WriteLine($"Recent Collection Selected: {name} - {path}");

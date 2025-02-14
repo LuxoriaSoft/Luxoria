@@ -318,5 +318,27 @@ namespace LuxImport.Services
             // Return the list of assets
             return concurrentAssets.ToList();
         }
+
+        /// <summary>
+        /// Checks if the collection is initialized.
+        /// If it is, returns true, otherwise false.
+        /// </summary>
+        /// <param name="collectionPath">Path from disk</param>
+        /// <returns>Retruns if the collection is initialized</returns>
+        public static bool IsCollectionInitialized(string collectionPath)
+        {
+            // Check if the collection path exists
+            if (!Directory.Exists(collectionPath))
+            {
+                return false;
+            }
+            // Check the root directory for the collection path
+            if (Directory.Exists(Path.Combine(collectionPath, ".lux")) &&
+                File.Exists(Path.Combine(collectionPath, ".lux", "manifest.json")))
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }
