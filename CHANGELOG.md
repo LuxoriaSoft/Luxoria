@@ -1,3 +1,28 @@
+# [1.27.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.26.0...v1.27.0) (2025-02-14)
+
+
+### Bug Fixes
+
+* Build system of LuxImport for Unpackaged Luxoria version ([8e41e60](https://github.com/LuxoriaSoft/Luxoria/commit/8e41e60bd82d326857fb21a74c3988811ffcf065))
+* Change view from ImportView when recentbutton is clicked ([00d0c14](https://github.com/LuxoriaSoft/Luxoria/commit/00d0c14d8bb2c0cc73fc909112e4e3d3f37bfc49))
+* Check if CollectionPath already initialized, if yes, goto Indexing View ([fbdc533](https://github.com/LuxoriaSoft/Luxoria/commit/fbdc53322a7d2b4f27315d181b924d5091e35ea5))
+* Unassign dialog.Content after dialog closed ([6595d5f](https://github.com/LuxoriaSoft/Luxoria/commit/6595d5ff4cd440e5efc004065ad1681d6e6761fa))
+
+
+### Features
+
+* Add a progress bar on MainImportView (X/3 steps) ([dc97b96](https://github.com/LuxoriaSoft/Luxoria/commit/dc97b9618a266528746c4ffec4b7987f6c361c72))
+* Add base of Importation modal (ImportView) ([1ec97e6](https://github.com/LuxoriaSoft/Luxoria/commit/1ec97e64c0077bc918eab735d63419e612904ea3))
+* Add basic layer for ImportView view ([7163528](https://github.com/LuxoriaSoft/Luxoria/commit/716352801ead84aa44a9728f4199b2b361074349))
+* Add first importation step dialog (1/3) ([f48c0b3](https://github.com/LuxoriaSoft/Luxoria/commit/f48c0b396c3c4f167aed51f22a0b182c5f6d9e04))
+* Add foundation for Importation views part 1/3, 2/3, 3/3 ([7b665bc](https://github.com/LuxoriaSoft/Luxoria/commit/7b665bcff7551c108c0648021379792fb503be6c))
+* Add RICollectionRepository system to handle the Recents Imported Collection list ([9c176fc](https://github.com/LuxoriaSoft/Luxoria/commit/9c176fc1193255e9d8f8c5d13b09fed874964815))
+* Add the Indexication Log viewer on Indexication view (3/3) ([e47182c](https://github.com/LuxoriaSoft/Luxoria/commit/e47182c45a82eb13875c65d1adc1786e3f65c845))
+* Create new buildsystem for LuxImport and Creation of LuxImport 1.0.2 ([4df8a00](https://github.com/LuxoriaSoft/Luxoria/commit/4df8a00c8f6d3abb5f9cd1ebfd4379ff42ba742e))
+* Create RequestWindowHandleEvent event to retreive Main Window Ptr ([f5a34f4](https://github.com/LuxoriaSoft/Luxoria/commit/f5a34f4ad66bc4425f290ac741afb89ee9267239))
+* Include Luxoria.SDK nuget instead of Luxoria.SDK.dll ([a6cee2f](https://github.com/LuxoriaSoft/Luxoria/commit/a6cee2f5e4e879bf763ecc7b4e8955d9ea85d996))
+* Update components on Properties view ([901fc21](https://github.com/LuxoriaSoft/Luxoria/commit/901fc2122ce19aafd7e7fb483e0733c7d4b5950c))
+
 # [1.26.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.25.0...v1.26.0) (2025-02-13)
 
 
