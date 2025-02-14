@@ -11,6 +11,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using WinRT.Interop;
 
 namespace Luxoria.App;
 
@@ -50,6 +51,7 @@ public sealed partial class MainWindow : Window
         // LoadComponents
         LoadComponents();
 
+        // Load the default collection
         LoadDefaultCollection();
     }
 
@@ -60,6 +62,9 @@ public sealed partial class MainWindow : Window
     {
         // Subscribe to events that will be published through the event bus
         _eventBus.Subscribe<CollectionUpdatedEvent>(_collectionUpdatedHandler.OnCollectionUpdated);
+
+        // Subscribe to the window handle request event
+        _eventBus.Subscribe<RequestWindowHandleEvent>(OnRequestWindowHandle);
     }
 
     /// <summmary>
@@ -70,7 +75,13 @@ public sealed partial class MainWindow : Window
     }
 
     /// <summary>
+    /// Displays a modal dialog with the specified content and title.
+    /// Ensures the content is properly detached when the dialog closes 
+    /// to prevent reusing issues in future dialogs.
     /// </summary>
+    /// <param name="content">The UI element to display inside the modal.</param>
+    /// <param name="title">The title of the modal dialog.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     private async Task ShowModalAsync(UIElement content, string title)
     {
         var dialog = new ContentDialog
@@ -79,6 +90,11 @@ public sealed partial class MainWindow : Window
             Content = content,
             CloseButtonText = "Close",
             XamlRoot = this.Content.XamlRoot
+        };
+
+        dialog.Closed += (_, _) =>
+        {
+            dialog.Content = null; // Manually remove content before reusing it
         };
 
         await dialog.ShowAsync();
@@ -95,7 +111,7 @@ public sealed partial class MainWindow : Window
         {
             Debug.WriteLine("Item: " + item.Name);
 
-            Action act = () =>
+            Action act = async () =>
             {
 
                 var button = item.IsLeftLocated ? MainMenu.GetLeftButton(item.Name) : MainMenu.GetRightButton(item.Name);
@@ -196,7 +212,7 @@ public sealed partial class MainWindow : Window
 
                             case GModules.SmartButtonType.Modal:
                                 var modalContent = gmodule.Value;
-                                ShowModalAsync(modalContent, item.Name).GetAwaiter().GetResult();
+                                await ShowModalAsync(modalContent, item.Name);
                                 break;
                         }
                     }
@@ -211,6 +227,13 @@ public sealed partial class MainWindow : Window
                 MainMenu.AddRightButton(item.Name, act);
             }
         }
+    }
+
+    private void OnRequestWindowHandle(RequestWindowHandleEvent e)
+    {
+        var handle = WindowNative.GetWindowHandle(this);
+        Debug.WriteLine($"/SENDING Window Handle: {handle}");
+        e.OnHandleReceived?.Invoke(handle); // Send back the handle
     }
 
     private void LoadDefaultCollection()

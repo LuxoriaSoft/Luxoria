@@ -2,14 +2,19 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+	<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
     <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+	
+	<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+	<GenerateLibraryLayout>true</GenerateLibraryLayout>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
     <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.14.0" />
+
+	<PackageReference Include="Luxoria.SDK" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,9 +24,6 @@
   <ItemGroup>
     <Reference Include="Luxoria.Modules">
       <HintPath>..\..\..\Luxoria.App\Luxoria.Modules\bin\Debug\net9.0\Luxoria.Modules.dll</HintPath>
-    </Reference>
-    <Reference Include="Luxoria.SDK">
-      <HintPath>..\..\..\Luxoria.App\Luxoria.Modules\bin\Debug\net9.0\Luxoria.SDK.dll</HintPath>
     </Reference>
   </ItemGroup>
 

@@ -54,8 +54,6 @@ namespace Luxoria.App.Services
                 module.Initialize(_eventBus, context, _logger);
                 if (module is IModuleUI moduleGUI)
                 {
-                    _logger.Log("Hello i'm a module named: " + moduleGUI.Name);
-
                     Debug.WriteLine(moduleGUI.Items);
                 }
             }

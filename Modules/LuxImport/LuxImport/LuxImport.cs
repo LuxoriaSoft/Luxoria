@@ -1,14 +1,18 @@
 ﻿using LuxImport.Interfaces;
 using LuxImport.Services;
+using LuxImport.Views;
+using Luxoria.GModules;
+using Luxoria.GModules.Interfaces;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
+using Microsoft.UI.Xaml.Controls;
 using System.Diagnostics;
 
 namespace LuxImport;
 
-public class LuxImport : IModule
+public class LuxImport : IModule, IModuleUI
 {
     private IEventBus? _eventBus;
     private IModuleContext? _context;
@@ -16,7 +20,12 @@ public class LuxImport : IModule
 
     public string Name => "LuxImport";
     public string Description => "Generic Luxoria Importation Module";
-    public string Version => "1.0.1";
+    public string Version => "1.0.2";
+
+    /// <summary>
+    /// The list of menu bar items to be added to the main menu bar.
+    /// </summary>
+    public List<ILuxMenuBarItem> Items { get; set; } = new List<ILuxMenuBarItem>();
 
     /// <summary>
     /// Initializes the module with the provided EventBus and ModuleContext.
@@ -32,6 +41,16 @@ public class LuxImport : IModule
 
         // Subscribe to mandatory events with an async handler
         _eventBus.Subscribe<OpenCollectionEvent>(HandleOnOpenCollectionAsync);
+
+        // Add a menu bar item to the main menu bar
+        List<ISmartButton> smartButtons = new List<ISmartButton>();
+        Dictionary<SmartButtonType, Page> page = new Dictionary<SmartButtonType, Page>
+        {
+            { SmartButtonType.Modal, new MainImportView(_eventBus) }
+        };
+
+        smartButtons.Add(new SmartButton("Import", "ImportDialog", page));
+        Items.Add(new LuxMenuBarItem("Import", true, new Guid(), smartButtons));
     }
 
     /// <summary>
