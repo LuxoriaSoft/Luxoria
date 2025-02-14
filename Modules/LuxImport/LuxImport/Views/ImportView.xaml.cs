@@ -1,16 +1,15 @@
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using System.Diagnostics;
-using Windows.Storage.Pickers;
-using Windows.Storage;
-using WinRT.Interop;
+using LuxImport.Interfaces;
+using LuxImport.Repositories;
+using LuxImport.Services;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 using Microsoft.UI.Text;
-using Microsoft.UI.Xaml.Media;
-using CommunityToolkit.WinUI;
-using System.Reflection.Metadata;
-using LuxImport.Services;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using System.Diagnostics;
+using Windows.Storage;
+using Windows.Storage.Pickers;
+using WinRT.Interop;
 
 namespace LuxImport.Views
 {
@@ -76,11 +75,11 @@ namespace LuxImport.Views
         private void LoadRecentCollections()
         {
             RecentsList.Children.Clear();
-            AddToRecents("Example Collection 1", "C:\\Photos\\Collection1");
-            AddToRecents("Example Collection 2", "C:\\Documents\\Collection2");
-            AddToRecents("Example Collection 3", "D:\\Work\\Collection3");
-            AddToRecents("Example Collection 4", "D:\\Work\\Collection3");
-            AddToRecents("Example Collection 5", "D:\\Work\\Collection3");
+
+            foreach (var collection in _Parent.RICollectionRepository.GetXLatestImportedCollections(10))
+            {
+                AddToRecents(collection.Name, collection.Path);
+            }
         }
 
         private void AddToRecents(string name, string path)

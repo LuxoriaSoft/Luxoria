@@ -1,18 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
+using LuxImport.Interfaces;
+using LuxImport.Repositories;
 using Luxoria.Modules.Interfaces;
+using Microsoft.UI.Xaml.Controls;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -24,11 +13,24 @@ namespace LuxImport.Views
     /// </summary>
     public sealed partial class MainImportView : Page
     {
+        /// <summary>
+        /// Event Bus
+        /// </summary>
         private readonly IEventBus _eventBus;
 
+        /// <summary>
+        /// Recent Imported Collection Repository
+        /// </summary>
+        public readonly IRICollectionRepository RICollectionRepository;
+
+        /// <summary>
+        /// Constructor for the MainImportView
+        /// </summary>
+        /// <param name="eventBus">Communication system (IPC)</param>
         public MainImportView(IEventBus eventBus)
         {
             _eventBus = eventBus;
+            RICollectionRepository = new RICollectionRepository();
 
             this.InitializeComponent();
 
