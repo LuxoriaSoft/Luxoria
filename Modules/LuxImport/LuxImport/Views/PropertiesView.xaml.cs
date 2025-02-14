@@ -28,6 +28,12 @@ namespace LuxImport.Views
         private readonly MainImportView _Parent;
         private readonly string _collectionPath;
 
+        /// <summary>
+        /// Constructor for the PropertiesView
+        /// </summary>
+        /// <param name="eventBus">Event bus for internal communications</param>
+        /// <param name="mainImportView">Parent view</param>
+        /// <param name="collectionPath">Collection path from disk</param>
         public PropertiesView(IEventBus eventBus, MainImportView mainImportView, string collectionPath)
         {
             _eventBus = eventBus;
@@ -35,6 +41,39 @@ namespace LuxImport.Views
             _collectionPath = collectionPath;
 
             this.InitializeComponent();
+        }
+
+        /// <summary>
+        /// Event handler for the Cancel button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            _Parent.EntryPoint();
+        }
+
+        /// <summary>
+        /// Event handler for the Create button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CreateButton_Click(object sender, RoutedEventArgs e)
+        {
+            string collectionName = CollectionNameTextBox.Text;
+
+            if (string.IsNullOrWhiteSpace(collectionName))
+            {
+                // Show error message
+                ErrorTextBlock.Visibility = Visibility.Visible;
+                return;
+            }
+
+            // Hide error message if input is valid
+            ErrorTextBlock.Visibility = Visibility.Collapsed;
+
+            // Go to the indexication view
+            _Parent.SetIndexicationView(collectionName, _collectionPath);
         }
     }
 }
