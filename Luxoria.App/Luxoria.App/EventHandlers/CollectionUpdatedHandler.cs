@@ -39,15 +39,13 @@ public class CollectionUpdatedHandler
         var toast = new ToastNotification(toastXml);
         ToastNotificationManager.CreateToastNotifier("Luxoria").Show(toast);
 
+        /*
         for (int i = 0; i < body.Assets.Count; i++)
         {
             ImageData imageData = body.Assets.ElementAt(i).Data;
-            _loggerService.Log($"Asset {i}: {body.Assets.ElementAt(i).MetaData.Id}");
-            _loggerService.Log($"Asset info {i} : {imageData.Height}x{imageData.Width}, pixels : {imageData.Height * imageData.Width}, exif : {imageData.EXIF}");
-            foreach (var exifEntry in imageData.EXIF)
-            {
-                _loggerService.Log($"EXIF {exifEntry.Key} : {exifEntry.Value}");
-            }
+            //_loggerService.Log($"Asset {i}: {body.Assets.ElementAt(i).MetaData.Id}");
+            //_loggerService.Log($"Asset info {i} : {imageData.Height}x{imageData.Width}, pixels : {imageData.Height * imageData.Width}, exif : {imageData.EXIF}");
         }
+        */
     }
 }
