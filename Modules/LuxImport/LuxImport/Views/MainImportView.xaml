@@ -10,7 +10,20 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
+        <!-- Define rows: ContentPresenter takes most of the space, progress bar stays at the bottom -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <!-- ContentPresenter fills remaining space -->
+            <RowDefinition Height="Auto" />
+            <!-- Progress bar stays at bottom -->
+        </Grid.RowDefinitions>
+
         <!-- ContentPresenter to dynamically swap pages -->
-        <ContentPresenter x:Name="ModalContent" />
+        <ContentPresenter x:Name="ModalContent" Grid.Row="0" VerticalAlignment="Stretch" />
+
+        <!-- Progress Bar -->
+        <StackPanel Grid.Row="1" Margin="10,10,10,10">
+            <ProgressBar x:Name="StepProgressBar" Minimum="1" Maximum="3" Value="1" Height="10"/>
+        </StackPanel>
     </Grid>
 </Page>

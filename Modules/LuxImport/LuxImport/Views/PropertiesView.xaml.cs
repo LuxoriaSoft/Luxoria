@@ -40,6 +40,9 @@ namespace LuxImport.Views
             _Parent = mainImportView;
             _collectionPath = collectionPath;
 
+            // Modal Properties
+            Width = 500;
+
             this.InitializeComponent();
         }
 

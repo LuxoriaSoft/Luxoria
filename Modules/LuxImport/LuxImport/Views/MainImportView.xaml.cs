@@ -42,16 +42,25 @@ namespace LuxImport.Views
         public void SetImportView()
         {
             ModalContent.Content = new ImportView(_eventBus, this);
+            UpdateProgress(1);
         }
 
         public void SetPropertiesView(string collectionPath)
         {
             ModalContent.Content = new PropertiesView(_eventBus, this, collectionPath);
+            UpdateProgress(2);
         }
 
         public void SetIndexicationView(string collectionName, string collectionPath)
         {
             ModalContent.Content = new IndexicationView(_eventBus, this, collectionName, collectionPath);
+            UpdateProgress(3);
         }
+
+        private void UpdateProgress(int step)
+        {
+            StepProgressBar.Value = step;
+        }
+
     }
 }
