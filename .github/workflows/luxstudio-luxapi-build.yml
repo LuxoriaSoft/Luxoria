@@ -1,0 +1,32 @@
+name: LuxStudio/LuxAPI Build
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+    
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: Restore LuxAPI nuget packages
+        run: dotnet restore LuxAPI/LuxAPI.csproj
+        working-directory: ./LuxStudio/LuxAPI
+      
+      - name: Build LuxAPI project
+        run: dotnet build --no-restore LuxAPI/LuxAPI.csproj --configuration Release
+        working-directory: ./LuxStudio/LuxAPI
+      
+      - name: Publish LuxAPI project
+        run: dotnet publish --no-restore --no-build LuxAPI/LuxAPI.csproj --configuration Release
+        working-directory: ./LuxStudio/LuxAPI

@@ -121,7 +121,10 @@ public static class ImageDataHelper
     /// </summary>
     private static SKBitmap ApplyExifOrientation(SKBitmap bitmap, SKEncodedOrigin origin)
     {
-        if (bitmap == null || origin == SKEncodedOrigin.TopLeft)
+        if (bitmap == null)
+            throw new ArgumentNullException(nameof(bitmap));
+
+        if (origin == SKEncodedOrigin.TopLeft)
             return bitmap; // No transformation needed
 
         // Determine new dimensions based on rotation

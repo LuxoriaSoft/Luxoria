@@ -11,3 +11,4 @@ obj
 .editorconfig
 .env
 *.log
+/assets/BaseCollection

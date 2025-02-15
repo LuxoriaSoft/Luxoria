@@ -1,3 +1,92 @@
+# [1.27.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.26.0...v1.27.0) (2025-02-14)
+
+
+### Bug Fixes
+
+* Build system of LuxImport for Unpackaged Luxoria version ([8e41e60](https://github.com/LuxoriaSoft/Luxoria/commit/8e41e60bd82d326857fb21a74c3988811ffcf065))
+* Change view from ImportView when recentbutton is clicked ([00d0c14](https://github.com/LuxoriaSoft/Luxoria/commit/00d0c14d8bb2c0cc73fc909112e4e3d3f37bfc49))
+* Check if CollectionPath already initialized, if yes, goto Indexing View ([fbdc533](https://github.com/LuxoriaSoft/Luxoria/commit/fbdc53322a7d2b4f27315d181b924d5091e35ea5))
+* Unassign dialog.Content after dialog closed ([6595d5f](https://github.com/LuxoriaSoft/Luxoria/commit/6595d5ff4cd440e5efc004065ad1681d6e6761fa))
+
+
+### Features
+
+* Add a progress bar on MainImportView (X/3 steps) ([dc97b96](https://github.com/LuxoriaSoft/Luxoria/commit/dc97b9618a266528746c4ffec4b7987f6c361c72))
+* Add base of Importation modal (ImportView) ([1ec97e6](https://github.com/LuxoriaSoft/Luxoria/commit/1ec97e64c0077bc918eab735d63419e612904ea3))
+* Add basic layer for ImportView view ([7163528](https://github.com/LuxoriaSoft/Luxoria/commit/716352801ead84aa44a9728f4199b2b361074349))
+* Add first importation step dialog (1/3) ([f48c0b3](https://github.com/LuxoriaSoft/Luxoria/commit/f48c0b396c3c4f167aed51f22a0b182c5f6d9e04))
+* Add foundation for Importation views part 1/3, 2/3, 3/3 ([7b665bc](https://github.com/LuxoriaSoft/Luxoria/commit/7b665bcff7551c108c0648021379792fb503be6c))
+* Add RICollectionRepository system to handle the Recents Imported Collection list ([9c176fc](https://github.com/LuxoriaSoft/Luxoria/commit/9c176fc1193255e9d8f8c5d13b09fed874964815))
+* Add the Indexication Log viewer on Indexication view (3/3) ([e47182c](https://github.com/LuxoriaSoft/Luxoria/commit/e47182c45a82eb13875c65d1adc1786e3f65c845))
+* Create new buildsystem for LuxImport and Creation of LuxImport 1.0.2 ([4df8a00](https://github.com/LuxoriaSoft/Luxoria/commit/4df8a00c8f6d3abb5f9cd1ebfd4379ff42ba742e))
+* Create RequestWindowHandleEvent event to retreive Main Window Ptr ([f5a34f4](https://github.com/LuxoriaSoft/Luxoria/commit/f5a34f4ad66bc4425f290ac741afb89ee9267239))
+* Include Luxoria.SDK nuget instead of Luxoria.SDK.dll ([a6cee2f](https://github.com/LuxoriaSoft/Luxoria/commit/a6cee2f5e4e879bf763ecc7b4e8955d9ea85d996))
+* Update components on Properties view ([901fc21](https://github.com/LuxoriaSoft/Luxoria/commit/901fc2122ce19aafd7e7fb483e0733c7d4b5950c))
+
+# [1.26.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.25.0...v1.26.0) (2025-02-13)
+
+
+### Bug Fixes
+
+* Rename artifact using matrix.platform to Luxoria.App.xARCH ([902a93e](https://github.com/LuxoriaSoft/Luxoria/commit/902a93e6b204bb987fb671d310e03369047c59e3))
+* Update artifact upload name to include configuration and platform ([f00babb](https://github.com/LuxoriaSoft/Luxoria/commit/f00babb92d668ba975552404aefb040890545a6c))
+
+
+### Features
+
+* Add feat/unpackaged-version branch to release workflow ([9aed874](https://github.com/LuxoriaSoft/Luxoria/commit/9aed874ac784438dfe37e7ecd09a9da35f4baa23))
+* Add upload step for Luxoria.App in release workflow ([269a2cb](https://github.com/LuxoriaSoft/Luxoria/commit/269a2cbc03aa41f3aecdf176460653ac29c41ae9))
+
+# [1.25.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.24.0...v1.25.0) (2025-02-13)
+
+
+### Bug Fixes
+
+* Code cleanup using visual studio profile 1 ([c0a4697](https://github.com/LuxoriaSoft/Luxoria/commit/c0a4697c56746879636390a9dc29d9747e43bcbd))
+* Collection Explorer carrousel ([13e76fd](https://github.com/LuxoriaSoft/Luxoria/commit/13e76fd0f863b23088abf7601e2a57c8b1977d7e))
+* Collection Explorer carrousel ([d43fe66](https://github.com/LuxoriaSoft/Luxoria/commit/d43fe66220715a2cc1d32d198390025df79d6fba))
+* Display flyout menu on click ([15b9f8b](https://github.com/LuxoriaSoft/Luxoria/commit/15b9f8bcda3d8721fe767e5c9a3bb694e21d5f0c))
+* SkiaSharp library ([5ebd5cf](https://github.com/LuxoriaSoft/Luxoria/commit/5ebd5cfff653573423b6322e37e504fea0dc5c6a))
+* Sliders in Editor pannel ([3853302](https://github.com/LuxoriaSoft/Luxoria/commit/3853302db5e4b7061be7098f6dd82b80cbfdd9bc))
+
+
+### Features
+
+* Backend behind Graphical Test Module XAML ([bc1162f](https://github.com/LuxoriaSoft/Luxoria/commit/bc1162fac220744f8c2621a030241e92ac46ac5c))
+* EXIFS metada pannel ([32f6a1b](https://github.com/LuxoriaSoft/Luxoria/commit/32f6a1ba9523d106f739c4c9d297abe1657b445b))
+* IModuleUI Integration ([699b91e](https://github.com/LuxoriaSoft/Luxoria/commit/699b91eb92a0956839a50f3bd46927c99f04b3ee))
+* Load component function ([203ed08](https://github.com/LuxoriaSoft/Luxoria/commit/203ed081208b3fa794580ab148c83e528448c4b3))
+* Module in panel integration ([0a503e9](https://github.com/LuxoriaSoft/Luxoria/commit/0a503e977f20357d4233380a5e591d32c0e15037))
+* Upgrade Modules SDK to include Windows SDK ([3d78906](https://github.com/LuxoriaSoft/Luxoria/commit/3d78906233d32a1078e3af6c469ba8f701acb1a0))
+
+# [1.24.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.23.0...v1.24.0) (2025-02-05)
+
+
+### Bug Fixes
+
+* Correct formatting and style in HelloWorld.vue ([1dc7292](https://github.com/LuxoriaSoft/Luxoria/commit/1dc7292127f44c9da6b0c9dfd3f4a40a32cba18d))
+
+
+### Features
+
+* Add base of SSO ([02a1844](https://github.com/LuxoriaSoft/Luxoria/commit/02a184423d5f077a19f1afc033003242ddf186f1))
+* Add Dashboard component with authentication guard and logout functionality ([7e6c316](https://github.com/LuxoriaSoft/Luxoria/commit/7e6c31661d462e52504291814ac125119e447ec3))
+* Add Docker configuration and initialization scripts for Luxoria database ([c99de0d](https://github.com/LuxoriaSoft/Luxoria/commit/c99de0d6b64fb87048cfdbed843382ce927a3047))
+* Add DTOs for user login, registration, and refresh token requests; implement TokenService for secure token generation and comment in code ([110ce25](https://github.com/LuxoriaSoft/Luxoria/commit/110ce259fe48ba3df76bdc100c480385c566b7ab))
+* Add EF connection to LuxAPI ([8a9e395](https://github.com/LuxoriaSoft/Luxoria/commit/8a9e3957372087028284b8380387dd5c9bb14d3e))
+* Add GitHub Actions workflow for LuxAPI build process ([981ee30](https://github.com/LuxoriaSoft/Luxoria/commit/981ee300872e40fddc10f3cbb8417f6218aecc56))
+* Add initial implementation of LuxAPI ([b552d7c](https://github.com/LuxoriaSoft/Luxoria/commit/b552d7cdb54f646ec5ea69f118306bffb0706c33))
+* Add TailwindCSS + DaisyUI on LuxStudio Portal ([2b54396](https://github.com/LuxoriaSoft/Luxoria/commit/2b5439693a01bafd24b15ee684850dcf52621089))
+* Add UserId to AuthorizationCode model and implement SSO authorization view ([bf5d767](https://github.com/LuxoriaSoft/Luxoria/commit/bf5d767ae6c0ab1756435d1eeb2298c527262e4f))
+* Enhance JWT token generation with user ID and add WhoAmI endpoint for user info retrieval ([1579f96](https://github.com/LuxoriaSoft/Luxoria/commit/1579f96d2be1fff4c00b94a8cc1c5895df7fbfe8))
+* Implement authentication with login and registration views, add router, and configure CORS ([3d539c9](https://github.com/LuxoriaSoft/Luxoria/commit/3d539c96c67d1052ddd507668898af1173c6b59e))
+* Implement JWT authentication and configure Swagger for API security ([799c33b](https://github.com/LuxoriaSoft/Luxoria/commit/799c33bb9a19a695c7e1ae838a0abd6a14d17f8b))
+* Increase token field size to TEXT for AccessToken and RefreshToken in Token model ([9a1e2f3](https://github.com/LuxoriaSoft/Luxoria/commit/9a1e2f3a1d7681356d927eea639539076d6d3b33))
+* Initialize Vue 3 + TypeScript + Vite project with basic structure and configuration ([909aace](https://github.com/LuxoriaSoft/Luxoria/commit/909aacea9840b210ed99978c44fc2f8130ad807c))
+* Refactor Token model to use UserId and add RefreshToken model with related functionality ([96e9634](https://github.com/LuxoriaSoft/Luxoria/commit/96e9634dc6c0240c8412eaaf58830c5ccb4fc594))
+* Update models to use required properties for better validation; adjust nullable types where necessary ([83f82bf](https://github.com/LuxoriaSoft/Luxoria/commit/83f82bf2c09fbc2a28bd6fa290bd4d4c6b9066a5))
+* Update package dependencies and add Vue type definitions; enhance router token handling ([73350d5](https://github.com/LuxoriaSoft/Luxoria/commit/73350d5fe46cd602f304ee92e03950589f8ff18e))
+
 # [1.23.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.22.0...v1.23.0) (2025-02-05)
 
 

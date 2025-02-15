@@ -1,6 +1,7 @@
 ﻿using Luxoria.Modules.Interfaces;
+using System.Collections.Generic;
 
-namespace Luxoria.Core.Interfaces
+namespace Luxoria.App.Interfaces
 {
     public interface IModuleService
     {
