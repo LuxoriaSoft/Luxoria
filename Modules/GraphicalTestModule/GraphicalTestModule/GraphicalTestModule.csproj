@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>GraphicalTestModule</RootNamespace>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <UseWinUI>true</UseWinUI>
+	<Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <WindowsSdkPackageVersion>10.0.26100.57</WindowsSdkPackageVersion>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <GenerateLibraryLayout>true</GenerateLibraryLayout>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="BlankPage1.xaml" />
+  </ItemGroup>
+
+	<ItemGroup>
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250108002" />
+  </ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="Luxoria.GModules">
+	    <HintPath>..\..\..\Luxoria.App\Luxoria.GModules\bin\Debug\net9.0-windows10.0.26100.0\Luxoria.GModules.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Luxoria.Modules">
+	    <HintPath>..\..\..\Luxoria.App\Luxoria.Modules\bin\Debug\net9.0\Luxoria.Modules.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Luxoria.SDK">
+	    <HintPath>..\..\..\Luxoria.App\Luxoria.Modules\bin\Debug\net9.0\Luxoria.SDK.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+	
+  <ItemGroup>
+    <Page Update="BlankPage1.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Page>
+  </ItemGroup>
+</Project>

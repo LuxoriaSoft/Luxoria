@@ -1,4 +1,4 @@
-using Luxoria.Core.Interfaces;
+using Luxoria.App.Interfaces;
 using Luxoria.Modules;
 using Luxoria.Modules.Interfaces;
 using Microsoft.UI.Xaml;
