@@ -70,9 +70,9 @@ namespace LuxFilter.Services
         /// Compute scores for a collection of BitmapWithSize objects
         /// </summary>
         /// <param name="bitmaps">Bitmap gateways</param>
-        /// <returns>Return a list which contains each score of each bitmap</returns>
+        /// <returns>Return a collection which contains each score of each bitmap</returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public async Task<List<(Guid, double)>> Compute(IEnumerable<(Guid, SKBitmap)> bitmaps)
+        public async Task<ICollection<(Guid, Dictionary<string, double>)>> Compute(IEnumerable<(Guid, SKBitmap)> bitmaps)
         {
             // Check if there are algorithms in the workflow
             if (_workflow == null || !_workflow.Any())
@@ -88,7 +88,7 @@ namespace LuxFilter.Services
             var indexedBitmaps = bitmaps.ToList();
 
             // Concurrent dictionary to store results
-            var results = new ConcurrentDictionary<Guid, double>();
+            var results = new ConcurrentDictionary<Guid, Dictionary<string, double>>();
 
             // Execute pipeline asynchronously
             await Task.Run(() =>
@@ -96,14 +96,15 @@ namespace LuxFilter.Services
                 Parallel.ForEach(indexedBitmaps, indexedBitmap =>
                 {
                     var (guid, bitmap) = indexedBitmap;
-                    double fscore = 0;
+                    // Create a dict to store [ALGO_NAME, SCORE]
+                    Dictionary<string, double> scores = [];
 
                     foreach (var step in _workflow)
                     {
                         IFilterAlgorithm algorithm = step.Item1;
                         double weight = step.Item2;
 
-                        _logger.Log($"Executing algorithm: [{algorithm.Name}] (w={weight}) (thrd={Thread.CurrentThread.ManagedThreadId})...");
+                        //_logger.Log($"Executing algorithm: [{algorithm.Name}] (w={weight}) (thrd={Thread.CurrentThread.ManagedThreadId})...");
 
                         try
                         {
@@ -113,10 +114,10 @@ namespace LuxFilter.Services
                             DateTime endingTime = DateTime.Now;
                             TimeSpan executionTime = endingTime - startingTime;
 
-                            _logger.Log($"Score for algorithm [{algorithm.Name}] on bitmap: {score}, time consumed: ({executionTime.TotalSeconds:F2})s");
+                            //_logger.Log($"Score for algorithm [{algorithm.Name}] on bitmap: {score}, time consumed: ({executionTime.TotalSeconds:F2})s");
 
-                            // Accumulate weighted score
-                            fscore += score * weight;
+                            // Store score for the algorithm
+                            scores.Add(algorithm.Name, score);
                         }
                         catch (Exception ex)
                         {
@@ -125,8 +126,9 @@ namespace LuxFilter.Services
                     }
 
                     // Store final score for the bitmap
+                    var fscore = scores.Sum(kvp => kvp.Value);
                     _logger.Log($"Final score for bitmap with Guid {guid}: {fscore}");
-                    results.TryAdd(guid, fscore);
+                    results.TryAdd(guid, scores);
                     // Raise OnScoreComputed event
                     OnScoreComputed?.Invoke(this, (guid, fscore));  // Trigger the OnScoreComputed event
                 });
@@ -139,8 +141,8 @@ namespace LuxFilter.Services
             // Raise OnPipelineFinished event
             OnPipelineFinished?.Invoke(this, totalTime);  // Trigger the OnPipelineFinished event
 
-            // Return results as a list of tuples with Guid and the corresponding score, ordered by Guid
-            return results.OrderBy(kvp => kvp.Key).Select(kvp => (kvp.Key, kvp.Value)).ToList();
+            // Return a list that contains a tuple of Guid and Dictionary<string, double>
+            return [.. results.Select(kvp => (kvp.Key, kvp.Value))];
         }
     }
 }

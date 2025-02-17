@@ -54,18 +54,23 @@ pipeline.OnPipelineFinished += (sender, args) =>
 };
 
 // Compute scores for the collection of bitmaps
-IEnumerable<(Guid, double)> scores = await pipeline.Compute(new List<(Guid, SKBitmap)>
-{
+IEnumerable<(Guid, Dictionary<string, double>)> scores = await pipeline.Compute(
+[
     (Guid.NewGuid(), image),
     (Guid.NewGuid(), image2),
     (Guid.NewGuid(), image3)
-});
+]);
 
 int index = 1;
 foreach (var finalScore in scores)
 {
     // Log the final score for each bitmap, including both the Guid and the score
-    loggerService.Log($"Final score for image {index++} (Guid: {finalScore.Item1}): {finalScore.Item2}");
+    loggerService.Log($"Final score for image {index++} (Guid: {finalScore.Item1}): {finalScore.Item2.Keys.Count} key(s)");
+    // Display the dictionary of scores for each bitmap
+    foreach (var score in finalScore.Item2)
+    {
+        loggerService.Log($"[+]\t{score.Key}\t:\t{score.Value}");
+    }
 }
 
 
