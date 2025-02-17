@@ -1,3 +1,10 @@
+# [1.29.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.28.0...v1.29.0) (2025-02-17)
+
+
+### Features
+
+* Update Dependabot configuration to target the develop branch for all package ecosystems ([cd4e29a](https://github.com/LuxoriaSoft/Luxoria/commit/cd4e29a0d6fb33c2b3f17aed2335ae1870f4da9b))
+
 # [1.28.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.27.0...v1.28.0) (2025-02-17)
 
 
