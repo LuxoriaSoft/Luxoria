@@ -1,3 +1,11 @@
+# [1.28.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.27.0...v1.28.0) (2025-02-17)
+
+
+### Features
+
+* Add Dependabot configuration for automated dependency updates ([2917a6a](https://github.com/LuxoriaSoft/Luxoria/commit/2917a6a1923dfcf21da9c2af354772ebb676585e))
+* Update Dependabot configuration to include commit message prefixes and scope ([5cbf086](https://github.com/LuxoriaSoft/Luxoria/commit/5cbf08695faaad833bfa63fc44364835e918c0c3))
+
 # [1.27.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.26.0...v1.27.0) (2025-02-14)
 
 
