@@ -16,6 +16,10 @@ using WinRT.Interop;
 
 namespace Luxoria.App
 {
+    /// <summary>
+    /// The main application window that handles UI initialization, event subscriptions, 
+    /// and module-based component loading.
+    /// </summary>
     public sealed partial class MainWindow : Window
     {
         private readonly IEventBus _eventBus;
@@ -27,6 +31,13 @@ namespace Luxoria.App
         private readonly ImageUpdatedHandler _imageUpdatedHandler;
         private readonly CollectionUpdatedHandler _collectionUpdatedHandler;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MainWindow"/> class.
+        /// </summary>
+        /// <param name="eventBus">Event bus for handling global events.</param>
+        /// <param name="loggerService">Service for logging application activity.</param>
+        /// <param name="moduleService">Service for managing modules.</param>
+        /// <param name="uiService">Service for managing UI modules.</param>
         public MainWindow(IEventBus eventBus, ILoggerService loggerService, IModuleService moduleService, IModuleUIService uiService)
         {
             InitializeComponent();
@@ -40,16 +51,23 @@ namespace Luxoria.App
             _collectionUpdatedHandler = new CollectionUpdatedHandler(_loggerService);
 
             InitializeEventBus();
-
             LoadComponents();
         }
 
+        /// <summary>
+        /// Subscribes to necessary events for the application.
+        /// </summary>
         private void InitializeEventBus()
         {
             _eventBus.Subscribe<CollectionUpdatedEvent>(_collectionUpdatedHandler.OnCollectionUpdated);
             _eventBus.Subscribe<RequestWindowHandleEvent>(OnRequestWindowHandle);
         }
 
+        /// <summary>
+        /// Displays a modal dialog with the specified content and title.
+        /// </summary>
+        /// <param name="content">The UI element to display in the modal.</param>
+        /// <param name="title">The title of the modal dialog.</param>
         private async Task ShowModalAsync(UIElement content, string title)
         {
             var dialog = new ContentDialog
@@ -60,11 +78,15 @@ namespace Luxoria.App
                 XamlRoot = this.Content.XamlRoot
             };
 
-            dialog.Closed += (_, _) => dialog.Content = null; // Prevent reuse issues
+            // Prevent reuse issues
+            dialog.Closed += (_, _) => dialog.Content = null;
 
             await dialog.ShowAsync();
         }
 
+        /// <summary>
+        /// Loads UI components from registered modules and attaches buttons to the menu.
+        /// </summary>
         private void LoadComponents()
         {
             foreach (var item in _moduleService.GetModules().OfType<IModuleUI>().SelectMany(m => m.Items))
@@ -87,6 +109,10 @@ namespace Luxoria.App
             }
         }
 
+        /// <summary>
+        /// Handles the click event for menu buttons and determines whether to show a flyout menu or load a smart button directly.
+        /// </summary>
+        /// <param name="item">The menu item associated with the button.</param>
         private async Task HandleButtonClickAsync(ILuxMenuBarItem item)
         {
             var button = item.IsLeftLocated ? MainMenu.GetLeftButton(item.Name) : MainMenu.GetRightButton(item.Name);
@@ -106,6 +132,11 @@ namespace Luxoria.App
             }
         }
 
+        /// <summary>
+        /// Attaches a flyout menu to a button containing multiple smart button options.
+        /// </summary>
+        /// <param name="button">The UI element to attach the flyout menu to.</param>
+        /// <param name="item">The menu item containing multiple smart buttons.</param>
         private void AttachFlyoutMenu(UIElement button, ILuxMenuBarItem item)
         {
             if (button is not FrameworkElement frameworkElement) return;
@@ -123,6 +154,10 @@ namespace Luxoria.App
             FlyoutBase.ShowAttachedFlyout(frameworkElement);
         }
 
+        /// <summary>
+        /// Handles the click event for an individual smart button and loads the corresponding UI element.
+        /// </summary>
+        /// <param name="smartButton">The smart button that was clicked.</param>
         private async Task HandleSmartButtonClick(SmartButton smartButton)
         {
             foreach (var (key, value) in smartButton.Pages)
@@ -136,7 +171,7 @@ namespace Luxoria.App
                 switch (key)
                 {
                     case SmartButtonType.Window:
-                        new Microsoft.UI.Xaml.Window { Content = value }.Activate();
+                        new Window { Content = value }.Activate();
                         break;
                     case SmartButtonType.LeftPanel:
                         LeftPanelContent.Content = value;
@@ -157,6 +192,10 @@ namespace Luxoria.App
             }
         }
 
+        /// <summary>
+        /// Handles the request for the window handle and returns it via the event.
+        /// </summary>
+        /// <param name="e">The event containing the request for the window handle.</param>
         private void OnRequestWindowHandle(RequestWindowHandleEvent e)
         {
             var handle = WindowNative.GetWindowHandle(this);
