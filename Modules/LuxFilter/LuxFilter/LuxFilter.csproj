@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>LuxFilter</RootNamespace>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
@@ -12,6 +12,10 @@
 	<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 	<GenerateLibraryLayout>true</GenerateLibraryLayout>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Views\FilterView.xaml" />
+  </ItemGroup>
 	
 	
   <ItemGroup>
@@ -34,6 +38,17 @@
     <Reference Include="Luxoria.Modules">
       <HintPath>..\..\..\Luxoria.App\Luxoria.GModules\bin\Debug\net9.0-windows10.0.26100.0\Luxoria.Modules.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+	<None Remove="Views\FilterView.xaml"></None>	
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Views\FilterView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Page>
   </ItemGroup>
   
 </Project>

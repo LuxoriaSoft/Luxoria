@@ -1,9 +1,11 @@
+using Luxoria.GModules.Interfaces;
 using Luxoria.Modules.Interfaces;
 using Luxoria.SDK.Interfaces;
+using System.Collections.Generic;
 
 namespace LuxFilter;
 
-public class LuxFilter : IModule
+public class LuxFilter : IModule, IModuleUI
 {
     private IEventBus _eventBus;
     private IModuleContext _context;
@@ -14,6 +16,11 @@ public class LuxFilter : IModule
     public string Version => "1.0.0";
 
     private const string CATEGORY = nameof(LuxFilter);
+
+    /// <summary>
+    /// The list of menu bar items to be added to the main menu bar.
+    /// </summary>
+    public List<ILuxMenuBarItem> Items { get; set; } = [];
 
     /// <summary>
     /// Initializes the module with the provided EventBus and ModuleContext.
