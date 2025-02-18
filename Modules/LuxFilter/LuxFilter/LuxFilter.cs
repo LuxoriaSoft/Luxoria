@@ -1,9 +1,15 @@
-﻿using Luxoria.Modules.Interfaces;
+using LuxFilter.Views;
+using Luxoria.GModules;
+using Luxoria.GModules.Interfaces;
+using Luxoria.Modules.Interfaces;
 using Luxoria.SDK.Interfaces;
+using Microsoft.UI.Xaml.Controls;
+using System;
+using System.Collections.Generic;
 
 namespace LuxFilter;
 
-public class LuxFilter : IModule
+public class LuxFilter : IModule, IModuleUI
 {
     private IEventBus _eventBus;
     private IModuleContext _context;
@@ -16,6 +22,11 @@ public class LuxFilter : IModule
     private const string CATEGORY = nameof(LuxFilter);
 
     /// <summary>
+    /// The list of menu bar items to be added to the main menu bar.
+    /// </summary>
+    public List<ILuxMenuBarItem> Items { get; set; } = [];
+
+    /// <summary>
     /// Initializes the module with the provided EventBus and ModuleContext.
     /// </summary>
     /// <param name="eventBus">The event bus for publishing and subscribing to events.</param>
@@ -25,6 +36,16 @@ public class LuxFilter : IModule
         _eventBus = eventBus;
         _context = context;
         _logger = logger;
+
+        // Add a menu bar item to the main menu bar.
+        List<ISmartButton> smartButtons = [];
+        Dictionary<SmartButtonType, Page> page = new()
+        {
+            { SmartButtonType.MainPanel, new FilterView() }
+        };
+
+        smartButtons.Add(new SmartButton("Filter", "Filter", page));
+        Items.Add(new LuxMenuBarItem("Filter", false, new Guid(), smartButtons));
 
         _logger?.Log("LuxFilter module initialized.", CATEGORY);
     }

@@ -2,6 +2,7 @@
 using Luxoria.GModules.Interfaces;
 using Luxoria.Modules.Interfaces;
 using Luxoria.SDK.Interfaces;
+using Luxoria.SDK.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -44,6 +45,7 @@ namespace Luxoria.App.Services
 
         public void InitializeModules(IModuleContext context)
         {
+            _logger.Log("Initializing Modules...", "ModuleService", LogLevel.Info);
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context), "ModuleContext cannot be null");
@@ -51,10 +53,11 @@ namespace Luxoria.App.Services
 
             foreach (IModule module in _modules)
             {
+                _logger.Log($"[+] Initializing Module: {module.Name}...", "ModuleService", LogLevel.Info);
                 module.Initialize(_eventBus, context, _logger);
-                if (module is IModuleUI moduleGUI)
+                if (module is IModuleUI)
                 {
-                    Debug.WriteLine(moduleGUI.Items);
+                    _logger.Log($"[->]: UI Module Detected: {module.Name}...", "ModuleService", LogLevel.Info);
                 }
             }
         }

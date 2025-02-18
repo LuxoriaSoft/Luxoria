@@ -1,4 +1,4 @@
-﻿using SkiaSharp;
+﻿using Luxoria.Modules.Models;
 
 namespace LuxFilter.Algorithms.Interfaces;
 
@@ -17,5 +17,5 @@ public interface IFilterAlgorithm
     /// <summary>
     /// Execute the algorithm
     /// </summary>
-    double Compute(SKBitmap bitmap, int height, int width);
+    double Compute(ImageData data);
 }
