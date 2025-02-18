@@ -1,9 +1,11 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using LuxFilter.Services;
+using Luxoria.Modules.Models;
 using Luxoria.SDK.Models;
 using Luxoria.SDK.Services;
 using Luxoria.SDK.Services.Targets;
+using Microsoft.Diagnostics.Tracing.Parsers.Symbol;
 using SkiaSharp;
 
 var loggerService = new LoggerService(LogLevel.Debug, new DebugLogTarget());
@@ -56,9 +58,9 @@ pipeline.OnPipelineFinished += (sender, args) =>
 // Compute scores for the collection of bitmaps
 IEnumerable<(Guid, Dictionary<string, double>)> scores = await pipeline.Compute(
 [
-    (Guid.NewGuid(), image),
-    (Guid.NewGuid(), image2),
-    (Guid.NewGuid(), image3)
+    (Guid.NewGuid(), new ImageData(image, FileExtension.UNKNOWN)),
+    (Guid.NewGuid(), new ImageData(image, FileExtension.UNKNOWN)),
+    (Guid.NewGuid(), new ImageData(image, FileExtension.UNKNOWN))
 ]);
 
 int index = 1;

@@ -1,5 +1,5 @@
 ﻿using LuxFilter.Algorithms.Interfaces;
-using SkiaSharp;
+using Luxoria.Modules.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -21,7 +21,7 @@ public interface IPipelineService
     /// <summary>
     /// Compute scores for a collection of BitmapWithSize objects
     /// </summary>
-    Task<ICollection<(Guid, Dictionary<string, double>)>> Compute(IEnumerable<(Guid, SKBitmap)> bitmaps);
+    Task<ICollection<(Guid, Dictionary<string, double>)>> Compute(IEnumerable<(Guid, ImageData)> bitmaps);
 
     /// <summary>
     /// Event handler when the pipeline has finished computing scores

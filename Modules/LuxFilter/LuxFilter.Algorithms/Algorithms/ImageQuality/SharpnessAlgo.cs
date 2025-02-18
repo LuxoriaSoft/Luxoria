@@ -1,5 +1,6 @@
 ﻿using LuxFilter.Algorithms.Interfaces;
 using LuxFilter.Algorithms.Utils;
+using Luxoria.Modules.Models;
 using SkiaSharp;
 
 namespace LuxFilter.Algorithms.ImageQuality;
@@ -34,9 +35,9 @@ public class SharpnessAlgo : IFilterAlgorithm
     /// <param name="height">The height of the image.</param>
     /// <param name="width">The width of the image.</param>
     /// <returns>Returns the computed sharpness score.</returns>
-    public double Compute(SKBitmap bitmap, int height, int width)
+    public double Compute(ImageData data)
     {
-        using SKBitmap grayScaleBitmap = ImageProcessing.ConvertBitmapToGrayscale(bitmap); // Convert the image to grayscale.
+        using SKBitmap grayScaleBitmap = ImageProcessing.ConvertBitmapToGrayscale(data.Bitmap); // Convert the image to grayscale.
         using SKBitmap laplacianBitmap = ApplyLaplacianKernel(grayScaleBitmap); // Apply the Laplacian kernel to highlight edges.
         return ComputeVariance(laplacianBitmap); // Calculate the variance of the resulting image as the sharpness score.
     }

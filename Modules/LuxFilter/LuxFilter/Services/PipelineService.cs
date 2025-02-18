@@ -1,5 +1,6 @@
 ﻿using LuxFilter.Algorithms.Interfaces;
 using LuxFilter.Interfaces;
+using Luxoria.Modules.Models;
 using Luxoria.SDK.Interfaces;
 using SkiaSharp;
 using System;
@@ -76,7 +77,7 @@ public class PipelineService : IPipelineService
     /// <param name="bitmaps">Bitmap gateways</param>
     /// <returns>Return a collection which contains each score of each bitmap</returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public async Task<ICollection<(Guid, Dictionary<string, double>)>> Compute(IEnumerable<(Guid, SKBitmap)> bitmaps)
+    public async Task<ICollection<(Guid, Dictionary<string, double>)>> Compute(IEnumerable<(Guid, ImageData)> bitmaps)
     {
         // Check if there are algorithms in the workflow
         if (_workflow == null || !_workflow.Any())
@@ -99,7 +100,7 @@ public class PipelineService : IPipelineService
         {
             Parallel.ForEach(indexedBitmaps, indexedBitmap =>
             {
-                var (guid, bitmap) = indexedBitmap;
+                var (guid, data) = indexedBitmap;
                 // Create a dict to store [ALGO_NAME, SCORE]
                 Dictionary<string, double> scores = [];
 
@@ -114,7 +115,7 @@ public class PipelineService : IPipelineService
                     {
                         // Measure algorithm execution time
                         DateTime startingTime = DateTime.Now;
-                        var score = algorithm.Compute(bitmap, bitmap.Height, bitmap.Width);
+                        var score = algorithm.Compute(data);
                         DateTime endingTime = DateTime.Now;
                         TimeSpan executionTime = endingTime - startingTime;
 
