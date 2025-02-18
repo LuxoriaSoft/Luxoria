@@ -55,7 +55,7 @@ namespace Luxoria.App.Services
             {
                 _logger.Log($"[+] Initializing Module: {module.Name}...", "ModuleService", LogLevel.Info);
                 module.Initialize(_eventBus, context, _logger);
-                if (module is IModuleUI moduleGUI)
+                if (module is IModuleUI)
                 {
                     _logger.Log($"[->]: UI Module Detected: {module.Name}...", "ModuleService", LogLevel.Info);
                 }
