@@ -1,51 +1,39 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-	<TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-	<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-	<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
-	<UseWinUI>true</UseWinUI>
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>LuxFilter</RootNamespace>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <UseWinUI>true</UseWinUI>
   </PropertyGroup>
 
   <PropertyGroup>
-	<WindowsSdkPackageVersion>10.0.26100.57</WindowsSdkPackageVersion>
+    <WindowsSdkPackageVersion>10.0.26100.57</WindowsSdkPackageVersion>
 	<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 	<GenerateLibraryLayout>true</GenerateLibraryLayout>
   </PropertyGroup>
-
+	
+	
   <ItemGroup>
-    <Compile Remove="Filters\**" />
-    <Compile Remove="Repositories\**" />
-    <Compile Remove="Utils\**" />
-    <EmbeddedResource Remove="Filters\**" />
-    <EmbeddedResource Remove="Repositories\**" />
-    <EmbeddedResource Remove="Utils\**" />
-    <None Remove="Filters\**" />
-    <None Remove="Repositories\**" />
-    <None Remove="Utils\**" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250205002" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="SkiaSharp" Version="3.116.1" />
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\LuxFilter.Algorithms\LuxFilter.Algorithms.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Luxoria.Modules">
-      <HintPath>..\..\..\Luxoria.App\Luxoria.Modules\bin\Debug\net9.0\Luxoria.Modules.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
+	<PackageReference Include="SkiaSharp" Version="3.116.1" />
 	<PackageReference Include="Luxoria.SDK" Version="1.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Luxoria.GModules">
+      <HintPath>..\..\..\Luxoria.App\Luxoria.GModules\bin\Debug\net9.0-windows10.0.26100.0\Luxoria.GModules.dll</HintPath>
+    </Reference>
+    <Reference Include="Luxoria.Modules">
+      <HintPath>..\..\..\Luxoria.App\Luxoria.GModules\bin\Debug\net9.0-windows10.0.26100.0\Luxoria.Modules.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  
 </Project>

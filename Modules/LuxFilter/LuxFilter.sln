@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35514.174
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuxFilter", "LuxFilter\LuxFilter.csproj", "{FBAF4C46-F5BF-43FF-9543-A85FD5268FDD}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuxFilter.Algorithms", "LuxFilter.Algorithms\LuxFilter.Algorithms.csproj", "{A5DBCC83-4228-4DAB-8F58-A928B67D26F9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuxFilter.TestMain", "LuxFilter.TestMain\LuxFilter.TestMain.csproj", "{BFB9EC1B-F792-41C6-990F-C507C0F91B08}"
@@ -12,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuxFilter.Tests", "LuxFilter.Tests\LuxFilter.Tests.csproj", "{BE7E6522-F51F-4319-B8C4-E07A2B45777B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuxFilter.Benchmark", "LuxFilter.Benchmark\LuxFilter.Benchmark.csproj", "{353EA237-9047-4B88-99F3-7BD64C6B7FC8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuxFilter", "LuxFilter\LuxFilter.csproj", "{805C6ECA-D845-435B-A1C4-239D469A9100}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,8 +39,15 @@ Global
 		{353EA237-9047-4B88-99F3-7BD64C6B7FC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{353EA237-9047-4B88-99F3-7BD64C6B7FC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{353EA237-9047-4B88-99F3-7BD64C6B7FC8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{805C6ECA-D845-435B-A1C4-239D469A9100}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{805C6ECA-D845-435B-A1C4-239D469A9100}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{805C6ECA-D845-435B-A1C4-239D469A9100}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{805C6ECA-D845-435B-A1C4-239D469A9100}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7936A0CC-3E3B-41DF-B9BB-85B64F181E63}
 	EndGlobalSection
 EndGlobal

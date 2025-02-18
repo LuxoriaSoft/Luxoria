@@ -14,6 +14,8 @@
     <PackageReference Include="SkiaSharp" Version="3.116.1" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+	  
+	<PackageReference Include="Luxoria.SDK" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,9 +26,6 @@
   <ItemGroup>
     <Reference Include="Luxoria.Modules">
       <HintPath>..\..\..\Luxoria.App\Luxoria.Modules\bin\Debug\net9.0\Luxoria.Modules.dll</HintPath>
-    </Reference>
-    <Reference Include="Luxoria.SDK">
-      <HintPath>..\..\..\Luxoria.App\Luxoria.Modules\bin\Debug\net9.0\Luxoria.SDK.dll</HintPath>
     </Reference>
   </ItemGroup>
 

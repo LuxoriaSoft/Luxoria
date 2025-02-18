@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LuxFilter.Algorithms\LuxFilter.Algorithms.csproj" />
-    <ProjectReference Include="..\LuxFilter\LuxFilter.csproj" />
+    <ProjectReference Include="..\LuxFilter\LuxFilter.A.csproj" />
   </ItemGroup>
 
 </Project>

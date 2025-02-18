@@ -1,4 +1,4 @@
-﻿using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Interfaces;
 using Luxoria.SDK.Interfaces;
 
 namespace LuxFilter;
