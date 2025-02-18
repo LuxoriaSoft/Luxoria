@@ -72,9 +72,3 @@ foreach (var finalScore in scores)
         loggerService.Log($"[+]\t{score.Key}\t:\t{score.Value}");
     }
 }
-
-
-var algo = new LuxFilter.Algorithms.PerceptualMetrics.BrisqueAlgo();
-loggerService.Log($"Brisque score for image 1: {algo.Compute(image, image.Height, image.Width)}");
-loggerService.Log($"Brisque score for image 2: {algo.Compute(image2, image.Height, image.Width)}");
-loggerService.Log($"Brisque score for image 3: {algo.Compute(image3, image.Height, image.Width)}");
