@@ -5,7 +5,6 @@ using Luxoria.Modules.Models;
 using Luxoria.SDK.Models;
 using Luxoria.SDK.Services;
 using Luxoria.SDK.Services.Targets;
-using Microsoft.Diagnostics.Tracing.Parsers.Symbol;
 using SkiaSharp;
 
 var loggerService = new LoggerService(LogLevel.Debug, new DebugLogTarget());
@@ -19,7 +18,7 @@ pipeline
     .AddAlgorithm(new LuxFilter.Algorithms.PerceptualMetrics.BrisqueAlgo(), 0.1);
 
 // Get the root directory of the application
-string? baseDirectory = Directory.GetParent(AppContext.BaseDirectory)?.Parent?.Parent?.Parent?.Parent?.FullName;
+string? baseDirectory = Directory.GetParent(AppContext.BaseDirectory)?.Parent?.Parent?.Parent?.Parent?.Parent?.FullName;
 
 // Ensure the base directory is not null
 if (string.IsNullOrEmpty(baseDirectory))
@@ -55,13 +54,17 @@ pipeline.OnPipelineFinished += (sender, args) =>
     loggerService.Log("Pipeline finished time consumed: " + args);
 };
 
+loggerService.Log("Computing scores...");
+
 // Compute scores for the collection of bitmaps
 IEnumerable<(Guid, Dictionary<string, double>)> scores = await pipeline.Compute(
 [
-    (Guid.NewGuid(), new ImageData(image, FileExtension.UNKNOWN)),
-    (Guid.NewGuid(), new ImageData(image, FileExtension.UNKNOWN)),
-    (Guid.NewGuid(), new ImageData(image, FileExtension.UNKNOWN))
+    (Guid.NewGuid(), new(image, FileExtension.UNKNOWN)),
+    (Guid.NewGuid(), new(image2, FileExtension.UNKNOWN)),
+    (Guid.NewGuid(), new (image3, FileExtension.UNKNOWN))
 ]);
+
+loggerService.Log("Scores computed !");
 
 int index = 1;
 foreach (var finalScore in scores)
