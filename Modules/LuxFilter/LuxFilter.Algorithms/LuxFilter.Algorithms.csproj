@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Luxoria.Algorithm.BrisqueScore" Version="2.0.0.4100" />
+    <PackageReference Include="Luxoria.Algorithm.BrisqueScore" Version="3.0.2.4100" />
     <PackageReference Include="SkiaSharp" Version="3.116.1" />
   </ItemGroup>
 

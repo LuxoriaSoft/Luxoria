@@ -1,3 +1,4 @@
+using LuxFilter.Services;
 using LuxFilter.Views;
 using Luxoria.GModules;
 using Luxoria.GModules.Interfaces;
@@ -7,6 +8,7 @@ using Luxoria.SDK.Interfaces;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LuxFilter;
 
@@ -15,6 +17,8 @@ public class LuxFilter : IModule, IModuleUI
     private IEventBus _eventBus;
     private IModuleContext _context;
     private ILoggerService _logger;
+
+    private readonly FilterService _filterService = new();
 
     public string Name => "LuxFilter";
     public string Description => "Generic Luxoria Filtering Module";
@@ -61,18 +65,8 @@ public class LuxFilter : IModule, IModuleUI
     {
         _eventBus.Subscribe<FilterCatalogEvent>(e =>
         {
-            var filters = new List<(string Name, string Description, string Version)>
-            {
-                ("Brisque", "Assesses image quality based on natural scene statistics", "1.0"),
-                ("Sharpness", "Measures the clarity and detail of the image", "1.2"),
-                ("Contrast", "Analyzes the differences in light and dark areas", "1.1"),
-                ("Brightness", "Adjusts the overall lightness of the image", "1.3"),
-                ("Color Balance", "Corrects color imbalances in an image", "1.4")
-            };
-
-            e.Response.SetResult(filters); // Send the filters back
+            e.Response.SetResult([.. _filterService.Catalog.Select(x => (x.Key, x.Value.Description, "1.0"))]);
         });
-
     }
 
     /// <summary>
