@@ -1,55 +1,83 @@
+using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Models.Events;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace LuxFilter.Views
 {
     public sealed partial class FilterView : Page
     {
-        public ObservableCollection<FilterItem> Filters { get; set; } = new()
-        {
-            new FilterItem("Brisque"),
-            new FilterItem("Sharpness"),
-            new FilterItem("Contrast"),
-            new FilterItem("Brightness"),
-            new FilterItem("Color Balance")
-        };
+        private readonly IEventBus _eventBus;
+        private readonly MainFilterView _parent;
 
-        public FilterView()
+        public ObservableCollection<FilterItem> Filters { get; set; } = new();
+
+        public FilterView(IEventBus eventBus, MainFilterView parent)
         {
-            this.InitializeComponent();
+            _eventBus = eventBus;
+            _parent = parent;
+
+            this.InitializeComponent(); // Ensure UI is initialized first
+
+            LoadFiltersCollection();
         }
 
+        private async void LoadFiltersCollection()
+        {
+            try
+            {
+                var filterEvent = new FilterCatalogEvent();
+
+                // Publish the event and wait for a response
+                await _eventBus.Publish(filterEvent);
+                var receivedFilters = await filterEvent.Response.Task; // Wait for the response
+
+                if (receivedFilters is null || receivedFilters.Count == 0)
+                {
+                    Debug.WriteLine("No filters received.");
+                    return;
+                }
+
+                Debug.WriteLine($"Received {receivedFilters.Count} filters.");
+
+                // Ensure UI updates happen on the main thread
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    Filters.Clear();
+                    foreach (var (name, description, version) in receivedFilters)
+                    {
+                        Filters.Add(new FilterItem(name, description, version));
+                    }
+                    Debug.WriteLine($"Loaded {Filters.Count} filters.");
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading filters: {ex.Message}");
+            }
+        }
+
+
+        /// <summary>
+        /// Event handler for the Apply Filters button
+        /// </summary>
         private void OnApplyFiltersClicked(object sender, RoutedEventArgs e)
         {
             var selectedFilters = Filters.Where(f => f.IsSelected).ToList();
-
             if (selectedFilters.Count == 0)
             {
-                ContentDialog noSelectionDialog = new()
-                {
-                    Title = "No Filters Selected",
-                    Content = "Please select at least one filter before applying.",
-                    CloseButtonText = "OK",
-                    XamlRoot = this.XamlRoot
-                };
-                _ = noSelectionDialog.ShowAsync();
+                Debug.WriteLine("No filters selected. Please select at least one filter.");
                 return;
             }
 
-            // TODO: Apply selected filters with their weights
             string selectedFiltersText = string.Join(", ", selectedFilters.Select(f => $"{f.Name} ({f.Weight:F1})"));
-
-            ContentDialog confirmationDialog = new()
-            {
-                Title = "Filters Applied",
-                Content = $"Applying: {selectedFiltersText}",
-                CloseButtonText = "OK",
-                XamlRoot = this.XamlRoot
-            };
-            _ = confirmationDialog.ShowAsync();
+            Debug.WriteLine($"Applying Filters: {selectedFiltersText}");
         }
     }
 
@@ -60,15 +88,20 @@ namespace LuxFilter.Views
         private bool _isSelected;
         private double _weight;
 
-        public string Name { get; set; }
+        public string Name { get; }
+        public string Description { get; }
+        public string Version { get; }
 
         public bool IsSelected
         {
             get => _isSelected;
             set
             {
-                _isSelected = value;
-                OnPropertyChanged(nameof(IsSelected));
+                if (_isSelected != value)
+                {
+                    _isSelected = value;
+                    OnPropertyChanged(nameof(IsSelected));
+                }
             }
         }
 
@@ -77,24 +110,27 @@ namespace LuxFilter.Views
             get => _weight;
             set
             {
-                _weight = value;
-                OnPropertyChanged(nameof(Weight));
-                OnPropertyChanged(nameof(FormattedWeight));
+                if (_weight != value)
+                {
+                    _weight = value;
+                    OnPropertyChanged(nameof(Weight));
+                    OnPropertyChanged(nameof(FormattedWeight));
+                }
             }
         }
 
         public string FormattedWeight => Weight.ToString("0.0");
 
-        public FilterItem(string name)
+        public FilterItem(string name, string description, string version)
         {
             Name = name;
+            Description = description;
+            Version = version;
             IsSelected = false;
             Weight = 0.5; // Default weight
         }
 
-        private void OnPropertyChanged(string propertyName)
-        {
+        private void OnPropertyChanged(string propertyName) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
     }
 }

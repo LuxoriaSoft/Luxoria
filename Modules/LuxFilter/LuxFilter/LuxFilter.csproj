@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <None Remove="Views\FilterView.xaml" />
+    <None Remove="Views\MainFilterView.xaml" />
   </ItemGroup>
 	
 	
@@ -42,6 +43,13 @@
 
   <ItemGroup>
 	<None Remove="Views\FilterView.xaml"></None>	
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Views\MainFilterView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>
