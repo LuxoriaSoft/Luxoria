@@ -7,7 +7,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace LuxFilter.Views
 {
@@ -36,7 +35,7 @@ namespace LuxFilter.Views
 
                 // Publish the event and wait for a response
                 await _eventBus.Publish(filterEvent);
-                var receivedFilters = await filterEvent.Response.Task; // Wait for the response
+                var receivedFilters = await filterEvent.Response.Task;
 
                 if (receivedFilters is null || receivedFilters.Count == 0)
                 {
