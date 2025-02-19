@@ -109,7 +109,7 @@ public class PipelineService : IPipelineService
                     IFilterAlgorithm algorithm = step.Item1;
                     double weight = step.Item2;
 
-                    _logger.Log($"Executing algorithm: [{algorithm.Name}] (w={weight}) (thrd={Thread.CurrentThread.ManagedThreadId})...");
+                    //_logger.Log($"Executing algorithm: [{algorithm.Name}] (w={weight}) (thrd={Thread.CurrentThread.ManagedThreadId})...");
 
                     try
                     {
@@ -119,7 +119,7 @@ public class PipelineService : IPipelineService
                         DateTime endingTime = DateTime.Now;
                         TimeSpan executionTime = endingTime - startingTime;
 
-                        _logger.Log($"Score for algorithm [{algorithm.Name}] on bitmap: {score}, time consumed: ({executionTime.TotalSeconds:F2})s");
+                        //_logger.Log($"Score for algorithm [{algorithm.Name}] on bitmap: {score}, time consumed: ({executionTime.TotalSeconds:F2})s");
 
                         // Store score for the algorithm
                         scores.Add(algorithm.Name, score);
@@ -132,7 +132,7 @@ public class PipelineService : IPipelineService
 
                 // Store final score for the bitmap
                 var fscore = scores.Sum(kvp => kvp.Value);
-                _logger.Log($"Final score for bitmap with Guid {guid}: {fscore}");
+                //_logger.Log($"Final score for bitmap with Guid {guid}: {fscore}");
                 results.TryAdd(guid, scores);
                 // Raise OnScoreComputed event
                 OnScoreComputed?.Invoke(this, (guid, fscore));  // Trigger the OnScoreComputed event
