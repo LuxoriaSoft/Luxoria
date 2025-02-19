@@ -5,13 +5,12 @@ using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Luxoria.App.Services
 {
     public class ModuleService : IModuleService
     {
-        private readonly List<IModule> _modules = new List<IModule>();
+        private readonly List<IModule> _modules = [];
         private readonly IEventBus _eventBus;
         private readonly ILoggerService _logger;
 
