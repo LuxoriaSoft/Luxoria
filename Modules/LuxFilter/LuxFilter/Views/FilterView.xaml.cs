@@ -1,5 +1,8 @@
+using LuxFilter.Interfaces;
+using LuxFilter.Services;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
+using Luxoria.SDK.Interfaces;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
@@ -13,16 +16,18 @@ namespace LuxFilter.Views
     public sealed partial class FilterView : Page
     {
         private readonly IEventBus _eventBus;
+        private readonly ILoggerService _logger;
         private readonly MainFilterView _parent;
 
-        public ObservableCollection<FilterItem> Filters { get; set; } = new();
+        public ObservableCollection<FilterItem> Filters { get; set; } = [];
 
-        public FilterView(IEventBus eventBus, MainFilterView parent)
+        public FilterView(IEventBus eventBus, ILoggerService logger, MainFilterView parent)
         {
             _eventBus = eventBus;
+            _logger = logger;
             _parent = parent;
 
-            this.InitializeComponent(); // Ensure UI is initialized first
+            this.InitializeComponent();
 
             LoadFiltersCollection();
         }
@@ -39,11 +44,11 @@ namespace LuxFilter.Views
 
                 if (receivedFilters is null || receivedFilters.Count == 0)
                 {
-                    Debug.WriteLine("No filters received.");
+                    _logger.Log("No filters received.");
                     return;
                 }
 
-                Debug.WriteLine($"Received {receivedFilters.Count} filters.");
+                _logger.Log($"Received {receivedFilters.Count} filters.");
 
                 // Ensure UI updates happen on the main thread
                 DispatcherQueue.TryEnqueue(() =>
@@ -53,30 +58,32 @@ namespace LuxFilter.Views
                     {
                         Filters.Add(new FilterItem(name, description, version));
                     }
-                    Debug.WriteLine($"Loaded {Filters.Count} filters.");
+                    _logger.Log($"Loaded {Filters.Count} filters.");
                 });
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error loading filters: {ex.Message}");
+                _logger.Log($"Error loading filters: {ex.Message}");
             }
         }
 
 
-        /// <summary>
-        /// Event handler for the Apply Filters button
-        /// </summary>
         private void OnApplyFiltersClicked(object sender, RoutedEventArgs e)
         {
             var selectedFilters = Filters.Where(f => f.IsSelected).ToList();
             if (selectedFilters.Count == 0)
             {
-                Debug.WriteLine("No filters selected. Please select at least one filter.");
                 return;
             }
 
-            string selectedFiltersText = string.Join(", ", selectedFilters.Select(f => $"{f.Name} ({f.Weight:F1})"));
-            Debug.WriteLine($"Applying Filters: {selectedFiltersText}");
+            IPipelineService pipeline = new PipelineService(_logger);
+
+            foreach (var filter in selectedFilters)
+            {
+                pipeline.AddAlgorithm(FilterService.Catalog[filter.Name], filter.Weight);
+            }
+
+            _parent.SetStatusView(pipeline);
         }
     }
 

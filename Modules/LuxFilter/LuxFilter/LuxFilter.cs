@@ -18,8 +18,6 @@ public class LuxFilter : IModule, IModuleUI
     private IModuleContext _context;
     private ILoggerService _logger;
 
-    private readonly FilterService _filterService = new();
-
     public string Name => "LuxFilter";
     public string Description => "Generic Luxoria Filtering Module";
     public string Version => "1.0.0";
@@ -49,7 +47,7 @@ public class LuxFilter : IModule, IModuleUI
         List<ISmartButton> smartButtons = [];
         Dictionary<SmartButtonType, Page> page = new()
         {
-            { SmartButtonType.Modal, new MainFilterView(_eventBus) }
+            { SmartButtonType.Modal, new MainFilterView(_eventBus, _logger) }
         };
 
         smartButtons.Add(new SmartButton("Filter", "Filter", page));
@@ -65,7 +63,7 @@ public class LuxFilter : IModule, IModuleUI
     {
         _eventBus.Subscribe<FilterCatalogEvent>(e =>
         {
-            e.Response.SetResult([.. _filterService.Catalog.Select(x => (x.Key, x.Value.Description, "1.0"))]);
+            e.Response.SetResult([.. FilterService.Catalog.Select(x => (x.Key, x.Value.Description, "1.0"))]);
         });
     }
 
