@@ -80,13 +80,22 @@ namespace LuxFilter.Views
         }
     }
 
-    public class FilterItem : INotifyPropertyChanged
+    /// <summary>
+    /// FilterItem class to represent a filter in the UI
+    /// </summary>
+    public partial class FilterItem : INotifyPropertyChanged
     {
+        /// <summary>
+        /// PropertyChanged event handler
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
 
         private bool _isSelected;
         private double _weight;
 
+        /// <summary>
+        /// Public properties for the FilterItem
+        /// </summary>
         public string Name { get; }
         public string Description { get; }
         public string Version { get; }

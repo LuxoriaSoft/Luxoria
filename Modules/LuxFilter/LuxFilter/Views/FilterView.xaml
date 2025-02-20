@@ -12,8 +12,7 @@
         <StackPanel Spacing="15">
             <TextBlock Text="Select Filters" FontSize="20" FontWeight="Bold"/>
 
-            <ListView ItemsSource="{x:Bind Filters, Mode=OneWay}" SelectionMode="None"
-                      BorderThickness="1" BorderBrush="Gray" Padding="5">
+            <ListView ItemsSource="{x:Bind Filters, Mode=OneWay}" SelectionMode="None" Padding="5">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="local:FilterItem">
                         <Grid Padding="5">

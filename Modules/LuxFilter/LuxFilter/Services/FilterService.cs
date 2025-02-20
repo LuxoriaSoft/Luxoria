@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
-
 namespace LuxFilter.Services;
 
 public class FilterService
