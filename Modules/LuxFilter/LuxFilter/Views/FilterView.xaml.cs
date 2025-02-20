@@ -120,12 +120,14 @@ namespace LuxFilter.Views
             }
         }
 
+        private const double Epsilon = 1e-6; // Small threshold for floating point comparisons
+
         public double Weight
         {
             get => _weight;
             set
             {
-                if (_weight != value)
+                if (Math.Abs(_weight - value) > Epsilon) // Compare within a small range
                 {
                     _weight = value;
                     OnPropertyChanged(nameof(Weight));
@@ -133,6 +135,7 @@ namespace LuxFilter.Views
                 }
             }
         }
+
 
         public string FormattedWeight => Weight.ToString("0.0");
 
