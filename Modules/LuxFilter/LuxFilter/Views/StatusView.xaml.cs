@@ -6,13 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace LuxFilter.Views;
 
 /// <summary>
-/// An empty page that can be used on its own or navigated to within a Frame.
+/// Status View to display the progress of the Filter Pipeline.
 /// </summary>
 public sealed partial class StatusView : Page
 {
@@ -51,7 +48,7 @@ public sealed partial class StatusView : Page
     /// <summary>
     /// Called when a score is computed.
     /// </summary>
-    private void OnScoreComputedEvent(object? sender, (Guid, double) args)
+    private void OnScoreComputedEvent(object sender, (Guid, double) args)
     {
         var (imageId, score) = args;
 
@@ -65,7 +62,7 @@ public sealed partial class StatusView : Page
     /// <summary>
     /// Called when the pipeline computation is complete.
     /// </summary>
-    private void OnPipelineCompletedEvent(object? sender, TimeSpan duration)
+    private void OnPipelineCompletedEvent(object sender, TimeSpan duration)
     {
         _ = DispatcherQueue.TryEnqueue(() =>
         {
@@ -75,7 +72,7 @@ public sealed partial class StatusView : Page
     }
 
     /// <summary>
-    /// Start pipeline execution (example method to trigger from UI).
+    /// Start pipeline execution
     /// </summary>
     public async void StartPipeline(IEnumerable<(Guid, ImageData)> images)
     {
