@@ -33,6 +33,8 @@ public class ImageData
     /// </summary>
     public ReadOnlyDictionary<string, string> EXIF { get; }
 
+    public ReadOnlyDictionary<string, double>? Filters { get; set; }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageData"/> class.
     /// </summary>
@@ -43,7 +45,8 @@ public class ImageData
     {
         Bitmap = bitmap ?? throw new ArgumentNullException(nameof(bitmap));
         Format = format;
-        EXIF = new ReadOnlyDictionary<string, string>(exifMetaData ?? new Dictionary<string, string>());
+        EXIF = new ReadOnlyDictionary<string, string>(exifMetaData ?? []);
+        Filters = null;
     }
 
     /// <summary>

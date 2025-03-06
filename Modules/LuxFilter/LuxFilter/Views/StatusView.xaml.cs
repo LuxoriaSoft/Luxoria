@@ -105,7 +105,7 @@ public sealed partial class StatusView : Page
         }
 
         // Execute the pipeline
-        await _pipeline.Compute(collection.Select(asset => (asset.Id, asset.Data)).ToList());
+        ICollection<(Guid, Dictionary<string, double>)> pipelineResult = await _pipeline.Compute(collection.Select(asset => (asset.Id, asset.Data)).ToList());
     }
 }
 
