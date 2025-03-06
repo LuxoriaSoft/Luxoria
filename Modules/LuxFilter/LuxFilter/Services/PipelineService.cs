@@ -6,7 +6,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace LuxFilter.Services;
@@ -20,8 +19,7 @@ public class PipelineService : IPipelineService
     /// Variables
     /// </summary>
     private readonly ILoggerService _logger;
-    private ICollection<(IFilterAlgorithm, double)> _workflow;
-    private double _tweight;
+    private ICollection<(IFilterAlgorithm, double)> _workflow = [];
 
     /// <summary>
     /// Event handlers
@@ -43,8 +41,6 @@ public class PipelineService : IPipelineService
     public PipelineService(ILoggerService loggerService)
     {
         _logger = loggerService;
-        _workflow = new List<(IFilterAlgorithm, double)>();
-        _tweight = 0.0;
 
         // Event handlers to avoid null reference exceptions
         OnPipelineFinished += (sender, e) => { };
@@ -56,18 +52,10 @@ public class PipelineService : IPipelineService
     /// </summary>
     /// <param name="algorithm">Add an algorithm to the pipeline</param>
     /// <param name="weight">Apply a weight on result</param>
-    /// <exception cref="ArgumentException">If weight is lower than 0 or upper than 1, throw an exception</exception>
     public IPipelineService AddAlgorithm(IFilterAlgorithm algorithm, double weight)
     {
-        if (_tweight + weight > 1)
-        {
-            throw new ArgumentException("Pipeline error: Total weight cannot be above 1");
-        }
-
         _workflow.Add((algorithm, weight));
-        _tweight += weight;
 
-        // Return this instance to allow chaining
         return this;
     }
 
@@ -109,7 +97,7 @@ public class PipelineService : IPipelineService
                     IFilterAlgorithm algorithm = step.Item1;
                     double weight = step.Item2;
 
-                    _logger.Log($"Executing algorithm: [{algorithm.Name}] (w={weight}) (thrd={Thread.CurrentThread.ManagedThreadId})...");
+                    //_logger.Log($"Executing algorithm: [{algorithm.Name}] (w={weight}) (thrd={Thread.CurrentThread.ManagedThreadId})...");
 
                     try
                     {
@@ -119,7 +107,7 @@ public class PipelineService : IPipelineService
                         DateTime endingTime = DateTime.Now;
                         TimeSpan executionTime = endingTime - startingTime;
 
-                        _logger.Log($"Score for algorithm [{algorithm.Name}] on bitmap: {score}, time consumed: ({executionTime.TotalSeconds:F2})s");
+                        //_logger.Log($"Score for algorithm [{algorithm.Name}] on bitmap: {score}, time consumed: ({executionTime.TotalSeconds:F2})s");
 
                         // Store score for the algorithm
                         scores.Add(algorithm.Name, score);
@@ -132,7 +120,7 @@ public class PipelineService : IPipelineService
 
                 // Store final score for the bitmap
                 var fscore = scores.Sum(kvp => kvp.Value);
-                _logger.Log($"Final score for bitmap with Guid {guid}: {fscore}");
+                //_logger.Log($"Final score for bitmap with Guid {guid}: {fscore}");
                 results.TryAdd(guid, scores);
                 // Raise OnScoreComputed event
                 OnScoreComputed?.Invoke(this, (guid, fscore));  // Trigger the OnScoreComputed event
