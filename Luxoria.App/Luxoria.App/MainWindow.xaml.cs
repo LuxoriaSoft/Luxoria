@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using WinRT.Interop;
@@ -45,6 +46,9 @@ public sealed partial class MainWindow : Window
         _moduleService = moduleService;
         _uiService = uiService;
 
+        // Load App Icon
+        LoadIcon("Luxoria_icon");
+
         // Subscribe handlers to the event bus
         InitializeEventBus();
 
@@ -54,6 +58,13 @@ public sealed partial class MainWindow : Window
         // Load the default collection
         LoadDefaultCollection();
     }
+
+    /// <summary>
+    /// Load the application icon from the specified file path.
+    /// </summary>
+    /// <param name="iconName">Icon Name (Looking on Assets folder)</param>
+    private void LoadIcon(string iconName) => AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, $"Assets/{iconName}.ico"));
+
 
     /// <summary>
     /// Initialize the event bus and subscribe handlers to events.
