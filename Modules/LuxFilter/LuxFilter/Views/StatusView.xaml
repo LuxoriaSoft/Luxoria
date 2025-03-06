@@ -2,10 +2,6 @@
     x:Class="LuxFilter.Views.StatusView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:LuxFilter.Views"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid Padding="20">
@@ -15,21 +11,21 @@
             <RowDefinition Height="*"/>
             <!-- Scrollable content -->
             <RowDefinition Height="Auto"/>
-            <!-- Progress bar -->
+            <!-- Status and Progress -->
         </Grid.RowDefinitions>
 
-        <!-- Status Message -->
+        <!-- Title Message -->
         <TextBlock x:Name="StatusMessage"
                    Text="Waiting for pipeline..."
                    FontSize="20"
-                   FontWeight="SemiBold"
+                   FontWeight="Bold"
                    Foreground="DarkSlateGray"
-                   TextAlignment="Left"
+                   HorizontalAlignment="Center"
                    Margin="0,0,0,10"
                    Grid.Row="0"/>
 
         <!-- Progress Ring for processing -->
-        <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal" Spacing="10">
+        <StackPanel Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal" Spacing="10">
             <ProgressRing x:Name="ProgressIndicator"
                           Width="40" Height="40"
                           IsActive="False"/>
@@ -40,17 +36,16 @@
                        Visibility="Collapsed"/>
         </StackPanel>
 
-        <!-- Scrollable Log Viewer -->
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-            <ListBox x:Name="LogViewer" Height="300">
-                <ListBox.ItemContainerStyle>
-                    <Style TargetType="ListBoxItem">
-                        <Setter Property="Padding" Value="2,0"/>
-                        <Setter Property="Margin" Value="0"/>
-                        <Setter Property="FontSize" Value="14"/>
-                    </Style>
-                </ListBox.ItemContainerStyle>
-            </ListBox>
-        </ScrollViewer>
+        <!-- Scrollable Score List -->
+        <ListBox x:Name="ScoreListViewer" ItemsSource="{Binding ScoreList}" Margin="0,10" Grid.Row="1" ScrollViewer.VerticalScrollBarVisibility="Auto">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Score}" VerticalAlignment="Center" Margin="5,0" FontWeight="SemiBold" Foreground="RoyalBlue"/>
+                        <TextBlock Text="{Binding Status}" VerticalAlignment="Center" Margin="5,0" Foreground="DarkSlateGray"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
 </Page>
