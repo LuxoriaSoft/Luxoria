@@ -1,7 +1,10 @@
 using LuxFilter.Interfaces;
 using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Models;
 using Luxoria.SDK.Interfaces;
 using Microsoft.UI.Xaml.Controls;
+using System.Collections;
+using System.Collections.Generic;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -22,6 +25,9 @@ public sealed partial class MainFilterView : Page
     /// Logger Service
     /// </summary>
     private readonly ILoggerService _logger;
+
+    // Store the last imported collection
+    private ICollection<LuxAsset> _collection = [];
 
     /// <summary>
     /// Constructor
@@ -52,5 +58,11 @@ public sealed partial class MainFilterView : Page
     /// Set the status view
     /// </summary>
     /// <param name="pipeline">Pipeline to be executed</param>
-    public void SetStatusView(IPipelineService pipeline) => ModalContent.Content = new StatusView(_eventBus, this, pipeline);
+    public void SetStatusView(IPipelineService pipeline) => ModalContent.Content = new StatusView(_eventBus, this, pipeline, _collection);
+
+    /// <summary>
+    /// Set the collection
+    /// </summary>
+    /// <param name="collection">Set the collection</param>
+    public void SetCollection(ICollection<LuxAsset> collection) => _collection = collection;
 }

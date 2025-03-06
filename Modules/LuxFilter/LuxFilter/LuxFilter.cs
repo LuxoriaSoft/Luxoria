@@ -3,11 +3,13 @@ using LuxFilter.Views;
 using Luxoria.GModules;
 using Luxoria.GModules.Interfaces;
 using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Models;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace LuxFilter;
@@ -29,6 +31,16 @@ public class LuxFilter : IModule, IModuleUI
     /// </summary>
     public List<ILuxMenuBarItem> Items { get; set; } = [];
 
+    private ICollection<LuxAsset> _lastImportedCollection
+    {
+        set
+        {
+            _mainFilterView?.SetCollection(value);
+        }
+    }
+
+    private MainFilterView _mainFilterView;
+
     /// <summary>
     /// Initializes the module with the provided EventBus and ModuleContext.
     /// </summary>
@@ -43,11 +55,14 @@ public class LuxFilter : IModule, IModuleUI
         // Attach events
         AttachEventHandlers();
 
+        // Initialize the module UI
+        _mainFilterView = new MainFilterView(_eventBus, _logger);
+
         // Add a menu bar item to the main menu bar.
         List<ISmartButton> smartButtons = [];
         Dictionary<SmartButtonType, Page> page = new()
         {
-            { SmartButtonType.Modal, new MainFilterView(_eventBus, _logger) }
+            { SmartButtonType.Modal, _mainFilterView }
         };
 
         smartButtons.Add(new SmartButton("Filter", "Filter", page));
@@ -61,9 +76,17 @@ public class LuxFilter : IModule, IModuleUI
     /// </summary>
     private void AttachEventHandlers()
     {
+        // Gather the filter catalog
         _eventBus.Subscribe<FilterCatalogEvent>(e =>
         {
             e.Response.SetResult([.. FilterService.Catalog.Select(x => (x.Key, x.Value.Description, "1.0"))]);
+        });
+
+        // Update the last imported collection for LuxFilter
+        _eventBus.Subscribe<CollectionUpdatedEvent>(e =>
+        {
+            _logger.Log($"LuxFilter received {e.Assets.Count} assets.");
+            _lastImportedCollection = e.Assets;
         });
     }
 
