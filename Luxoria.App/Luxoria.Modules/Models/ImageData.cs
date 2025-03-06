@@ -33,6 +33,9 @@ public class ImageData
     /// </summary>
     public ReadOnlyDictionary<string, string> EXIF { get; }
 
+    /// <summary>
+    /// Contains the filter scores for the image.
+    /// </summary>
     public ReadOnlyDictionary<string, double>? Filters { get; set; }
 
     /// <summary>
