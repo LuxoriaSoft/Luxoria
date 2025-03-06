@@ -41,17 +41,20 @@
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid>
-                        <!-- Define two columns -->
+                        <!-- Define three columns -->
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
+                            <!-- For DisplayName -->
+                            <ColumnDefinition Width="Auto"/>
+                            <!-- For ProgressRing -->
+                            <ColumnDefinition Width="Auto"/>
+                            <!-- For Score -->
                         </Grid.ColumnDefinitions>
 
-                        <!-- UUID (ImageId) -->
+                        <!-- (DisplayName -->
                         <TextBlock Text="{Binding DisplayName}" 
                                    VerticalAlignment="Center" 
-                                   HorizontalAlignment="Left" 
+                                   HorizontalAlignment="Center" 
                                    Margin="5,0" 
                                    FontWeight="SemiBold" 
                                    Foreground="DarkSlateGray" 
@@ -69,7 +72,7 @@
                         <!-- Score Display -->
                         <TextBlock Text="{Binding Score}" 
                                    VerticalAlignment="Center" 
-                                   HorizontalAlignment="Right" 
+                                   HorizontalAlignment="Right"
                                    Margin="5,0" 
                                    Foreground="DarkSlateGray" 
                                    Grid.Column="2"/>
