@@ -37,13 +37,44 @@
         </StackPanel>
 
         <!-- Scrollable Score List -->
+        <!-- Scrollable Score List -->
         <ListBox x:Name="ScoreListViewer" ItemsSource="{Binding ScoreList}" Margin="0,10" Grid.Row="1" ScrollViewer.VerticalScrollBarVisibility="Auto">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Score}" VerticalAlignment="Center" Margin="5,0" FontWeight="SemiBold" Foreground="RoyalBlue"/>
-                        <TextBlock Text="{Binding Status}" VerticalAlignment="Center" Margin="5,0" Foreground="DarkSlateGray"/>
-                    </StackPanel>
+                    <Grid>
+                        <!-- Define two columns -->
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- UUID (ImageId) -->
+                        <TextBlock Text="{Binding ImageId}" 
+                                   VerticalAlignment="Center" 
+                                   HorizontalAlignment="Left" 
+                                   Margin="5,0" 
+                                   FontWeight="SemiBold" 
+                                   Foreground="DarkSlateGray" 
+                                   Grid.Column="0"/>
+
+                        <!-- Progress Ring for each item, visible when computing -->
+                        <ProgressRing Width="20" 
+                                      Height="20" 
+                                      IsActive="{Binding IsComputing}" 
+                                      Margin="5,0" 
+                                      HorizontalAlignment="Center" 
+                                      VerticalAlignment="Center" 
+                                      Grid.Column="1"/>
+
+                        <!-- Score Display -->
+                        <TextBlock Text="{Binding Score}" 
+                                   VerticalAlignment="Center" 
+                                   HorizontalAlignment="Right" 
+                                   Margin="5,0" 
+                                   Foreground="DarkSlateGray" 
+                                   Grid.Column="2"/>
+                    </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

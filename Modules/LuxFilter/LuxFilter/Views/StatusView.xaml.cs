@@ -17,7 +17,7 @@ namespace LuxFilter.Views
         private readonly IPipelineService _pipeline;
 
         // Observable collection for storing score data
-        public ObservableCollection<ScoreItem> ScoreList { get; } = new ObservableCollection<ScoreItem>();
+        public ObservableCollection<ScoreItem> ScoreList { get; } = [];
 
         public StatusView(IEventBus eventBus, MainFilterView parent, IPipelineService pipeline, IEnumerable<LuxAsset> collection)
         {
@@ -50,7 +50,7 @@ namespace LuxFilter.Views
                 if (item != null)
                 {
                     // Directly update the existing row's Score and Status
-                    item.Status = $"Score: {score}";
+                    item.IsComputing = false;
                     item.Score = score.ToString("F2");
                 }
             });
@@ -79,7 +79,7 @@ namespace LuxFilter.Views
                     ScoreList.Add(new ScoreItem
                     {
                         ImageId = image.Item1,
-                        Status = "Processing...",
+                        IsComputing = true,
                         Score = "0.00"
                     });
                 }
@@ -92,27 +92,38 @@ namespace LuxFilter.Views
 
     public class ScoreItem : INotifyPropertyChanged
     {
-        private string _status;
         private string _score;
+        private bool _isComputing;
 
+        /// <summary>
+        /// ImageId property
+        /// </summary>
         public Guid ImageId { get; set; }
 
-        // Implement INotifyPropertyChanged
+        /// <summary>
+        /// PropertyChanged event handler
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public string Status
+        /// <summary>
+        /// Status property
+        /// </summary>
+        public bool IsComputing
         {
-            get => _status;
+            get => _isComputing;
             set
             {
-                if (_status != value)
+                if (_isComputing != value)
                 {
-                    _status = value;
-                    OnPropertyChanged(nameof(Status)); // Notify that Status has changed
+                    _isComputing = value;
+                    OnPropertyChanged(nameof(IsComputing)); // Notify that Status has changed
                 }
             }
         }
 
+        /// <summary>
+        /// Score property
+        /// </summary>
         public string Score
         {
             get => _score;
@@ -126,7 +137,10 @@ namespace LuxFilter.Views
             }
         }
 
-        // This method is called to notify the UI about property changes
+        /// <summary>
+        /// Notify the UI that a property has changed
+        /// </summary>
+        /// <param name="propertyName"></param>
         protected virtual void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
