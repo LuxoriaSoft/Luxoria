@@ -1,3 +1,16 @@
+# [1.31.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.30.0...v1.31.0) (2025-03-07)
+
+
+### Bug Fixes
+
+* Simplify LoadWindowCaption by using local variable 'path' ([c975768](https://github.com/LuxoriaSoft/Luxoria/commit/c9757680610f2062da186592c19839e6a14bb5f9))
+
+
+### Features
+
+* Add ApplicationIcon 'Luxoria_icon.ico' + Add Luxoria official logo on SplashScreen ([b0142b5](https://github.com/LuxoriaSoft/Luxoria/commit/b0142b57c9a5a177af0c6d5d35c7aa860ca8f188))
+* Create LoadWindowCaption method to load an ico for window caption and taskbar ([12e9b56](https://github.com/LuxoriaSoft/Luxoria/commit/12e9b568113a0784b00b512f18ab530cf9aac191))
+
 # [1.30.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.29.1...v1.30.0) (2025-03-06)
 
 
