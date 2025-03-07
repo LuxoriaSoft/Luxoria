@@ -81,7 +81,6 @@ namespace Luxoria.App
 
             m_window = new MainWindow(eventBus, loggerService, _moduleService, iModuleUIService);
             m_window.Activate();
-            m_window.EnableEasyLoader();
         }
 
         /// <summary>

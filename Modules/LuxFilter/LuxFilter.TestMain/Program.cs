@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using LuxFilter.Services;
+using Luxoria.Modules.Models;
 using Luxoria.SDK.Models;
 using Luxoria.SDK.Services;
 using Luxoria.SDK.Services.Targets;
@@ -17,7 +18,7 @@ pipeline
     .AddAlgorithm(new LuxFilter.Algorithms.PerceptualMetrics.BrisqueAlgo(), 0.1);
 
 // Get the root directory of the application
-string? baseDirectory = Directory.GetParent(AppContext.BaseDirectory)?.Parent?.Parent?.Parent?.Parent?.FullName;
+string? baseDirectory = Directory.GetParent(AppContext.BaseDirectory)?.Parent?.Parent?.Parent?.Parent?.Parent?.FullName;
 
 // Ensure the base directory is not null
 if (string.IsNullOrEmpty(baseDirectory))
@@ -53,23 +54,26 @@ pipeline.OnPipelineFinished += (sender, args) =>
     loggerService.Log("Pipeline finished time consumed: " + args);
 };
 
+loggerService.Log("Computing scores...");
+
 // Compute scores for the collection of bitmaps
-IEnumerable<(Guid, double)> scores = await pipeline.Compute(new List<(Guid, SKBitmap)>
-{
-    (Guid.NewGuid(), image),
-    (Guid.NewGuid(), image2),
-    (Guid.NewGuid(), image3)
-});
+IEnumerable<(Guid, Dictionary<string, double>)> scores = await pipeline.Compute(
+[
+    (Guid.NewGuid(), new(image, FileExtension.UNKNOWN)),
+    (Guid.NewGuid(), new(image2, FileExtension.UNKNOWN)),
+    (Guid.NewGuid(), new (image3, FileExtension.UNKNOWN))
+]);
+
+loggerService.Log("Scores computed !");
 
 int index = 1;
 foreach (var finalScore in scores)
 {
     // Log the final score for each bitmap, including both the Guid and the score
-    loggerService.Log($"Final score for image {index++} (Guid: {finalScore.Item1}): {finalScore.Item2}");
+    loggerService.Log($"Final score for image {index++} (Guid: {finalScore.Item1}): {finalScore.Item2.Keys.Count} key(s)");
+    // Display the dictionary of scores for each bitmap
+    foreach (var score in finalScore.Item2)
+    {
+        loggerService.Log($"[+]\t{score.Key}\t:\t{score.Value}");
+    }
 }
-
-
-var algo = new LuxFilter.Algorithms.PerceptualMetrics.BrisqueAlgo();
-loggerService.Log($"Brisque score for image 1: {algo.Compute(image, image.Height, image.Width)}");
-loggerService.Log($"Brisque score for image 2: {algo.Compute(image2, image.Height, image.Width)}");
-loggerService.Log($"Brisque score for image 3: {algo.Compute(image3, image.Height, image.Width)}");

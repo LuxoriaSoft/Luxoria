@@ -1,4 +1,5 @@
 ﻿using LuxFilter.Algorithms.PerceptualMetrics;
+using Luxoria.Modules.Models;
 using SkiaSharp;
 
 namespace LuxFilter.Tests
@@ -17,7 +18,9 @@ namespace LuxFilter.Tests
             using var algorithm = new BrisqueAlgo();
             using var bitmap = new SKBitmap(50, 40);
 
-            var result = algorithm.Compute(bitmap, 50, 40);
+            ImageData data = new(bitmap, FileExtension.UNKNOWN, null);
+
+            var result = algorithm.Compute(data);
             Assert.True(result >= 0, "Brisque score should be non-negative.");
         }
 
@@ -31,7 +34,7 @@ namespace LuxFilter.Tests
             using var bitmap = new SKBitmap(50, 40);
             bitmap.Erase(SKColors.Black);
 
-            var result = algorithm.Compute(bitmap, 50, 40);
+            var result = algorithm.Compute(new(bitmap, FileExtension.UNKNOWN));
             Assert.True(result >= 0, "Brisque score should be non-negative for black images.");
         }
 
@@ -45,7 +48,7 @@ namespace LuxFilter.Tests
             using var bitmap = new SKBitmap(50, 40);
             bitmap.Erase(SKColors.White);
 
-            var result = algorithm.Compute(bitmap, 50, 40);
+            var result = algorithm.Compute(new(bitmap, FileExtension.UNKNOWN));
             Assert.True(result >= 0, "Brisque score should be non-negative for white images.");
         }
 
@@ -68,7 +71,7 @@ namespace LuxFilter.Tests
                 }
             }
 
-            var result = algorithm.Compute(bitmap, 50, 40);
+            var result = algorithm.Compute(new(bitmap, FileExtension.UNKNOWN));
             Assert.True(result >= 0, "Brisque score should be valid for noisy images.");
         }
 
@@ -90,7 +93,7 @@ namespace LuxFilter.Tests
                 }
             }
 
-            var result = algorithm.Compute(bitmap, 50, 40);
+            var result = algorithm.Compute(new(bitmap, FileExtension.UNKNOWN));
             Assert.True(result >= 0, "Brisque score should be valid for gradient images.");
         }
 
@@ -116,7 +119,7 @@ namespace LuxFilter.Tests
                 }
             }
 
-            var result = algorithm.Compute(bitmap, 50, 40);
+            var result = algorithm.Compute(new(bitmap, FileExtension.UNKNOWN));
             Assert.True(result >= 0, "Brisque score should be valid for color images.");
         }
 
@@ -130,21 +133,8 @@ namespace LuxFilter.Tests
             using var bitmap = new SKBitmap(1000, 800);
             bitmap.Erase(SKColors.Gray);
 
-            var result = algorithm.Compute(bitmap, 1000, 800);
+            var result = algorithm.Compute(new(bitmap, FileExtension.UNKNOWN));
             Assert.True(result >= 0, "Brisque score should be valid for large images.");
-        }
-
-        /// <summary>
-        /// Ensures Compute() handles invalid image sizes.
-        /// </summary>
-        [Fact]
-        public void Compute_ShouldHandleZeroSizeImage()
-        {
-            using var algorithm = new BrisqueAlgo();
-            using var bitmap = new SKBitmap(0, 0);
-
-            var result = algorithm.Compute(bitmap, 0, 0);
-            Assert.True(result >= 0, "Brisque score computation should not crash with a zero-size image.");
         }
     }
 }

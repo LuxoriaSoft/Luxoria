@@ -1,9 +1,20 @@
-﻿using Luxoria.Modules.Interfaces;
+using LuxFilter.Services;
+using LuxFilter.Views;
+using Luxoria.GModules;
+using Luxoria.GModules.Interfaces;
+using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Models;
+using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
+using Microsoft.UI.Xaml.Controls;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace LuxFilter;
 
-public class LuxFilter : IModule
+public class LuxFilter : IModule, IModuleUI
 {
     private IEventBus _eventBus;
     private IModuleContext _context;
@@ -11,9 +22,24 @@ public class LuxFilter : IModule
 
     public string Name => "LuxFilter";
     public string Description => "Generic Luxoria Filtering Module";
-    public string Version => "1.0.0";
+    public string Version => "1.0.1";
 
     private const string CATEGORY = nameof(LuxFilter);
+
+    /// <summary>
+    /// The list of menu bar items to be added to the main menu bar.
+    /// </summary>
+    public List<ILuxMenuBarItem> Items { get; set; } = [];
+
+    private ICollection<LuxAsset> _lastImportedCollection
+    {
+        set
+        {
+            _mainFilterView?.SetCollection(value);
+        }
+    }
+
+    private MainFilterView _mainFilterView;
 
     /// <summary>
     /// Initializes the module with the provided EventBus and ModuleContext.
@@ -26,7 +52,42 @@ public class LuxFilter : IModule
         _context = context;
         _logger = logger;
 
+        // Attach events
+        AttachEventHandlers();
+
+        // Initialize the module UI
+        _mainFilterView = new MainFilterView(_eventBus, _logger);
+
+        // Add a menu bar item to the main menu bar.
+        List<ISmartButton> smartButtons = [];
+        Dictionary<SmartButtonType, Page> page = new()
+        {
+            { SmartButtonType.Modal, _mainFilterView }
+        };
+
+        smartButtons.Add(new SmartButton("Filter", "Filter", page));
+        Items.Add(new LuxMenuBarItem("Filter", false, new Guid(), smartButtons));
+
         _logger?.Log("LuxFilter module initialized.", CATEGORY);
+    }
+
+    /// <summary>
+    /// Attaches event handlers to the EventBus.
+    /// </summary>
+    private void AttachEventHandlers()
+    {
+        // Gather the filter catalog
+        _eventBus.Subscribe<FilterCatalogEvent>(e =>
+        {
+            e.Response.SetResult([.. FilterService.Catalog.Select(x => (x.Key, x.Value.Description, "1.0"))]);
+        });
+
+        // Update the last imported collection for LuxFilter
+        _eventBus.Subscribe<CollectionUpdatedEvent>(e =>
+        {
+            _logger.Log($"LuxFilter received {e.Assets.Count} assets.");
+            _lastImportedCollection = e.Assets;
+        });
     }
 
     /// <summary>
