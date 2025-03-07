@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using WinRT.Interop;
@@ -50,8 +51,25 @@ namespace Luxoria.App
             _imageUpdatedHandler = new ImageUpdatedHandler(_loggerService);
             _collectionUpdatedHandler = new CollectionUpdatedHandler(_loggerService);
 
+            // Load App Icon
+            LoadWindowCaption("Luxoria_icon");
+
             InitializeEventBus();
             LoadComponents();
+        }
+
+        /// <summary>
+        /// Loads the application icon from the specified file path.
+        /// </summary>
+        /// <param name="iconName">Icon Name without extension e.g Luxoria_logo</param>
+        /// <exception cref="FileNotFoundException">To be thrown if file do NOT exist</exception>
+        private void LoadWindowCaption(string iconName)
+        {
+            string path = Path.Combine(AppContext.BaseDirectory, $"Assets/{iconName}.ico");
+
+            if (!Path.Exists(path)) throw new FileNotFoundException($"Icon file not found at path: {path}");
+
+            AppWindow.SetIcon(path);
         }
 
         /// <summary>
