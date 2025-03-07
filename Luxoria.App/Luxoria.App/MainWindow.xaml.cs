@@ -69,7 +69,7 @@ namespace Luxoria.App
 
             if (!Path.Exists(path)) throw new FileNotFoundException($"Icon file not found at path: {path}");
 
-            AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, $"Assets/{iconName}.ico"));
+            AppWindow.SetIcon(path);
         }
 
         /// <summary>
