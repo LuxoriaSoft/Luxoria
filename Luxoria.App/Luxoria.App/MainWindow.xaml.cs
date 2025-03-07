@@ -59,10 +59,18 @@ namespace Luxoria.App
         }
 
         /// <summary>
-        /// Load the application icon from the specified file path.
+        /// Loads the application icon from the specified file path.
         /// </summary>
-        /// <param name="iconName">Icon Name (Looking on Assets folder)</param>
-        private void LoadWindowCaption(string iconName) => AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, $"Assets/{iconName}.ico"));
+        /// <param name="iconName">Icon Name without extension e.g Luxoria_logo</param>
+        /// <exception cref="FileNotFoundException">To be thrown if file do NOT exist</exception>
+        private void LoadWindowCaption(string iconName)
+        {
+            string path = Path.Combine(AppContext.BaseDirectory, $"Assets/{iconName}.ico");
+
+            if (!Path.Exists(path)) throw new FileNotFoundException($"Icon file not found at path: {path}");
+
+            AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, $"Assets/{iconName}.ico"));
+        }
 
         /// <summary>
         /// Subscribes to necessary events for the application.
