@@ -38,28 +38,40 @@ namespace LuxEditor.Components
         private void ExposureSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
             if (ExposureValueLabel != null)
-                ExposureValueLabel.Text = (e.NewValue / 1000).ToString("F2");
+                ExposureValueLabel.Text = (e.NewValue).ToString("F2");
             ProcessImage();
         }
 
         private void ContrastSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
             if (ContrastValueLabel != null)
-                ContrastValueLabel.Text = (e.NewValue / 1000).ToString("F2");
+                ContrastValueLabel.Text = (e.NewValue).ToString("F0");
             ProcessImage();
         }
 
         private void HighlightsSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
             if (HighlightsValueLabel != null)
-                HighlightsValueLabel.Text = (e.NewValue / 1000).ToString("F2");
+                HighlightsValueLabel.Text = (e.NewValue).ToString("F0");
             ProcessImage();
         }
 
         private void ShadowsSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
             if (ShadowsValueLabel != null)
-                ShadowsValueLabel.Text = (e.NewValue / 1000).ToString("F2");
+                ShadowsValueLabel.Text = (e.NewValue).ToString("F0");
+            ProcessImage();
+        }
+        private void WhitesSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (WhitesValueLabel != null)
+                WhitesValueLabel.Text = (e.NewValue).ToString("F0");
+            ProcessImage();
+        }
+        private void BlacksSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (BlacksValueLabel != null)
+                BlacksValueLabel.Text = (e.NewValue).ToString("F0");
             ProcessImage();
         }
 
@@ -77,10 +89,38 @@ namespace LuxEditor.Components
             ProcessImage();
         }
 
+        private void TextureSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (TextureValueLabel != null)
+                TextureValueLabel.Text = e.NewValue.ToString("F0");
+            ProcessImage();
+        }
+
+        private void ClaritySlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (ClarityValueLabel != null)
+                ClarityValueLabel.Text = e.NewValue.ToString("F0");
+            ProcessImage();
+        }
+
+        private void DehazeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (DehazeValueLabel != null)
+                DehazeValueLabel.Text = e.NewValue.ToString("F0");
+            ProcessImage();
+        }
+
+        private void VibranceSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (VibranceValueLabel != null)
+                VibranceValueLabel.Text = e.NewValue.ToString("F0");
+            ProcessImage();
+        }
+
         private void SaturationSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
-            if (SaturationValueLabel != null)
-                SaturationValueLabel.Text = e.NewValue.ToString("F0");
+            //if (SaturationValueLabel != null)
+            //    SaturationValueLabel.Text = e.NewValue.ToString("F0");
             ProcessImage();
         }
 
@@ -93,13 +133,13 @@ namespace LuxEditor.Components
                 return;
 
             // 1) Retrieve slider values
-            float exposure = (float)ExposureSlider.Value / 1000;
-            float contrast = (float)ContrastSlider.Value / 1000;
-            float highlights = (float)HighlightsSlider.Value / 1000;
-            float shadows = (float)ShadowsSlider.Value / 1000;
+            float exposure = (float)ExposureSlider.Value;
+            float contrast = (float)ContrastSlider.Value;
+            float highlights = (float)HighlightsSlider.Value;
+            float shadows = (float)ShadowsSlider.Value;
             float temperature = (float)TemperatureSlider.Value;
             float tint = (float)TintSlider.Value;
-            float saturation = (float)SaturationSlider.Value;
+            //float saturation = (float)SaturationSlider.Value;
 
             // 2) First pass with color filters (exposure, contrast, saturation)
             SKBitmap firstPassBitmap = new SKBitmap(_originalBitmap.Width, _originalBitmap.Height);
@@ -129,7 +169,8 @@ namespace LuxEditor.Components
                 var contrastFilter = SKColorFilter.CreateColorMatrix(contrastMatrix);
 
                 // Saturation with color matrix
-                float saturationFactor = 1f + (saturation / 100f);
+                //float saturationFactor = 1f + (saturation / 100f);
+                float saturationFactor = 1f + (100 / 100f);
                 float lumR = 0.3086f;
                 float lumG = 0.6094f;
                 float lumB = 0.0820f;
