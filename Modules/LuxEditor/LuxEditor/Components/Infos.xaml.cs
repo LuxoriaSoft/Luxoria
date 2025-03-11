@@ -30,11 +30,14 @@ namespace LuxEditor.Components
 
             foreach (var entry in metadata)
             {
-                ExifData.Add(new KeyValueStringPair
+                if (entry.Key != null && !entry.Key.ToLower().StartsWith("unknown"))
                 {
-                    Key = entry.Key,
-                    Value = entry.Value
-                });
+                    ExifData.Add(new KeyValueStringPair
+                    {
+                        Key = entry.Key,
+                        Value = entry.Value
+                    });
+                }
             }
         }
     }

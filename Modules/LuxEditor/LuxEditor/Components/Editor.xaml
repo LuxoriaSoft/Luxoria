@@ -17,9 +17,9 @@
                     VerticalAlignment="Top">
 
             <!-- BASIC ADJUSTMENTS -->
-            <Expander Header="Basic Adjustments"
+            <Expander Header="Basic"
                       IsExpanded="True"
-                      Padding="15"
+                      Padding="10"
                       Margin="0"
                       BorderThickness="0"
                       HorizontalAlignment="Stretch"
@@ -28,150 +28,15 @@
                 <StackPanel Orientation="Vertical" Spacing="5" Margin="0" Padding="0"
                             HorizontalAlignment="Stretch">
 
-                    <!-- EXPOSURE -->
-                    <StackPanel Orientation="Vertical" Spacing="2" Padding="0">
-                        <TextBlock Text="Exposure"
-                                   Foreground="White"
-                                   FontSize="10"
-                                   Margin="0,0,0,2"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                    <!-- WHITE BALANCE -->
 
-                            <Slider x:Name="ExposureSlider"
-                                    Grid.Column="0"
-                                    Minimum="-1000"
-                                    Maximum="1000"
-                                    Value="0"
-                                    ValueChanged="ExposureSlider_ValueChanged"
-                                    HorizontalAlignment="Stretch"
-                                    Margin="0,0,5,0"/>
-
-                            <TextBlock x:Name="ExposureValueLabel"
-                                       Grid.Column="1"
-                                       Text="0.0"
-                                       Foreground="White"
-                                       Width="30"
-                                       TextAlignment="Right"
-                                       VerticalAlignment="Center"/>
-                        </Grid>
-                    </StackPanel>
-
-                    <!-- CONTRAST -->
-                    <StackPanel Orientation="Vertical" Spacing="2" Padding="0">
-                        <TextBlock Text="Contrast"
-                                   Foreground="White"
-                                   FontSize="10"
-                                   Margin="0,0,0,2"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Slider x:Name="ContrastSlider"
-                                    Grid.Column="0"
-                                    Minimum="-1000"
-                                    Maximum="1000"
-                                    Value="0"
-                                    ValueChanged="ContrastSlider_ValueChanged"
-                                    HorizontalAlignment="Stretch"
-                                    Margin="0,0,5,0"/>
-
-                            <TextBlock x:Name="ContrastValueLabel"
-                                       Grid.Column="1"
-                                       Text="0.0"
-                                       Foreground="White"
-                                       Width="30"
-                                       TextAlignment="Right"
-                                       VerticalAlignment="Center"/>
-                        </Grid>
-                    </StackPanel>
-
-                    <!-- HIGHLIGHTS -->
-                    <StackPanel Orientation="Vertical" Spacing="2" Padding="0">
-                        <TextBlock Text="Highlights"
-                                   Foreground="White"
-                                   FontSize="10"
-                                   Margin="0,0,0,2"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Slider x:Name="HighlightsSlider"
-                                    Grid.Column="0"
-                                    Minimum="-1000"
-                                    Maximum="1000"
-                                    Value="0"
-                                    ValueChanged="HighlightsSlider_ValueChanged"
-                                    HorizontalAlignment="Stretch"
-                                    Margin="0,0,5,0"/>
-
-                            <TextBlock x:Name="HighlightsValueLabel"
-                                       Grid.Column="1"
-                                       Text="0.0"
-                                       Foreground="White"
-                                       Width="30"
-                                       TextAlignment="Right"
-                                       VerticalAlignment="Center"/>
-                        </Grid>
-                    </StackPanel>
-
-                    <!-- SHADOWS -->
-                    <StackPanel Orientation="Vertical" Spacing="2" Padding="0">
-                        <TextBlock Text="Shadows"
-                                   Foreground="White"
-                                   FontSize="10"
-                                   Margin="0,0,0,2"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Slider x:Name="ShadowsSlider"
-                                    Grid.Column="0"
-                                    Minimum="-1000"
-                                    Maximum="1000"
-                                    Value="0"
-                                    ValueChanged="ShadowsSlider_ValueChanged"
-                                    HorizontalAlignment="Stretch"
-                                    Margin="0,0,5,0"/>
-
-                            <TextBlock x:Name="ShadowsValueLabel"
-                                       Grid.Column="1"
-                                       Text="0.0"
-                                       Foreground="White"
-                                       Width="30"
-                                       TextAlignment="Right"
-                                       VerticalAlignment="Center"/>
-                        </Grid>
-                    </StackPanel>
-
-                </StackPanel>
-            </Expander>
-
-            <!-- COLOR ADJUSTMENTS -->
-            <Expander Header="Color Adjustments"
-                      IsExpanded="False"
-                      Padding="15"
-                      Margin="0"
-                      BorderThickness="0"
-                      HorizontalAlignment="Stretch"
-                      HorizontalContentAlignment="Stretch">
-
-                <StackPanel Orientation="Vertical" Spacing="5" Padding="0"
-                            HorizontalAlignment="Stretch">
+                    <TextBlock Text="White Balance" Foreground="White" FontSize="15" Margin="0, 5, 0, 5"/>
 
                     <!-- TEMPERATURE -->
                     <StackPanel Orientation="Vertical" Spacing="2" Padding="0">
-                        <TextBlock Text="Temperature"
+                        <TextBlock Text="Temp"
                                    Foreground="White"
-                                   FontSize="10"
+                                   FontSize="12"
                                    Margin="0,0,0,2"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -180,9 +45,10 @@
                             </Grid.ColumnDefinitions>
 
                             <Slider x:Name="TemperatureSlider"
-                                    Grid.Column="0"
-                                    Minimum="-100"
-                                    Maximum="100"
+                                    
+Grid.Column="0"
+                                    Minimum="2000"
+                                    Maximum="50000"
                                     Value="0"
                                     ValueChanged="TemperatureSlider_ValueChanged"
                                     HorizontalAlignment="Stretch"
@@ -192,7 +58,7 @@
                                        Grid.Column="1"
                                        Text="0"
                                        Foreground="White"
-                                       Width="30"
+                                       Width="40"
                                        TextAlignment="Right"
                                        VerticalAlignment="Center"/>
                         </Grid>
@@ -202,7 +68,7 @@
                     <StackPanel Orientation="Vertical" Spacing="2" Padding="0">
                         <TextBlock Text="Tint"
                                    Foreground="White"
-                                   FontSize="10"
+                                   FontSize="12"
                                    Margin="0,0,0,2"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -211,9 +77,10 @@
                             </Grid.ColumnDefinitions>
 
                             <Slider x:Name="TintSlider"
-                                    Grid.Column="0"
-                                    Minimum="-100"
-                                    Maximum="100"
+                                    
+Grid.Column="0"
+                                    Minimum="-150"
+                                    Maximum="150"
                                     Value="0"
                                     ValueChanged="TintSlider_ValueChanged"
                                     HorizontalAlignment="Stretch"
@@ -223,17 +90,24 @@
                                        Grid.Column="1"
                                        Text="0"
                                        Foreground="White"
-                                       Width="30"
+                                       Width="40"
                                        TextAlignment="Right"
                                        VerticalAlignment="Center"/>
                         </Grid>
                     </StackPanel>
 
-                    <!-- SATURATION -->
+
+                    <Rectangle HorizontalAlignment="Stretch" Height="1" Fill="Gray" Margin="5"/>
+
+                    <!-- TONE -->
+
+                    <TextBlock Text="Tone" Foreground="White" FontSize="15" Margin="0, 5, 0, 5"/>
+
+                    <!-- EXPOSURE -->
                     <StackPanel Orientation="Vertical" Spacing="2" Padding="0">
-                        <TextBlock Text="Saturation"
+                        <TextBlock Text="Exposure"
                                    Foreground="White"
-                                   FontSize="10"
+                                   FontSize="12"
                                    Margin="0,0,0,2"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -241,24 +115,374 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <Slider x:Name="SaturationSlider"
+                            <Slider x:Name="ExposureSlider"
                                     Grid.Column="0"
-                                    Minimum="-100"
-                                    Maximum="100"
+                                    Minimum="-5"
+                                    Maximum="5"
                                     Value="0"
-                                    ValueChanged="SaturationSlider_ValueChanged"
+                                    ValueChanged="ExposureSlider_ValueChanged"
                                     HorizontalAlignment="Stretch"
+                                    StepFrequency="0.05"                        
                                     Margin="0,0,5,0"/>
 
-                            <TextBlock x:Name="SaturationValueLabel"
+                            <TextBlock x:Name="ExposureValueLabel"
                                        Grid.Column="1"
                                        Text="0"
                                        Foreground="White"
-                                       Width="30"
+                                       Width="40"
                                        TextAlignment="Right"
                                        VerticalAlignment="Center"/>
                         </Grid>
                     </StackPanel>
+
+                    <!-- CONTRAST -->
+                    <StackPanel Orientation="Vertical" Spacing="2" Padding="0">
+                        <TextBlock Text="Contrast"
+                                   Foreground="White"
+                                   FontSize="12"
+                                   Margin="0,0,0,2"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Slider x:Name="ContrastSlider"
+                                    Grid.Column="0"
+                                    Minimum="-100"
+                                    Maximum="100"
+                                    Value="0"
+                                    ValueChanged="ContrastSlider_ValueChanged"
+                                    HorizontalAlignment="Stretch"
+                                    Margin="0,0,5,0"/>
+
+                            <TextBlock x:Name="ContrastValueLabel"
+                                       Grid.Column="1"
+                                       Text="0"
+                                       Foreground="White"
+                                       Width="40"
+                                       TextAlignment="Right"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+
+
+                    <Rectangle HorizontalAlignment="Stretch" Height="1" Fill="Gray" Margin="5"/>
+
+                    <!-- HIGHLIGHTS -->
+                    <StackPanel Orientation="Vertical" Spacing="2" Padding="0">
+                        <TextBlock Text="Highlights"
+                                   Foreground="White"
+                                   FontSize="12"
+                                   Margin="0,0,0,2"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Slider x:Name="HighlightsSlider"
+                                    
+Grid.Column="0"
+                                    Minimum="-100"
+                                    Maximum="100"
+                                    Value="0"
+                                    ValueChanged="HighlightsSlider_ValueChanged"
+                                    HorizontalAlignment="Stretch"
+                                    Margin="0,0,5,0"/>
+
+                            <TextBlock x:Name="HighlightsValueLabel"
+                                       Grid.Column="1"
+                                       Text="0"
+                                       Foreground="White"
+                                       Width="40"
+                                       TextAlignment="Right"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- SHADOWS -->
+                    <StackPanel Orientation="Vertical" Spacing="2" Padding="0">
+                        <TextBlock Text="Shadows"
+                                   Foreground="White"
+                                   FontSize="12"
+                                   Margin="0,0,0,2"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Slider x:Name="ShadowsSlider"
+                                    
+Grid.Column="0"
+                                    Minimum="-100"
+                                    Maximum="100"
+                                    Value="0"
+                                    ValueChanged="ShadowsSlider_ValueChanged"
+                                    HorizontalAlignment="Stretch"
+                                    Margin="0,0,5,0"/>
+
+                            <TextBlock x:Name="ShadowsValueLabel"
+                                       Grid.Column="1"
+                                       Text="0"
+                                       Foreground="White"
+                                       Width="40"
+                                       TextAlignment="Right"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- WHITES -->
+                    <StackPanel Orientation="Vertical" Spacing="2" Padding="0">
+                        <TextBlock Text="Whites"
+               Foreground="White"
+               FontSize="12"
+               Margin="0,0,0,2"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Slider x:Name="WhitesSlider"
+                Grid.Column="0"
+
+                Minimum="-100"
+                Maximum="100"
+                Value="0"
+                ValueChanged="WhitesSlider_ValueChanged"
+                HorizontalAlignment="Stretch"
+                Margin="0,0,5,0"/>
+
+                            <TextBlock x:Name="WhitesValueLabel"
+                   Grid.Column="1"
+                   Text="0"
+                   Foreground="White"
+                   Width="40"
+                   TextAlignment="Right"
+                   VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- BLACKS -->
+                    <StackPanel Orientation="Vertical" Spacing="2" Padding="0">
+                        <TextBlock Text="Blacks"
+               Foreground="White"
+               FontSize="12"
+               Margin="0,0,0,2"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Slider x:Name="BlacksSlider"
+                Grid.Column="0"
+
+                Minimum="-100"
+                Maximum="100"
+                Value="0"
+                ValueChanged="BlacksSlider_ValueChanged"
+                HorizontalAlignment="Stretch"
+                Margin="0,0,5,0"/>
+
+                            <TextBlock x:Name="BlacksValueLabel"
+                   Grid.Column="1"
+                   Text="0"
+                   Foreground="White"
+                   Width="40"
+                   TextAlignment="Right"
+                   VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+
+
+                    <Rectangle HorizontalAlignment="Stretch" Height="1" Fill="Gray" Margin="5"/>
+
+
+                    <!-- Presence -->
+
+                    <TextBlock Text="Presence" Foreground="White" FontSize="15" Margin="0, 5, 0, 5"/>
+
+                    <!-- Texture -->
+                    <StackPanel Orientation="Vertical" Spacing="2" Padding="0">
+                        <TextBlock Text="Texture"
+               Foreground="White"
+               FontSize="12"
+               Margin="0,0,0,2"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Slider x:Name="TextureSlider"
+                Grid.Column="0"
+
+                Minimum="-100"
+                Maximum="100"
+                Value="0"
+                ValueChanged="TextureSlider_ValueChanged"
+                HorizontalAlignment="Stretch"
+                Margin="0,0,5,0"/>
+
+                            <TextBlock x:Name="TextureValueLabel"
+                   Grid.Column="1"
+                   Text="0"
+                   Foreground="White"
+                   Width="40"
+                   TextAlignment="Right"
+                   VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Clarity -->
+                    <StackPanel Orientation="Vertical" Spacing="2" Padding="0">
+                        <TextBlock Text="Clarity"
+               Foreground="White"
+               FontSize="12"
+               Margin="0,0,0,2"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Slider x:Name="ClaritySlider"
+                Grid.Column="0"
+
+                Minimum="-100"
+                Maximum="100"
+                Value="0"
+                ValueChanged="ClaritySlider_ValueChanged"
+                HorizontalAlignment="Stretch"
+                Margin="0,0,5,0"/>
+
+                            <TextBlock x:Name="ClarityValueLabel"
+                   Grid.Column="1"
+                   Text="0"
+                   Foreground="White"
+                   Width="40"
+                   TextAlignment="Right"
+                   VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Dehaze -->
+                    <StackPanel Orientation="Vertical" Spacing="2" Padding="0">
+                        <TextBlock Text="Dehaze"
+               Foreground="White"
+               FontSize="12"
+               Margin="0,0,0,2"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Slider x:Name="DehazeSlider"
+                Grid.Column="0"
+
+                Minimum="-100"
+                Maximum="100"
+                Value="0"
+                ValueChanged="DehazeSlider_ValueChanged"
+                HorizontalAlignment="Stretch"
+                Margin="0,0,5,0"/>
+
+                            <TextBlock x:Name="DehazeValueLabel"
+                   Grid.Column="1"
+                   Text="0"
+                   Foreground="White"
+                   Width="40"
+                   TextAlignment="Right"
+                   VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+
+
+                    <Rectangle HorizontalAlignment="Stretch" Height="1" Fill="Gray" Margin="5"/>
+
+                    <!-- Vibrance -->
+                    <StackPanel Orientation="Vertical" Spacing="2" Padding="0">
+                        <TextBlock Text="Vibrance"
+               Foreground="White"
+               FontSize="12"
+               Margin="0,0,0,2"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Slider x:Name="VibranceSlider"
+                Grid.Column="0"
+
+                Minimum="-100"
+                Maximum="100"
+                Value="0"
+                ValueChanged="VibranceSlider_ValueChanged"
+                HorizontalAlignment="Stretch"
+                Margin="0,0,5,0"/>
+
+                            <TextBlock x:Name="VibranceValueLabel"
+                   Grid.Column="1"
+                   Text="0"
+                   Foreground="White"
+                   Width="40"
+                   TextAlignment="Right"
+                   VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Saturation -->
+                    <StackPanel Orientation="Vertical" Spacing="2" Padding="0">
+                        <TextBlock Text="Saturation"
+               Foreground="White"
+               FontSize="12"
+               Margin="0,0,0,2"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Slider x:Name="SaturationSlider"
+                Grid.Column="0"
+
+                Minimum="-100"
+                Maximum="100"
+                Value="0"
+                ValueChanged="SaturationSlider_ValueChanged"
+                HorizontalAlignment="Stretch"
+                Margin="0,0,5,0"/>
+
+                            <TextBlock x:Name="SaturationValueLabel"
+                   Grid.Column="1"
+                   Text="0"
+                   Foreground="White"
+                   Width="40"
+                   TextAlignment="Right"
+                   VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+
+                </StackPanel>
+            </Expander>
+
+            <!-- COLOR ADJUSTMENTS -->
+            <Expander Header="Color Adjustments"
+                      IsExpanded="False"
+                      Padding="10"
+                      Margin="0"
+                      BorderThickness="0"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Stretch">
+
+                <StackPanel Orientation="Vertical" Spacing="5" Padding="0"
+                            HorizontalAlignment="Stretch">
+
 
                 </StackPanel>
             </Expander>
