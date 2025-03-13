@@ -33,6 +33,11 @@ namespace LuxEditor.Components
             }
         }
 
+        public void SetImage(BitmapImage bitmap)
+        {
+            DisplayImage.Source = bitmap;
+        }
+
         /// <summary>
         /// Fired when the pointer is pressed down (mouse button down).
         /// Capture the pointer so we receive move events even if the cursor goes outside the control.

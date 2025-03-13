@@ -12,6 +12,9 @@
     <!-- Root Grid -->
     <Grid Padding="0">
 
+        <ScrollViewer VerticalScrollMode="Enabled" HorizontalScrollMode="Disabled">
+            
+
         <StackPanel Orientation="Vertical" Spacing="1" Padding="0"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Top">
@@ -50,7 +53,7 @@ Grid.Column="0"
                                     Minimum="2000"
                                     Maximum="50000"
                                     Value="0"
-                                    ValueChanged="TemperatureSlider_ValueChanged"
+                                    
                                     HorizontalAlignment="Stretch"
                                     Margin="0,0,5,0"/>
 
@@ -82,7 +85,7 @@ Grid.Column="0"
                                     Minimum="-150"
                                     Maximum="150"
                                     Value="0"
-                                    ValueChanged="TintSlider_ValueChanged"
+                                    
                                     HorizontalAlignment="Stretch"
                                     Margin="0,0,5,0"/>
 
@@ -120,7 +123,7 @@ Grid.Column="0"
                                     Minimum="-5"
                                     Maximum="5"
                                     Value="0"
-                                    ValueChanged="ExposureSlider_ValueChanged"
+                                    
                                     HorizontalAlignment="Stretch"
                                     StepFrequency="0.05"                        
                                     Margin="0,0,5,0"/>
@@ -152,7 +155,7 @@ Grid.Column="0"
                                     Minimum="-100"
                                     Maximum="100"
                                     Value="0"
-                                    ValueChanged="ContrastSlider_ValueChanged"
+                                    
                                     HorizontalAlignment="Stretch"
                                     Margin="0,0,5,0"/>
 
@@ -187,7 +190,7 @@ Grid.Column="0"
                                     Minimum="-100"
                                     Maximum="100"
                                     Value="0"
-                                    ValueChanged="HighlightsSlider_ValueChanged"
+                                    
                                     HorizontalAlignment="Stretch"
                                     Margin="0,0,5,0"/>
 
@@ -219,7 +222,7 @@ Grid.Column="0"
                                     Minimum="-100"
                                     Maximum="100"
                                     Value="0"
-                                    ValueChanged="ShadowsSlider_ValueChanged"
+                                    
                                     HorizontalAlignment="Stretch"
                                     Margin="0,0,5,0"/>
 
@@ -251,7 +254,7 @@ Grid.Column="0"
                 Minimum="-100"
                 Maximum="100"
                 Value="0"
-                ValueChanged="WhitesSlider_ValueChanged"
+                
                 HorizontalAlignment="Stretch"
                 Margin="0,0,5,0"/>
 
@@ -283,7 +286,7 @@ Grid.Column="0"
                 Minimum="-100"
                 Maximum="100"
                 Value="0"
-                ValueChanged="BlacksSlider_ValueChanged"
+                
                 HorizontalAlignment="Stretch"
                 Margin="0,0,5,0"/>
 
@@ -323,7 +326,7 @@ Grid.Column="0"
                 Minimum="-100"
                 Maximum="100"
                 Value="0"
-                ValueChanged="TextureSlider_ValueChanged"
+                
                 HorizontalAlignment="Stretch"
                 Margin="0,0,5,0"/>
 
@@ -355,7 +358,7 @@ Grid.Column="0"
                 Minimum="-100"
                 Maximum="100"
                 Value="0"
-                ValueChanged="ClaritySlider_ValueChanged"
+                
                 HorizontalAlignment="Stretch"
                 Margin="0,0,5,0"/>
 
@@ -387,7 +390,7 @@ Grid.Column="0"
                 Minimum="-100"
                 Maximum="100"
                 Value="0"
-                ValueChanged="DehazeSlider_ValueChanged"
+                
                 HorizontalAlignment="Stretch"
                 Margin="0,0,5,0"/>
 
@@ -422,7 +425,7 @@ Grid.Column="0"
                 Minimum="-100"
                 Maximum="100"
                 Value="0"
-                ValueChanged="VibranceSlider_ValueChanged"
+                
                 HorizontalAlignment="Stretch"
                 Margin="0,0,5,0"/>
 
@@ -454,7 +457,7 @@ Grid.Column="0"
                 Minimum="-100"
                 Maximum="100"
                 Value="0"
-                ValueChanged="SaturationSlider_ValueChanged"
+                
                 HorizontalAlignment="Stretch"
                 Margin="0,0,5,0"/>
 
@@ -488,5 +491,7 @@ Grid.Column="0"
             </Expander>
 
         </StackPanel>
+
+        </ScrollViewer>
     </Grid>
 </Page>
