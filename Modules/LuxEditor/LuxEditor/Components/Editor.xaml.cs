@@ -1,282 +1,165 @@
-/* 
-  Explanation for "F0" etc.:
-  - "F0" in the string format displays the slider value as an integer (no decimals).
-  - "F2" would show two decimal places.
-  Choose the format that best represents each slider's range and usage.
-*/
-
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media.Imaging;
 using SkiaSharp;
-using System;
 
 namespace LuxEditor.Components
 {
     public sealed partial class Editor : Page
     {
-        private SKBitmap? _originalBitmap;
+        private Dictionary<string, float> filterValues = new()
+        {
+            { "Temperature", 0 },
+            { "Tint", 0 },
+            { "Exposure", 0 },
+            { "Contrast", 0 },
+            { "Highlights", 0 },
+            { "Shadows", 0 },
+            { "Whites", 0 },
+            { "Blacks", 0 },
+            { "Texture", 0 },
+            { "Clarity", 0 }
+        };
 
-        public event Action<SKBitmap>? OnEditorImageUpdated;
+        private SKBitmap originalBitmap;
+        private SKBitmap editedBitmap;
+        private SKSurface skSurface;
+        private Task applyFiltersTask;
+        private bool pendingUpdate;
+        private readonly object updateLock = new();
+
+        public event Action<BitmapImage> OnEditorImageUpdated;
 
         public Editor()
         {
             this.InitializeComponent();
+            InitializeSliders();
         }
 
-        /// <summary>
-        /// Sets the original SKBitmap that we will process.
-        /// </summary>
         public void SetOriginalBitmap(SKBitmap bitmap)
         {
-            _originalBitmap = bitmap;
+            originalBitmap = bitmap;
+            editedBitmap = new SKBitmap(bitmap.Width, bitmap.Height);
+            skSurface = SKSurface.Create(new SKImageInfo(bitmap.Width, bitmap.Height));
+            ApplyFilters();
         }
 
-        // -----------------------
-        // Slider Handlers
-        // -----------------------
-
-        private void ExposureSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        private async void ApplyFilters()
         {
-            if (ExposureValueLabel != null)
-                ExposureValueLabel.Text = (e.NewValue).ToString("F2");
-            ProcessImage();
-        }
-
-        private void ContrastSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (ContrastValueLabel != null)
-                ContrastValueLabel.Text = (e.NewValue).ToString("F0");
-            ProcessImage();
-        }
-
-        private void HighlightsSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (HighlightsValueLabel != null)
-                HighlightsValueLabel.Text = (e.NewValue).ToString("F0");
-            ProcessImage();
-        }
-
-        private void ShadowsSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (ShadowsValueLabel != null)
-                ShadowsValueLabel.Text = (e.NewValue).ToString("F0");
-            ProcessImage();
-        }
-        private void WhitesSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (WhitesValueLabel != null)
-                WhitesValueLabel.Text = (e.NewValue).ToString("F0");
-            ProcessImage();
-        }
-        private void BlacksSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (BlacksValueLabel != null)
-                BlacksValueLabel.Text = (e.NewValue).ToString("F0");
-            ProcessImage();
-        }
-
-        private void TemperatureSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (TemperatureValueLabel != null)
-                TemperatureValueLabel.Text = e.NewValue.ToString("F0");
-            ProcessImage();
-        }
-
-        private void TintSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (TintValueLabel != null)
-                TintValueLabel.Text = e.NewValue.ToString("F0");
-            ProcessImage();
-        }
-
-        private void TextureSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (TextureValueLabel != null)
-                TextureValueLabel.Text = e.NewValue.ToString("F0");
-            ProcessImage();
-        }
-
-        private void ClaritySlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (ClarityValueLabel != null)
-                ClarityValueLabel.Text = e.NewValue.ToString("F0");
-            ProcessImage();
-        }
-
-        private void DehazeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (DehazeValueLabel != null)
-                DehazeValueLabel.Text = e.NewValue.ToString("F0");
-            ProcessImage();
-        }
-
-        private void VibranceSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (VibranceValueLabel != null)
-                VibranceValueLabel.Text = e.NewValue.ToString("F0");
-            ProcessImage();
-        }
-
-        private void SaturationSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            //if (SaturationValueLabel != null)
-            //    SaturationValueLabel.Text = e.NewValue.ToString("F0");
-            ProcessImage();
-        }
-
-        /// <summary>
-        /// Applies all adjustments to the original image, then raises an event.
-        /// </summary>
-        private void ProcessImage()
-        {
-            if (_originalBitmap == null)
-                return;
-
-            // 1) Retrieve slider values
-            float exposure = (float)ExposureSlider.Value;
-            float contrast = (float)ContrastSlider.Value;
-            float highlights = (float)HighlightsSlider.Value;
-            float shadows = (float)ShadowsSlider.Value;
-            float temperature = (float)TemperatureSlider.Value;
-            float tint = (float)TintSlider.Value;
-            //float saturation = (float)SaturationSlider.Value;
-
-            // 2) First pass with color filters (exposure, contrast, saturation)
-            SKBitmap firstPassBitmap = new SKBitmap(_originalBitmap.Width, _originalBitmap.Height);
-            using (var canvas = new SKCanvas(firstPassBitmap))
+            lock (updateLock)
             {
-                canvas.Clear(SKColors.Transparent);
-
-                // Exposure with lighting filter
-                float exposureScale = (float)Math.Pow(2, exposure);
-                var exposureFilter = SKColorFilter.CreateLighting(
-                    new SKColor(
-                        (byte)(255 * exposureScale),
-                        (byte)(255 * exposureScale),
-                        (byte)(255 * exposureScale)),
-                    new SKColor(0, 0, 0));
-
-                // Contrast with color matrix
-                float contrastFactor = 1f + contrast;
-                float translate = 0.5f * (1f - contrastFactor);
-                float[] contrastMatrix =
+                if (applyFiltersTask != null && !applyFiltersTask.IsCompleted)
                 {
-                    contrastFactor, 0,             0,             0, translate,
-                    0,             contrastFactor, 0,             0, translate,
-                    0,             0,             contrastFactor, 0, translate,
-                    0,             0,             0,             1, 0
-                };
-                var contrastFilter = SKColorFilter.CreateColorMatrix(contrastMatrix);
+                    pendingUpdate = true;
+                    return;
+                }
+                applyFiltersTask = ApplyFiltersAsync();
+            }
+            await applyFiltersTask;
+        }
 
-                // Saturation with color matrix
-                //float saturationFactor = 1f + (saturation / 100f);
-                float saturationFactor = 1f + (100 / 100f);
-                float lumR = 0.3086f;
-                float lumG = 0.6094f;
-                float lumB = 0.0820f;
-                float oneMinusS = 1f - saturationFactor;
-                float r = (oneMinusS * lumR);
-                float g = (oneMinusS * lumG);
-                float b = (oneMinusS * lumB);
-                float[] saturationMatrix =
+        private async Task ApplyFiltersAsync()
+        {
+            await Task.Delay(100);
+
+            lock (updateLock)
+            {
+                if (pendingUpdate)
                 {
-                    r + saturationFactor, g,                     b,                     0, 0,
-                    r,                     g + saturationFactor, b,                     0, 0,
-                    r,                     g,                     b + saturationFactor, 0, 0,
-                    0,                     0,                     0,                     1, 0
-                };
-                var saturationFilter = SKColorFilter.CreateColorMatrix(saturationMatrix);
-
-                // Compose exposure->contrast->saturation
-                var contrastSaturation = SKColorFilter.CreateCompose(contrastFilter, saturationFilter);
-                var finalFilter = SKColorFilter.CreateCompose(exposureFilter, contrastSaturation);
-
-                using (var paint = new SKPaint())
-                {
-                    paint.ColorFilter = finalFilter;
-                    canvas.DrawBitmap(_originalBitmap, 0, 0, paint);
+                    pendingUpdate = false;
+                    applyFiltersTask = ApplyFiltersAsync();
+                    return;
                 }
             }
 
-            // 3) Second pass (CPU) for highlights, shadows, temperature, and tint
-            SKBitmap finalBitmap = new SKBitmap(firstPassBitmap.Width, firstPassBitmap.Height);
-            for (int y = 0; y < firstPassBitmap.Height; y++)
+            if (originalBitmap == null || editedBitmap == null) return;
+
+            skSurface.Canvas.Clear();
+            skSurface.Canvas.DrawBitmap(originalBitmap, 0, 0);
+
+            using (var paint = new SKPaint { ColorFilter = CreateColorFilter() })
             {
-                for (int x = 0; x < firstPassBitmap.Width; x++)
-                {
-                    uint pixel = (uint)firstPassBitmap.GetPixel(x, y);
-                    byte alpha = (byte)((pixel >> 24) & 0xFF);
-                    byte red = (byte)((pixel >> 16) & 0xFF);
-                    byte green = (byte)((pixel >> 8) & 0xFF);
-                    byte blue = (byte)(pixel & 0xFF);
-
-                    float fr = red / 255f;
-                    float fg = green / 255f;
-                    float fb = blue / 255f;
-
-                    // Highlights
-                    float brightness = (fr + fg + fb) / 3f;
-                    if (brightness > 0.5f)
-                    {
-                        float factor = (brightness - 0.5f) * 2f;
-                        float amount = highlights * factor;
-                        fr = fr + amount * (1f - fr);
-                        fg = fg + amount * (1f - fg);
-                        fb = fb + amount * (1f - fb);
-                    }
-
-                    // Shadows
-                    brightness = (fr + fg + fb) / 3f;
-                    if (brightness < 0.5f)
-                    {
-                        float factor = (0.5f - brightness) * 2f;
-                        float amount = shadows * factor;
-                        fr = fr + amount * (1f - fr);
-                        fg = fg + amount * (1f - fg);
-                        fb = fb + amount * (1f - fb);
-                    }
-
-                    // Temperature and tint
-                    float tempFactor = temperature / 100f;
-                    float tintFactor = tint / 100f;
-
-                    // Simple scale for red and blue (temperature)
-                    float rScale = 1f + (tempFactor * 0.3f);
-                    float bScale = 1f - (tempFactor * 0.3f);
-                    fr *= rScale;
-                    fb *= bScale;
-
-                    // Simple scale for green (tint)
-                    float gScale = 1f + (tintFactor * 0.3f);
-                    fg *= gScale;
-
-                    // Optional partial compensation for red/blue with tint
-                    float inverseTintScale = 1f - (Math.Abs(tintFactor) * 0.1f);
-                    fr *= inverseTintScale;
-                    fb *= inverseTintScale;
-
-                    // Clamp
-                    fr = Math.Clamp(fr, 0f, 1f);
-                    fg = Math.Clamp(fg, 0f, 1f);
-                    fb = Math.Clamp(fb, 0f, 1f);
-
-                    // Convert to byte
-                    byte nr = (byte)(fr * 255f);
-                    byte ng = (byte)(fg * 255f);
-                    byte nb = (byte)(fb * 255f);
-
-                    uint newPixel =
-                          ((uint)alpha << 24)
-                        | ((uint)nr << 16)
-                        | ((uint)ng << 8)
-                        | (uint)nb;
-
-                    finalBitmap.SetPixel(x, y, newPixel);
-                }
+                skSurface.Canvas.DrawBitmap(originalBitmap, 0, 0, paint);
             }
 
-            // 4) Send final bitmap
-            OnEditorImageUpdated?.Invoke(finalBitmap);
+            skSurface.Canvas.Flush();
+
+            using (var snapshot = skSurface.Snapshot())
+            {
+                SKBitmap newBitmap = new SKBitmap(originalBitmap.Width, originalBitmap.Height);
+                snapshot.ReadPixels(newBitmap.Info, newBitmap.GetPixels(), newBitmap.RowBytes, 0, 0);
+                editedBitmap = newBitmap;
+            }
+
+            UpdateImage();
+        }
+
+
+        private SKColorFilter CreateColorFilter()
+        {
+            float temperature = filterValues["Temperature"] / 50000f;
+            float tint = filterValues["Tint"] / 150f;
+            float exposure = filterValues["Exposure"] / 5f;
+            float contrast = filterValues["Contrast"] / 100f;
+
+            float[] colorMatrix = new float[]
+            {
+                1 + contrast, 0, tint, 0, temperature,
+                0, 1 + contrast, 0, 0, exposure,
+                0, 0, 1 + contrast, 0, 0,
+                0, 0, 0, 1, 0
+            };
+
+            return SKColorFilter.CreateColorMatrix(colorMatrix);
+        }
+
+        private void UpdateImage()
+        {
+            using (var image = SKImage.FromBitmap(editedBitmap))
+            using (var data = image.Encode(SKEncodedImageFormat.Png, 100))
+            {
+                var stream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
+                var outputStream = stream.AsStreamForWrite();
+                data.SaveTo(outputStream);
+                outputStream.Flush();
+                outputStream.Position = 0;
+
+                BitmapImage bitmapImage = new();
+                bitmapImage.SetSource(stream);
+                OnEditorImageUpdated?.Invoke(bitmapImage);
+            }
+        }
+
+        private void InitializeSliders()
+        {
+            TemperatureSlider.ValueChanged += SliderValueChanged;
+            TintSlider.ValueChanged += SliderValueChanged;
+            ExposureSlider.ValueChanged += SliderValueChanged;
+            ContrastSlider.ValueChanged += SliderValueChanged;
+            HighlightsSlider.ValueChanged += SliderValueChanged;
+            ShadowsSlider.ValueChanged += SliderValueChanged;
+            WhitesSlider.ValueChanged += SliderValueChanged;
+            BlacksSlider.ValueChanged += SliderValueChanged;
+            TextureSlider.ValueChanged += SliderValueChanged;
+            ClaritySlider.ValueChanged += SliderValueChanged;
+        }
+
+        private void SliderValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (sender is Slider slider && slider.Tag is string filterKey && filterValues.ContainsKey(filterKey))
+            {
+                float newValue = (float)e.NewValue;
+                if (Math.Abs(filterValues[filterKey] - newValue) > 0.01f)
+                {
+                    filterValues[filterKey] = newValue;
+                    ApplyFilters();
+                }
+            }
         }
     }
 }
