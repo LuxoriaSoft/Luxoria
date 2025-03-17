@@ -1,0 +1,3 @@
+[submodule "Modules/LuxFilter/LuxFilter.Algorithms/Algorithms/PerceptualMetrics/GrabCut/grabcut_imgseg"]
+	path = Modules/LuxFilter/LuxFilter.Algorithms/Algorithms/PerceptualMetrics/GrabCut/grabcut_imgseg
+	url = https://github.com/LuxoriaSoft/grabcut_image_segementation.git
