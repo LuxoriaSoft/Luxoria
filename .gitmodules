@@ -1,0 +1,3 @@
+[submodule "Modules/LuxFilter/LuxFilter.Algorithms/Algorithms/PerceptualMetrics/GrabCut/grabcut_dllcore"]
+	path = Modules/LuxFilter/LuxFilter.Algorithms/Algorithms/PerceptualMetrics/GrabCut/grabcut_dllcore
+	url = https://github.com/luxoriasoft/grabcut_dllcore.git
