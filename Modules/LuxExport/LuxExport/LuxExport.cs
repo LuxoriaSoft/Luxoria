@@ -45,20 +45,20 @@ namespace LuxExport
 
             List<ISmartButton> smartButtons = new List<ISmartButton>();
 
-            Dictionary<SmartButtonType, Page> mainPage = new Dictionary<SmartButtonType, Page>();
+            Dictionary<SmartButtonType, Object> mainPage = new Dictionary<SmartButtonType, Object>();
 
             _export = new Export();
 
-            mainPage.Add(SmartButtonType.Modal, _export);
+            mainPage.Add(SmartButtonType.Window, _export);
 
             smartButtons.Add(new SmartButton("Export", "Export module", mainPage));
 
 
             Items.Add(new LuxMenuBarItem("LuxExport", false, new Guid(), smartButtons));
 
-            //_eventBus.Subscribe<CollectionUpdatedEvent>(OnCollectionUpdated);
+            _eventBus.Subscribe<CollectionUpdatedEvent>(OnCollectionUpdated);
 
-            _logger?.Log($"{Name} initialized", "Mods/TestModule1", LogLevel.Info);
+            _logger?.Log($"{Name} initialized", "Mods/LuxExport", LogLevel.Info);
 
         }
 
@@ -67,17 +67,22 @@ namespace LuxExport
         /// </summary>
         public void Execute()
         {
-            _logger?.Log($"{Name} executed", "Mods/TestModule1", LogLevel.Info);
+            _logger?.Log($"{Name} executed", "Mods/LuxExport", LogLevel.Info);
         }
 
-        /// <summary>
+        /// <summary>Content
         /// Cleans up resources and subscriptions when the module is shut down.
         /// </summary>
         public void Shutdown()
         {
-            //_eventBus?.Unsubscribe<CollectionUpdatedEvent>(OnCollectionUpdated);
+            _eventBus?.Unsubscribe<CollectionUpdatedEvent>(OnCollectionUpdated);
 
-            _logger?.Log($"{Name} shut down", "Mods/TestModule1", LogLevel.Info);
+            _logger?.Log($"{Name} shut down", "Mods/LuxExport", LogLevel.Info);
+        }
+
+        public void OnCollectionUpdated(CollectionUpdatedEvent e)
+        {
+            _logger?.Log($"{Name} received CollectionUpdatedEvent", "Mods/LuxExport", LogLevel.Info);
         }
     }
 }
