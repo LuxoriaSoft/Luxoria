@@ -14,9 +14,9 @@ namespace LuxEditor.Components
 {
     public sealed partial class Editor : Page
     {
-        private SKBitmap _originalBitmap;
+        private SKBitmap? _originalBitmap;
 
-        public event Action<SKBitmap> OnEditorImageUpdated;
+        public event Action<SKBitmap>? OnEditorImageUpdated;
 
         public Editor()
         {

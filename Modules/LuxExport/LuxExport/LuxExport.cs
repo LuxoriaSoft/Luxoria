@@ -1,15 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Luxoria.GModules;
 using Luxoria.GModules.Interfaces;
 using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Models;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
 using Microsoft.UI.Xaml.Controls;
+using SkiaSharp;
 
 
 // To learn more about WinUI, the WinUI project structure,
@@ -80,9 +84,26 @@ namespace LuxExport
             _logger?.Log($"{Name} shut down", "Mods/LuxExport", LogLevel.Info);
         }
 
-        public void OnCollectionUpdated(CollectionUpdatedEvent e)
+        public void OnCollectionUpdated(CollectionUpdatedEvent body)
         {
-            _logger?.Log($"{Name} received CollectionUpdatedEvent", "Mods/LuxExport", LogLevel.Info);
+            _logger?.Log($"Collection updated: {body.CollectionName}");
+            _logger?.Log($"Collection path: {body.CollectionPath}");
+
+            for (int i = 0; i < body.Assets.Count; i++)
+            {
+                ImageData imageData = body.Assets.ElementAt(i).Data;
+                _logger?.Log($"Asset {i}: {body.Assets.ElementAt(i).MetaData.Id}");
+                _logger?.Log($"Asset info {i} : {imageData.Height}x{imageData.Width}, pixels : {imageData.Height * imageData.Width}");
+            }
+            List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> lst = body.Assets
+                .Select(x => new KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>(x.Data.Bitmap, x.Data.EXIF))
+                .ToList();
+            Debug.WriteLine("Calling function ....");
+
+            Debug.WriteLine("Lst count : " + lst.Count);
+            Debug.WriteLine(lst);
+
+            _export?.SetBitmaps(lst);
         }
     }
 }
