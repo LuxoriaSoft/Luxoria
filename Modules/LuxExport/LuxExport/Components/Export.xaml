@@ -61,6 +61,8 @@
         <Border Grid.Row="1" Grid.Column="1">
             <ScrollView HorizontalScrollMode="Disabled" VerticalScrollMode="Enabled" HorizontalAlignment="Stretch" Padding="0, 10, 10, 10">
                 <StackPanel Orientation="Vertical">
+                    
+             
                     <Expander Header="Export Location" Padding="5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                         <Grid RowSpacing="5" ColumnSpacing="5">
 
@@ -76,46 +78,42 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Export To" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                            <DropDownButton Grid.Row="0" Grid.Column="1" Content="Desktop" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                            <DropDownButton x:Name="ExportLocationButton" Grid.Row="0" Grid.Column="1" Content="{x:Bind viewModel.SelectedExportLocation, Mode=OneWay}" VerticalAlignment="Center" HorizontalAlignment="Stretch">
                                 <DropDownButton.Flyout>
                                     <MenuFlyout Placement="Bottom">
-                                        <MenuFlyoutItem Text="Custom Path"/>
+                                        <MenuFlyoutItem Text="Custom Path" Click="ExportLocation_Selected"/>
                                         <MenuFlyoutSeparator/>
-                                        <MenuFlyoutItem Text="Same path as original file"/>
+                                        <MenuFlyoutItem Text="Same path as original file" Click="ExportLocation_Selected"/>
                                         <MenuFlyoutSeparator/>
-                                        <MenuFlyoutItem Text="Desktop"/>
-                                        <MenuFlyoutItem Text="Document"/>
-                                        <MenuFlyoutItem Text="Pictures"/>
+                                        <MenuFlyoutItem Text="Desktop" Click="ExportLocation_Selected"/>
+                                        <MenuFlyoutItem Text="Documents" Click="ExportLocation_Selected"/>
+                                        <MenuFlyoutItem Text="Pictures" Click="ExportLocation_Selected"/>
                                     </MenuFlyout>
                                 </DropDownButton.Flyout>
                             </DropDownButton>
 
-
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Folder" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                            <TextBox Grid.Row="1" Grid.Column="1" Text="C:\Users\Public\Desktop" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" x:Name="ExportFilePath" Text="{x:Bind viewModel.ExportFilePath, Mode=TwoWay}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
 
-
-                            <CheckBox Grid.Row="2" Grid.Column="0" Content="Create Subfolder" IsChecked="True" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                            <Border Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch">
-                                <TextBox Text="Luxoria" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
-                            </Border>
-
+                            <CheckBox x:Name="CreateSubfolderCheckBox" Grid.Row="2" Grid.Column="0" Content="Create Subfolder" IsChecked="{x:Bind viewModel.CreateSubfolder, Mode=TwoWay}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                            <TextBox x:Name="SubfolderNameTextBox" Grid.Row="2" Grid.Column="1" Text="{x:Bind viewModel.SubfolderName, Mode=TwoWay}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
 
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Existing File" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                            <DropDownButton Grid.Row="3" Grid.Column="1" Content="Overwrite" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                            <DropDownButton Grid.Row="3" Grid.Column="1" x:Name="FileConflictResolutionButton" Content="{x:Bind viewModel.SelectedFileConflictResolution, Mode=OneWay}" VerticalAlignment="Center" HorizontalAlignment="Stretch">
                                 <DropDownButton.Flyout>
                                     <MenuFlyout Placement="Bottom">
-                                        <MenuFlyoutItem Text="Overwrite"/>
-                                        <MenuFlyoutItem Text="Rename"/>
-                                        <MenuFlyoutItem Text="Skip"/>
+                                        <MenuFlyoutItem Text="Overwrite" Click="FileConflictResolution_Selected"/>
+                                        <MenuFlyoutItem Text="Rename" Click="FileConflictResolution_Selected"/>
+                                        <MenuFlyoutItem Text="Skip" Click="FileConflictResolution_Selected"/>
                                     </MenuFlyout>
                                 </DropDownButton.Flyout>
                             </DropDownButton>
                         </Grid>
                     </Expander>
 
+                    
+                    
                     
                     <Expander Header="File Naming" Padding="10" Width="Auto" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
 
@@ -161,7 +159,9 @@
                             </DropDownButton>
                         </Grid>
                     </Expander>
-
+                    
+                    
+                    
                     
                     <Expander Header="File Settings" Padding="10" Width="Auto" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                         <Grid RowSpacing="5" ColumnSpacing="5">
@@ -177,15 +177,27 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
+                            
+                            
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Image format" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                             <DropDownButton Grid.Row="0" Grid.Column="1" Content="JPEG" VerticalAlignment="Center" HorizontalAlignment="Stretch">
                                 <DropDownButton.Flyout>
                                     <MenuFlyout Placement="Bottom">
                                         <MenuFlyoutItem Text="JPEG"/>
-                                        <MenuFlyoutItem Text="AVIF"/>
-                                        <MenuFlyoutItem Text="TIFF"/>
                                         <MenuFlyoutItem Text="PNG"/>
-                                        <MenuFlyoutItem Text="DNG"/>
+                                        <MenuFlyoutItem Text="Bmp"/>
+                                        <MenuFlyoutItem Text="Gif"/>
+                                        <MenuFlyoutItem Text="Ico"/>
+                                        <MenuFlyoutItem Text="Wbmp"/>
+                                        <MenuFlyoutItem Text="Webp"/>
+                                        <MenuFlyoutItem Text="Pkm"/>
+                                        <MenuFlyoutItem Text="Ktx"/>
+                                        <MenuFlyoutItem Text="Astc"/>
+                                        <MenuFlyoutItem Text="Dng"/>
+                                        <MenuFlyoutItem Text="Heif"/>
+                                        <MenuFlyoutItem Text="Avif"/>
+                                        <MenuFlyoutItem Text="Jpegxl"/>
+                                        
                                         <MenuFlyoutItem Text="Original file format"/>
                                     </MenuFlyout>
                                 </DropDownButton.Flyout>
@@ -196,7 +208,6 @@
 
                             <CheckBox Grid.Row="2" Grid.Column="0" Content="Limit file size to" IsChecked="True" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 
-
                             <Grid Grid.Row="2" Grid.Column="1" ColumnSpacing="5">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -206,8 +217,6 @@
                                 <TextBox Grid.Column="0" Text="0" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
                                 <TextBlock Grid.Column="1" Text="KB" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                             </Grid>
-                            
-
 
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Color Space" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                             <DropDownButton Grid.Row="3" Grid.Column="1" Content="sRGB" VerticalAlignment="Center" HorizontalAlignment="Stretch">
@@ -220,7 +229,9 @@
                             </DropDownButton>
                         </Grid>
                     </Expander>
-
+                    
+                    
+                    
                     
                     <Expander Header="Metadata" Padding="10" Width="Auto" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                         <Grid RowSpacing="5" ColumnSpacing="5">
@@ -253,6 +264,8 @@
                     </Expander>
 
 
+
+
                     <Expander Header="WaterMark" Padding="10" Width="Auto" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                         <Grid RowSpacing="5" ColumnSpacing="5">
                             <Grid.ColumnDefinitions>
@@ -276,6 +289,9 @@
                         </Grid>
                     </Expander>
 
+
+
+
                 </StackPanel>
             </ScrollView>
         </Border>
@@ -283,7 +299,7 @@
         <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Padding="10,0,10,10">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="Cancel" Margin="0,0,10,0"/>
-                <Button Content="Export" Margin="0,0,10,0"/>
+                <Button Content="Export" Margin="0,0,10,0" Click="ExportButton_Click"/>
             </StackPanel>
         </Border>
 
