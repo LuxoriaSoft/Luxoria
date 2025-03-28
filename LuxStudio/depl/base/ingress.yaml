@@ -13,6 +13,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: pluto-service
+            name: luxstudio-service
             port:
               number: 80
