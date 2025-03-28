@@ -4,7 +4,8 @@ metadata:
   name: luxstudio-ingress
   namespace: pluto
   annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web
+    kubernetes.io/ingress.class: traefik
+    cert-manager.io/cluster-issuer: letsencrypt-production
 spec:
   rules:
   - host: studio.pluto.luxoria.bluepelicansoft.com
@@ -17,3 +18,7 @@ spec:
             name: luxstudio-service
             port:
               number: 80
+  tls:
+  - hosts:
+    - studio.pluto.luxoria.bluepelicansoft.com
+    secretName: luxstudio-pluto-luxoria
