@@ -2,5 +2,8 @@ resources:
   - ../../base
   - configmap-prod.yaml
 
-patchesStrategicMerge:
-  - ingress-patch.yaml
+patches:
+  - path: ingress-patch.yaml
+    target:
+      kind: Ingress
+      name: luxstudio-ingress
