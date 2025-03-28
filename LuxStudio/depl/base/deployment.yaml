@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: luxstudio-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: luxstudio-app
+  template:
+    metadata:
+      labels:
+        app: luxstudio-app
+    spec:
+      containers:
+      - name: luxstudio-container
+        image: nginx:latest
+        ports:
+        - containerPort: 80

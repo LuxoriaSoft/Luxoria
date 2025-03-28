@@ -1,0 +1,7 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: luxstudio-ingress
+spec:
+  rules:
+  - host: studio.luxoria.bluepelicansoft.com

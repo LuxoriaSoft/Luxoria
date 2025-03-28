@@ -1,0 +1,6 @@
+resources:
+  - ../../base
+  - configmap-test.yaml
+
+patchesStrategicMerge:
+  - ingress-patch.yaml

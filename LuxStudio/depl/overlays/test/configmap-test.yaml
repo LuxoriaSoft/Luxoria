@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: luxstudio-config
+data:
+  EXTERNAL_URL: "https://studio.pluto.luxoria.bluepelicansoft.com"
+  ENVIRONMENT: "Test"
