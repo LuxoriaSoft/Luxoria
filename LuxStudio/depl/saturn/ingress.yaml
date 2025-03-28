@@ -2,11 +2,12 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: luxstudio-ingress
+  namespace: saturn
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
   rules:
-  - host: studio.mydomain.com
+  - host: studio.luxoria.bluepelicansoft.com
     http:
       paths:
       - path: /

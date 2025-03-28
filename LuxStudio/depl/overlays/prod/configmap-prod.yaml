@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: luxstudio-config
-data:
-  EXTERNAL_URL: "https://studio.luxoria.bluepelicansoft.com"
-  ENVIRONMENT: "Prod"

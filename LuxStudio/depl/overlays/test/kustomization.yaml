@@ -1,9 +1,0 @@
-resources:
-  - ../../base
-  - configmap-test.yaml
-
-patches:
-  - path: ingress-patch.yaml
-    target:
-      kind: Ingress
-      name: luxstudio-ingress
