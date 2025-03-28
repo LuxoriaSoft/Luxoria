@@ -3,6 +3,9 @@ using System.IO;
 using System.Net.NetworkInformation;
 using System.Net;
 using System.Threading.Tasks;
+using LuxExport.Interfaces;
+
+namespace LuxExport.Logic;
 
 public class JpegExporter : IExporter
 {

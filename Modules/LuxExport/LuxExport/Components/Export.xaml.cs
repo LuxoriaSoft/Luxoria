@@ -13,6 +13,7 @@ using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml.Media;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using LuxExport.Logic;
 
 namespace LuxExport
 {
@@ -28,6 +29,10 @@ namespace LuxExport
             this.InitializeComponent();
             viewModel = new ExportViewModel();
 
+            viewModel.LoadPresets("C:\\Users\\noahg\\Desktop\\Github\\Luxoria\\assets\\Presets\\FileNamingPresets.json");
+            RefreshPresetsMenu();
+            
+
             IntPtr hWnd = WindowNative.GetWindowHandle(this);
             WindowId myWndId = Win32Interop.GetWindowIdFromWindow(hWnd);
             _appWindow = AppWindow.GetFromWindowId(myWndId);
@@ -37,6 +42,23 @@ namespace LuxExport
                 _appWindow.Resize(new SizeInt32(600, 400));
             }
         }
+
+        private void RefreshPresetsMenu()
+        {
+            PresetsFlyout.Items.Clear();
+
+            foreach (var preset in viewModel.Presets)
+            {
+                var item = new MenuFlyoutItem { Text = preset.Name };
+                item.Click += (s, e) =>
+                {
+                    viewModel.CustomFileFormat = preset.Pattern;
+                };
+                PresetsFlyout.Items.Add(item);
+            }
+        }
+
+
         private async void ExportLocation_Selected(object sender, RoutedEventArgs e)
         {
             if (sender is MenuFlyoutItem menuItem)
@@ -131,7 +153,18 @@ namespace LuxExport
             }
 
             SKBitmap imageToExport = _bitmaps[0].Key;
-            string fileName = _bitmaps[0].Value["File Name"];
+            string originalFileName = _bitmaps[0].Value["File Name"];
+            var metadata = _bitmaps[0].Value;
+            string fileName;
+
+            if (viewModel.RenameFile)
+            {
+                fileName = viewModel.GenerateFileName(originalFileName, metadata);
+            }
+            else
+            {
+                fileName = originalFileName;
+            }
 
             if (imageToExport == null || string.IsNullOrWhiteSpace(fileName))
             {
@@ -180,6 +213,22 @@ namespace LuxExport
             viewModel.ExportImage(imageToExport);
 
             Debug.WriteLine($"Export successful: {fullFilePath}");
+        }
+
+        private void FileNamingMode_Selected(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuFlyoutItem item)
+            {
+                viewModel.FileNamingMode = item.Text;
+            }
+        }
+
+        private void ExtensionCase_Selected(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuFlyoutItem item)
+            {
+                viewModel.ExtensionCase = item.Text;
+            }
         }
 
 
