@@ -2,6 +2,8 @@
 using System.IO;
 using System.Threading.Tasks;
 
+namespace LuxExport.Logic;
+
 public enum ExportMode
 {
     HardDrive,

@@ -1,0 +1,22 @@
+[
+    {
+        "Name": "Filename",
+        "Pattern": "{name}"
+    },
+    {
+        "Name": "Custom Name",
+        "Pattern": "Luxoria_{counter}"
+    },
+    {
+        "Name": "Date - Filename",
+        "Pattern": "{date} - {name}"
+    },
+    {
+        "Name": "Filename - Date",
+        "Pattern": "{name} - {date}"
+    },
+    {
+        "Name": "Camera - ISO",
+        "Pattern": "{meta:Make}_{meta:Model}_{meta:ISO Speed Ratings}"
+    }
+]

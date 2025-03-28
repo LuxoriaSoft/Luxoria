@@ -130,33 +130,43 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <CheckBox Grid.Row="0" Grid.Column="0" Content="Rename to" IsChecked="True"  HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0, 0, -25, 0"/>
-                            <DropDownButton Grid.Row="0" Grid.Column="1" Content="Filename" VerticalAlignment="Center" HorizontalAlignment="Left">
+                            <CheckBox Content="Rename to"
+          IsChecked="{x:Bind viewModel.RenameFile, Mode=TwoWay}"
+          Grid.Row="0" Grid.Column="0"
+          HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,-25,0"/>
+
+                            <DropDownButton Content="{x:Bind viewModel.FileNamingMode, Mode=OneWay}"
+                Grid.Row="0" Grid.Column="1"
+                VerticalAlignment="Center" HorizontalAlignment="Left">
                                 <DropDownButton.Flyout>
-                                    <MenuFlyout Placement="Bottom">
-                                        <MenuFlyoutItem Text="Filename"/>
-                                        <MenuFlyoutItem Text="Custom Name"/>
-                                        <MenuFlyoutItem Text="Date - Filename"/>
-                                        <MenuFlyoutItem Text="Filename - Date"/>
+                                    <MenuFlyout x:Name="PresetsFlyout"/>
+                                </DropDownButton.Flyout>
+                            </DropDownButton>
+
+
+                            <TextBlock Text="Custom Text" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                            <TextBox Text="{x:Bind viewModel.CustomFileFormat, Mode=TwoWay}"
+         Grid.Row="1" Grid.Column="1"
+         VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+
+                            <TextBlock Text="Example Filename" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                            <TextBlock Text="{x:Bind viewModel.ExampleFileName, Mode=OneWay}"
+           Grid.Row="2" Grid.Column="1"
+           HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+
+                            <TextBlock Text="Extension" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                            <DropDownButton Content="{x:Bind viewModel.ExtensionCase, Mode=OneWay}"
+                Grid.Row="3" Grid.Column="1"
+                VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                                <DropDownButton.Flyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem Text="A..Z" Click="ExtensionCase_Selected"/>
+                                        <MenuFlyoutItem Text="a..z" Click="ExtensionCase_Selected"/>
                                     </MenuFlyout>
                                 </DropDownButton.Flyout>
                             </DropDownButton>
 
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Custom Text" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                            <TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
-
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Example: " HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Row="2" Grid.Column="1" Text="Exemple.jpeg" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Extension" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                            <DropDownButton Grid.Row="3" Grid.Column="1" Content="A..Z" VerticalAlignment="Center" HorizontalAlignment="Stretch">
-                                <DropDownButton.Flyout>
-                                    <MenuFlyout Placement="Bottom">
-                                        <MenuFlyoutItem Text="A..Z"/>
-                                        <MenuFlyoutItem Text="a..z"/>
-                                    </MenuFlyout>
-                                </DropDownButton.Flyout>
-                            </DropDownButton>
                         </Grid>
                     </Expander>
                     
