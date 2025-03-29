@@ -239,8 +239,13 @@ namespace Luxoria.App
                 }
                 else if (value is Window)
                 {
-                    Window valueWindow = (Window)value;
-                    
+                    Window valueWindow = new Window();
+                    Window testWindow = (Window)value;
+                    valueWindow.Content = testWindow.Content;
+
+
+                    Debug.WriteLine($"[x] Loading Window: {valueWindow}");
+
                     if (valueWindow is null)
                     {
                         Debug.WriteLine($"[Warning] Window is null for type {key}");

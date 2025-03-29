@@ -53,7 +53,7 @@ namespace LuxExport
 
             _export = new Export();
 
-            mainPage.Add(SmartButtonType.Window, _export);
+            mainPage.Add(SmartButtonType.Modal, _export);
 
             smartButtons.Add(new SmartButton("Export", "Export module", mainPage));
 
