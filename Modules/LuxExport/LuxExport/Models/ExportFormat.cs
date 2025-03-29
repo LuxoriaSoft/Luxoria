@@ -13,5 +13,6 @@
     DNG,
     HEIF,
     AVIF,
-    JPEGXL
+    JPEGXL,
+    Original
 }

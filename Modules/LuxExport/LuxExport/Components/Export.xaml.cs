@@ -17,9 +17,9 @@ using LuxExport.Logic;
 
 namespace LuxExport
 {
-    public sealed partial class Export : Window
+    public sealed partial class Export : ContentDialog
     {
-        private AppWindow? _appWindow;
+        //private AppWindow? _appWindow;
         private List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> _bitmaps = new();
         private ExportViewModel viewModel;
 
@@ -33,14 +33,14 @@ namespace LuxExport
             RefreshPresetsMenu();
             
 
-            IntPtr hWnd = WindowNative.GetWindowHandle(this);
-            WindowId myWndId = Win32Interop.GetWindowIdFromWindow(hWnd);
-            _appWindow = AppWindow.GetFromWindowId(myWndId);
+            //IntPtr hWnd = WindowNative.GetWindowHandle(this);
+            //WindowId myWndId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            //_appWindow = AppWindow.GetFromWindowId(myWndId);
 
-            if (_appWindow != null)
-            {
-                _appWindow.Resize(new SizeInt32(600, 400));
-            }
+            //if (_appWindow != null)
+            //{
+            //    _appWindow.Resize(new SizeInt32(600, 400));
+            //}
         }
 
         private void RefreshPresetsMenu()
@@ -144,7 +144,16 @@ namespace LuxExport
             Debug.WriteLine($"SetBitmaps: {_bitmaps.Count} bitmaps added.");
         }
 
-        private void ExportButton_Click(object sender, RoutedEventArgs e)
+        private void ColorSpace_Selected(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuFlyoutItem item)
+            {
+                viewModel.SelectedColorSpace = item.Text;
+            }
+        }
+
+
+        private void ExportButton_Click(object sender, object e)
         {
             if (_bitmaps.Count == 0)
             {
@@ -156,10 +165,24 @@ namespace LuxExport
             string originalFileName = _bitmaps[0].Value["File Name"];
             var metadata = _bitmaps[0].Value;
             string fileName;
+            var exporter = ExporterFactory.CreateExporter(viewModel.SelectedFormat);
+            var settings = new ExportSettings
+            {
+                Quality = viewModel.Quality,
+                ColorSpace = viewModel.SelectedColorSpace,
+                LimitFileSize = viewModel.LimitFileSize,
+                MaxFileSizeKB = viewModel.MaxFileSizeKB
+            };
 
             if (viewModel.RenameFile)
             {
-                fileName = viewModel.GenerateFileName(originalFileName, metadata);
+                string fileNameWithoutExt = viewModel.GenerateFileName(originalFileName, metadata);
+                string ext = viewModel.ExtensionCase == "a..z"
+                    ? viewModel.GetExtensionFromFormat().ToLowerInvariant()
+                    : viewModel.GetExtensionFromFormat().ToUpperInvariant();
+
+                fileName = $"{fileNameWithoutExt}.{ext}";
+
             }
             else
             {
@@ -172,25 +195,25 @@ namespace LuxExport
                 return;
             }
 
-            string basePath = viewModel.ExportFilePath?.Trim();
-            if (string.IsNullOrWhiteSpace(basePath))
+            string path = viewModel.ExportFilePath?.Trim();
+            if (string.IsNullOrWhiteSpace(path))
             {
                 Debug.WriteLine("Export path is empty.");
                 return;
             }
 
-            string exportPath = basePath;
-            if (viewModel.CreateSubfolder && !string.IsNullOrWhiteSpace(viewModel.SubfolderName))
+            //string exportPath = path;
+            //if (viewModel.CreateSubfolder && !string.IsNullOrWhiteSpace(viewModel.SubfolderName))
+            //{
+            //    exportPath = Path.Combine(path, viewModel.SubfolderName.Trim());
+            //}
+
+            if (!Directory.Exists(path))
             {
-                exportPath = Path.Combine(basePath, viewModel.SubfolderName.Trim());
+                Directory.CreateDirectory(path);
             }
 
-            if (!Directory.Exists(exportPath))
-            {
-                Directory.CreateDirectory(exportPath);
-            }
-
-            string fullFilePath = Path.Combine(exportPath, fileName);
+            string fullFilePath = Path.Combine(path, fileName);
 
             switch (viewModel.SelectedFileConflictResolution)
             {
@@ -210,7 +233,8 @@ namespace LuxExport
             }
 
             viewModel.FilePath = fullFilePath;
-            viewModel.ExportImage(imageToExport);
+
+            exporter.Export(imageToExport, viewModel.FilePath, viewModel.SelectedFormat, settings);
 
             Debug.WriteLine($"Export successful: {fullFilePath}");
         }
@@ -247,6 +271,19 @@ namespace LuxExport
             }
 
             return newFilePath;
+        }
+
+        private void ImageFormat_Selected(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuFlyoutItem item && Enum.TryParse<ExportFormat>(item.Text, true, out var format))
+            {
+                viewModel.SelectedFormat = format;
+            }
+        }
+
+        private void CancelButton_Click(object sender, object e)
+        {
+            Hide();
         }
 
     }

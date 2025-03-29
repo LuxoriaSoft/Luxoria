@@ -2,15 +2,34 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
+using System.Text.Json;
 using LuxExport.Logic;
 using SkiaSharp;
 
-namespace LuxExport.Logic;
-
 public class ExportViewModel : INotifyPropertyChanged
 {
+    private readonly TagResolverManager _tagManager = new();
+
+    // Export Settings
+    private ExportFormat _selectedFormat = ExportFormat.JPEG;
+    private int _quality = 100;
+    private string _selectedColorSpace = "sRGB";
+    private bool _limitFileSize = false;
+    private int _maxFileSizeKB = 0;
+    public string SelectedFormatText => SelectedFormat.ToString();
+
+    // File Naming
+    private bool _renameFile = true;
+    private string _fileNamingMode = "Filename";
+    private string _customFileFormat = "{name}";
+    private string _extensionCase = "A..Z";
+    private string _exampleFileName = "example.jpeg";
+
+    // Presets
+    public ObservableCollection<FileNamingPreset> Presets { get; } = new();
+
+    // Path
     private string _selectedExportLocation = "Desktop";
     private string _selectedFileConflictResolution = "Overwrite";
     private bool _createSubfolder;
@@ -18,16 +37,6 @@ public class ExportViewModel : INotifyPropertyChanged
     private string _baseExportPath = "";
     private string _exportFilePath = "";
     private string _filePath;
-    private bool _renameFile = true;
-    private string _fileNamingMode = "Filename";
-    private string _customFileName = "";
-    private string _extensionCase = "A..Z";
-    private string _customFileFormat = "{name}";
-    private string _exampleFileName = "Example.JPEG";
-    public ObservableCollection<FileNamingPreset> Presets { get; } = new();
-    private readonly TagResolverManager _tagManager = new();
-
-
 
     public ExportViewModel()
     {
@@ -35,24 +44,75 @@ public class ExportViewModel : INotifyPropertyChanged
         UpdateExportPath();
     }
 
-    public void LoadPresets(string path)
+    // Format & Export Settings
+    public ExportFormat SelectedFormat
     {
-
-        Debug.WriteLine("Loading presets!");
-
-        if (!File.Exists(path)) return;
-
-
-        Debug.WriteLine("Path of presets was found!");
-
-        var json = File.ReadAllText(path);
-        var list = System.Text.Json.JsonSerializer.Deserialize<List<FileNamingPreset>>(json);
-
-        Presets.Clear();
-        foreach (var preset in list)
-            Presets.Add(preset);
+        get => _selectedFormat;
+        set
+        {
+            if (_selectedFormat != value)
+            {
+                _selectedFormat = value;
+                OnPropertyChanged(nameof(SelectedFormat));
+                OnPropertyChanged(nameof(SelectedFormatText));
+                UpdateExample();
+            }
+        }
     }
 
+    public int Quality
+    {
+        get => _quality;
+        set
+        {
+            if (_quality != value)
+            {
+                _quality = value;
+                OnPropertyChanged(nameof(Quality));
+            }
+        }
+    }
+
+    public string SelectedColorSpace
+    {
+        get => _selectedColorSpace;
+        set
+        {
+            if (_selectedColorSpace != value)
+            {
+                _selectedColorSpace = value;
+                OnPropertyChanged(nameof(SelectedColorSpace));
+            }
+        }
+    }
+
+    public bool LimitFileSize
+    {
+        get => _limitFileSize;
+        set
+        {
+            if (_limitFileSize != value)
+            {
+                _limitFileSize = value;
+                OnPropertyChanged(nameof(LimitFileSize));
+            }
+        }
+    }
+
+    public int MaxFileSizeKB
+    {
+        get => _maxFileSizeKB;
+        set
+        {
+            if (_maxFileSizeKB != value)
+            {
+                _maxFileSizeKB = value;
+                OnPropertyChanged(nameof(MaxFileSizeKB));
+            }
+        }
+    }
+
+    // File Naming
     public bool RenameFile
     {
         get => _renameFile;
@@ -112,7 +172,7 @@ public class ExportViewModel : INotifyPropertyChanged
     public string ExampleFileName
     {
         get => _exampleFileName;
-        private set
+        set
         {
             if (_exampleFileName != value)
             {
@@ -122,6 +182,38 @@ public class ExportViewModel : INotifyPropertyChanged
         }
     }
 
+    public void UpdateExample()
+    {
+        var fakeMetadata = new Dictionary<string, string> {
+            { "Make", "Sony" },
+            { "Model", "ILCE-7M2" },
+            { "Focal Length", "85 mm" },
+            { "ISO Speed Ratings", "100" },
+            { "F-Number", "f/1.8" },
+            { "Exposure time", "1/320 sec" }
+        };
+
+        string ext = ExtensionCase == "a..z"
+            ? GetExtensionFromFormat().ToLowerInvariant()
+            : GetExtensionFromFormat().ToUpperInvariant();
+
+        string baseName = GenerateFileName("Example.jpeg", fakeMetadata, 1);
+        ExampleFileName = $"{baseName}.{ext}";
+    }
+
+    public string GenerateFileName(string originalName, IReadOnlyDictionary<string, string> metadata, int counter = 1)
+    {
+        return _tagManager.ResolveAll(CustomFileFormat, originalName, metadata, counter);
+    }
+
+    public string GetExtensionFromFormat()
+    {
+        return SelectedFormat == ExportFormat.Original
+            ? "original"
+            : SelectedFormat.ToString().ToLowerInvariant();
+    }
+
+    // Export Path
 
     public string SelectedExportLocation
     {
@@ -205,34 +297,11 @@ public class ExportViewModel : INotifyPropertyChanged
         }
     }
 
-    private void UpdateExample()
-    {
-        ExampleFileName = GenerateFileName("Exemple.JPEG", new Dictionary<string, string> {
-            { "Camera Model", "Sony A7 II" },
-            { "ISO", "100" }
-        });
-    }
-
-
-
-    public string GenerateFileName(string originalName, IReadOnlyDictionary<string, string> metadata, int counter = 1)
-    {
-        string ext = ExtensionCase == "a..z" ? "jpeg" : "JPEG";
-        string resolved = _tagManager.ResolveAll(CustomFileFormat, originalName, metadata, counter);
-        return $"{resolved}.{ext}";
-    }
-
-
-
     public void UpdateExportPath()
     {
-        if (string.IsNullOrWhiteSpace(_baseExportPath))
-        {
-            ExportFilePath = string.Empty;
-            return;
-        }
-
-        ExportFilePath = _baseExportPath;
+        ExportFilePath = _createSubfolder && !string.IsNullOrWhiteSpace(_subfolderName)
+            ? Path.Combine(_baseExportPath, _subfolderName)
+            : _baseExportPath;
     }
 
     private string GetDefaultPath(string location)
@@ -253,23 +322,18 @@ public class ExportViewModel : INotifyPropertyChanged
         UpdateExportPath();
     }
 
-
-    public void ExportImage(SKBitmap image)
+    public void LoadPresets(string path)
     {
-        if (image == null || string.IsNullOrWhiteSpace(FilePath))
-        {
-            Console.WriteLine("Invalid image or export path.");
-            return;
-        }
+        if (!File.Exists(path)) return;
 
-        using var imageStream = File.OpenWrite(FilePath);
-        image.Encode(imageStream, SKEncodedImageFormat.Png, 100);
-        Console.WriteLine($"Image exported to: {FilePath}");
+        string json = File.ReadAllText(path);
+        var list = JsonSerializer.Deserialize<List<FileNamingPreset>>(json);
+        Presets.Clear();
+        foreach (var preset in list)
+            Presets.Add(preset);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
-    protected void OnPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
+    protected void OnPropertyChanged(string name) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }
