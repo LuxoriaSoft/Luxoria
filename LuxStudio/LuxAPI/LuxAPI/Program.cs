@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Any;
+using LuxAPI.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,15 +54,18 @@ builder.Services.AddAuthentication(options =>
 // Add controllers
 builder.Services.AddControllers();
 
+// Add SignalR
+builder.Services.AddSignalR();
+
 // Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // Autorise le frontend sur ce port
+        policy.WithOrigins("http://localhost:5173", "http://localhost:5500")
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials(); // Si vous utilisez des cookies ou des sessions
+              .AllowCredentials();
     });
 });
 
@@ -69,7 +73,6 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Your API", Version = "v1" });
 
-    // Configuration to include the token schema in Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme",
@@ -109,10 +112,15 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Enable CORS
-app.UseCors(); // Ajoutez ceci avant `UseAuthorization`
+app.UseCors();
 
-
-
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
+// Hub mapping to "/hubs/chat"
+// This is where the SignalR hub is registered in the application pipeline
+app.MapHub<ChatHub>("/hubs/chat");
+
 app.Run();

@@ -1,13 +1,16 @@
 using System;
 using System.IO;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using LuxAPI.DAL;
 using LuxAPI.Models;
+using LuxAPI.Hubs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.SignalR;
 using Minio;
 
 namespace LuxAPI.Controllers
@@ -21,10 +24,13 @@ namespace LuxAPI.Controllers
         private readonly string _bucketName = "photos-bucket";
         private readonly string _minioEndpoint = string.Empty;
 
-        public CollectionController(AppDbContext context, IConfiguration configuration)
+        private readonly IHubContext<ChatHub> _chatHub;
+
+        public CollectionController(AppDbContext context, IConfiguration configuration, IHubContext<ChatHub> chatHub)
         {
             _context = context;
-            // Initialisation du client MinIO depuis la configuration (compatible avec MinIO v6.0.4)
+            _chatHub = chatHub;
+            // Init MinIO client from config (compatible with MinIO v6.0.4)
             _minioClient = new MinioClient()
                                 .WithEndpoint(configuration["Minio:Endpoint"])
                                 .WithCredentials(configuration["Minio:AccessKey"], configuration["Minio:SecretKey"])
@@ -70,14 +76,12 @@ namespace LuxAPI.Controllers
             if (dto == null)
                 return BadRequest("Données invalides.");
 
-            // Création de la collection sans les accès
             var collection = new Collection
             {
                 Name = dto.Name,
                 Description = dto.Description
             };
 
-            // Ajout des accès avec affectation de la collection
             if (dto.AllowedEmails != null)
             {
                 foreach (var email in dto.AllowedEmails)
@@ -110,7 +114,6 @@ namespace LuxAPI.Controllers
             collection.Name = dto.Name;
             collection.Description = dto.Description;
 
-            // Remplacement complet de la liste des emails autorisés
             collection.AllowedEmails.Clear();
             if (dto.AllowedEmails != null)
             {
@@ -130,6 +133,35 @@ namespace LuxAPI.Controllers
             return NoContent();
         }
 
+        // PATCH: api/collection/{collectionId}/allowedEmails
+        [HttpPatch("{collectionId}/allowedEmails")]
+        public async Task<IActionResult> AddAllowedEmail(Guid collectionId, [FromBody] string email)
+        {
+            var collection = await _context.Collections
+                .Include(c => c.AllowedEmails)
+                .FirstOrDefaultAsync(c => c.Id == collectionId);
+
+            if (collection == null)
+                return NotFound("Collection non trouvée.");
+
+            if (!new EmailAddressAttribute().IsValid(email))
+                return BadRequest("Format d'email invalide.");
+
+            if (collection.AllowedEmails.Any(a => a.Email.Equals(email, StringComparison.OrdinalIgnoreCase)))
+                return BadRequest("Cet email est déjà autorisé.");
+
+            collection.AllowedEmails.Add(new CollectionAccess 
+            { 
+                Email = email, 
+                CollectionId = collectionId 
+            });
+
+            await _context.SaveChangesAsync();
+
+            return Ok(collection);
+        }
+
+
         // DELETE: api/collection/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCollection(Guid id)
@@ -145,11 +177,9 @@ namespace LuxAPI.Controllers
         }
 
         // POST: api/collection/{collectionId}/upload
-        // Upload d'un fichier image (png, jpg, jpeg) vers minIO et création de l'entité Photo associée
         [HttpPost("{collectionId}/upload")]
         public async Task<IActionResult> UploadPhoto(Guid collectionId, [FromForm] IFormFile file)
         {
-            // Vérifier que la collection existe
             var collection = await _context.Collections.FindAsync(collectionId);
             if (collection == null)
                 return NotFound("Collection non trouvée.");
@@ -157,23 +187,19 @@ namespace LuxAPI.Controllers
             if (file == null || file.Length == 0)
                 return BadRequest("Aucun fichier sélectionné.");
 
-            // Validation de l'extension
             var permittedExtensions = new[] { ".png", ".jpg", ".jpeg" };
             var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (string.IsNullOrEmpty(ext) || !permittedExtensions.Contains(ext))
                 return BadRequest("Type de fichier non supporté. Seuls les fichiers PNG et JPG sont autorisés.");
 
-            // Générer un nom unique pour l'objet
             var objectName = $"{Guid.NewGuid()}{ext}";
 
-            // Vérifier l'existence du bucket et le créer si nécessaire (API de MinIO 6.0.4)
             bool bucketExists = await _minioClient.BucketExistsAsync(new Minio.DataModel.Args.BucketExistsArgs().WithBucket(_bucketName));
             if (!bucketExists)
             {
                 await _minioClient.MakeBucketAsync(new Minio.DataModel.Args.MakeBucketArgs().WithBucket(_bucketName));
             }
 
-            // Upload du fichier dans le bucket minIO
             using (var stream = file.OpenReadStream())
             {
                 var putObjectArgs = new Minio.DataModel.Args.PutObjectArgs()
@@ -185,15 +211,13 @@ namespace LuxAPI.Controllers
                 await _minioClient.PutObjectAsync(putObjectArgs);
             }
 
-            // Construire l'URL d'accès à l'image (adaptée à votre configuration)
             var fileUrl = $"https://{_minioEndpoint}/{_bucketName}/{objectName}";
 
-            // Création de l'entité Photo dans la base de données
             var photo = new Photo
             {
                 CollectionId = collectionId,
                 FilePath = fileUrl,
-                Status = PhotoStatus.Pending // Statut initial par défaut
+                Status = PhotoStatus.Pending
             };
 
             _context.Photos.Add(photo);
@@ -221,6 +245,9 @@ namespace LuxAPI.Controllers
             _context.ChatMessages.Add(message);
             await _context.SaveChangesAsync();
 
+            await _chatHub.Clients.Group(collectionId.ToString())
+                .SendAsync("ReceiveMessage", dto.SenderEmail, dto.Message);
+
             return CreatedAtAction(nameof(GetCollection), new { id = collectionId }, message);
         }
     }
@@ -233,7 +260,6 @@ namespace LuxAPI.Controllers
         public string Description { get; set; }
         public List<string> AllowedEmails { get; set; }
     }
-//SYSTEME DE DICTONNAIRE pour éviter de préciser les champs à modifier
     public class UpdateCollectionDto
     {
         public string? Name { get; set; }
