@@ -20,12 +20,18 @@ using Luxoria.Modules.Interfaces;
 
 namespace LuxExport
 {
+    /// <summary>
+    /// The dialog responsible for handling export functionality, including file selection, format settings, and export location.
+    /// </summary>
     public sealed partial class Export : ContentDialog
     {
         private List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> _bitmaps = new();
         private ExportViewModel viewModel;
         public IEventBus? _eventBus;
 
+        /// <summary>
+        /// Initializes the export dialog and loads the necessary presets for file naming.
+        /// </summary>
         public Export()
         {
             this.InitializeComponent();
@@ -35,10 +41,14 @@ namespace LuxExport
             RefreshPresetsMenu();
         }
 
+        /// <summary>
+        /// Refreshes the presets menu with the available presets loaded from the JSON file.
+        /// </summary>
         private void RefreshPresetsMenu()
         {
             PresetsFlyout.Items.Clear();
 
+            // Add each preset to the menu
             foreach (var preset in viewModel.Presets)
             {
                 var item = new MenuFlyoutItem { Text = preset.Name };
@@ -50,7 +60,9 @@ namespace LuxExport
             }
         }
 
-
+        /// <summary>
+        /// Handles export location selection from the menu, including predefined locations or custom path.
+        /// </summary>
         private async void ExportLocation_Selected(object sender, RoutedEventArgs e)
         {
             if (sender is MenuFlyoutItem menuItem)
@@ -72,6 +84,7 @@ namespace LuxExport
                         viewModel.ExportFilePath = GetOriginalFilePath();
                         break;
                     case "Custom Path":
+                        // Browse for a custom folder
                         StorageFolder folder = await BrowseFolderAsync();
                         if (folder != null)
                         {
@@ -89,6 +102,9 @@ namespace LuxExport
             }
         }
 
+        /// <summary>
+        /// Opens a folder picker to allow the user to select a custom export location.
+        /// </summary>
         private async Task<StorageFolder?> BrowseFolderAsync()
         {
             var tcs = new TaskCompletionSource<nint>();
@@ -96,7 +112,6 @@ namespace LuxExport
             await _eventBus.Publish(new RequestWindowHandleEvent(handle => tcs.SetResult(handle)));
             nint _windowHandle = await tcs.Task;
             if (_windowHandle == 0) return null;
-
 
             var picker = new FolderPicker();
             picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
@@ -106,6 +121,9 @@ namespace LuxExport
             return await picker.PickSingleFolderAsync();
         }
 
+        /// <summary>
+        /// Handles file conflict resolution (overwrite, rename, or skip) during export.
+        /// </summary>
         private void FileConflictResolution_Selected(object sender, RoutedEventArgs e)
         {
             if (sender is MenuFlyoutItem menuItem)
@@ -114,11 +132,17 @@ namespace LuxExport
             }
         }
 
+        /// <summary>
+        /// Gets the path for a special system folder like Desktop or Documents.
+        /// </summary>
         private string GetSpecialFolderPath(Environment.SpecialFolder folder)
         {
             return Environment.GetFolderPath(folder);
         }
 
+        /// <summary>
+        /// Gets the original file path for the first bitmap if available.
+        /// </summary>
         private string GetOriginalFilePath()
         {
             if (_bitmaps.Count > 0 && _bitmaps[0].Value.TryGetValue("File Path", out string path))
@@ -128,6 +152,9 @@ namespace LuxExport
             return "Unknown";
         }
 
+        /// <summary>
+        /// Sets the bitmaps to be exported, clearing previous selections if necessary.
+        /// </summary>
         public void SetBitmaps(List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> bitmaps)
         {
             if (bitmaps == null || bitmaps.Count == 0)
@@ -142,6 +169,9 @@ namespace LuxExport
             Debug.WriteLine($"SetBitmaps: {_bitmaps.Count} bitmaps added.");
         }
 
+        /// <summary>
+        /// Handles the color space selection during the export process.
+        /// </summary>
         private void ColorSpace_Selected(object sender, RoutedEventArgs e)
         {
             if (sender is MenuFlyoutItem item)
@@ -150,7 +180,9 @@ namespace LuxExport
             }
         }
 
-
+        /// <summary>
+        /// Handles the export button click, initiating the export process.
+        /// </summary>
         private void ExportButton_Click(object sender, object e)
         {
             if (_bitmaps.Count == 0)
@@ -172,6 +204,7 @@ namespace LuxExport
                 MaxFileSizeKB = viewModel.MaxFileSizeKB
             };
 
+            // Rename the file if necessary
             if (viewModel.RenameFile)
             {
                 string fileNameWithoutExt = viewModel.GenerateFileName(originalFileName, metadata);
@@ -200,12 +233,6 @@ namespace LuxExport
                 return;
             }
 
-            //string exportPath = path;
-            //if (viewModel.CreateSubfolder && !string.IsNullOrWhiteSpace(viewModel.SubfolderName))
-            //{
-            //    exportPath = Path.Combine(path, viewModel.SubfolderName.Trim());
-            //}
-
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
@@ -213,6 +240,7 @@ namespace LuxExport
 
             string fullFilePath = Path.Combine(path, fileName);
 
+            // Handle file conflict based on selected resolution option
             switch (viewModel.SelectedFileConflictResolution)
             {
                 case "Overwrite":
@@ -232,11 +260,15 @@ namespace LuxExport
 
             viewModel.FilePath = fullFilePath;
 
+            // Perform the export
             exporter.Export(imageToExport, viewModel.FilePath, viewModel.SelectedFormat, settings);
 
             Debug.WriteLine($"Export successful: {fullFilePath}");
         }
 
+        /// <summary>
+        /// Handles the file naming mode selection.
+        /// </summary>
         private void FileNamingMode_Selected(object sender, RoutedEventArgs e)
         {
             if (sender is MenuFlyoutItem item)
@@ -245,6 +277,9 @@ namespace LuxExport
             }
         }
 
+        /// <summary>
+        /// Handles the extension case selection (lowercase or uppercase).
+        /// </summary>
         private void ExtensionCase_Selected(object sender, RoutedEventArgs e)
         {
             if (sender is MenuFlyoutItem item)
@@ -253,7 +288,9 @@ namespace LuxExport
             }
         }
 
-
+        /// <summary>
+        /// Generates a unique file path by appending a counter to avoid conflicts.
+        /// </summary>
         private string GetUniqueFilePath(string filePath)
         {
             string directory = Path.GetDirectoryName(filePath) ?? "";
@@ -271,6 +308,9 @@ namespace LuxExport
             return newFilePath;
         }
 
+        /// <summary>
+        /// Handles the image format selection during the export process.
+        /// </summary>
         private void ImageFormat_Selected(object sender, RoutedEventArgs e)
         {
             if (sender is MenuFlyoutItem item && Enum.TryParse<ExportFormat>(item.Text, true, out var format))
@@ -279,10 +319,12 @@ namespace LuxExport
             }
         }
 
+        /// <summary>
+        /// Cancels the export operation and closes the dialog.
+        /// </summary>
         private void CancelButton_Click(object sender, object e)
         {
             Hide();
         }
-
     }
 }

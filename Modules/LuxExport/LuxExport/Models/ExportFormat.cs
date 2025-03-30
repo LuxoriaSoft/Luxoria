@@ -1,4 +1,7 @@
-﻿public enum ExportFormat
+﻿/// <summary>
+/// Enum representing different image export formats supported by the application.
+/// </summary>
+public enum ExportFormat
 {
     PNG,
     JPEG,

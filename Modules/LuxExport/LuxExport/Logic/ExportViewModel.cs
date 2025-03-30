@@ -17,7 +17,7 @@ public class ExportViewModel : INotifyPropertyChanged
     private string _selectedColorSpace = "sRGB";
     private bool _limitFileSize = false;
     private int _maxFileSizeKB = 0;
-    public string SelectedFormatText => SelectedFormat.ToString();
+    public string SelectedFormatText => SelectedFormat.ToString(); // Exposes the format name as a string
 
     // File Naming
     private bool _renameFile = true;
@@ -38,6 +38,9 @@ public class ExportViewModel : INotifyPropertyChanged
     private string _exportFilePath = "";
     private string _filePath;
 
+    /// <summary>
+    /// Initializes the ExportViewModel with default export path.
+    /// </summary>
     public ExportViewModel()
     {
         _baseExportPath = GetDefaultPath(_selectedExportLocation);
@@ -182,6 +185,9 @@ public class ExportViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// Updates the example file name based on the current settings.
+    /// </summary>
     public void UpdateExample()
     {
         var fakeMetadata = new Dictionary<string, string> {
@@ -201,11 +207,17 @@ public class ExportViewModel : INotifyPropertyChanged
         ExampleFileName = $"{baseName}.{ext}";
     }
 
+    /// <summary>
+    /// Generates a custom file name using the provided format and metadata.
+    /// </summary>
     public string GenerateFileName(string originalName, IReadOnlyDictionary<string, string> metadata, int counter = 1)
     {
         return _tagManager.ResolveAll(CustomFileFormat, originalName, metadata, counter);
     }
 
+    /// <summary>
+    /// Gets the file extension based on the selected export format.
+    /// </summary>
     public string GetExtensionFromFormat()
     {
         return SelectedFormat == ExportFormat.Original
@@ -297,6 +309,9 @@ public class ExportViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// Updates the export path based on the current folder and subfolder settings.
+    /// </summary>
     public void UpdateExportPath()
     {
         ExportFilePath = _createSubfolder && !string.IsNullOrWhiteSpace(_subfolderName)
@@ -304,6 +319,9 @@ public class ExportViewModel : INotifyPropertyChanged
             : _baseExportPath;
     }
 
+    /// <summary>
+    /// Returns the default path based on the selected export location.
+    /// </summary>
     private string GetDefaultPath(string location)
     {
         return location switch
@@ -316,12 +334,18 @@ public class ExportViewModel : INotifyPropertyChanged
         };
     }
 
+    /// <summary>
+    /// Sets the base export path manually.
+    /// </summary>
     public void SetBasePath(string path)
     {
         _baseExportPath = path;
         UpdateExportPath();
     }
 
+    /// <summary>
+    /// Loads file naming presets from a JSON file.
+    /// </summary>
     public void LoadPresets(string path)
     {
         if (!File.Exists(path)) return;
