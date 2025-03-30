@@ -10,6 +10,14 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+- task: Kubernetes@1
+  inputs:
+    connectionType: 'Kubernetes Service Connection'
+    kubernetesServiceEndpoint: 'LuxKube'
+    command: 'top'
+#    secretType: 'dockerRegistry'
+#    containerRegistryType: 'Azure Container Registry'
+
 - script: echo Hello, world!
   displayName: 'Run a one-line script'
 
