@@ -24,7 +24,7 @@ public class ExportViewModel : INotifyPropertyChanged
     private string _fileNamingMode = "Filename";
     private string _customFileFormat = "{name}";
     private string _extensionCase = "A..Z";
-    private string _exampleFileName = "example.jpeg";
+    private string _exampleFileName = "Example.JPEG";
 
     // Presets
     public ObservableCollection<FileNamingPreset> Presets { get; } = new();

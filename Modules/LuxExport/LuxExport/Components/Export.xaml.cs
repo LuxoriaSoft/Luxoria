@@ -14,15 +14,17 @@ using Microsoft.UI.Xaml.Media;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using LuxExport.Logic;
+using Luxoria.Modules.Models.Events;
+using Windows.Storage.Pickers;
+using Luxoria.Modules.Interfaces;
 
 namespace LuxExport
 {
     public sealed partial class Export : ContentDialog
     {
-        //private AppWindow? _appWindow;
         private List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> _bitmaps = new();
         private ExportViewModel viewModel;
-
+        public IEventBus? _eventBus;
 
         public Export()
         {
@@ -31,16 +33,6 @@ namespace LuxExport
 
             viewModel.LoadPresets("C:\\Users\\noahg\\Desktop\\Github\\Luxoria\\assets\\Presets\\FileNamingPresets.json");
             RefreshPresetsMenu();
-            
-
-            //IntPtr hWnd = WindowNative.GetWindowHandle(this);
-            //WindowId myWndId = Win32Interop.GetWindowIdFromWindow(hWnd);
-            //_appWindow = AppWindow.GetFromWindowId(myWndId);
-
-            //if (_appWindow != null)
-            //{
-            //    _appWindow.Resize(new SizeInt32(600, 400));
-            //}
         }
 
         private void RefreshPresetsMenu()
@@ -80,11 +72,15 @@ namespace LuxExport
                         viewModel.ExportFilePath = GetOriginalFilePath();
                         break;
                     case "Custom Path":
-                        string customPath = await PickFolderAsync();
-                        if (!string.IsNullOrEmpty(customPath))
+                        StorageFolder folder = await BrowseFolderAsync();
+                        if (folder != null)
                         {
                             viewModel.SelectedExportLocation = "Custom Path";
-                            viewModel.SetBasePath(customPath);
+                            viewModel.SetBasePath(folder.Path);
+                        }
+                        else
+                        {
+                            viewModel.SelectedExportLocation = "Select a path...";
                         }
                         break;
                 }
@@ -93,20 +89,22 @@ namespace LuxExport
             }
         }
 
-
-        private async Task<string> PickFolderAsync()
+        private async Task<StorageFolder?> BrowseFolderAsync()
         {
-            var folderPicker = new Windows.Storage.Pickers.FolderPicker();
-            folderPicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.Desktop;
-            folderPicker.FileTypeFilter.Add("*");
+            var tcs = new TaskCompletionSource<nint>();
+            if (_eventBus == null) return null;
+            await _eventBus.Publish(new RequestWindowHandleEvent(handle => tcs.SetResult(handle)));
+            nint _windowHandle = await tcs.Task;
+            if (_windowHandle == 0) return null;
 
-            var hwnd = WindowNative.GetWindowHandle(this);
-            InitializeWithWindow.Initialize(folderPicker, hwnd);
 
-            StorageFolder folder = await folderPicker.PickSingleFolderAsync();
-            return folder?.Path ?? string.Empty;
+            var picker = new FolderPicker();
+            picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            picker.FileTypeFilter.Add("*");
+            InitializeWithWindow.Initialize(picker, _windowHandle);
+
+            return await picker.PickSingleFolderAsync();
         }
-
 
         private void FileConflictResolution_Selected(object sender, RoutedEventArgs e)
         {

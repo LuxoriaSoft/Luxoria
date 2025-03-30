@@ -13,5 +13,4 @@ namespace LuxExport.Logic
         public bool LimitFileSize { get; set; } = false;
         public int MaxFileSizeKB { get; set; } = 0;
     }
-
 }

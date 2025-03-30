@@ -52,6 +52,7 @@ namespace LuxExport
             Dictionary<SmartButtonType, Object> mainPage = new Dictionary<SmartButtonType, Object>();
 
             _export = new Export();
+            _export._eventBus = eventBus;
 
             mainPage.Add(SmartButtonType.Modal, _export);
 
@@ -65,6 +66,7 @@ namespace LuxExport
             _logger?.Log($"{Name} initialized", "Mods/LuxExport", LogLevel.Info);
 
         }
+
 
         /// <summary>
         /// Executes the module logic. This can be called to trigger specific actions.
