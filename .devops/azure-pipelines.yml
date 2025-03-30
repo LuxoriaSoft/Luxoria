@@ -14,7 +14,9 @@ steps:
   inputs:
     connectionType: 'Kubernetes Service Connection'
     kubernetesServiceEndpoint: 'LuxKube'
+    namespace: 'pluto'
     command: 'top'
+    arguments: 'pod'
 #    secretType: 'dockerRegistry'
 #    containerRegistryType: 'Azure Container Registry'
 
