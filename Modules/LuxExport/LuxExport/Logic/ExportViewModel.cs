@@ -25,6 +25,7 @@ public class ExportViewModel : INotifyPropertyChanged
     private string _customFileFormat = "{name}";
     private string _extensionCase = "A..Z";
     private string _exampleFileName = "Example.JPEG";
+    private int counter = 0;
 
     // Presets
     public ObservableCollection<FileNamingPreset> Presets { get; } = new();
@@ -203,14 +204,14 @@ public class ExportViewModel : INotifyPropertyChanged
             ? GetExtensionFromFormat().ToLowerInvariant()
             : GetExtensionFromFormat().ToUpperInvariant();
 
-        string baseName = GenerateFileName("Example.jpeg", fakeMetadata, 1);
+        string baseName = GenerateFileName("Example.jpeg", fakeMetadata, counter++);
         ExampleFileName = $"{baseName}.{ext}";
     }
 
     /// <summary>
     /// Generates a custom file name using the provided format and metadata.
     /// </summary>
-    public string GenerateFileName(string originalName, IReadOnlyDictionary<string, string> metadata, int counter = 1)
+    public string GenerateFileName(string originalName, IReadOnlyDictionary<string, string> metadata, int counter)
     {
         return _tagManager.ResolveAll(CustomFileFormat, originalName, metadata, counter);
     }

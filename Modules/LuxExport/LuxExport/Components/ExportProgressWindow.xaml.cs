@@ -102,7 +102,7 @@ namespace LuxExport
 
                 if (_viewModel.RenameFile)
                 {
-                    string nameWithoutExt = _viewModel.GenerateFileName(originalFileName, metadata);
+                    string nameWithoutExt = _viewModel.GenerateFileName(originalFileName, metadata, i);
                     string ext = _viewModel.ExtensionCase == "a..z"
                         ? _viewModel.GetExtensionFromFormat().ToLowerInvariant()
                         : _viewModel.GetExtensionFromFormat().ToUpperInvariant();
