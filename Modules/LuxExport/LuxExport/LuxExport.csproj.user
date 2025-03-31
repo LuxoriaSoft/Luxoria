@@ -6,5 +6,9 @@
   <PropertyGroup>
     <ActiveDebugProfile>Profile 1</ActiveDebugProfile>
   </PropertyGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Page Update="Components\ExportProgressWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
 </Project>
