@@ -41,7 +41,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Components\" />
+	  <Page Update="Components\ExportProgressWindow.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
   
 </Project>

@@ -191,80 +191,18 @@ namespace LuxExport
                 return;
             }
 
-            SKBitmap imageToExport = _bitmaps[0].Key;
-            string originalFileName = _bitmaps[0].Value["File Name"];
-            var metadata = _bitmaps[0].Value;
-            string fileName;
-            var exporter = ExporterFactory.CreateExporter(viewModel.SelectedFormat);
-            var settings = new ExportSettings
+            this.Hide();
+
+            DispatcherQueue.TryEnqueue(() =>
             {
-                Quality = viewModel.Quality,
-                ColorSpace = viewModel.SelectedColorSpace,
-                LimitFileSize = viewModel.LimitFileSize,
-                MaxFileSizeKB = viewModel.MaxFileSizeKB
-            };
-
-            // Rename the file if necessary
-            if (viewModel.RenameFile)
-            {
-                string fileNameWithoutExt = viewModel.GenerateFileName(originalFileName, metadata);
-                string ext = viewModel.ExtensionCase == "a..z"
-                    ? viewModel.GetExtensionFromFormat().ToLowerInvariant()
-                    : viewModel.GetExtensionFromFormat().ToUpperInvariant();
-
-                fileName = $"{fileNameWithoutExt}.{ext}";
-
-            }
-            else
-            {
-                fileName = originalFileName;
-            }
-
-            if (imageToExport == null || string.IsNullOrWhiteSpace(fileName))
-            {
-                Debug.WriteLine("Invalid image or file name.");
-                return;
-            }
-
-            string path = viewModel.ExportFilePath?.Trim();
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                Debug.WriteLine("Export path is empty.");
-                return;
-            }
-
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-
-            string fullFilePath = Path.Combine(path, fileName);
-
-            // Handle file conflict based on selected resolution option
-            switch (viewModel.SelectedFileConflictResolution)
-            {
-                case "Overwrite":
-                    if (File.Exists(fullFilePath)) File.Delete(fullFilePath);
-                    break;
-                case "Rename":
-                    fullFilePath = GetUniqueFilePath(fullFilePath);
-                    break;
-                case "Skip":
-                    if (File.Exists(fullFilePath))
-                    {
-                        Debug.WriteLine("Export skipped: file already exists.");
-                        return;
-                    }
-                    break;
-            }
-
-            viewModel.FilePath = fullFilePath;
-
-            // Perform the export
-            exporter.Export(imageToExport, viewModel.FilePath, viewModel.SelectedFormat, settings);
-
-            Debug.WriteLine($"Export successful: {fullFilePath}");
+                var progressWindow = new ExportProgressWindow(_bitmaps, viewModel);
+                progressWindow.Activate();
+            });
         }
+
+
+
+
 
         /// <summary>
         /// Handles the file naming mode selection.
