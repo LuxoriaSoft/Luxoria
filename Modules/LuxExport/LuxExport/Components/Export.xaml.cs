@@ -201,9 +201,6 @@ namespace LuxExport
         }
 
 
-
-
-
         /// <summary>
         /// Handles the file naming mode selection.
         /// </summary>
