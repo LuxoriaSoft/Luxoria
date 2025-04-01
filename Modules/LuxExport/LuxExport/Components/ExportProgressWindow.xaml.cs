@@ -26,9 +26,12 @@ namespace LuxExport
         private bool _isPaused;
         private readonly ManualResetEventSlim _pauseEvent = new ManualResetEventSlim(true);
 
-        public ExportProgressWindow(
-            List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> bitmaps,
-            ExportViewModel viewModel)
+        /// <summary>
+        /// Constructs the export progress window with the given bitmaps and view model.
+        /// </summary>
+        /// <param name="bitmaps"> Bitmaps with Metadata </param>
+        /// <param name="viewModel"></param>
+        public ExportProgressWindow(List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> bitmaps, ExportViewModel viewModel)
         {
             InitializeComponent();
 
@@ -40,6 +43,10 @@ namespace LuxExport
             this.Activated += ExportProgressWindow_Activated;
         }
 
+
+        /// <summary>
+        /// Starts the export loop on a background thread.
+        /// </summary>
         private void ExportProgressWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
             this.Activated -= ExportProgressWindow_Activated;

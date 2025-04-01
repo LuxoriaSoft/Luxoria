@@ -7,11 +7,16 @@ using Microsoft.UI.Dispatching;
 
 public static class DispatcherQueueExtensions
 {
+    /// <summary>
+    /// Enqueues an action to be executed on the dispatcher queue.
+    /// </summary>
+    /// <param name="dispatcherQueue"></param>
+    /// <param name="action"></param>
+    /// <returns></returns>
     public static Task EnqueueAsync(this DispatcherQueue dispatcherQueue, Action action)
     {
         var tcs = new TaskCompletionSource<bool>();
 
-        // On enfile l’action sur le thread UI
         dispatcherQueue.TryEnqueue(() =>
         {
             try
@@ -28,6 +33,13 @@ public static class DispatcherQueueExtensions
         return tcs.Task;
     }
 
+    /// <summary>
+    /// Enqueues a function to be executed on the dispatcher queue.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="dispatcherQueue"></param>
+    /// <param name="func"></param>
+    /// <returns></returns>
     public static Task<T> EnqueueAsync<T>(this DispatcherQueue dispatcherQueue, Func<T> func)
     {
         var tcs = new TaskCompletionSource<T>();
