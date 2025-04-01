@@ -59,6 +59,13 @@ public class ExportViewModel : INotifyPropertyChanged
                 _selectedFormat = value;
                 OnPropertyChanged(nameof(SelectedFormat));
                 OnPropertyChanged(nameof(SelectedFormatText));
+                OnPropertyChanged(nameof(IsQualitySupported));
+
+                if (!IsQualitySupported)
+                {
+                    Quality = 100;
+                }
+
                 UpdateExample();
             }
         }
@@ -113,6 +120,17 @@ public class ExportViewModel : INotifyPropertyChanged
                 _maxFileSizeKB = value;
                 OnPropertyChanged(nameof(MaxFileSizeKB));
             }
+        }
+    }
+
+    public bool IsQualitySupported
+    {
+        get
+        {
+            return SelectedFormat == ExportFormat.JPEG
+                || SelectedFormat == ExportFormat.HEIF
+                || SelectedFormat == ExportFormat.AVIF
+                || SelectedFormat == ExportFormat.JPEGXL;
         }
     }
 

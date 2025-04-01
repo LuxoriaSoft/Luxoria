@@ -175,27 +175,16 @@
                                 <MenuFlyout Placement="Bottom">
                                     <MenuFlyoutItem Text="JPEG" Click="ImageFormat_Selected"/>
                                     <MenuFlyoutItem Text="PNG" Click="ImageFormat_Selected"/>
-                                    <MenuFlyoutItem Text="Bmp" Click="ImageFormat_Selected"/>
-                                    <MenuFlyoutItem Text="Gif" Click="ImageFormat_Selected"/>
-                                    <MenuFlyoutItem Text="Ico" Click="ImageFormat_Selected"/>
-                                    <MenuFlyoutItem Text="Wbmp" Click="ImageFormat_Selected"/>
                                     <MenuFlyoutItem Text="Webp" Click="ImageFormat_Selected"/>
-                                    <MenuFlyoutItem Text="Pkm" Click="ImageFormat_Selected"/>
-                                    <MenuFlyoutItem Text="Ktx" Click="ImageFormat_Selected"/>
-                                    <MenuFlyoutItem Text="Astc" Click="ImageFormat_Selected"/>
-                                    <MenuFlyoutItem Text="Dng" Click="ImageFormat_Selected"/>
-                                    <MenuFlyoutItem Text="Heif" Click="ImageFormat_Selected"/>
-                                    <MenuFlyoutItem Text="Avif" Click="ImageFormat_Selected"/>
-                                    <MenuFlyoutItem Text="Jpegxl" Click="ImageFormat_Selected"/>
                                     <MenuFlyoutItem Text="Original file format"/>
                                 </MenuFlyout>
                             </DropDownButton.Flyout>
                         </DropDownButton>
 
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Quality" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                        <Slider Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Minimum="0" Maximum="100" Value="{x:Bind viewModel.Quality, Mode=TwoWay}"/>
+                        <Slider Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Minimum="0" Maximum="100" Value="{x:Bind viewModel.Quality, Mode=TwoWay}" IsEnabled="{x:Bind viewModel.IsQualitySupported, Mode=OneWay}"/>
 
-                        <CheckBox Grid.Row="2" Grid.Column="0" Content="Limit file size to" IsChecked="True" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        <CheckBox Grid.Row="2" Grid.Column="0" Content="Limit file size to" IsChecked="{x:Bind viewModel.LimitFileSize, Mode=TwoWay}" HorizontalAlignment="Right" VerticalAlignment="Center" IsEnabled="{x:Bind viewModel.IsQualitySupported, Mode=OneWay}"/>
 
                         <Grid Grid.Row="2" Grid.Column="1" ColumnSpacing="5">
                             <Grid.ColumnDefinitions>
@@ -203,7 +192,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBox Grid.Column="0" Text="0" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                            <TextBox Grid.Column="0" Text="0" VerticalAlignment="Center" HorizontalAlignment="Stretch" IsEnabled="{x:Bind viewModel.IsQualitySupported, Mode=OneWay}"/>
                             <TextBlock Grid.Column="1" Text="KB" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                         </Grid>
 
@@ -212,6 +201,7 @@
                             <DropDownButton.Flyout>
                                 <MenuFlyout Placement="Bottom">
                                     <MenuFlyoutItem Text="sRGB" Click="ColorSpace_Selected"/>
+                                    <MenuFlyoutItem Text="LinearSRGB" Click="ColorSpace_Selected"/>
                                     <MenuFlyoutItem Text="Adobe RGB" Click="ColorSpace_Selected"/>
                                 </MenuFlyout>
                             </DropDownButton.Flyout>

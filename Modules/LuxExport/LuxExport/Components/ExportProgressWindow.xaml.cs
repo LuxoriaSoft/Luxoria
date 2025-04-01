@@ -150,7 +150,7 @@ namespace LuxExport
 
                 if (!_cts.IsCancellationRequested)
                 {
-                    exporter.Export(bitmap, fullFilePath, _viewModel.SelectedFormat, settings);
+                    exporter.Export(ConvertColorSpace(bitmap, _viewModel.SelectedColorSpace), fullFilePath, _viewModel.SelectedFormat, settings);
                 }
 
                 int index = i;
@@ -163,6 +163,53 @@ namespace LuxExport
                 });
             }
         }
+        /// <summary>
+        /// Creates an SKColorSpace from the given name.
+        /// </summary>
+        /// <param name="colorSpaceName"></param>
+        /// <returns></returns>
+        private SKColorSpace? CreateColorSpaceFromName(string colorSpaceName)
+        {
+            switch (colorSpaceName)
+            {
+                case "sRGB":
+                    return SKColorSpace.CreateSrgb();
+
+                case "LinearSRGB":
+                    return SKColorSpace.CreateSrgbLinear();
+
+                case "AdobeRGB":
+                    byte[] adobeIcc = File.ReadAllBytes(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\..\\..\\..\\..\\..\\assets\\ColorProfile\\AdobeRGB1998.icc");
+                    return SKColorSpace.CreateIcc(adobeIcc);
+
+                default:
+                    return SKColorSpace.CreateSrgb();
+            }
+        }
+
+        /// <summary>
+        /// Converts an SKBitmap to the specified color space.
+        /// </summary>
+        /// <param name="original"></param>
+        /// <param name="colorSpaceName"></param>:
+        /// <returns></returns>
+        private SKBitmap ConvertColorSpace(SKBitmap original, string colorSpaceName)
+        {
+            var targetSpace = CreateColorSpaceFromName(colorSpaceName);
+            if (targetSpace == null || targetSpace.Equals(original.ColorSpace))
+                return original;
+
+            var newInfo = new SKImageInfo(original.Width, original.Height, original.ColorType, original.AlphaType, targetSpace);
+            var newBitmap = new SKBitmap(newInfo);
+
+            using (var canvas = new SKCanvas(newBitmap))
+            {
+                canvas.DrawBitmap(original, 0, 0);
+            }
+
+            return newBitmap;
+        }
+
 
         /// <summary>
         /// Convertit un SKBitmap en BitmapImage (pour l’aperçu).

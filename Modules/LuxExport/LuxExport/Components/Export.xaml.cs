@@ -17,6 +17,7 @@ using LuxExport.Logic;
 using Luxoria.Modules.Models.Events;
 using Windows.Storage.Pickers;
 using Luxoria.Modules.Interfaces;
+using Windows.System;
 
 namespace LuxExport
 {
@@ -37,7 +38,8 @@ namespace LuxExport
             this.InitializeComponent();
             viewModel = new ExportViewModel();
 
-            viewModel.LoadPresets("C:\\Users\\noahg\\Desktop\\Github\\Luxoria\\assets\\Presets\\FileNamingPresets.json");
+            viewModel.LoadPresets(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\..\\..\\..\\..\\..\\assets\\Presets\\FileNamingPresets.json");
+
             RefreshPresetsMenu();
         }
 
