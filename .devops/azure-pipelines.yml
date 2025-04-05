@@ -8,7 +8,7 @@ trigger:
 variables:
   dockerHubService: DockerHubLuxoria
   dockerHubNamespace: luxoria
-  imageTag: $(Year)$(Month)$(Day)$(Build.BuildId)
+  imageTag: $(Build.SourceVersion)
 
 pool:
   vmImage: ubuntu-latest
