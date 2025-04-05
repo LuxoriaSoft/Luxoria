@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: luxstudio-service
+  namespace: pluto
+spec:
+  selector:
+    app: luxstudio-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
