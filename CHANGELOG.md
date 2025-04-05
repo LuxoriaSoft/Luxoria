@@ -1,3 +1,47 @@
+# [1.31.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.30.0...v1.31.0) (2025-03-07)
+
+
+### Bug Fixes
+
+* Simplify LoadWindowCaption by using local variable 'path' ([c975768](https://github.com/LuxoriaSoft/Luxoria/commit/c9757680610f2062da186592c19839e6a14bb5f9))
+
+
+### Features
+
+* Add ApplicationIcon 'Luxoria_icon.ico' + Add Luxoria official logo on SplashScreen ([b0142b5](https://github.com/LuxoriaSoft/Luxoria/commit/b0142b57c9a5a177af0c6d5d35c7aa860ca8f188))
+* Create LoadWindowCaption method to load an ico for window caption and taskbar ([12e9b56](https://github.com/LuxoriaSoft/Luxoria/commit/12e9b568113a0784b00b512f18ab530cf9aac191))
+
+# [1.30.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.29.1...v1.30.0) (2025-03-06)
+
+
+### Bug Fixes
+
+* Add Filters (ReadOnlyDictionary?) in ImageData and fix some tests ([cb66737](https://github.com/LuxoriaSoft/Luxoria/commit/cb66737678a99cb5e856876136ecc7df5df47c24))
+* Bring clarification and fix nullable variables object? sender => object sender ([9b2128c](https://github.com/LuxoriaSoft/Luxoria/commit/9b2128c37e098f7e1b1845471f456707b3abe2d8))
+* Changes Score alignment from Center to Right ([458d0dd](https://github.com/LuxoriaSoft/Luxoria/commit/458d0dde3b1bb5f5e457d4bf2dfbb40ddd42beef))
+* Remove gray border to the ItemList on FilterView ([d2b388d](https://github.com/LuxoriaSoft/Luxoria/commit/d2b388ddd75e352a16229c5606dbf364528235bf))
+* Remove total weight (1.0 => 100) on the PipelineService ([13c4db9](https://github.com/LuxoriaSoft/Luxoria/commit/13c4db9d993124526255d450429e8542e3c95976))
+* Replace Dictionary by ImmutableDictionary (Catalog) in FilterService ([0ac9ee7](https://github.com/LuxoriaSoft/Luxoria/commit/0ac9ee795113fdded8f89ac6855f136b4072bffb))
+* Upgrade Luxoria.Algorithm.BrisqueScore from 3.0.2.4100 to 3.0.3.4100 ([5633377](https://github.com/LuxoriaSoft/Luxoria/commit/563337755d4e43f186aa60e518f8a8b406037123))
+
+
+### Features
+
+* Add base of filters selection with params (weight) ([a277aee](https://github.com/LuxoriaSoft/Luxoria/commit/a277aeeee23891d835d1dc31838809a863693131))
+* Add FilterCatalog Event to fetch the entire available filters (ReadyToUse) ([c8850ef](https://github.com/LuxoriaSoft/Luxoria/commit/c8850ef730b49e7d3b5ed78720ef3b8127e07e3d))
+* Add StatusView foundation for LuxFilter UI (ListView, ViewModel, ...) ([9235ed6](https://github.com/LuxoriaSoft/Luxoria/commit/9235ed6e528c86ddd2767579557b8a9c6dd1f5cb))
+* Add the Status (Logger) UI on LuxFilter 3rd part ([c4d2631](https://github.com/LuxoriaSoft/Luxoria/commit/c4d2631f081e2f6ee53a908cb9d285038bb6fe81))
+* Create Filtering Status View (LuxFilter.Views.StatusView) ([535adb0](https://github.com/LuxoriaSoft/Luxoria/commit/535adb0a387331ad22633b0b95efec67b8b14ba3))
+
+## [1.29.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.29.0...v1.29.1) (2025-02-18)
+
+
+### Bug Fixes
+
+* Change Compute method usage in LuxFilter.Tests cases ([c23a1b5](https://github.com/LuxoriaSoft/Luxoria/commit/c23a1b5a73c86c5ae55d77ec2afec4d4091888f9))
+* Change type of return of Pipeline[Compute] method ([ac8910a](https://github.com/LuxoriaSoft/Luxoria/commit/ac8910acae65315b8a06df2ae147e2455f0df353))
+* Static path to assets folder on LuxFilter.TestMain ([18e3ec3](https://github.com/LuxoriaSoft/Luxoria/commit/18e3ec3b3e6fc6251ef952e4a5eea9d921801d42))
+
 # [1.29.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.28.0...v1.29.0) (2025-02-17)
 
 

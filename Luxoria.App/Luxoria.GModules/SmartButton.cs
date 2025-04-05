@@ -12,9 +12,9 @@ namespace Luxoria.GModules
     {
         public string Name { get; private set; }
         public string Description { get; private set; }
-        public Dictionary<SmartButtonType, Page> Pages { get; private set; }
+        public Dictionary<SmartButtonType, Object> Pages { get; private set; }
 
-        public SmartButton(string name, string description, Dictionary<SmartButtonType, Page> dic)
+        public SmartButton(string name, string description, Dictionary<SmartButtonType, Object> dic)
         {
             Name = name;
             Description = description;

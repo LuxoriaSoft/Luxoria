@@ -84,7 +84,7 @@ namespace Luxoria.App.Tests
             var result = imageData.ToString();
 
             // Assert
-            Assert.Equal("JPEG Image: 1280x720", result);
+            Assert.Equal("JPEG Image: 1280x720, EXIF Entries: 0", result);
         }
     }
 }
