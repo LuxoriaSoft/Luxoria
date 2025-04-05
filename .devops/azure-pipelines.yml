@@ -15,10 +15,10 @@ pool:
 
 stages:
 - stage: BuildAndPush
-  displayName: Build Images
+  displayName: Deploy LuxAPI and LuxStudio
   jobs:
   - job: DockerBuildPush
-    displayName: Docker Build & Push
+    displayName: Build Images
     steps:
     - checkout: self
 
