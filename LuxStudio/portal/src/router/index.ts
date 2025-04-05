@@ -22,13 +22,13 @@ const routes = [
     path: '/dashboard',
     name: 'Dashboard',
     component: Dashboard,
-    meta: { requiresAuth: true }, // Route protégée
+    meta: { requiresAuth: true },
   },
   { 
     path: '/sso/authorize',
     name: 'LinkAccount',
     component: LinkAccount,
-    meta: { requiresAuth: true }, // Route protégée
+    meta: { requiresAuth: true },
   },
 ];
 
