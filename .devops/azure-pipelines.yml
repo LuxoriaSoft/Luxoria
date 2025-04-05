@@ -23,7 +23,7 @@ stages:
     - checkout: self
 
     - task: Docker@2
-      displayName: Build and Push luxapi
+      displayName: Build/Publish LuxAPI
       inputs:
         containerRegistry: $(dockerHubService)
         repository: $(dockerHubNamespace)/luxapi
@@ -34,7 +34,7 @@ stages:
           $(imageTag)
 
     - task: Docker@2
-      displayName: Build and Push luxstudio
+      displayName: Build/Publish LuxStudio
       inputs:
         containerRegistry: $(dockerHubService)
         repository: $(dockerHubNamespace)/luxstudio
