@@ -28,7 +28,7 @@ stages:
         containerRegistry: $(dockerHubService)
         repository: $(dockerHubNamespace)/luxapi
         command: buildAndPush
-        Dockerfile: LuxAPI/Dockerfile
+        Dockerfile: LuxStudio/LuxAPI/LuxAPI/Dockerfile
         buildContext: LuxStudio/LuxAPI
         tags: |
           $(imageTag)
@@ -39,7 +39,7 @@ stages:
         containerRegistry: $(dockerHubService)
         repository: $(dockerHubNamespace)/luxstudio
         command: buildAndPush
-        Dockerfile: Dockerfile
+        Dockerfile: LuxStudio/portal/Dockerfile
         buildContext: LuxStudio/portal
         tags: |
           $(imageTag)
