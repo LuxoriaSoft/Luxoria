@@ -51,7 +51,7 @@ namespace LuxEditor
 
             List<ISmartButton> smartButtons = new List<ISmartButton>();
 
-            Dictionary<SmartButtonType, Page> mainPage = new Dictionary<SmartButtonType, Page>();
+            Dictionary<SmartButtonType, Object> mainPage = new Dictionary<SmartButtonType, Object>();
 
             _photoViewer = new PhotoViewer();
             _cExplorer = new CollectionExplorer();

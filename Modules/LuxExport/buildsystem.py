@@ -3,13 +3,13 @@ import shutil
 
 
 # Constants
-LUX_DLL_NAME = "LuxEditor.dll"
-LUX_FINAL_NAME = "LuxEditor.Lux.dll"
-LUX_MOD_FOLDER = "LuxEditor"
-SOURCE_DIR = "./LuxEditor/bin/Debug/net9.0-windows10.0.26100.0/publish"
+LUX_DLL_NAME = "LuxExport.dll"
+LUX_FINAL_NAME = "LuxExport.Lux.dll"
+LUX_MOD_FOLDER = "LuxExport"
+SOURCE_DIR = "./LuxExport/bin/Debug/net9.0-windows10.0.26100.0/publish"
 DEST_DIR = "../../Luxoria.App/Luxoria.App/bin/x64/Debug/net9.0-windows10.0.26100.0/win-x64/modules/" + LUX_MOD_FOLDER
-MODULE_SOURCE_DIR = "./LuxEditor/bin/Debug/net9.0-windows10.0.26100.0/LuxEditor"
-MODULE_DEST_DIR = "../../Luxoria.App/Luxoria.App/bin/x64/Debug/net9.0-windows10.0.26100.0/win-x64/LuxEditor"
+MODULE_SOURCE_DIR = "./LuxExport/bin/Debug/net9.0-windows10.0.26100.0/LuxExport"
+MODULE_DEST_DIR = "../../Luxoria.App/Luxoria.App/bin/x64/Debug/net9.0-windows10.0.26100.0/win-x64/LuxExport"
 
 # Function to build the project
 def build_project():

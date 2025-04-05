@@ -186,26 +186,78 @@ namespace Luxoria.App
                     continue;
                 }
 
-                switch (key)
+
+                if (value is Page)
                 {
-                    case SmartButtonType.Window:
-                        new Window { Content = value }.Activate();
-                        break;
-                    case SmartButtonType.LeftPanel:
-                        LeftPanelContent.Content = value;
-                        break;
-                    case SmartButtonType.MainPanel:
-                        CenterPanelContent.Content = value;
-                        break;
-                    case SmartButtonType.RightPanel:
-                        RightPanelContent.Content = value;
-                        break;
-                    case SmartButtonType.BottomPanel:
-                        BottomPanelContent.Content = value;
-                        break;
-                    case SmartButtonType.Modal:
-                        await ShowModalAsync(value, smartButton.Name);
-                        break;
+                    Page valuePage = (Page)value;
+                    if (valuePage is null)
+                    {
+                        Debug.WriteLine($"[Warning] Page is null for type {key}");
+                        continue;
+                    }
+
+                    switch (key)
+                    {
+                        case SmartButtonType.Window:
+                            new Window { Content = valuePage }.Activate();
+                            break;
+                        case SmartButtonType.LeftPanel:
+                            LeftPanelContent.Content = valuePage;
+                            break;
+                        case SmartButtonType.MainPanel:
+                            CenterPanelContent.Content = valuePage;
+                            break;
+                        case SmartButtonType.RightPanel:
+                            RightPanelContent.Content = valuePage;
+                            break;
+                        case SmartButtonType.BottomPanel:
+                            BottomPanelContent.Content = valuePage;
+                            break;
+                        case SmartButtonType.Modal:
+                            await ShowModalAsync(valuePage, smartButton.Name);
+                            break;
+                    }
+                }
+                else if (value is ContentDialog)
+                {
+                    ContentDialog valueDialog = (ContentDialog)value;
+
+                    if (valueDialog is null)
+                    {
+                        Debug.WriteLine($"[Warning] Dialog is null for type {key}");
+                        continue;
+                    }
+
+                    switch (key)
+                    {
+                        case SmartButtonType.Modal:
+                            if (valueDialog.XamlRoot == null)
+                                valueDialog.XamlRoot = this.Content.XamlRoot;
+                            await valueDialog.ShowAsync();
+                            break;
+                    }
+                }
+                else if (value is Window)
+                {
+                    Window valueWindow = new Window();
+                    Window testWindow = (Window)value;
+                    valueWindow.Content = testWindow.Content;
+
+
+                    Debug.WriteLine($"[x] Loading Window: {valueWindow}");
+
+                    if (valueWindow is null)
+                    {
+                        Debug.WriteLine($"[Warning] Window is null for type {key}");
+                        continue;
+                    }
+
+                    switch (key)
+                    {
+                        case SmartButtonType.Window:
+                            valueWindow.Activate();
+                            break;
+                    }
                 }
             }
         }

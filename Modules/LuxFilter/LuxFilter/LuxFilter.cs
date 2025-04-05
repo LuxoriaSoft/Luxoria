@@ -60,7 +60,7 @@ public class LuxFilter : IModule, IModuleUI
 
         // Add a menu bar item to the main menu bar.
         List<ISmartButton> smartButtons = [];
-        Dictionary<SmartButtonType, Page> page = new()
+        Dictionary<SmartButtonType, Object> page = new()
         {
             { SmartButtonType.Modal, _mainFilterView }
         };
