@@ -15,7 +15,7 @@ pool:
 
 stages:
 - stage: BuildAndPush
-  displayName: Build & Push to Docker Hub
+  displayName: Build Images
   jobs:
   - job: DockerBuildPush
     displayName: Docker Build & Push
