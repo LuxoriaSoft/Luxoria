@@ -55,8 +55,7 @@ namespace LuxExport
         }
 
         /// <summary>
-        /// Lance la boucle d’exportation sur un thread de fond (Task.Run),
-        /// pour ne pas bloquer l’UI.
+        /// Start Export loop in a background thread
         /// </summary>
         private void StartExportInBackground()
         {
@@ -78,7 +77,7 @@ namespace LuxExport
         }
 
         /// <summary>
-        /// La boucle d’export qui tourne sur un thread de fond.
+        /// Export loop
         /// </summary>
         private async Task DoExportLoopAsync()
         {
@@ -212,7 +211,7 @@ namespace LuxExport
 
 
         /// <summary>
-        /// Convertit un SKBitmap en BitmapImage (pour l’aperçu).
+        /// SKBitmap to BitmapImage (for preview).
         /// </summary>
         private static async Task<BitmapImage> ConvertToBitmapImageAsync(SKBitmap bitmap)
         {
@@ -232,7 +231,7 @@ namespace LuxExport
         }
 
         /// <summary>
-        /// Génère un chemin unique "fichier (1).jpg" si le fichier existe déjà.
+        /// Create a new filePath if file path already exist
         /// </summary>
         private static string GetUniqueFilePath(string filePath)
         {
@@ -252,7 +251,7 @@ namespace LuxExport
         }
 
         /// <summary>
-        /// Bouton Pause/Resume
+        /// Pause And Resume Button
         /// </summary>
         private void PauseResumeButton_Click(object sender, RoutedEventArgs e)
         {
@@ -271,7 +270,7 @@ namespace LuxExport
         }
 
         /// <summary>
-        /// Bouton Cancel
+        /// Cancel Button
         /// </summary>
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
