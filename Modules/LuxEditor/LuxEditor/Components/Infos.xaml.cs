@@ -1,3 +1,4 @@
+using LuxEditor.Services;
 using Microsoft.UI.Xaml.Controls;
 using System.Collections.ObjectModel;
 
@@ -18,6 +19,11 @@ namespace LuxEditor.Components
         {
             this.InitializeComponent();
             ExifListView.ItemsSource = ExifData;
+            ImageManager.Instance.OnSelectionChanged += (image) =>
+            {
+                DisplayExifData(image.Metadata);
+            };
+
         }
 
         /// <summary>

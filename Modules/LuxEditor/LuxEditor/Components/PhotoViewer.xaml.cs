@@ -1,3 +1,4 @@
+using LuxEditor.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -15,6 +16,11 @@ namespace LuxEditor.Components
         public PhotoViewer()
         {
             this.InitializeComponent();
+            ImageManager.Instance.OnSelectionChanged += (image) =>
+            {
+                SetImage(image.EditedBitmap);
+            };
+
         }
 
         /// <summary>
