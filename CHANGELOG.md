@@ -1,3 +1,25 @@
+## [1.31.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.31.0...v1.31.1) (2025-04-08)
+
+
+### Bug Fixes
+
+* Add Unit tests for LuxExport ([a868c40](https://github.com/LuxoriaSoft/Luxoria/commit/a868c40d95253a87c173d3088d180526e3e71eaf))
+* Clean unused code ([0935f7c](https://github.com/LuxoriaSoft/Luxoria/commit/0935f7c3731dbac49bc6a8e936ea5fb768f27741))
+* Commentaries in code ([b778fd2](https://github.com/LuxoriaSoft/Luxoria/commit/b778fd25ddf4cf7ddc6d055b3d212889554dc4b0))
+* Documentation for lux-export ([c2e9292](https://github.com/LuxoriaSoft/Luxoria/commit/c2e929270ec1ad90c390b85100c98254effdb53f))
+* Export File Naming backend ([f1ace86](https://github.com/LuxoriaSoft/Luxoria/commit/f1ace86486026346387d35ee33ef533f95d72662))
+* Export location back-end ([1a9fc8d](https://github.com/LuxoriaSoft/Luxoria/commit/1a9fc8da9e2005722cce6f2db329dc2084300513))
+* Export location back-end ([7fce05d](https://github.com/LuxoriaSoft/Luxoria/commit/7fce05d100d1e933e9b9581841dd826d5ed951c8))
+* Export Pop Up with progress bar and previsualization ([af849b8](https://github.com/LuxoriaSoft/Luxoria/commit/af849b81be165ce0d39d523030ea6cfb7363279c))
+* File Path for assets + color profile  + removing broken file format ([845c5ba](https://github.com/LuxoriaSoft/Luxoria/commit/845c5ba9a97bdd23890059100f853f67935a0387))
+* File Picker in content dialog + content dialog size ([a658ef3](https://github.com/LuxoriaSoft/Luxoria/commit/a658ef3b2301a20db9110e5351dfb65fa7b140ce))
+* Initialisation of the modal using LMGUI ([32b1eb7](https://github.com/LuxoriaSoft/Luxoria/commit/32b1eb7b387a2dd1114cd87ed10bf4fe6de1acee))
+* Lux Export Interface ([769e797](https://github.com/LuxoriaSoft/Luxoria/commit/769e79708af2e18f773d72ee5e24f697f36eeb91))
+* Lux Export Interface ([e8f7c28](https://github.com/LuxoriaSoft/Luxoria/commit/e8f7c288f4580975eff0be44c73a3f778ca7f8be))
+* LuxExport refactor from window to modal ([e658762](https://github.com/LuxoriaSoft/Luxoria/commit/e6587623537d670c47dc7ba67ea729051eb7f9ae))
+* Update counter value on multiple photo export ([672312f](https://github.com/LuxoriaSoft/Luxoria/commit/672312f0e705514b1b41451d9d29601e0e83f7de))
+* Using window instead of modal because of WinUi restrictions ([9a8f279](https://github.com/LuxoriaSoft/Luxoria/commit/9a8f2794063caea6f723e6f221a4a4ff63f41bb9))
+
 # [1.31.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.30.0...v1.31.0) (2025-03-07)
 
 
