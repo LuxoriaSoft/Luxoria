@@ -120,7 +120,7 @@
                         </Grid>
                     </StackPanel>
 
-                    <!-- SHADOWS -->
+                    <!-- CONTRAST -->
                     <StackPanel Orientation="Vertical" Spacing="2" Padding="0">
                         <TextBlock Text="Shadows" Foreground="White" FontSize="12" Margin="0,0,0,2"/>
                         <Grid>
