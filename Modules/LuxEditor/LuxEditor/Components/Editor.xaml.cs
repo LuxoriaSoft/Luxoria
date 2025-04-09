@@ -1,9 +1,15 @@
+using LuxEditor.EditorUI;
+using LuxEditor.EditorUI.Controls;
+using LuxEditor.EditorUI.Groups;
+using LuxEditor.EditorUI.Interfaces;
+using LuxEditor.EditorUI.Models;
 using LuxEditor.Models;
 using LuxEditor.Processing;
 using LuxEditor.Services;
+using LuxEditor.Utils;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
 using SkiaSharp;
 using System;
@@ -21,87 +27,286 @@ namespace LuxEditor.Components
         private bool pendingUpdate;
         private readonly object updateLock = new();
 
-        public event Action<BitmapImage> OnEditorImageUpdated;
-
-        private readonly Dictionary<string, (float min, float max, float defaultValue)> SliderRanges = new()
-        {
-            { "Temperature", (2000, 50000, 6500) },
-            { "Tint", (-150, 150, 0) },
-            { "Exposure", (-5, 5, 0) },
-            { "Contrast", (-100, 100, 0) },
-            { "Highlights", (-100, 100, 0) },
-            { "Shadows", (-100, 100, 0) },
-            { "Whites", (-100, 100, 0) },
-            { "Blacks", (-100, 100, 0) },
-            { "Texture", (-100, 100, 0) },
-            { "Clarity", (-100, 100, 0) },
-            { "Dehaze", (-100, 100, 0) },
-            { "Vibrance", (-100, 100, 0) },
-            { "Saturation", (-100, 100, 0) }
-        };
-
-        private readonly Dictionary<string, List<string>> FilterGroups = new()
-        {
-            { "WhiteBalance", new() { "Temperature", "Tint" } },
-            { "Tone", new() { "Exposure", "Contrast", "Highlights", "Shadows", "Whites", "Blacks" } },
-            { "Presence", new() { "Texture", "Clarity", "Dehaze", "Vibrance", "Saturation" } }
-        };
-
+        private EditorPanelManager? _panelManager;
+        private readonly Dictionary<string, EditorCategory> _categories = new();
         private bool ctrlPressed = false;
 
-        /// <summary>
-        /// Initializes the Editor UI and binds event listeners.
-        /// </summary>
+        public event Action<BitmapImage> OnEditorImageUpdated;
+
         public Editor()
         {
-            this.InitializeComponent();
-            InitializeSliders();
+            InitializeComponent();
+
+            _panelManager = new EditorPanelManager(EditorStackPanel);
+
             ImageManager.Instance.OnSelectionChanged += SetEditableImage;
         }
 
-        /// <summary>
-        /// Handles key press events for undo/redo keyboard shortcuts.
-        /// </summary>
-        private void OnKeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
-        {
-            if (e.Key == Windows.System.VirtualKey.Control)
-                ctrlPressed = true;
-
-            if (ctrlPressed && e.Key == Windows.System.VirtualKey.Z && currentImage?.Undo() == true)
-            {
-                UpdateSliderUI();
-                ApplyFilters();
-            }
-            else if (ctrlPressed && e.Key == Windows.System.VirtualKey.Y && currentImage?.Redo() == true)
-            {
-                UpdateSliderUI();
-                ApplyFilters();
-            }
-        }
-
-        /// <summary>
-        /// Handles key up events to track control key state.
-        /// </summary>
-        private void OnKeyUp(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
-        {
-            if (e.Key == Windows.System.VirtualKey.Control)
-                ctrlPressed = false;
-        }
-
-        /// <summary>
-        /// Sets the currently edited image and refreshes the UI.
-        /// </summary>
         public void SetEditableImage(EditableImage image)
         {
+            ExifHelper.DebugPrintMetadata(image.Metadata, image.FileName);
+
             currentImage = image;
             this.Focus(FocusState.Programmatic);
+
+            EditorStackPanel.Children.Clear();
+            _categories.Clear();
+            BuildEditorUI();
+
             UpdateSliderUI();
             ApplyFilters();
         }
 
-        /// <summary>
-        /// Applies the current filter state asynchronously to the image.
-        /// </summary>
+        private void BuildEditorUI()
+        {
+            var rootExpander = new EditorGroupExpander("Basic");
+
+            AddCategory(rootExpander, "WhiteBalance", "White Balance", new IEditorGroupItem[]
+            {
+                CreateSliderWithPreset("Temperature", new EditorStyle
+                {
+                    GradientStart = Windows.UI.Color.FromArgb(255, 70, 130, 180),
+                    GradientEnd = Windows.UI.Color.FromArgb(255, 255, 140, 0)
+                }),
+                CreateSliderWithPreset("Tint"),
+                CreateSeparator()
+            });
+
+            AddCategory(rootExpander, "Tone", "Tone", new IEditorGroupItem[]
+            {
+                CreateSliderWithPreset("Exposure"),
+                CreateSliderWithPreset("Contrast"),
+                CreateSeparator(),
+
+                CreateSliderWithPreset("Highlights"),
+                CreateSliderWithPreset("Shadows"),
+                CreateSeparator(),
+
+                CreateSliderWithPreset("Whites"),
+                CreateSliderWithPreset("Blacks"),
+                CreateSeparator()
+            });
+
+            AddCategory(rootExpander, "Presence", "Presence", new IEditorGroupItem[]
+            {
+                CreateSliderWithPreset("Texture"),
+                CreateSliderWithPreset("Clarity"),
+                CreateSliderWithPreset("Dehaze"),
+                CreateSeparator(),
+
+                CreateSliderWithPreset("Vibrance"),
+                CreateSliderWithPreset("Saturation")
+            });
+
+            _panelManager!.AddCategory(rootExpander);
+        }
+
+        private EditorSlider CreateSliderWithPreset(string key, EditorStyle? style = null)
+        {
+            var (min, max, def, decimals, step) = GetSliderPreset(key);
+            return CreateSlider(key, min, max, def, style, decimals, step);
+        }
+
+        private (float min, float max, float def, int decimals, float step) GetSliderPreset(string key)
+        {
+            var meta = currentImage?.Metadata;
+
+            float min = -100, max = 100, def = 0;
+            int decimals = 0;
+            float step = 1f;
+
+            if (key == "Temperature")
+            {
+                float? wbKelvin = ExifHelper.TryGetRawWhiteBalanceKelvin(meta);
+                if (wbKelvin.HasValue)
+                {
+                    min = 2000;
+                    max = 50000;
+                    def = wbKelvin.Value;
+                    decimals = 0;
+                    step = 100;
+                }
+
+            }
+            else if (key == "Exposure")
+            {
+                min = -5;
+                max = 5;
+                def = 0;
+                decimals = 2;
+                step = 0.05f;
+            }
+            else if (key == "Contrast" || key == "Highlights" || key == "Shadows" ||
+                     key == "Whites" || key == "Blacks" || key == "Clarity" ||
+                     key == "Texture" || key == "Dehaze" || key == "Vibrance" || key == "Saturation")
+            {
+                min = -100;
+                max = 100;
+                def = 0;
+                decimals = 0;
+                step = 1;
+            }
+            else if (key == "Tint")
+            {
+                min = -150;
+                max = 150;
+                def = 0;
+                decimals = 0;
+                step = 1;
+            }
+
+            return (min, max, def, decimals, step);
+        }
+
+        private float? TryExtractColorTemperature()
+        {
+            if (currentImage?.Metadata == null)
+                return null;
+
+            var meta = currentImage.Metadata;
+
+            if (meta.TryGetValue("ColorTemperature", out var colorTempRaw) &&
+                float.TryParse(colorTempRaw, out float kelvin))
+            {
+                return kelvin;
+            }
+
+            if (meta.TryGetValue("AsShotNeutral", out var neutralRaw))
+            {
+                var parts = neutralRaw.Split(','); // e.g. "0.512,1,0.610"
+                if (parts.Length == 3 &&
+                    float.TryParse(parts[0], out var r) &&
+                    float.TryParse(parts[2], out var b))
+                {
+                    // simple heuristic based on neutral RGB
+                    float ratio = r / b;
+                    float estimatedK = 6500 * (1f / ratio);
+                    return Math.Clamp(estimatedK, 2000f, 50000f);
+                }
+            }
+
+            if (meta.TryGetValue("WB_RGGBLevels", out var rggbRaw))
+            {
+                var vals = rggbRaw.Split(',');
+                if (vals.Length == 4 &&
+                    float.TryParse(vals[0], out float R) &&
+                    float.TryParse(vals[3], out float B))
+                {
+                    float ratio = R / B;
+                    return Math.Clamp(6500f * (1f / ratio), 2000, 50000);
+                }
+            }
+
+            return null;
+        }
+
+
+        private EditorSlider CreateSlider(string key, float min, float max, float def,
+                                          EditorStyle? style = null, int decimalPlaces = 0, float step = 1f)
+        {
+            var slider = new EditorSlider(key, min, max, def, decimalPlaces, step);
+
+            slider.OnValueChanged = val =>
+            {
+                if (currentImage == null) return;
+                currentImage.Filters[key] = val;
+                ApplyFilters();
+                UpdateResetButtonsVisibility();
+            };
+
+            if (style != null)
+                slider.ApplyStyle(style);
+
+            _panelManager!.RegisterSlider(key, slider);
+            return slider;
+        }
+
+        private EditorSeparator CreateSeparator() => new EditorSeparator();
+
+        private void AddCategory(EditorGroupExpander parent, string key, string title, IEnumerable<IEditorGroupItem> items)
+        {
+            var category = new EditorCategory(key, title);
+            category.OnResetClicked += ResetCategory;
+
+            foreach (var item in items)
+                category.AddControl(item);
+
+            _categories[key] = category;
+            parent.AddCategory(category);
+        }
+
+        private void ResetCategory(string key)
+        {
+            if (!_categories.TryGetValue(key, out var category)) return;
+
+            foreach (var item in category.GetItems())
+            {
+                if (item is EditorSlider slider)
+                {
+                    slider.ResetToDefault();
+                    if (currentImage != null)
+                        currentImage.Filters[slider.Key] = slider.DefaultValue;
+                }
+            }
+
+            ApplyFilters();
+            UpdateResetButtonsVisibility();
+        }
+
+        private void ResetAllClicked(object sender, RoutedEventArgs e)
+        {
+            foreach (var category in _categories.Values)
+            {
+                foreach (var item in category.GetItems())
+                {
+                    if (item is EditorSlider slider)
+                    {
+                        slider.ResetToDefault();
+                        if (currentImage != null)
+                            currentImage.Filters[slider.Key] = slider.DefaultValue;
+                    }
+                }
+            }
+
+            ApplyFilters();
+            UpdateResetButtonsVisibility();
+        }
+
+        private void UpdateSliderUI()
+        {
+            if (currentImage == null || _panelManager == null) return;
+
+            foreach (var (key, value) in currentImage.Filters)
+            {
+                _panelManager.GetSlider(key)?.SetValue(value);
+            }
+
+            UpdateResetButtonsVisibility();
+        }
+
+        private void UpdateResetButtonsVisibility()
+        {
+            if (currentImage == null) return;
+
+            foreach (var (key, category) in _categories)
+            {
+                bool modified = category.GetItems().Any(item =>
+                    item is EditorSlider slider &&
+                    Math.Abs(slider.GetValue() - slider.DefaultValue) > 0.01f
+                );
+
+                category.SetResetVisible(modified);
+            }
+
+            bool anyChanged = currentImage.Filters.Any(f =>
+            {
+                var s = _panelManager!.GetSlider(f.Key);
+                return s != null && Math.Abs(s.GetValue() - s.DefaultValue) > 0.01f;
+            });
+
+            ResetAllButton.Visibility = anyChanged ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         private async void ApplyFilters()
         {
             lock (updateLock)
@@ -117,12 +322,9 @@ namespace LuxEditor.Components
             await applyFiltersTask;
         }
 
-        /// <summary>
-        /// Performs image processing with the current filter values.
-        /// </summary>
         private async Task ApplyFiltersAsync()
         {
-            await Task.Delay(50); // debounce
+            await Task.Delay(50);
 
             lock (updateLock)
             {
@@ -142,9 +344,6 @@ namespace LuxEditor.Components
             UpdateImage(currentImage.EditedBitmap);
         }
 
-        /// <summary>
-        /// Updates the preview image displayed in the UI.
-        /// </summary>
         private void UpdateImage(SKBitmap bitmap)
         {
             using var image = SKImage.FromBitmap(bitmap);
@@ -161,266 +360,27 @@ namespace LuxEditor.Components
             OnEditorImageUpdated?.Invoke(bitmapImage);
         }
 
-        /// <summary>
-        /// Initializes all sliders, events, and reset behavior.
-        /// </summary>
-        private void InitializeSliders()
+        private void OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
-            void Setup(string key, Slider slider, TextBox label)
+            if (e.Key == Windows.System.VirtualKey.Control)
+                ctrlPressed = true;
+
+            if (ctrlPressed && e.Key == Windows.System.VirtualKey.Z && currentImage?.Undo() == true)
             {
-                slider.Tag = key;
-                slider.ValueChanged += SliderValueChanged;
-                AttachDoubleClickReset(slider, key, label);
-            }
-
-            Setup("Temperature", TemperatureSlider, TemperatureValueLabel);
-            Setup("Tint", TintSlider, TintValueLabel);
-            Setup("Exposure", ExposureSlider, ExposureValueLabel);
-            Setup("Contrast", ContrastSlider, ContrastValueLabel);
-            Setup("Highlights", HighlightsSlider, HighlightsValueLabel);
-            Setup("Shadows", ShadowsSlider, ShadowsValueLabel);
-            Setup("Whites", WhitesSlider, WhitesValueLabel);
-            Setup("Blacks", BlacksSlider, BlacksValueLabel);
-            Setup("Texture", TextureSlider, TextureValueLabel);
-            Setup("Clarity", ClaritySlider, ClarityValueLabel);
-            Setup("Dehaze", DehazeSlider, DehazeValueLabel);
-            Setup("Vibrance", VibranceSlider, VibranceValueLabel);
-            Setup("Saturation", SaturationSlider, SaturationValueLabel);
-        }
-
-        /// <summary>
-        /// Handles value changes when a slider is moved.
-        /// </summary>
-        private void SliderValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (sender is Slider slider && slider.Tag is string key && currentImage != null)
-            {
-                float newValue = (float)e.NewValue;
-                if (currentImage.Filters.TryGetValue(key, out float oldValue) && Math.Abs(oldValue - newValue) > 0.01f)
-                {
-                    currentImage.SaveState();
-                    currentImage.Filters[key] = newValue;
-                    ApplyFilters();
-                    UpdateResetButtonsVisibility();
-
-                    var label = GetTextBoxByKey(key);
-                    label.Text = newValue.ToString("0");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Handles manual edits to the value TextBoxes.
-        /// </summary>
-        private void OnManualTextBoxEdited(object sender, RoutedEventArgs e)
-        {
-            if (sender is TextBox textBox && currentImage != null)
-            {
-                string key = GetKeyFromTextBox(textBox);
-                if (float.TryParse(textBox.Text, out float value))
-                {
-                    float clamped = ClampFilterValue(key, value);
-                    currentImage.Filters[key] = clamped;
-
-                    var slider = GetSliderByKey(key);
-                    slider.Value = clamped;
-                    textBox.Text = clamped.ToString("0");
-
-                    ApplyFilters();
-                    UpdateResetButtonsVisibility();
-                }
-                else
-                {
-                    textBox.Text = currentImage.Filters[key].ToString("0");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Triggers input validation on Enter key from TextBox.
-        /// </summary>
-        private void OnTextBoxKeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
-        {
-            if (e.Key == Windows.System.VirtualKey.Enter)
-            {
-                e.Handled = true;
-                if (sender is TextBox tb && tb.Parent is FrameworkElement parent)
-                    parent.Focus(FocusState.Programmatic);
-            }
-        }
-
-        /// <summary>
-        /// Updates the slider values and their associated text labels.
-        /// </summary>
-        private void UpdateSliderUI()
-        {
-            foreach (var key in SliderRanges.Keys)
-            {
-                var slider = GetSliderByKey(key);
-                var label = GetTextBoxByKey(key);
-                float value = currentImage.Filters[key];
-                slider.Value = value;
-                label.Text = value.ToString("0");
-            }
-        }
-
-        /// <summary>
-        /// Resets all filters in a specified group.
-        /// </summary>
-        private void ResetGroup(string groupKey)
-        {
-            if (!FilterGroups.TryGetValue(groupKey, out var keys) || currentImage == null) return;
-
-            foreach (var key in keys)
-            {
-                float def = SliderRanges[key].defaultValue;
-                currentImage.Filters[key] = def;
-
-                var slider = GetSliderByKey(key);
-                var label = GetTextBoxByKey(key);
-                slider.Value = def;
-                label.Text = def.ToString("0");
-            }
-
-            ApplyFilters();
-            UpdateResetButtonsVisibility();
-        }
-
-        /// <summary>
-        /// Resets all filters to their default state.
-        /// </summary>
-        private void ResetAllClicked(object sender, RoutedEventArgs e)
-        {
-            foreach (var key in currentImage.Filters.Keys.ToList())
-            {
-                float def = SliderRanges[key].defaultValue;
-                currentImage.Filters[key] = def;
-
-                var slider = GetSliderByKey(key);
-                var label = GetTextBoxByKey(key);
-                slider.Value = def;
-                label.Text = def.ToString("0");
-            }
-
-            ApplyFilters();
-            UpdateResetButtonsVisibility();
-        }
-
-        /// <summary>
-        /// Updates the visibility of reset buttons based on changes.
-        /// </summary>
-        private void UpdateResetButtonsVisibility()
-        {
-            if (currentImage == null) return;
-
-            foreach (var group in FilterGroups)
-            {
-                bool modified = group.Value.Any(key => Math.Abs(currentImage.Filters[key] - SliderRanges[key].defaultValue) > 0.01f);
-
-                var button = group.Key switch
-                {
-                    "WhiteBalance" => ResetWhiteBalanceButton,
-                    "Tone" => ResetToneButton,
-                    "Presence" => ResetPresenceButton,
-                    _ => null
-                };
-
-                if (button != null)
-                    button.Visibility = modified ? Visibility.Visible : Visibility.Collapsed;
-            }
-
-            bool anyChanged = currentImage.Filters.Any(f => Math.Abs(f.Value - SliderRanges[f.Key].defaultValue) > 0.01f);
-            ResetAllButton.Visibility = anyChanged ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        /// <summary>
-        /// Attaches a double-click reset to a slider.
-        /// </summary>
-        private void AttachDoubleClickReset(Slider slider, string key, TextBox label)
-        {
-            slider.DoubleTapped += (s, e) =>
-            {
-                if (currentImage == null) return;
-
-                float def = SliderRanges[key].defaultValue;
-                currentImage.Filters[key] = def;
-                slider.Value = ClampFilterValue(key, def);
-                label.Text = def.ToString("0");
-
+                UpdateSliderUI();
                 ApplyFilters();
-                UpdateResetButtonsVisibility();
-            };
-        }
-
-        /// <summary>
-        /// Clamps a filter value based on its slider bounds.
-        /// </summary>
-        private float ClampFilterValue(string key, float value)
-        {
-            return SliderRanges.TryGetValue(key, out var range)
-                ? Math.Clamp(value, range.min, range.max)
-                : value;
-        }
-
-        /// <summary>
-        /// Resolves the slider associated with a filter key.
-        /// </summary>
-        private Slider GetSliderByKey(string key)
-        {
-            return key switch
+            }
+            else if (ctrlPressed && e.Key == Windows.System.VirtualKey.Y && currentImage?.Redo() == true)
             {
-                "Temperature" => TemperatureSlider,
-                "Tint" => TintSlider,
-                "Exposure" => ExposureSlider,
-                "Contrast" => ContrastSlider,
-                "Highlights" => HighlightsSlider,
-                "Shadows" => ShadowsSlider,
-                "Whites" => WhitesSlider,
-                "Blacks" => BlacksSlider,
-                "Texture" => TextureSlider,
-                "Clarity" => ClaritySlider,
-                "Dehaze" => DehazeSlider,
-                "Vibrance" => VibranceSlider,
-                "Saturation" => SaturationSlider,
-                _ => throw new ArgumentException($"Unknown key: {key}")
-            };
+                UpdateSliderUI();
+                ApplyFilters();
+            }
         }
 
-        /// <summary>
-        /// Resolves the textbox associated with a filter key.
-        /// </summary>
-        private TextBox GetTextBoxByKey(string key)
+        private void OnKeyUp(object sender, KeyRoutedEventArgs e)
         {
-            return key switch
-            {
-                "Temperature" => TemperatureValueLabel,
-                "Tint" => TintValueLabel,
-                "Exposure" => ExposureValueLabel,
-                "Contrast" => ContrastValueLabel,
-                "Highlights" => HighlightsValueLabel,
-                "Shadows" => ShadowsValueLabel,
-                "Whites" => WhitesValueLabel,
-                "Blacks" => BlacksValueLabel,
-                "Texture" => TextureValueLabel,
-                "Clarity" => ClarityValueLabel,
-                "Dehaze" => DehazeValueLabel,
-                "Vibrance" => VibranceValueLabel,
-                "Saturation" => SaturationValueLabel,
-                _ => throw new ArgumentException($"Unknown key: {key}")
-            };
+            if (e.Key == Windows.System.VirtualKey.Control)
+                ctrlPressed = false;
         }
-
-        /// <summary>
-        /// Extracts the filter key from a textbox name.
-        /// </summary>
-        private string GetKeyFromTextBox(TextBox box)
-        {
-            return box.Name.Replace("ValueLabel", "");
-        }
-
-        private void ResetWhiteBalanceClicked(object sender, RoutedEventArgs e) => ResetGroup("WhiteBalance");
-        private void ResetToneClicked(object sender, RoutedEventArgs e) => ResetGroup("Tone");
-        private void ResetPresenceClicked(object sender, RoutedEventArgs e) => ResetGroup("Presence");
     }
 }
-
