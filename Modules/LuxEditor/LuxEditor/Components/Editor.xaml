@@ -14,8 +14,11 @@
 
     <!-- Root Grid -->
     <Grid Padding="0">
-
-        <ScrollViewer VerticalScrollMode="Enabled" HorizontalScrollMode="Disabled">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <ScrollViewer Grid.Row="0" VerticalScrollMode="Enabled" HorizontalScrollMode="Disabled">
             <StackPanel Orientation="Vertical" Spacing="1" Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Top">
 
             <!-- BASIC ADJUSTMENTS -->
@@ -44,7 +47,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                                <Slider x:Name="TemperatureSlider" Grid.Column="0" Minimum="2000" Maximum="50000" Value="2000" HorizontalAlignment="Stretch" Margin="0,0,5,0"/>
+                                <Slider x:Name="TemperatureSlider" Grid.Column="0" Minimum="2000" Maximum="50000" Value="6500" HorizontalAlignment="Stretch" Margin="0,0,5,0"/>
                                 <TextBox x:Name="TemperatureValueLabel" Grid.Column="1" Text="0" Foreground="White" Width="40" TextAlignment="Center" VerticalAlignment="Center" IsReadOnly="False" Background="Transparent" BorderThickness="0" Padding="0" LostFocus="OnManualTextBoxEdited" KeyDown="OnTextBoxKeyDown"/>
                         </Grid>
                     </StackPanel>
@@ -258,11 +261,10 @@
                     </StackPanel>
             </Expander>
 
-
-                <Button x:Name="ResetAllButton" Content="Reset" HorizontalAlignment="Right" Click="ResetAllClicked" Visibility="Collapsed"/>
-
             </StackPanel>
 
         </ScrollViewer>
+
+        <Button Grid.Row="1" x:Name="ResetAllButton" Content="Reset All" HorizontalAlignment="Stretch" Click="ResetAllClicked" Visibility="Collapsed"/>
     </Grid>
 </Page>

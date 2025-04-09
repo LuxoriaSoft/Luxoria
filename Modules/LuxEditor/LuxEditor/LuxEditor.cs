@@ -26,7 +26,7 @@ namespace LuxEditor
 
         public string Name => "Lux Editor";
         public string Description => "Editor module for luxoria.";
-        public string Version => "1.5.1";
+        public string Version => "1.5.2";
 
         public List<ILuxMenuBarItem> Items { get; set; } = new();
 

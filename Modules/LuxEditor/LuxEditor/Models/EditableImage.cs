@@ -66,7 +66,7 @@ namespace LuxEditor.Models
         /// </summary>
         private Dictionary<string, float> DefaultFilters() => new()
         {
-            { "Temperature", 2000 },
+            { "Temperature", 6500 },
             { "Tint", 0 },
             { "Exposure", 0 },
             { "Contrast", 0 },
