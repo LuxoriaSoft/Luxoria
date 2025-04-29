@@ -35,8 +35,8 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
             Minimum = min,
             Maximum = max,
             Value = defaultValue,
-            StepFrequency = stepFrequency,
-            TickFrequency = stepFrequency,
+            //StepFrequency = stepFrequency,
+            //TickFrequency = stepFrequency,
             HorizontalAlignment = HorizontalAlignment.Stretch,
             Margin = new Thickness(0, 0, 5, 0),
             Tag = key
@@ -144,6 +144,16 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
                     new GradientStop { Color = style.GradientEnd.Value, Offset = 1 }
                 }
             };
+            _slider.Background = new LinearGradientBrush
+            {
+                StartPoint = new Windows.Foundation.Point(0, 0.5),
+                EndPoint = new Windows.Foundation.Point(1, 0.5),
+                GradientStops = new GradientStopCollection
+                {
+                    new GradientStop { Color = style.GradientStart.Value, Offset = 0 },
+                    new GradientStop { Color = style.GradientEnd.Value, Offset = 1 }
+                }
+            };  
         }
     }
 

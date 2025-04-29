@@ -1,4 +1,5 @@
 using LuxEditor.Components;
+using LuxEditor.Logic;
 using LuxEditor.Models;
 using LuxEditor.Processing;
 using LuxEditor.Services;
@@ -12,9 +13,7 @@ using Microsoft.UI.Xaml.Controls;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
 
 namespace LuxEditor
 {
@@ -60,7 +59,7 @@ namespace LuxEditor
 
             _editor.OnEditorImageUpdated += (updatedBitmap) =>
             {
-                _photoViewer.SetImage(updatedBitmap);
+                _photoViewer?.SetImage(updatedBitmap);
             };
 
             _cExplorer.OnImageSelected += (img) =>
@@ -71,7 +70,7 @@ namespace LuxEditor
             ImageManager.Instance.OnSelectionChanged += (img) =>
             {
                 _editor?.SetEditableImage(img);
-                _photoViewer?.SetImage(img.EditedBitmap);
+                _photoViewer?.SetImage(img.PreviewBitmap ?? img.EditedBitmap ?? img.OriginalBitmap);
                 _infos?.DisplayExifData(img.Metadata);
             };
 
@@ -105,8 +104,8 @@ namespace LuxEditor
 
                 var editable = new EditableImage(bitmap, exif, asset.MetaData.FileName ?? asset.MetaData.Id.ToString())
                 {
-                    PreviewBitmap = ImageProcessor.GeneratePreview(bitmap, 200),
-                    MediumBitmap = ImageProcessor.GenerateMediumResolution(bitmap)
+                    PreviewBitmap = ImageProcessingManager.GeneratePreview(bitmap, 200),
+                    MediumBitmap = ImageProcessingManager.GenerateMediumResolution(bitmap)
                 };
 
                 editableImages.Add(editable);

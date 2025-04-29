@@ -3,6 +3,7 @@ using LuxEditor.EditorUI.Controls;
 using LuxEditor.EditorUI.Groups;
 using LuxEditor.EditorUI.Interfaces;
 using LuxEditor.EditorUI.Models;
+using LuxEditor.Logic;
 using LuxEditor.Models;
 using LuxEditor.Processing;
 using LuxEditor.Services;
@@ -10,11 +11,10 @@ using LuxEditor.Utils;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media.Imaging;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -31,21 +31,17 @@ namespace LuxEditor.Components
         private readonly Dictionary<string, EditorCategory> _categories = new();
         private bool ctrlPressed = false;
 
-        public event Action<BitmapImage> OnEditorImageUpdated;
+        public event Action<SKBitmap> OnEditorImageUpdated;
 
         public Editor()
         {
             InitializeComponent();
-
             _panelManager = new EditorPanelManager(EditorStackPanel);
-
             ImageManager.Instance.OnSelectionChanged += SetEditableImage;
         }
 
         public void SetEditableImage(EditableImage image)
         {
-            ExifHelper.DebugPrintMetadata(image.Metadata, image.FileName);
-
             currentImage = image;
             this.Focus(FocusState.Programmatic);
 
@@ -157,49 +153,6 @@ namespace LuxEditor.Components
 
             return (min, max, def, decimals, step);
         }
-
-        private float? TryExtractColorTemperature()
-        {
-            if (currentImage?.Metadata == null)
-                return null;
-
-            var meta = currentImage.Metadata;
-
-            if (meta.TryGetValue("ColorTemperature", out var colorTempRaw) &&
-                float.TryParse(colorTempRaw, out float kelvin))
-            {
-                return kelvin;
-            }
-
-            if (meta.TryGetValue("AsShotNeutral", out var neutralRaw))
-            {
-                var parts = neutralRaw.Split(','); // e.g. "0.512,1,0.610"
-                if (parts.Length == 3 &&
-                    float.TryParse(parts[0], out var r) &&
-                    float.TryParse(parts[2], out var b))
-                {
-                    // simple heuristic based on neutral RGB
-                    float ratio = r / b;
-                    float estimatedK = 6500 * (1f / ratio);
-                    return Math.Clamp(estimatedK, 2000f, 50000f);
-                }
-            }
-
-            if (meta.TryGetValue("WB_RGGBLevels", out var rggbRaw))
-            {
-                var vals = rggbRaw.Split(',');
-                if (vals.Length == 4 &&
-                    float.TryParse(vals[0], out float R) &&
-                    float.TryParse(vals[3], out float B))
-                {
-                    float ratio = R / B;
-                    return Math.Clamp(6500f * (1f / ratio), 2000, 50000);
-                }
-            }
-
-            return null;
-        }
-
 
         private EditorSlider CreateSlider(string key, float min, float max, float def,
                                           EditorStyle? style = null, int decimalPlaces = 0, float step = 1f)
@@ -324,7 +277,7 @@ namespace LuxEditor.Components
 
         private async Task ApplyFiltersAsync()
         {
-            await Task.Delay(50);
+            await Task.Delay(50); // debounce
 
             lock (updateLock)
             {
@@ -336,28 +289,13 @@ namespace LuxEditor.Components
                 }
             }
 
-            if (currentImage?.OriginalBitmap == null) return;
+            if (currentImage?.OriginalBitmap == null)
+                return;
 
-            var result = ImageProcessor.ApplyFilters(currentImage.OriginalBitmap, currentImage.Filters);
-            currentImage.EditedBitmap = result;
+            var filteredBitmap = await ImageProcessingManager.ApplyFiltersAsync(currentImage.OriginalBitmap, currentImage.Filters);
 
-            UpdateImage(currentImage.EditedBitmap);
-        }
-
-        private void UpdateImage(SKBitmap bitmap)
-        {
-            using var image = SKImage.FromBitmap(bitmap);
-            using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-
-            var stream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
-            var outputStream = stream.AsStreamForWrite();
-            data.SaveTo(outputStream);
-            outputStream.Flush();
-            outputStream.Position = 0;
-
-            BitmapImage bitmapImage = new();
-            bitmapImage.SetSource(stream);
-            OnEditorImageUpdated?.Invoke(bitmapImage);
+            currentImage.EditedBitmap = filteredBitmap;
+            OnEditorImageUpdated?.Invoke(filteredBitmap);
         }
 
         private void OnKeyDown(object sender, KeyRoutedEventArgs e)

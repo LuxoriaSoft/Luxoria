@@ -1,62 +1,82 @@
 ﻿using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace LuxEditor.Processing
 {
     public static class ImageProcessor
     {
+        /// <summary>
+        /// Applies the current filters to the given image using optimized pixel-wise and matrix processing.
+        /// </summary>
         public static SKBitmap ApplyFilters(SKBitmap source, Dictionary<string, float> filters)
         {
-            SKBitmap bitmap = source.Copy();
+            SKBitmap result = new SKBitmap(source.Width, source.Height);
+            var srcPixels = source.Pixels;
+            var dstPixels = result.Pixels;
 
-            bitmap = ApplyExposure(bitmap, filters);
-            bitmap = ApplyContrast(bitmap, filters);
-            bitmap = ApplyTemperature(bitmap, filters);
-            bitmap = ApplyTint(bitmap, filters);
-            bitmap = ApplySaturation(bitmap, filters);
-
-            return bitmap;
-        }
-
-        private static SKBitmap ApplyExposure(SKBitmap source, Dictionary<string, float> filters)
-        {
-            float exposure = filters.TryGetValue("Exposure", out var exp) ? exp : 0f;
-            float gain = MathF.Pow(2, exposure); // EV scale
-
-            float[] matrix = new float[]
+            Parallel.For(0, srcPixels.Length, i =>
             {
-                gain, 0,    0,    0, 0,
-                0,    gain, 0,    0, 0,
-                0,    0,    gain, 0, 0,
-                0,    0,    0,    1, 0
-            };
+                var color = srcPixels[i];
+                color = ApplyExposure(color, filters);
+                color = ApplyContrast(color, filters);
+                color = ApplySaturation(color, filters);
+                dstPixels[i] = color;
+            });
 
-            return ApplyColorMatrix(source, matrix);
+            // Matrix filters like temperature/tint must be applied globally
+            result = ApplyTemperature(result, filters);
+            result = ApplyTint(result, filters);
+
+            return result;
         }
 
-        private static SKBitmap ApplyContrast(SKBitmap source, Dictionary<string, float> filters)
+        private static SKColor ApplyExposure(SKColor color, Dictionary<string, float> filters)
         {
-            float contrast = filters.TryGetValue("Contrast", out var con) ? con : 0f;
+            float exposure = filters.TryGetValue("Exposure", out var val) ? val : 0f;
+            float gain = MathF.Pow(2, exposure);
 
+            return new SKColor(
+                ClampByte(color.Red * gain),
+                ClampByte(color.Green * gain),
+                ClampByte(color.Blue * gain),
+                color.Alpha
+            );
+        }
+
+        private static SKColor ApplyContrast(SKColor color, Dictionary<string, float> filters)
+        {
+            float contrast = filters.TryGetValue("Contrast", out var val) ? val : 0f;
             float factor = 1f + (contrast / 100f);
-            float t = 128f * (1f - factor);
+            float midpoint = 128f;
 
-            float[] matrix = new float[]
-            {
-                factor, 0,      0,      0, t,
-                0,      factor, 0,      0, t,
-                0,      0,      factor, 0, t,
-                0,      0,      0,      1, 0
-            };
+            return new SKColor(
+                ClampByte((color.Red - midpoint) * factor + midpoint),
+                ClampByte((color.Green - midpoint) * factor + midpoint),
+                ClampByte((color.Blue - midpoint) * factor + midpoint),
+                color.Alpha
+            );
+        }
 
-            return ApplyColorMatrix(source, matrix);
+        private static SKColor ApplySaturation(SKColor color, Dictionary<string, float> filters)
+        {
+            float saturation = filters.TryGetValue("Saturation", out var val) ? val / 100f : 0f;
+            float r = color.Red, g = color.Green, b = color.Blue;
+
+            float gray = r * 0.2126f + g * 0.7152f + b * 0.0722f;
+
+            return new SKColor(
+                ClampByte(gray + (r - gray) * (1 + saturation)),
+                ClampByte(gray + (g - gray) * (1 + saturation)),
+                ClampByte(gray + (b - gray) * (1 + saturation)),
+                color.Alpha
+            );
         }
 
         private static SKBitmap ApplyTemperature(SKBitmap source, Dictionary<string, float> filters)
         {
-            float temperature = filters.TryGetValue("Temperature", out var temp) ? temp : 6500f;
-
+            float temperature = filters.TryGetValue("Temperature", out var val) ? val : 6500f;
             var (r, g, b) = KelvinToRGB(temperature);
 
             float[] matrix = new float[]
@@ -88,13 +108,6 @@ namespace LuxEditor.Processing
             return ApplyColorMatrix(source, matrix);
         }
 
-        private static SKBitmap ApplySaturation(SKBitmap source, Dictionary<string, float> filters)
-        {
-            float saturation = filters.TryGetValue("Saturation", out var s) ? s / 100f : 0f;
-            float[] matrix = CreateSaturationMatrix(1 + saturation);
-            return ApplyColorMatrix(source, matrix);
-        }
-
         private static SKBitmap ApplyColorMatrix(SKBitmap source, float[] matrix)
         {
             SKBitmap result = new SKBitmap(source.Width, source.Height);
@@ -113,26 +126,6 @@ namespace LuxEditor.Processing
             surface.Snapshot().ReadPixels(result.Info, result.GetPixels(), result.RowBytes, 0, 0);
 
             return result;
-        }
-
-        private static float[] CreateSaturationMatrix(float saturation)
-        {
-            const float lumR = 0.2126f;
-            const float lumG = 0.7152f;
-            const float lumB = 0.0722f;
-
-            float invSat = 1 - saturation;
-            float r = lumR * invSat;
-            float g = lumG * invSat;
-            float b = lumB * invSat;
-
-            return new float[]
-            {
-                r + saturation, g,              b,              0, 0,
-                r,              g + saturation, b,              0, 0,
-                r,              g,              b + saturation, 0, 0,
-                0,              0,              0,              1, 0
-            };
         }
 
         private static (float r, float g, float b) KelvinToRGB(float kelvin)
@@ -159,6 +152,11 @@ namespace LuxEditor.Processing
                 Math.Clamp(g / 255f, 0f, 1f),
                 Math.Clamp(b / 255f, 0f, 1f)
             );
+        }
+
+        private static byte ClampByte(float value)
+        {
+            return (byte)Math.Clamp((int)value, 0, 255);
         }
 
         public static SKBitmap ResizeBitmap(SKBitmap source, int width, int height)

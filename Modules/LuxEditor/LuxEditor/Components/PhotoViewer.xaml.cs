@@ -2,9 +2,10 @@ using LuxEditor.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media.Imaging;
 using SkiaSharp;
-using System.IO;
+using SkiaSharp.Views.Windows;
+using System;
+using System.Diagnostics;
 
 namespace LuxEditor.Components
 {
@@ -13,41 +14,58 @@ namespace LuxEditor.Components
         private bool _isDragging;
         private Windows.Foundation.Point _lastPoint;
 
+        private readonly SKXamlCanvas _canvas;
+        private SKBitmap? _currentImage;
+
         public PhotoViewer()
         {
             this.InitializeComponent();
-            ImageManager.Instance.OnSelectionChanged += (image) =>
-            {
-                SetImage(image.EditedBitmap);
-            };
 
+            _canvas = new SKXamlCanvas();
+            _canvas.PaintSurface += OnPaintSurface;
+            ScrollViewerImage.Content = _canvas;
+
+            ImageManager.Instance.OnSelectionChanged += image =>
+            {
+                SetImage(image.PreviewBitmap ?? image.EditedBitmap ?? image.OriginalBitmap);
+            };
         }
 
-        /// <summary>
-        /// Sets the SKBitmap image into the Image control for viewing.
-        /// </summary>
-        public void SetImage(SKBitmap bitmap)
+        public void SetImage(SKBitmap? bitmap)
         {
-            using (MemoryStream ms = new MemoryStream())
+            if (bitmap == null)
             {
-                bitmap.Encode(ms, SKEncodedImageFormat.Png, 100);
-                ms.Seek(0, SeekOrigin.Begin);
+                Debug.WriteLine("No image to display.");
+                return;
+            }
 
-                WriteableBitmap writeableBitmap = new WriteableBitmap(bitmap.Width, bitmap.Height);
-                writeableBitmap.SetSource(ms.AsRandomAccessStream());
-                DisplayImage.Source = writeableBitmap;
+            Debug.WriteLine("SKXamlCanvas received image.");
+            _currentImage = bitmap;
+            _canvas.Invalidate();
+        }
+
+        private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
+        {
+            var canvas = e.Surface.Canvas;
+            canvas.Clear(SKColors.Black);
+
+            if (_currentImage != null)
+            {
+                var info = e.Info;
+
+                float scale = Math.Min(
+                    (float)info.Width / _currentImage.Width,
+                    (float)info.Height / _currentImage.Height);
+
+                float offsetX = (info.Width - _currentImage.Width * scale) / 2f;
+                float offsetY = (info.Height - _currentImage.Height * scale) / 2f;
+
+                canvas.Translate(offsetX, offsetY);
+                canvas.Scale(scale);
+                canvas.DrawBitmap(_currentImage, 0, 0);
             }
         }
 
-        public void SetImage(BitmapImage bitmap)
-        {
-            DisplayImage.Source = bitmap;
-        }
-
-        /// <summary>
-        /// Fired when the pointer is pressed down (mouse button down).
-        /// Capture the pointer so we receive move events even if the cursor goes outside the control.
-        /// </summary>
         private void ScrollViewerImage_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             _isDragging = true;
@@ -55,9 +73,6 @@ namespace LuxEditor.Components
             (sender as UIElement)?.CapturePointer(e.Pointer);
         }
 
-        /// <summary>
-        /// Fired as the mouse moves. If we're dragging, update ScrollViewer offsets.
-        /// </summary>
         private void ScrollViewerImage_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             if (!_isDragging) return;
@@ -66,28 +81,21 @@ namespace LuxEditor.Components
             double deltaX = currentPoint.X - _lastPoint.X;
             double deltaY = currentPoint.Y - _lastPoint.Y;
 
-            double scrollOffsetX = ScrollViewerImage.HorizontalOffset - deltaX;
-            double scrollOffsetY = ScrollViewerImage.VerticalOffset - deltaY;
-
-            // ChangeView(xOffset, yOffset, zoomFactor, disableAnimation)
-            ScrollViewerImage.ChangeView(scrollOffsetX, scrollOffsetY, ScrollViewerImage.ZoomFactor, disableAnimation: true);
+            ScrollViewerImage.ChangeView(
+                ScrollViewerImage.HorizontalOffset - deltaX,
+                ScrollViewerImage.VerticalOffset - deltaY,
+                ScrollViewerImage.ZoomFactor,
+                disableAnimation: true);
 
             _lastPoint = currentPoint;
         }
 
-        /// <summary>
-        /// Fired when the pointer is released (mouse button up). Stop dragging.
-        /// </summary>
         private void ScrollViewerImage_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             _isDragging = false;
             (sender as UIElement)?.ReleasePointerCaptures();
         }
 
-        /// <summary>
-        /// Fired if the pointer capture is canceled, for example if another control
-        /// takes pointer capture. Ensure we stop dragging.
-        /// </summary>
         private void ScrollViewerImage_PointerCanceled(object sender, PointerRoutedEventArgs e)
         {
             _isDragging = false;
