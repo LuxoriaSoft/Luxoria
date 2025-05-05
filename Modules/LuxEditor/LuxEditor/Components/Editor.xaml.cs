@@ -64,7 +64,10 @@ namespace LuxEditor.Components
                     GradientStart = Windows.UI.Color.FromArgb(255, 70, 130, 180),
                     GradientEnd = Windows.UI.Color.FromArgb(255, 255, 140, 0)
                 }),
-                CreateSliderWithPreset("Tint"),
+                CreateSliderWithPreset("Tint", new EditorStyle                {
+                    GradientStart = Windows.UI.Color.FromArgb(255, 130, 188, 86),
+                    GradientEnd = Windows.UI.Color.FromArgb(255, 174, 116, 193)
+                }),
                 CreateSeparator()
             });
 
@@ -113,16 +116,13 @@ namespace LuxEditor.Components
 
             if (key == "Temperature")
             {
-                float? wbKelvin = ExifHelper.TryGetRawWhiteBalanceKelvin(meta);
-                if (wbKelvin.HasValue)
-                {
-                    min = 2000;
-                    max = 50000;
-                    def = wbKelvin.Value;
-                    decimals = 0;
-                    step = 100;
-                }
+                //float? wbKelvin = ExifHelper.TryGetRawWhiteBalanceKelvin(meta);
 
+                min = 2000;
+                max = 50000;
+                def = 6500;
+                decimals = 0;
+                step = 100;
             }
             else if (key == "Exposure")
             {
@@ -132,7 +132,7 @@ namespace LuxEditor.Components
                 decimals = 2;
                 step = 0.05f;
             }
-            else if (key == "Contrast" || key == "Highlights" || key == "Shadows" ||
+            else if (key == "Highlights" || key == "Shadows" ||
                      key == "Whites" || key == "Blacks" || key == "Clarity" ||
                      key == "Texture" || key == "Dehaze" || key == "Vibrance" || key == "Saturation")
             {
@@ -149,6 +149,13 @@ namespace LuxEditor.Components
                 def = 0;
                 decimals = 0;
                 step = 1;
+            } else if (key == "Contrast")
+            {
+                min = -1;
+                max = 1;
+                def = 0;
+                decimals = 2;
+                step = 0.05f;
             }
 
             return (min, max, def, decimals, step);

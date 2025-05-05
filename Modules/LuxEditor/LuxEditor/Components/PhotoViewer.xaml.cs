@@ -2,6 +2,7 @@ using LuxEditor.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
@@ -23,14 +24,23 @@ namespace LuxEditor.Components
 
             _canvas = new SKXamlCanvas();
             _canvas.PaintSurface += OnPaintSurface;
-            ScrollViewerImage.Content = _canvas;
+
+            var viewbox = new Viewbox
+            {
+                Child = _canvas,
+                Stretch = Stretch.None,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            ScrollViewerImage.Content = viewbox;
+
 
             ImageManager.Instance.OnSelectionChanged += image =>
             {
                 SetImage(image.PreviewBitmap ?? image.EditedBitmap ?? image.OriginalBitmap);
             };
         }
-
         public void SetImage(SKBitmap? bitmap)
         {
             if (bitmap == null)
@@ -41,27 +51,31 @@ namespace LuxEditor.Components
 
             Debug.WriteLine("SKXamlCanvas received image.");
             _currentImage = bitmap;
+
+            _canvas.Width = bitmap.Width;
+            _canvas.Height = bitmap.Height;
+
             _canvas.Invalidate();
         }
 
         private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
         {
             var canvas = e.Surface.Canvas;
-            canvas.Clear(SKColors.Black);
+            canvas.Clear(SKColors.Transparent);
 
             if (_currentImage != null)
             {
-                var info = e.Info;
+                //var info = e.Info;
 
-                float scale = Math.Min(
-                    (float)info.Width / _currentImage.Width,
-                    (float)info.Height / _currentImage.Height);
+                //float scale = Math.Min(
+                //    (float)info.Width / _currentImage.Width,
+                //    (float)info.Height / _currentImage.Height);
 
-                float offsetX = (info.Width - _currentImage.Width * scale) / 2f;
-                float offsetY = (info.Height - _currentImage.Height * scale) / 2f;
+                //float offsetX = (info.Width - _currentImage.Width * scale) / 2f;
+                //float offsetY = (info.Height - _currentImage.Height * scale) / 2f;
 
-                canvas.Translate(offsetX, offsetY);
-                canvas.Scale(scale);
+                //canvas.Translate(offsetX, offsetY);
+                //canvas.Scale(scale);
                 canvas.DrawBitmap(_currentImage, 0, 0);
             }
         }

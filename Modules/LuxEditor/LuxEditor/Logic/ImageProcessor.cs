@@ -52,9 +52,9 @@ namespace LuxEditor.Processing
             float midpoint = 128f;
 
             return new SKColor(
-                ClampByte((color.Red - midpoint) * factor + midpoint),
-                ClampByte((color.Green - midpoint) * factor + midpoint),
-                ClampByte((color.Blue - midpoint) * factor + midpoint),
+                ClampByte(((color.Red - midpoint) * factor + midpoint) / 100),
+                ClampByte(((color.Green - midpoint) * factor + midpoint) / 100),
+                ClampByte(((color.Blue - midpoint) * factor + midpoint) / 100),
                 color.Alpha
             );
         }

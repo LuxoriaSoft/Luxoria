@@ -35,8 +35,8 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
             Minimum = min,
             Maximum = max,
             Value = defaultValue,
-            //StepFrequency = stepFrequency,
-            //TickFrequency = stepFrequency,
+            StepFrequency = stepFrequency,
+            TickFrequency = stepFrequency,
             HorizontalAlignment = HorizontalAlignment.Stretch,
             Margin = new Thickness(0, 0, 5, 0),
             Tag = key
@@ -127,7 +127,7 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
     {
         if (style.ShowTicks)
         {
-            _slider.TickPlacement = TickPlacement.Outside;
+            _slider.TickPlacement = TickPlacement.Outside;  
             _slider.StepFrequency = style.TickFrequency ?? _slider.StepFrequency;
             _slider.TickFrequency = style.TickFrequency ?? _slider.TickFrequency;
         }

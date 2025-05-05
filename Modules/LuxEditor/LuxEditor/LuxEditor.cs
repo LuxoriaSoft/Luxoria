@@ -104,8 +104,10 @@ namespace LuxEditor
 
                 var editable = new EditableImage(bitmap, exif, asset.MetaData.FileName ?? asset.MetaData.Id.ToString())
                 {
-                    PreviewBitmap = ImageProcessingManager.GeneratePreview(bitmap, 200),
-                    MediumBitmap = ImageProcessingManager.GenerateMediumResolution(bitmap)
+                    //PreviewBitmap = ImageProcessingManager.GeneratePreview(bitmap, 200),
+                    //MediumBitmap = ImageProcessingManager.GenerateMediumResolution(bitmap)
+                    PreviewBitmap = bitmap,
+                    MediumBitmap = bitmap
                 };
 
                 editableImages.Add(editable);

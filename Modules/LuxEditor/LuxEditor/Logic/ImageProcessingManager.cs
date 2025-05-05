@@ -39,7 +39,6 @@ namespace LuxEditor.Logic
         /// </summary>
         private static SKColorFilter CreateCombinedColorFilter(Dictionary<string, float> filters)
         {
-            // Build the color matrix
             var matrix = CreateBaseMatrix(filters);
 
             return SKColorFilter.CreateColorMatrix(matrix);
@@ -59,7 +58,7 @@ namespace LuxEditor.Logic
             var exposureGain = MathF.Pow(2, exposure);
 
             // Temperature
-            var (rTemp, gTemp, bTemp) = KelvinToRGB(temperature);
+            var (redShift,  greenShift, blueShift) = CreateWhiteBalanceMatrix(temperature, tint);
 
             // Saturation
             const float lumR = 0.2126f;
@@ -74,46 +73,48 @@ namespace LuxEditor.Logic
             float contrastFactor = 1f + (contrast / 100f);
             float translate = 128f * (1f - contrastFactor);
 
-            // Tint
-            float greenScale = 1f + (tint / 150f);
-            float blueScale = 1f - (tint / 150f);
-
             return new float[]
             {
-                exposureGain * contrastFactor * rTemp, 0, 0, 0, translate,
-                0, exposureGain * contrastFactor * gTemp * greenScale, 0, 0, translate,
-                0, 0, exposureGain * contrastFactor * bTemp * blueScale, 0, translate,
+                (rSat + satFactor) * exposureGain * contrastFactor * redShift,
+                gSat * exposureGain * contrastFactor * redShift,
+                bSat * exposureGain * contrastFactor * redShift,
+                0,
+                translate,
+
+                rSat * exposureGain * contrastFactor * greenShift,
+                (gSat + satFactor) * exposureGain * contrastFactor * greenShift,
+                bSat * exposureGain * contrastFactor * greenShift,
+                0,
+                translate,
+
+                rSat * exposureGain * contrastFactor * blueShift,
+                gSat * exposureGain * contrastFactor * blueShift,
+                (bSat + satFactor) * exposureGain * contrastFactor * blueShift,
+                0,
+                translate,
+
                 0, 0, 0, 1, 0
             };
+
         }
 
-        /// <summary>
-        /// Approximates the RGB color from a given color temperature (in Kelvin).
-        /// </summary>
-        private static (float r, float g, float b) KelvinToRGB(float kelvin)
+        private static (float r, float g, float b) CreateWhiteBalanceMatrix(float temperature, float tint)
         {
-            kelvin = Math.Clamp(kelvin, 1000f, 40000f) / 100f;
-            float r, g, b;
+            temperature = Math.Clamp(temperature, 2000f, 50000f);
+            float kelvinRef = 6500f;
 
-            r = kelvin <= 66
-                ? 255
-                : 329.698727446f * MathF.Pow(kelvin - 60, -0.1332047592f);
+            float temperatureRatio = (float)Math.Log(temperature / kelvinRef, 2.0);
 
-            g = kelvin <= 66
-                ? 99.4708025861f * MathF.Log(kelvin) - 161.1195681661f
-                : 288.1221695283f * MathF.Pow(kelvin - 60, -0.0755148492f);
+            float redShift = 1f + 0.2f * temperatureRatio;
+            float blueShift = 1f - 0.2f * temperatureRatio;
 
-            b = kelvin >= 66
-                ? 255
-                : kelvin <= 19
-                    ? 0
-                    : 138.5177312231f * MathF.Log(kelvin - 10) - 305.0447927307f;
+            float greenShift = 1f - (tint / 100f);
+            
+            redShift = Math.Clamp(redShift, 0.5f, 2.5f);
+            greenShift = Math.Clamp(greenShift, 0.5f, 2.5f);
+            blueShift = Math.Clamp(blueShift, 0.5f, 2.5f);
 
-            return (
-                Math.Clamp(r / 255f, 0f, 1f),
-                Math.Clamp(g / 255f, 0f, 1f),
-                Math.Clamp(b / 255f, 0f, 1f)
-            );
+            return (redShift, greenShift, blueShift);
         }
 
         public static SKBitmap ResizeBitmap(SKBitmap source, int width, int height)
