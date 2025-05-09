@@ -45,11 +45,11 @@ jobs:
     steps:
       - setup_remote_docker
       - attach_workspace:
-          at: /workspace
+          at: .
       - run:
           name: Tag Version as dev
           command: |
-            TAG=$(cat /workspace/image_tag.txt)
+            TAG=$(cat image_tag.txt)
             docker pull luxoria/luxapi:$TAG
             docker tag luxoria/luxapi:$TAG luxoria/luxapi:dev
             docker push luxoria/luxapi:dev
