@@ -1,40 +1,31 @@
 version: 2.1
 
+orbs:
+  release-management: circleci/release-management@0.1.0
+
 jobs:
   build-and-push:
     docker:
       - image: cimg/base:stable
     steps:
       - checkout
-
       - setup_remote_docker
-
       - run:
           name: Set Image Tag
           command: |
             DATE_TAG=$(date +%Y%m%d)
             COUNT=$(git rev-list --count HEAD)
             echo "export IMAGE_TAG=${DATE_TAG}.${COUNT}" >> $BASH_ENV
-            echo "Image tag: ${DATE_TAG}.${COUNT}"
-
-      - run:
-          name: Debug DockerHub User
-          command: |
-            if [ -z "$DOCKERHUB_USER" ]; then echo "DOCKERHUB_USER is empty"; fi
-            if [ -z "$DOCKERHUB_PASS" ]; then echo "DOCKERHUB_PASS is empty"; fi
-
       - run:
           name: Docker Login
           command: |
             echo "${DOCKERHUB_PASS}" | docker login --username "${DOCKERHUB_USER}" --password-stdin
-
       - run:
           name: Build & Push LuxAPI
           command: |
             source $BASH_ENV
             docker build -t luxoria/luxapi:$IMAGE_TAG -f LuxStudio/LuxAPI/LuxAPI/Dockerfile LuxStudio/LuxAPI
             docker push luxoria/luxapi:$IMAGE_TAG
-
       - run:
           name: Build & Push LuxStudio
           command: |
@@ -42,9 +33,39 @@ jobs:
             docker build -t luxoria/luxstudio:$IMAGE_TAG -f LuxStudio/portal/Dockerfile LuxStudio/portal
             docker push luxoria/luxstudio:$IMAGE_TAG
 
+  deploy-to-pluto:
+    executor: release-management/default
+    steps:
+      - release-management/deploy:
+          environment: pluto
+          application: luxoria
+          revision: << pipeline.git.revision >>
+
+  deploy-to-saturn:
+    executor: release-management/default
+    steps:
+      - release-management/deploy:
+          environment: saturn
+          application: luxoria
+          revision: << pipeline.git.revision >>
+
 workflows:
   version: 2
-  build:
+  build-and-deploy:
     jobs:
       - build-and-push:
           context: Luxoria
+
+      - deploy-to-pluto:
+          requires:
+            - build-and-push
+          filters:
+            branches:
+              only: develop
+
+      - deploy-to-saturn:
+          requires:
+            - build-and-push
+          filters:
+            branches:
+              only: main
