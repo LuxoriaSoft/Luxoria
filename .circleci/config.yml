@@ -18,6 +18,12 @@ jobs:
             echo "Image tag: ${DATE_TAG}.${COUNT}"
 
       - run:
+          name: Debug DockerHub User
+          command: |
+            if [ -z "$DOCKERHUB_USER" ]; then echo "DOCKERHUB_USER is empty"; fi
+            if [ -z "$DOCKERHUB_PASS" ]; then echo "DOCKERHUB_PASS is empty"; fi
+
+      - run:
           name: Docker Login
           command: |
             echo "${DOCKERHUB_PASS}" | docker login --username "${DOCKERHUB_USER}" --password-stdin
