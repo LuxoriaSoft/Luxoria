@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  build-images:
+  build-and-push:
     docker:
       - image: cimg/base:stable
     steps:
@@ -15,22 +15,29 @@ jobs:
             DATE_TAG=$(date +%Y%m%d)
             COUNT=$(git rev-list --count HEAD)
             echo "export IMAGE_TAG=${DATE_TAG}.${COUNT}" >> $BASH_ENV
-            echo "Building image with tag: ${DATE_TAG}.${COUNT}"
+            echo "Image tag: ${DATE_TAG}.${COUNT}"
 
       - run:
-          name: Build LuxAPI Image
+          name: Docker Login
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+
+      - run:
+          name: Build & Push LuxAPI
           command: |
             source $BASH_ENV
             docker build -t luxoria/luxapi:$IMAGE_TAG -f LuxStudio/LuxAPI/LuxAPI/Dockerfile LuxStudio/LuxAPI
+            docker push luxoria/luxapi:$IMAGE_TAG
 
       - run:
-          name: Build LuxStudio Image
+          name: Build & Push LuxStudio
           command: |
             source $BASH_ENV
             docker build -t luxoria/luxstudio:$IMAGE_TAG -f LuxStudio/portal/Dockerfile LuxStudio/portal
+            docker push luxoria/luxstudio:$IMAGE_TAG
 
 workflows:
   version: 2
   build:
     jobs:
-      - build-images
+      - build-and-push
