@@ -1,5 +1,10 @@
 version: 2.1
 
+parameters:
+  image_tag:
+    type: string
+    default: ""
+
 jobs:
   build-and-push:
     docker:
@@ -8,58 +13,109 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: Set Image Tag
+          name: Generate Image Tag
           command: |
-            DATE_TAG=$(date +%Y%m%d)
-            COUNT=$(git rev-list --count HEAD)
-            echo "export IMAGE_TAG=${DATE_TAG}.${COUNT}" >> $BASH_ENV
-            echo "Image tag: ${DATE_TAG}.${COUNT}"
+            TAG=$(date +%Y%m%d).$(git rev-list --count HEAD)
+            echo "export IMAGE_TAG=${TAG}" >> $BASH_ENV
+            echo "Generated tag: ${TAG}"
       - run:
           name: Docker Login
           command: |
-            echo "${DOCKERHUB_PASS}" | docker login --username "${DOCKERHUB_USER}" --password-stdin
+            echo "${DOCKERHUB_PASS}" | docker login -u "${DOCKERHUB_USER}" --password-stdin
       - run:
-          name: Build & Push LuxAPI
+          name: Build & Push LuxAPI Image
           command: |
             source $BASH_ENV
-            docker build -t luxoria/luxapi:$IMAGE_TAG -f LuxStudio/LuxAPI/LuxAPI/Dockerfile LuxStudio/LuxAPI
-            docker push luxoria/luxapi:$IMAGE_TAG
+            docker build -t luxoria/luxapi:${IMAGE_TAG} -f LuxStudio/LuxAPI/LuxAPI/Dockerfile LuxStudio/LuxAPI
+            docker push luxoria/luxapi:${IMAGE_TAG}
       - run:
-          name: Build & Push LuxStudio
+          name: Build & Push LuxStudio Image
           command: |
             source $BASH_ENV
-            docker build -t luxoria/luxstudio:$IMAGE_TAG -f LuxStudio/portal/Dockerfile LuxStudio/portal
-            docker push luxoria/luxstudio:$IMAGE_TAG
+            docker build -t luxoria/luxstudio:${IMAGE_TAG} -f LuxStudio/portal/Dockerfile LuxStudio/portal
+            docker push luxoria/luxstudio:${IMAGE_TAG}
+
+  tag-as-dev:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run:
+          name: Tag Version as dev
+          command: |
+            docker pull luxoria/luxapi:${CIRCLE_PIPELINE_PARAMETERS.image_tag}
+            docker tag luxoria/luxapi:${CIRCLE_PIPELINE_PARAMETERS.image_tag} luxoria/luxapi:dev
+            docker push luxoria/luxapi:dev
+
+            docker pull luxoria/luxstudio:${CIRCLE_PIPELINE_PARAMETERS.image_tag}
+            docker tag luxoria/luxstudio:${CIRCLE_PIPELINE_PARAMETERS.image_tag} luxoria/luxstudio:dev
+            docker push luxoria/luxstudio:dev
 
   deploy-to-pluto:
     docker:
       - image: cimg/base:stable
     steps:
+      - run: echo "Deploying 'dev' tagged images to Pluto (Dev/Test environment)"
+
+  tag-as-latest:
+    docker:
+      - image: cimg/base:stable
+    steps:
       - run:
-          name: Deploy to Pluto
-          command: echo "Deploying to Pluto"
+          name: Tag dev as latest
+          command: |
+            docker pull luxoria/luxapi:dev
+            docker tag luxoria/luxapi:dev luxoria/luxapi:latest
+            docker push luxoria/luxapi:latest
+
+            docker pull luxoria/luxstudio:dev
+            docker tag luxoria/luxstudio:dev luxoria/luxstudio:latest
+            docker push luxoria/luxstudio:latest
 
   deploy-to-saturn:
     docker:
       - image: cimg/base:stable
     steps:
-      - run:
-          name: Deploy to Saturn
-          command: echo "Deploying to Saturn"
+      - run: echo "Deploying 'latest' tagged images to Saturn (Production environment)"
 
 workflows:
   version: 2
-  manual-deploy:
+  promote-release:
     jobs:
       - build-and-push:
           context: Luxoria
-      - approve-deploy-to-pluto:
-          type: approval
+
+      - tag-as-dev:
+          context: Luxoria
           requires:
             - build-and-push
-      - deploy-to-pluto:
+          image_tag: << pipeline.parameters.image_tag >>
+
+      - request-approval-deploy-pluto:
+          type: approval
           requires:
-            - approve-deploy-to-pluto
-      - deploy-to-saturn:
+            - tag-as-dev
+
+      - deploy-to-pluto:
+          context: Luxoria
+          requires:
+            - request-approval-deploy-pluto
+
+      - request-approval-tag-latest:
+          type: approval
           requires:
             - deploy-to-pluto
+
+      - tag-as-latest:
+          context: Luxoria
+          requires:
+            - request-approval-tag-latest
+
+      - request-approval-deploy-saturn:
+          type: approval
+          requires:
+            - tag-as-latest
+
+      - deploy-to-saturn:
+          context: Luxoria
+          requires:
+            - request-approval-deploy-saturn
