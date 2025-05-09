@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  build-local:
+  build-images:
     docker:
       - image: cimg/base:stable
     steps:
@@ -15,7 +15,7 @@ jobs:
             DATE_TAG=$(date +%Y%m%d)
             COUNT=$(git rev-list --count HEAD)
             echo "export IMAGE_TAG=${DATE_TAG}.${COUNT}" >> $BASH_ENV
-            echo "Building image with tag: ${IMAGE_TAG}"
+            echo "Building image with tag: ${DATE_TAG}.${COUNT}"
 
       - run:
           name: Build LuxAPI Image
@@ -33,4 +33,4 @@ workflows:
   version: 2
   build:
     jobs:
-      - build-local
+      - build-images
