@@ -47,6 +47,10 @@ jobs:
       - attach_workspace:
           at: .
       - run:
+          name: Docker Login
+          command: |
+            echo "${DOCKERHUB_PASS}" | docker login -u "${DOCKERHUB_USER}" --password-stdin
+      - run:
           name: Tag Version as dev
           command: |
             TAG=$(cat image_tag.txt)
@@ -58,19 +62,15 @@ jobs:
             docker tag luxoria/luxstudio:$TAG luxoria/luxstudio:dev
             docker push luxoria/luxstudio:dev
 
-  deploy-to-pluto:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - run:
-          name: Deploy to Pluto
-          command: echo "Deploying Docker images tagged 'dev' to Pluto (Dev/Test environment)"
-
   tag-as-latest:
     docker:
       - image: cimg/base:stable
     steps:
       - setup_remote_docker
+      - run:
+          name: Docker Login
+          command: |
+            echo "${DOCKERHUB_PASS}" | docker login -u "${DOCKERHUB_USER}" --password-stdin
       - run:
           name: Tag dev as latest
           command: |
@@ -81,6 +81,14 @@ jobs:
             docker pull luxoria/luxstudio:dev
             docker tag luxoria/luxstudio:dev luxoria/luxstudio:latest
             docker push luxoria/luxstudio:latest
+
+  deploy-to-pluto:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run:
+          name: Deploy to Pluto
+          command: echo "Deploying Docker images tagged 'dev' to Pluto (Dev/Test environment)"
 
   deploy-to-saturn:
     docker:
