@@ -10,14 +10,24 @@ jobs:
       - setup_remote_docker
 
       - run:
+          name: Set Image Tag
+          command: |
+            DATE_TAG=$(date +%Y%m%d)
+            COUNT=$(git rev-list --count HEAD)
+            echo "export IMAGE_TAG=${DATE_TAG}.${COUNT}" >> $BASH_ENV
+            echo "Building image with tag: ${IMAGE_TAG}"
+
+      - run:
           name: Build LuxAPI Image
           command: |
-            docker build -t luxoria/luxapi:local -f LuxStudio/LuxAPI/LuxAPI/Dockerfile LuxStudio/LuxAPI
+            source $BASH_ENV
+            docker build -t luxoria/luxapi:$IMAGE_TAG -f LuxStudio/LuxAPI/LuxAPI/Dockerfile LuxStudio/LuxAPI
 
       - run:
           name: Build LuxStudio Image
           command: |
-            docker build -t luxoria/luxstudio:local -f LuxStudio/portal/Dockerfile LuxStudio/portal
+            source $BASH_ENV
+            docker build -t luxoria/luxstudio:$IMAGE_TAG -f LuxStudio/portal/Dockerfile LuxStudio/portal
 
 workflows:
   version: 2
