@@ -1,0 +1,43 @@
+version: 2.1
+
+executors:
+  docker-executor:
+    docker:
+      - image: cimg/base:stable
+
+parameters:
+  image-tag:
+    type: string
+    default: << pipeline.number >>
+
+jobs:
+  build-local:
+    executor: docker-executor
+    environment:
+      IMAGE_TAG: << pipeline.number >>
+    steps:
+      - checkout
+
+      - setup_remote_docker
+
+      - run:
+          name: Build LuxAPI Docker Image
+          command: |
+            docker build -t luxoria/luxapi:$IMAGE_TAG -f LuxStudio/LuxAPI/LuxAPI/Dockerfile LuxStudio/LuxAPI
+
+      - run:
+          name: Build LuxStudio Docker Image
+          command: |
+            docker build -t luxoria/luxstudio:$IMAGE_TAG -f LuxStudio/portal/Dockerfile LuxStudio/portal
+
+workflows:
+  version: 2
+  build-only:
+    jobs:
+      - build-local:
+          filters:
+            branches:
+              only:
+                - main
+                - develop
+                - feature/luxapi/deploy-azuredevops
