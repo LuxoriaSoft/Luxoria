@@ -37,13 +37,6 @@ builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(DB_DEFAULT_CONNECTION));
 
-// Run migrations using Microsoft EF
-using (var scope = builder.Services.BuildServiceProvider().CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.Migrate();
-}
-
 // Configure JWT Authentication
 builder.Services.AddAuthentication(options =>
 {
@@ -125,6 +118,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Run migrations using Microsoft EF
+using (var scope = builder.Services.BuildServiceProvider().CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
