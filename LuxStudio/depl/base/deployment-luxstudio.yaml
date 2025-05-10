@@ -15,5 +15,6 @@ spec:
       containers:
         - name: luxstudio-container
           image: luxoria/luxstudio:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80

@@ -8,3 +8,4 @@ spec:
       containers:
         - name: luxstudio-container
           image: luxoria/luxstudio:dev
+          imagePullPolicy: Always

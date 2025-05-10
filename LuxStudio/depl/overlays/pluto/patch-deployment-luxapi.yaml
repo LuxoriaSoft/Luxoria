@@ -8,3 +8,4 @@ spec:
       containers:
         - name: luxapi-container
           image: luxoria/luxapi:dev
+          imagePullPolicy: Always
