@@ -11,4 +11,4 @@ spec:
           imagePullPolicy: Always
           env:
             - name: API_URL
-              value: https://api.studio.luxoria.bluepelicansoft.com
+              value: https://api.studio.pluto.luxoria.bluepelicansoft.com

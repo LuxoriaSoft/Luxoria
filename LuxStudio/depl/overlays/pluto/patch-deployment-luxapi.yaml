@@ -9,3 +9,6 @@ spec:
         - name: luxapi-container
           image: luxoria/luxapi:dev
           imagePullPolicy: Always
+          env:
+           - name: FrontEnd__URI
+             value: https://studio.pluto.luxoria.bluepelicansoft.com
