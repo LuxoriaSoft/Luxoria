@@ -1,0 +1,42 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: luxstudio-ingress
+spec:
+  rules:
+    - host: bucket.saturn.luxoria.bluepelicansoft.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: minio
+                port:
+                  number: 9000
+    - host: console.bucket.saturn.luxoria.bluepelicansoft.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: minio
+                port:
+                  number: 9001
+    - host: studio.saturn.luxoria.bluepelicansoft.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: luxstudio-service
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - bucket.saturn.luxoria.bluepelicansoft.com
+        - console.bucket.saturn.luxoria.bluepelicansoft.com
+        - studio.saturn.luxoria.bluepelicansoft.com
+      secretName: luxstudio-saturn-luxoria

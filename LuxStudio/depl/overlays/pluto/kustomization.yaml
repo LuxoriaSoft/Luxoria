@@ -1,0 +1,7 @@
+resources:
+  - ../../base
+
+namespace: luxstudio-pluto
+
+patchesStrategicMerge:
+  - patch-ingress.yaml
