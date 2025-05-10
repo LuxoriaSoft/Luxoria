@@ -4,7 +4,7 @@ resources:
 
 namespace: luxstudio-pluto
 
-patchesStrategicMerge:
-  - patch-deployment-luxstudio.yaml
-  - patch-deployment-luxapi.yaml
-  - patch-ingress.yaml
+patches:
+  - path: patch-deployment-luxstudio.yaml
+  - path: patch-deployment-luxapi.yaml
+  - path: patch-ingress.yaml
