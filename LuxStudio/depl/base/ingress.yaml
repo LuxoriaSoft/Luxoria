@@ -6,5 +6,5 @@ metadata:
     kubernetes.io/ingress.class: traefik
     cert-manager.io/cluster-issuer: letsencrypt-production
 spec:
-  rules: []
+  rules: []     # Placeholders to be patched
   tls: []
