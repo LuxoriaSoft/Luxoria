@@ -15,7 +15,17 @@ spec:
       initContainers:
         - name: wait-for-postgres
           image: postgres:17.2-alpine3.21
-          command: ['sh', '-c', 'until pg_isready -h luxdb -p 5432 -U postgres; do echo waiting for postgres; sleep 2; done;']
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting 20s before checking PostgreSQL readiness..."
+              sleep 20
+              until pg_isready -h luxdb -p 5432 -U postgres; do
+                echo "PostgreSQL not ready, waiting..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready."
           env:
             - name: PGPASSWORD
               value: password
