@@ -52,3 +52,73 @@ spec:
           image: luxoria/luxstudio:latest
           ports:
             - containerPort: 80
+
+---
+# LuxAPI Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: luxapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: luxapi
+  template:
+    metadata:
+      labels:
+        app: luxapi
+    spec:
+      containers:
+        - name: luxapi
+          image: luxoria/luxapi:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ConnectionStrings__DefaultConnection
+              value: Host=luxdb;Database=luxoria;Username=postgres;Password=password
+            - name: JWT_SECRET
+              value: your_jwt_secret
+            - name: JWT_EXPIRATION
+              value: "3600"
+            - name: ENVIRONMENT
+              value: SATURN
+            - name: PORT
+              value: "8080"
+            - name: FrontEnd__URI
+              value: http://localhost:3000
+
+---
+# LuxDB (PostgreSQL) Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: luxdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: luxdb
+  template:
+    metadata:
+      labels:
+        app: luxdb
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:17.2-alpine3.21
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_PASSWORD
+              value: password
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_DB
+              value: luxoria
+          volumeMounts:
+            - name: pgdata
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: pgdata
+          emptyDir: {}

@@ -8,3 +8,15 @@ spec:
       containers:
         - name: luxstudio-container
           image: luxoria/luxstudio:dev
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: luxapi
+spec:
+  template:
+    spec:
+      containers:
+        - name: luxapi
+          image: luxoria/luxapi:dev
