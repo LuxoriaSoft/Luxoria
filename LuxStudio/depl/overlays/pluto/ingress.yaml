@@ -54,4 +54,4 @@ spec:
         - console.bucket.pluto.luxoria.bluepelicansoft.com
         - studio.pluto.luxoria.bluepelicansoft.com
         - api.studio.pluto.luxoria.bluepelicansoft.com
-      secretName: luxstudio-pluto-luxoria
+      secretName: luxstudio-pluto-certs
