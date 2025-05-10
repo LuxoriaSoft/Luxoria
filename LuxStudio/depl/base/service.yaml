@@ -1,4 +1,4 @@
-# MinIO Service
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -15,7 +15,6 @@ spec:
       targetPort: 9001
 
 ---
-# LuxStudio Service
 apiVersion: v1
 kind: Service
 metadata:
@@ -29,21 +28,19 @@ spec:
       targetPort: 80
 
 ---
-# LuxAPI Service
 apiVersion: v1
 kind: Service
 metadata:
-  name: luxapi
+  name: luxapi-service
 spec:
   selector:
-    app: luxapi
+    app: luxapi-app
   ports:
     - protocol: TCP
       port: 8080
       targetPort: 8080
 
 ---
-# LuxDB Service
 apiVersion: v1
 kind: Service
 metadata:

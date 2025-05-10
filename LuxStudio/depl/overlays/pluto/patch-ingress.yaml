@@ -41,7 +41,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: luxapi
+                name: luxapi-service
                 port:
                   number: 8080
   tls:

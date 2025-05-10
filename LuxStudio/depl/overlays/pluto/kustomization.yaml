@@ -1,9 +1,10 @@
 resources:
-  - namespace.yaml
   - ../../base
+  - namespace.yaml
 
 namespace: luxstudio-pluto
 
 patchesStrategicMerge:
+  - patch-deployment-luxstudio.yaml
+  - patch-deployment-luxapi.yaml
   - patch-ingress.yaml
-  - patch-deployment.yaml

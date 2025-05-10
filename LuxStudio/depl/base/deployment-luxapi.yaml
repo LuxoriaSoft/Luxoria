@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: luxapi-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: luxapi-app
+  template:
+    metadata:
+      labels:
+        app: luxapi-app
+    spec:
+      containers:
+        - name: luxapi-container
+          image: luxoria/luxapi:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ConnectionStrings__DefaultConnection
+              value: Host=luxdb;Database=luxoria;Username=postgres;Password=password
+            - name: JWT_SECRET
+              value: your_jwt_secret
+            - name: JWT_EXPIRATION
+              value: "3600"
+            - name: ENVIRONMENT
+              value: SATURN
+            - name: PORT
+              value: "8080"
+            - name: FrontEnd__URI
+              value: http://studio.saturn.luxoria.bluepelicansoft.com
