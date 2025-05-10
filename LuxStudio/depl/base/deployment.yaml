@@ -49,6 +49,6 @@ spec:
     spec:
       containers:
         - name: luxstudio-container
-          image: nginx:latest
+          image: luxoria/luxstudio:latest
           ports:
             - containerPort: 80

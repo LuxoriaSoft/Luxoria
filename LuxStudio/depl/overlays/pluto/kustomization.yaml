@@ -6,3 +6,4 @@ namespace: luxstudio-pluto
 
 patchesStrategicMerge:
   - patch-ingress.yaml
+  - patch-deployment.yaml

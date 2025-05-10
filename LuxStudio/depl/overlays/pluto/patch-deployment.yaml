@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: luxstudio-deployment
+spec:
+  template:
+    spec:
+      containers:
+        - name: luxstudio-container
+          image: luxoria/luxstudio:dev
