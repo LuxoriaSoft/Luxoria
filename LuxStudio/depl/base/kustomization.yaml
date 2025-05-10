@@ -4,4 +4,3 @@ resources:
   - deployment-luxapi.yaml
   - deployment-luxdb.yaml
   - service.yaml
-  - ingress.yaml
