@@ -14,8 +14,11 @@ spec:
     spec:
       initContainers:
         - name: wait-for-postgres
-          image: busybox:1.36
-          command: ['sh', '-c', 'until nc -z luxdb 5432; do echo waiting for postgres; sleep 2; done;']
+          image: postgres:17.2-alpine3.21
+          command: ['sh', '-c', 'until pg_isready -h luxdb -p 5432 -U postgres; do echo waiting for postgres; sleep 2; done;']
+          env:
+            - name: PGPASSWORD
+              value: password
       containers:
         - name: luxapi-container
           image: luxoria/luxapi:latest
