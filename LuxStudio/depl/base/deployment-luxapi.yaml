@@ -12,6 +12,10 @@ spec:
       labels:
         app: luxapi-app
     spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z luxdb 5432; do echo waiting for postgres; sleep 2; done;']
       containers:
         - name: luxapi-container
           image: luxoria/luxapi:latest
