@@ -1,24 +1,46 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: luxstudio-ingress
+  name: saturn-ingress
   namespace: saturn
   annotations:
     kubernetes.io/ingress.class: traefik
     cert-manager.io/cluster-issuer: letsencrypt-production
 spec:
   rules:
-  - host: studio.luxoria.bluepelicansoft.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: luxstudio-service
-            port:
-              number: 80
+    - host: studio.luxoria.bluepelicansoft.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: luxstudio-service
+                port:
+                  number: 80
+    - host: bucket.saturn.luxoria.bluepelicansoft.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: minio
+                port:
+                  number: 9000
+    - host: console.bucket.saturn.luxoria.bluepelicansoft.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: minio
+                port:
+                  number: 9001
   tls:
-  - hosts:
-    - studio.luxoria.bluepelicansoft.com
-    secretName: luxstudio-saturn-luxoria
+    - hosts:
+        - studio.luxoria.bluepelicansoft.com
+        - bucket.saturn.luxoria.bluepelicansoft.com
+        - console.bucket.saturn.luxoria.bluepelicansoft.com
+      secretName: luxstudio-saturn-luxoria
