@@ -1,6 +1,7 @@
 resources:
   - ../../base
   - namespace.yaml
+  - configmap-luxdb-init.yaml
 
 namespace: luxstudio-pluto
 

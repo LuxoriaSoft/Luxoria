@@ -27,6 +27,12 @@ spec:
           volumeMounts:
             - name: pgdata
               mountPath: /var/lib/postgresql/data
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
       volumes:
         - name: pgdata
           emptyDir: {}
+        - name: init-scripts
+          configMap:
+            name: luxdb-init
