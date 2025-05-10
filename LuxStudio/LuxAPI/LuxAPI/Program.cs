@@ -133,7 +133,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Disabled for Kubernetes usage ONLY
+//app.UseHttpsRedirection();
 
 // Enable CORS
 app.UseCors();
