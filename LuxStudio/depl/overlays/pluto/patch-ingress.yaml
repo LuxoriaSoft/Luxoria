@@ -34,9 +34,20 @@ spec:
                 name: luxstudio-service
                 port:
                   number: 80
+    - host: api.studio.pluto.luxoria.bluepelicansoft.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: luxapi
+                port:
+                  number: 8080
   tls:
     - hosts:
         - bucket.pluto.luxoria.bluepelicansoft.com
         - console.bucket.pluto.luxoria.bluepelicansoft.com
         - studio.pluto.luxoria.bluepelicansoft.com
+        - api.studio.pluto.luxoria.bluepelicansoft.com
       secretName: luxstudio-pluto-luxoria
