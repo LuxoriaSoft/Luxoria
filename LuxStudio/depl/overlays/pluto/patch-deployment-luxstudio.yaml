@@ -9,3 +9,6 @@ spec:
         - name: luxstudio-container
           image: luxoria/luxstudio:dev
           imagePullPolicy: Always
+          env:
+            - name: API_URL
+              value: https://api.studio.luxoria.bluepelicansoft.com
