@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3.8'
 
 services:
   luxdb:
@@ -7,24 +7,51 @@ services:
     environment:
       POSTGRES_PASSWORD: password
       POSTGRES_USER: postgres
+      POSTGRES_DB: luxoria
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./init-scripts:/docker-entrypoint-initdb.d:ro
     networks:
       - luxnet
-    ports:
-      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     command: >
       postgres -c 'hba_file=/var/lib/postgresql/data/pg_hba.conf'
-  
-  adminer:
-    image: adminer
+
+  luxapi:
+    build:
+      context: LuxAPI
+      dockerfile: LuxAPI/Dockerfile
     restart: always
+    depends_on:
+      - luxdb
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=luxdb;Database=luxoria;Username=postgres;Password=password
+      - JWT_SECRET=your_jwt_secret
+      - JWT_EXPIRATION=3600
+      - ENVIRONMENT=SATURN
+      - PORT=8080
+      - FrontEnd__URI=http://localhost:3000
     ports:
-      - 8080:8080
+      - 5555:8080
     networks:
       - luxnet
- 
+  
+  luxportal:
+    build:
+      context: portal
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - luxapi
+    environment:
+      - API_URL=http://localhost:5555
+    ports:
+      - 3000:80
+
 volumes:
   pgdata:
 

@@ -1,0 +1,6 @@
+resources:
+  - deployment-minio.yaml
+  - deployment-luxstudio.yaml
+  - deployment-luxapi.yaml
+  - deployment-luxdb.yaml
+  - service.yaml
