@@ -1,0 +1,54 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+spec:
+  selector:
+    app: minio
+  ports:
+    - name: api
+      port: 9000
+      targetPort: 9000
+    - name: console
+      port: 9001
+      targetPort: 9001
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: luxstudio-service
+spec:
+  selector:
+    app: luxstudio-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: luxapi-service
+spec:
+  selector:
+    app: luxapi-app
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: luxdb
+spec:
+  selector:
+    app: luxdb
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

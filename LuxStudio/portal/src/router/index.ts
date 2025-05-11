@@ -10,6 +10,10 @@ import LinkAccount from '../views/SSO_Authorize.vue';
 const routes = [
   {
     path: '/',
+    redirect: '/dashboard',
+  },
+  {
+    path: '/login',
     name: 'Login',
     component: Login,
   },
@@ -22,13 +26,13 @@ const routes = [
     path: '/dashboard',
     name: 'Dashboard',
     component: Dashboard,
-    meta: { requiresAuth: true }, // Route protégée
+    meta: { requiresAuth: true },
   },
   { 
     path: '/sso/authorize',
     name: 'LinkAccount',
     component: LinkAccount,
-    meta: { requiresAuth: true }, // Route protégée
+    meta: { requiresAuth: true },
   },
 ];
 
@@ -65,7 +69,7 @@ router.beforeEach(async (to, _, next) => {
   if (to.meta.requiresAuth) {
     if (!token || isTokenExpired(token)) {
       console.log("Token expired, redirecting to login...");
-      return next({ path: "/", query: { redirect: to.fullPath } });
+      return next({ path: "/login", query: { redirect: to.fullPath } });
     }
   }
 

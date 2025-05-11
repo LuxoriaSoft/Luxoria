@@ -11,7 +11,7 @@ export class AuthService {
    * Initializes the authentication service with the API base URL.
    */
   constructor() {
-    this.apiUrl = 'http://localhost:5269'; // Update this URL according to your API environment
+    this.apiUrl = window.appConfig.API_URL;
   }
 
   /**

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using LuxAPI.DAL;
 
 namespace LuxAPI.Controllers
 {
@@ -11,14 +12,16 @@ namespace LuxAPI.Controllers
     public class SystemController : ControllerBase
     {
         private readonly ILogger<SystemController> _logger;
+        private readonly AppDbContext _context;
 
         /// <summary>
         /// Initializes the SystemController with a logger instance.
         /// </summary>
         /// <param name="logger">Logger service for tracking system events.</param>
-        public SystemController(ILogger<SystemController> logger)
+        public SystemController(ILogger<SystemController> logger, AppDbContext context)
         {
             _logger = logger;
+            _context = context;
         }
 
         /// <summary>
@@ -26,9 +29,23 @@ namespace LuxAPI.Controllers
         /// </summary>
         /// <returns>JSON response indicating that the system is operational.</returns>
         [HttpGet("status")]
-        public IActionResult GetStatus()
+        public async Task<IActionResult> GetStatus()
         {
-            return Ok(new { Status = "OK" });
+            bool isDbConnected = await _context.Database.CanConnectAsync();
+
+            var status = new Dictionary<string, bool>
+            {
+                { "Database", isDbConnected },
+                { "Cache", true }, // Placeholder for cache status
+                { "MessageQueue", true } // Placeholder for message queue status
+            };
+
+            return Ok(new
+            {
+                Status = "OK",
+                Components = status,
+                Timestamp = DateTime.UtcNow
+            });
         }
 
         /// <summary>

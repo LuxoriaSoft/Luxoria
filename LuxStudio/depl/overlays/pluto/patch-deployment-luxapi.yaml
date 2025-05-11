@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: luxapi-deployment
+spec:
+  template:
+    spec:
+      containers:
+        - name: luxapi-container
+          image: luxoria/luxapi:dev
+          imagePullPolicy: Always
+          env:
+           - name: FrontEnd__URI
+             value: https://studio.pluto.luxoria.bluepelicansoft.com

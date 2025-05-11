@@ -47,6 +47,33 @@ namespace LuxAPI.Migrations
                     b.ToTable("AuthorizationCodes");
                 });
 
+            modelBuilder.Entity("LuxAPI.Models.ChatMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CollectionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SenderEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CollectionId");
+
+                    b.ToTable("ChatMessages");
+                });
+
             modelBuilder.Entity("LuxAPI.Models.Client", b =>
                 {
                     b.Property<Guid>("Id")
@@ -54,7 +81,6 @@ namespace LuxAPI.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("ClientId")
-                        .HasMaxLength(50)
                         .HasColumnType("uuid");
 
                     b.Property<string>("ClientSecret")
@@ -70,6 +96,97 @@ namespace LuxAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Clients");
+                });
+
+            modelBuilder.Entity("LuxAPI.Models.Collection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Collections");
+                });
+
+            modelBuilder.Entity("LuxAPI.Models.CollectionAccess", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CollectionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CollectionId");
+
+                    b.ToTable("CollectionAccesses");
+                });
+
+            modelBuilder.Entity("LuxAPI.Models.Photo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CollectionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FilePath")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CollectionId");
+
+                    b.ToTable("Photos");
+                });
+
+            modelBuilder.Entity("LuxAPI.Models.PhotoComment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CommentText")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ParentCommentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PhotoId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentCommentId");
+
+                    b.HasIndex("PhotoId");
+
+                    b.ToTable("PhotoComments");
                 });
 
             modelBuilder.Entity("LuxAPI.Models.RefreshToken", b =>
@@ -156,6 +273,57 @@ namespace LuxAPI.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("LuxAPI.Models.ChatMessage", b =>
+                {
+                    b.HasOne("LuxAPI.Models.Collection", "Collection")
+                        .WithMany("ChatMessages")
+                        .HasForeignKey("CollectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Collection");
+                });
+
+            modelBuilder.Entity("LuxAPI.Models.CollectionAccess", b =>
+                {
+                    b.HasOne("LuxAPI.Models.Collection", "Collection")
+                        .WithMany("AllowedEmails")
+                        .HasForeignKey("CollectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Collection");
+                });
+
+            modelBuilder.Entity("LuxAPI.Models.Photo", b =>
+                {
+                    b.HasOne("LuxAPI.Models.Collection", "Collection")
+                        .WithMany("Photos")
+                        .HasForeignKey("CollectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Collection");
+                });
+
+            modelBuilder.Entity("LuxAPI.Models.PhotoComment", b =>
+                {
+                    b.HasOne("LuxAPI.Models.PhotoComment", "ParentComment")
+                        .WithMany("Replies")
+                        .HasForeignKey("ParentCommentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("LuxAPI.Models.Photo", "Photo")
+                        .WithMany("Comments")
+                        .HasForeignKey("PhotoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ParentComment");
+
+                    b.Navigation("Photo");
+                });
+
             modelBuilder.Entity("LuxAPI.Models.RefreshToken", b =>
                 {
                     b.HasOne("LuxAPI.Models.User", "User")
@@ -176,6 +344,25 @@ namespace LuxAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LuxAPI.Models.Collection", b =>
+                {
+                    b.Navigation("AllowedEmails");
+
+                    b.Navigation("ChatMessages");
+
+                    b.Navigation("Photos");
+                });
+
+            modelBuilder.Entity("LuxAPI.Models.Photo", b =>
+                {
+                    b.Navigation("Comments");
+                });
+
+            modelBuilder.Entity("LuxAPI.Models.PhotoComment", b =>
+                {
+                    b.Navigation("Replies");
                 });
 #pragma warning restore 612, 618
         }

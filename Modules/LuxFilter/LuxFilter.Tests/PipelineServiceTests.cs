@@ -1,6 +1,7 @@
 ﻿using LuxFilter.Algorithms.ImageQuality;
 using LuxFilter.Algorithms.Interfaces;
 using LuxFilter.Services;
+using Luxoria.Modules.Models;
 using Luxoria.SDK.Interfaces;
 using Moq;
 using SkiaSharp;
@@ -47,11 +48,11 @@ namespace LuxFilter.Tests
             var guid = Guid.NewGuid();
 
             _pipelineService.AddAlgorithm(resolutionAlgo, 1.0);
-            var results = await _pipelineService.Compute(new List<(Guid, SKBitmap)> { (guid, bitmap) });
+            var results = await _pipelineService.Compute([(guid, new ImageData(bitmap, FileExtension.UNKNOWN))]);
 
             Assert.Single(results);
-            Assert.Equal(guid, results[0].Item1);
-            Assert.Equal(10000, results[0].Item2);
+            Assert.Equal(guid, results.First().Item1);
+            Assert.Equal(10000, results.First().Item2["Resolution"]);
         }
     }
 }

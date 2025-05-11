@@ -1,0 +1,11 @@
+resources:
+  - ../../base
+  - namespace.yaml
+  - configmap-luxdb-init.yaml
+  - ingress.yaml
+
+namespace: luxstudio-pluto
+
+patches:
+  - path: patch-deployment-luxstudio.yaml
+  - path: patch-deployment-luxapi.yaml

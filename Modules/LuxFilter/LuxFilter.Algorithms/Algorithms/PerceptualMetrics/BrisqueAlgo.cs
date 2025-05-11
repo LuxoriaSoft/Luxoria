@@ -1,5 +1,6 @@
 ﻿using LuxFilter.Algorithms.Interfaces;
 using Luxoria.Algorithm.BrisqueScore;
+using Luxoria.Modules.Models;
 using SkiaSharp;
 using System.Reflection;
 
@@ -47,11 +48,11 @@ public class BrisqueAlgo : IFilterAlgorithm, IDisposable
     /// <param name="height"></param>
     /// <param name="width"></param>
     /// <returns>Returns the computed score of the algorithm</returns>
-    public double Compute(SKBitmap bitmap, int height, int width)
+    public double Compute(ImageData data)
     {
         try
         {
-            string imagePath = SaveBitmapToTempFile(bitmap);
+            string imagePath = SaveBitmapToTempFile(data.Bitmap);
             return _brisque.ComputeScore(imagePath);
         }
         catch (Exception e)

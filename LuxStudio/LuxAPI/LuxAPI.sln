@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35521.163 d17.12
+VisualStudioVersion = 17.12.35521.163
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuxAPI", "LuxAPI\LuxAPI.csproj", "{72C092FF-AA03-40D3-A6AE-580CD90BCDC2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuxApi.tests", "LuxApi.tests\LuxApi.tests.csproj", "{2323C20C-D3C4-453C-BA9F-21B6CE3B728B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{72C092FF-AA03-40D3-A6AE-580CD90BCDC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72C092FF-AA03-40D3-A6AE-580CD90BCDC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72C092FF-AA03-40D3-A6AE-580CD90BCDC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2323C20C-D3C4-453C-BA9F-21B6CE3B728B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2323C20C-D3C4-453C-BA9F-21B6CE3B728B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2323C20C-D3C4-453C-BA9F-21B6CE3B728B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2323C20C-D3C4-453C-BA9F-21B6CE3B728B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

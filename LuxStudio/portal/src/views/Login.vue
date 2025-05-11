@@ -81,7 +81,8 @@ export default {
         const redirect = this.$route.query.redirect || '/dashboard';
         this.$router.push(redirect); // Redirects user after login
       } catch (error) {
-        this.errorMessage = error.message || 'An unexpected error occurred.'; // Sets error message if login fails
+        // if 401 or 403, set error message
+        this.errorMessage = 'Invalid username or password';
       }
     },
   },
