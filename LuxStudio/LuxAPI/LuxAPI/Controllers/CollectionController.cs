@@ -13,6 +13,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
 using Minio;
+using Minio.DataModel.Args;
+using Minio.Exceptions;
 
 namespace LuxAPI.Controllers
 {
@@ -143,8 +145,12 @@ namespace LuxAPI.Controllers
 
         // PATCH: api/collection/{collectionId}/allowedEmails
         [HttpPatch("{collectionId}/allowedEmails")]
-        public async Task<IActionResult> AddAllowedEmail(Guid collectionId, [FromBody] string email)
+        public async Task<IActionResult> AddAllowedEmail(Guid collectionId, [FromBody] EmailDto dto)
         {
+            var currentUserEmail = User?.Identity?.Name;
+            if (string.IsNullOrEmpty(currentUserEmail))
+                return Unauthorized("Utilisateur non authentifié.");
+
             var collection = await _context.Collections
                 .Include(c => c.AllowedEmails)
                 .FirstOrDefaultAsync(c => c.Id == collectionId);
@@ -152,21 +158,87 @@ namespace LuxAPI.Controllers
             if (collection == null)
                 return NotFound("Collection non trouvée.");
 
-            if (!new EmailAddressAttribute().IsValid(email))
+            if (!collection.AllowedEmails.Any(a => a.Email == currentUserEmail))
+                return Forbid("Vous n'avez pas accès à cette collection.");
+
+            if (!new EmailAddressAttribute().IsValid(dto.Email))
                 return BadRequest("Format d'email invalide.");
 
-            if (collection.AllowedEmails.Any(a => a.Email.Equals(email, StringComparison.OrdinalIgnoreCase)))
+            if (collection.AllowedEmails.Any(a => a.Email.Equals(dto.Email, StringComparison.OrdinalIgnoreCase)))
                 return BadRequest("Cet email est déjà autorisé.");
 
-            collection.AllowedEmails.Add(new CollectionAccess 
-            { 
-                Email = email, 
-                CollectionId = collectionId 
+            collection.AllowedEmails.Add(new CollectionAccess
+            {
+                Email = dto.Email,
+                CollectionId = collectionId
             });
 
             await _context.SaveChangesAsync();
 
             return Ok(collection);
+        }
+
+
+
+                // DELETE: api/photo/{id}
+        [Authorize]
+        [HttpDelete("photo/{id}")]
+        public async Task<IActionResult> DeletePhoto(Guid id)
+        {
+            var photo = await _context.Photos.FirstOrDefaultAsync(p => p.Id == id);
+            if (photo == null)
+                return NotFound("Image non trouvée.");
+
+            // Extraire l’objet MinIO depuis l’URL
+            var objectName = Path.GetFileName(new Uri(photo.FilePath).AbsolutePath);
+
+            // Supprimer dans MinIO
+            await _minioClient.RemoveObjectAsync(new RemoveObjectArgs()
+                .WithBucket(_bucketName)
+                .WithObject(objectName));
+
+            _context.Photos.Remove(photo);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpGet("image/{filename}")]
+        public async Task<IActionResult> GetImage(string filename)
+        {
+            try
+            {
+                var memoryStream = new MemoryStream();
+
+                var getObjectArgs = new GetObjectArgs()
+                    .WithBucket(_bucketName)
+                    .WithObject(filename);
+
+                await _minioClient.GetObjectAsync(getObjectArgs.WithCallbackStream(async stream =>
+                {
+                    await stream.CopyToAsync(memoryStream);
+                }));
+
+                memoryStream.Position = 0;
+
+                var contentType = GetContentType(filename);
+                return File(memoryStream, contentType);
+            }
+            catch (Minio.Exceptions.MinioException ex)
+            {
+                return NotFound($"Erreur MinIO : {ex.Message}");
+            }
+        }
+
+        private static string GetContentType(string fileName)
+        {
+            var ext = Path.GetExtension(fileName).ToLowerInvariant();
+            return ext switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                _ => "application/octet-stream"
+            };
         }
 
 
@@ -219,7 +291,8 @@ namespace LuxAPI.Controllers
                 await _minioClient.PutObjectAsync(putObjectArgs);
             }
 
-            var fileUrl = $"https://{_minioEndpoint}/{_bucketName}/{objectName}";
+            //var fileUrl = $"https://{_minioEndpoint}/{_bucketName}/{objectName}";
+            var fileUrl = $"http://localhost:5269/api/collection/image/{objectName}";
 
             var photo = new Photo
             {
@@ -279,6 +352,11 @@ namespace LuxAPI.Controllers
     {
         public string SenderEmail { get; set; }
         public string Message { get; set; }
+    }
+
+    public class EmailDto
+    {
+        public string Email { get; set; }
     }
 
     #endregion
