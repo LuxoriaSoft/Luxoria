@@ -6,6 +6,8 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Any;
 using LuxAPI.Hubs;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,7 +37,8 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidAudience = configuration["Jwt:Audience"],
         ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero
+        ClockSkew = TimeSpan.Zero,
+        NameClaimType = ClaimTypes.Email
     };
 
     options.Events = new JwtBearerEvents

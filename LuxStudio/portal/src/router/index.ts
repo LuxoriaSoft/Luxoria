@@ -3,6 +3,7 @@ import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
 import Dashboard from '../views/Dashboard.vue';
 import LinkAccount from '../views/SSO_Authorize.vue';
+import Collections from '../views/Collections.vue';
 
 /**
  * Defines the application routes.
@@ -30,6 +31,12 @@ const routes = [
     component: LinkAccount,
     meta: { requiresAuth: true }, // Route protégée
   },
+  {
+    path: '/collections',
+    name: 'Collections',
+    component: Collections,
+    meta: { requiresAuth: true }
+  }
 ];
 
 /**

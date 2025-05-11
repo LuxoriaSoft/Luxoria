@@ -107,7 +107,7 @@ namespace LuxAPI.Controllers
             }
 
             // Generate a JWT token for the authenticated user
-            var token = GenerateJwtToken(user.Id, user.Username);
+            var token = GenerateJwtToken(user.Id, user.Username, user.Email);
 
             _logger.LogInformation("User logged in successfully: {Username}", login.Username);
             return Ok(new { token }); // Return the JWT token
@@ -118,33 +118,30 @@ namespace LuxAPI.Controllers
         /// </summary>
         /// <param name="userId">The unique identifier of the user.</param>
         /// <param name="username">The username of the authenticated user.</param>
+        /// <param name="email">The email of the authenticated user.</param>
         /// <param name="expiryHours">The expiration time in hours (default is 48 hours).</param>
         /// <returns>A JWT token as a string.</returns>
-        private string GenerateJwtToken(Guid userId, string username, int expiryHours = 48)
+        private string GenerateJwtToken(Guid userId, string username, string email, int expiryHours = 48)
         {
-            // Generate security key from the JWT secret key
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            // Define claims included in the token
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString()), // User ID claim
-                new Claim(ClaimTypes.Name, username), // Username claim
-                new Claim(JwtRegisteredClaimNames.Sub, username), // Subject claim
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // Unique token ID claim
+                new Claim(JwtRegisteredClaimNames.Email, email), // ✅ utilisé comme .Name
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(JwtRegisteredClaimNames.Sub, username),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            // Create the JWT token
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(expiryHours), // Token expiration time
+                expires: DateTime.UtcNow.AddHours(expiryHours),
                 signingCredentials: credentials
             );
 
-            // Serialize and return the token as a string
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 

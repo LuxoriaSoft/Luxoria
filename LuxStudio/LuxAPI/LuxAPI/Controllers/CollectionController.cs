@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Authorization;
 using Minio;
 
 namespace LuxAPI.Controllers
@@ -39,14 +40,21 @@ namespace LuxAPI.Controllers
         }
 
         // GET: api/collection
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetCollections()
         {
+
+            var currentUserEmail = User?.Identity?.Name;
+            if (string.IsNullOrEmpty(currentUserEmail))
+                return Unauthorized("Utilisateur non authentifié.");
+
             var collections = await _context.Collections
                 .Include(c => c.AllowedEmails)
                 .Include(c => c.ChatMessages)
                 .Include(c => c.Photos)
                     .ThenInclude(p => p.Comments)
+                .Where(c => c.AllowedEmails.Any(a => a.Email == currentUserEmail))
                 .ToListAsync();
 
             return Ok(collections);
