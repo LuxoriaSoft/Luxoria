@@ -64,6 +64,10 @@ namespace LuxAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("SenderUsername")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("SentAt")
                         .HasColumnType("timestamp with time zone");
 

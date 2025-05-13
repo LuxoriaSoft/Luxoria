@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuxAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250307164559_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250513023628_InitChatMessages")]
+    partial class InitChatMessages
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -64,6 +64,10 @@ namespace LuxAPI.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("SenderEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SenderUsername")
                         .IsRequired()
                         .HasColumnType("text");
 

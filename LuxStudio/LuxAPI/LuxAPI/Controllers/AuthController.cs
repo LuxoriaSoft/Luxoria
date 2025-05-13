@@ -113,28 +113,29 @@ namespace LuxAPI.Controllers
             return Ok(new { token }); // Return the JWT token
         }
 
-        /// <summary>
-        /// Generates a JWT token for an authenticated user.
-        /// </summary>
-        /// <param name="userId">The unique identifier of the user.</param>
-        /// <param name="username">The username of the authenticated user.</param>
-        /// <param name="email">The email of the authenticated user.</param>
-        /// <param name="expiryHours">The expiration time in hours (default is 48 hours).</param>
-        /// <returns>A JWT token as a string.</returns>
-        private string GenerateJwtToken(Guid userId, string username, string email, int expiryHours = 48)
-        {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
+            /// <summary>
+            /// Generates a JWT token for an authenticated user.
+            /// </summary>
+            /// <param name="userId">The unique identifier of the user.</param>
+            /// <param name="username">The username of the authenticated user.</param>
+            /// <param name="email">The email of the authenticated user.</param>
+            /// <param name="expiryHours">The expiration time in hours (default is 48 hours).</param>
+            /// <returns>A JWT token as a string.</returns>
+            private string GenerateJwtToken(Guid userId, string username, string email, int expiryHours = 48)
             {
-                new Claim(JwtRegisteredClaimNames.Email, email), // ✅ utilisé comme .Name
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                new Claim(JwtRegisteredClaimNames.Sub, username),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
+                var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken(
+                var claims = new[]
+                {
+                    new Claim(JwtRegisteredClaimNames.Email, email), // ✅ utilisé comme .Name
+                    new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                    new Claim(JwtRegisteredClaimNames.Sub, username),
+                    new Claim(ClaimTypes.Name, username),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                };
+
+                var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
@@ -156,7 +157,8 @@ namespace LuxAPI.Controllers
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var username = User.FindFirst(ClaimTypes.Name)?.Value;
-            return Ok(new { userId, username });
+            var userEmail = User.FindFirst(ClaimTypes.Email)?.Value; // 👈 ici
+            return Ok(new { userId, username, userEmail });
         }
     }
 }

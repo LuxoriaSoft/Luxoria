@@ -320,14 +320,15 @@ namespace LuxAPI.Controllers
                 CollectionId = collectionId,
                 SenderEmail = dto.SenderEmail,
                 Message = dto.Message,
-                SentAt = DateTime.UtcNow
+                SentAt = DateTime.UtcNow,
+                SenderUsername = dto.SenderUsername
             };
 
             _context.ChatMessages.Add(message);
             await _context.SaveChangesAsync();
 
             await _chatHub.Clients.Group(collectionId.ToString())
-                .SendAsync("ReceiveMessage", dto.SenderEmail, dto.Message);
+                .SendAsync("ReceiveMessage", dto.SenderUsername, dto.Message);
 
             return CreatedAtAction(nameof(GetCollection), new { id = collectionId }, message);
         }
@@ -351,6 +352,8 @@ namespace LuxAPI.Controllers
     public class CreateChatMessageDto
     {
         public string SenderEmail { get; set; }
+
+        public string SenderUsername { get; set; }
         public string Message { get; set; }
     }
 
