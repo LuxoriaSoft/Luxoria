@@ -39,10 +39,18 @@ namespace LuxEditor.Logic
         /// </summary>
         private static SKColorFilter CreateCombinedColorFilter(Dictionary<string, float> filters)
         {
-            var matrix = CreateBaseMatrix(filters);
+            var matrixFilter = SKColorFilter.CreateColorMatrix(CreateBaseMatrix(filters));
+            var shFilter = CreateShadowsHighlightsFilter(filters);
 
-            return SKColorFilter.CreateColorMatrix(matrix);
+            if (shFilter != null)
+            {
+                // outer = shadows/highlights, inner = exposure/contrast/etc.
+                return SKColorFilter.CreateCompose(shFilter, matrixFilter);
+            }
+
+            return matrixFilter;
         }
+
 
         /// <summary>
         /// Constructs a color matrix applying exposure, contrast, saturation, temperature, and tint.
@@ -96,6 +104,43 @@ namespace LuxEditor.Logic
                 0, 0, 0, 1, 0
             };
 
+        }
+
+        /// <summary>
+        /// Builds a table‐based filter that adjusts shadows and highlights.
+        /// Shadows/Highlights values are in –100…100.
+        /// </summary>
+        private static SKColorFilter? CreateShadowsHighlightsFilter(Dictionary<string, float> filters)
+        {
+            filters.TryGetValue("Shadows", out var rawSh);
+            filters.TryGetValue("Highlights", out var rawHi);
+            float shadows = rawSh / 100f;
+            float highlights = rawHi / 100f;
+
+            if (MathF.Abs(shadows) < 1e-6 && MathF.Abs(highlights) < 1e-6)
+                return null;
+
+            var table = new byte[256];
+            for (int i = 0; i < 256; i++)
+            {
+                float v = i / 255f;
+                float v2;
+                if (v < 0.25f)
+                {
+                    v2 = v + (0.25f - v) * shadows;
+                }
+                else if (v > 0.75f)
+                {
+                    v2 = v + (v - 0.75f) * highlights;
+                }
+                else
+                {
+                    v2 = v;
+                }
+                table[i] = (byte)(Math.Clamp(v2, 0f, 1f) * 255);
+            }
+
+            return SKColorFilter.CreateTable(table);
         }
 
         private static (float r, float g, float b) CreateWhiteBalanceMatrix(float temperature, float tint)
