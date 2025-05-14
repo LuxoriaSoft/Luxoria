@@ -8,6 +8,7 @@ using Microsoft.OpenApi.Any;
 using LuxAPI.Hubs;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using LuxAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,8 @@ builder.Services.AddHttpClient("DefaultClient"); // Named client
 builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddSingleton<MinioService>(); // <-- AJOUT ICI
 
 // Configure JWT Authentication
 builder.Services.AddAuthentication(options =>

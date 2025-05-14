@@ -44,28 +44,23 @@
     <div
       v-for="(msg, index) in messages"
       :key="index"
-      class="mb-2 flex"
-      :class="{
-        'justify-end': msg.isMine,
-        'justify-start': !msg.isMine
-      }"
+      :class="['chat', msg.isMine ? 'chat-end' : 'chat-start']"
     >
-      <div
-        class="max-w-xs px-3 py-2 rounded-lg text-sm shadow"
-        :class="{
-          'bg-blue-600 text-white': msg.isMine,
-          'bg-gray-200 text-gray-900': !msg.isMine
-        }"
-      >
-        <p class="font-semibold text-xs mb-1 text-right" v-if="msg.isMine">
-          Vous
-        </p>
-        <p class="font-semibold text-xs mb-1" v-else>{{ msg.sender }}</p>
-        <p>{{ msg.text }}</p>
+      <div class="chat-image avatar">
+        <div class="w-10 rounded-full">
+          <img :src="`http://localhost:5269/auth/avatar/${msg.avatar}`" alt="avatar" />
+        </div>
+      </div>
+      <div class="chat-header">
+        {{ msg.isMine ? 'Vous' : msg.sender }}
+        <time class="text-xs opacity-50 ml-2">{{ formatTime(msg.sentAt) }}</time>
+      </div>
+      <div class="chat-bubble" :class="msg.isMine ? 'bg-blue-600 text-white' : ''">
+        {{ msg.text }}
       </div>
     </div>
-
   </div>
+
 
   <div class="flex gap-2">
     <input
@@ -132,7 +127,10 @@ onMounted(async () => {
     // 3. Map messages with proper comparison
     messages.value = collection.value.chatMessages.map(m => ({
       sender: m.senderUsername,
+      senderEmail: m.senderEmail,
+      avatar: m.avatarFileName,
       text: m.message,
+      sentAt: m.sentAt,
       isMine: m.senderUsername === username.value
     }))
   } catch (err) {
@@ -149,8 +147,8 @@ onMounted(async () => {
     .withAutomaticReconnect()
     .build()
 
-  connection.on('ReceiveMessage', (sender, text) => {
-    messages.value.push({ sender, text, isMine: sender === username.value })
+  connection.on('ReceiveMessage', (sender, text, avatar, sentAt) => {
+    messages.value.push({ sender, text, avatar, sentAt, isMine: sender === username.value })
     scrollToBottom()
   })
 
@@ -171,6 +169,22 @@ function scrollToBottom() {
     chatContainer.value.scrollTop = chatContainer.value.scrollHeight
   }, 0)
 }
+
+function formatTime(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function getAvatarUrl(email) {
+  if (!email) return '/default_avatar.jpg';
+
+  // Construit le nom de fichier attendu : exemple -> 123e4567_avatar.jpg
+  const filename = `${encodeURIComponent(email)}_avatar.jpg`;
+
+  return `http://localhost:5269/auth/avatar/${filename}`;
+}
+
+
 
 async function sendMessage() {
   if (!chatMessage.value.trim()) return;

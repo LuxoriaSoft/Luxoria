@@ -35,10 +35,34 @@
           required
         />
       </div>
+      <div class="mb-4">
+        <label for="avatar" class="block mb-2 text-sm font-medium">Avatar (optionnel)</label>
+        <input
+          type="file"
+          id="avatar"
+          @change="handleAvatarChange"
+          accept="image/png, image/jpeg"
+          class="w-full p-2 border border-gray-600 rounded bg-gray-700 text-white"
+        />
+      </div>
+      <div v-if="avatarPreviewUrl" class="mb-4">
+        <label class="block mb-2 text-sm font-medium">Aperçu de l’avatar</label>
+        <img
+          :src="avatarPreviewUrl"
+          alt="Aperçu de l’avatar"
+          class="w-24 h-24 rounded-full border border-gray-600 object-cover"
+        />
+      </div>
       <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded">
         Register
       </button>
       <p v-if="errorMessage" class="text-red-500 mt-4 text-sm">{{ errorMessage }}</p>
+
+      <!-- Redirect to login -->
+      <p class="text-sm text-gray-300 mt-4 text-center">
+        Already have an account?
+        <router-link to="/" class="text-blue-400 hover:underline">Log in.</router-link>
+      </p>
     </form>
   </div>
 </template>
@@ -53,23 +77,53 @@ export default {
       email: "",
       password: "",
       errorMessage: "",
+      avatarFile: null,
+      avatarPreviewUrl: null,
     };
   },
   methods: {
-    /**
-     * Handles user registration by calling the authentication service.
-     * On success, redirects to the login page. On failure, displays an error message.
-     */
     async handleRegister() {
       const authService = new AuthService();
+
       try {
-        const message = await authService.register(this.username, this.email, this.password);
-        alert(message); // Display success message
-        this.$router.push("/"); // Redirect to login page
+        await authService.register(this.username, this.email, this.password);
+        const token = await authService.loginAndGetToken(this.username, this.password);
+
+        if (this.avatarFile) {
+          const formData = new FormData();
+          formData.append("file", this.avatarFile);
+
+          await fetch("http://localhost:5269/auth/upload-avatar", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData,
+          });
+        }
+
+        alert("Account created!");
+        this.$router.push("/");
       } catch (error) {
-        this.errorMessage = error.message; // Set error message on failure
+        this.errorMessage = error.message || "Registration failed.";
       }
     },
+
+    handleAvatarChange(event) {
+      const file = event.target.files[0];
+      this.avatarFile = file;
+
+      if (this.avatarPreviewUrl) {
+        URL.revokeObjectURL(this.avatarPreviewUrl);
+      }
+
+      if (file) {
+        this.avatarPreviewUrl = URL.createObjectURL(file);
+      }
+    },
+  },
+  beforeUnmount() {
+    if (this.avatarPreviewUrl) {
+      URL.revokeObjectURL(this.avatarPreviewUrl);
+    }
   },
 };
 </script>

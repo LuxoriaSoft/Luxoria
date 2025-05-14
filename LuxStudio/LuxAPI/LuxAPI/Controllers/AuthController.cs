@@ -4,6 +4,7 @@ using System.Text;
 using LuxAPI.DAL;
 using LuxAPI.Models;
 using LuxAPI.Models.DTOs;
+using LuxAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
@@ -21,6 +22,7 @@ namespace LuxAPI.Controllers
         private readonly ILogger<AuthController> _logger;
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly MinioService _minioService;
 
         /// <summary>
         /// Initializes the authentication controller with logging, database context, and configuration.
@@ -28,11 +30,17 @@ namespace LuxAPI.Controllers
         /// <param name="logger">Logger service for tracking authentication events.</param>
         /// <param name="context">Database context for accessing user data.</param>
         /// <param name="configuration">Configuration service for retrieving JWT settings.</param>
-        public AuthController(ILogger<AuthController> logger, AppDbContext context, IConfiguration configuration)
+        /// <param name="minioService">Custom service for MinIO file storage operations.</param>
+        public AuthController(
+            ILogger<AuthController> logger,
+            AppDbContext context,
+            IConfiguration configuration,
+            MinioService minioService)
         {
             _logger = logger;
             _context = context;
             _configuration = configuration;
+            _minioService = minioService;
         }
 
         /// <summary>
@@ -79,6 +87,81 @@ namespace LuxAPI.Controllers
         }
 
         /// <summary>
+        /// Uploads a user's avatar image to MinIO and stores the filename in the database.
+        /// Requires authentication.
+        /// </summary>
+        /// <param name="file">The avatar image file.</param>
+        /// <returns>Public URL of the uploaded avatar.</returns>
+        [HttpPost("upload-avatar")]
+        [Authorize]
+        public async Task<IActionResult> UploadAvatar(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded.");
+
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+                return NotFound("User not found.");
+
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!new[] { ".jpg", ".jpeg", ".png" }.Contains(extension))
+                return BadRequest("Unsupported file type.");
+
+            var fileName = $"{userId}_avatar{extension}";
+            var filePath = $"avatars/{fileName}";
+
+            // Upload vers MinIO
+            using (var stream = file.OpenReadStream())
+            {
+                await _minioService.UploadFileAsync("user-files", filePath, stream, file.ContentType);
+            }
+
+            // Mise à jour du champ dans la DB
+            user.AvatarFileName = fileName;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { avatarUrl = $"/auth/avatar/{fileName}" });
+        }
+
+        /// <summary>
+        /// Retrieves a user's avatar image by filename from MinIO.
+        /// </summary>
+        /// <param name="fileName">The filename of the avatar image.</param>
+        /// <returns>The image file if it exists, or 404 if not.</returns>
+        [HttpGet("avatar/{fileName}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAvatar(string fileName)
+        {
+            var bucket = "user-files";
+            var path = $"avatars/{fileName}";
+
+            try
+            {
+                var stream = await _minioService.GetFileAsync(bucket, path);
+
+                if (stream == null || stream.Length == 0)
+                {
+                    Console.WriteLine($"[Avatar] Fichier introuvable ou vide : {path}");
+                    return NotFound("Fichier non trouvé ou vide.");
+                }
+
+                Console.WriteLine($"[Avatar] Fichier trouvé : {path} (stream size: {stream.Length})");
+
+                return File(stream, GetContentType(fileName));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Avatar] Erreur : {ex.Message}");
+                return StatusCode(500, "Erreur lors de la récupération du fichier.");
+            }
+        }
+
+
+        /// <summary>
         /// Authenticates a user by validating their credentials and issuing a JWT token.
         /// </summary>
         /// <param name="login">User login data (username, password).</param>
@@ -113,29 +196,29 @@ namespace LuxAPI.Controllers
             return Ok(new { token }); // Return the JWT token
         }
 
-            /// <summary>
-            /// Generates a JWT token for an authenticated user.
-            /// </summary>
-            /// <param name="userId">The unique identifier of the user.</param>
-            /// <param name="username">The username of the authenticated user.</param>
-            /// <param name="email">The email of the authenticated user.</param>
-            /// <param name="expiryHours">The expiration time in hours (default is 48 hours).</param>
-            /// <returns>A JWT token as a string.</returns>
-            private string GenerateJwtToken(Guid userId, string username, string email, int expiryHours = 48)
+        /// <summary>
+        /// Generates a JWT token for an authenticated user.
+        /// </summary>
+        /// <param name="userId">The unique identifier of the user.</param>
+        /// <param name="username">The username of the authenticated user.</param>
+        /// <param name="email">The email of the authenticated user.</param>
+        /// <param name="expiryHours">The expiration time in hours (default is 48 hours).</param>
+        /// <returns>A JWT token as a string.</returns>
+        private string GenerateJwtToken(Guid userId, string username, string email, int expiryHours = 48)
+        {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
             {
-                var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-                var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+                new Claim(JwtRegisteredClaimNames.Email, email), // ✅ utilisé comme .Name
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(JwtRegisteredClaimNames.Sub, username),
+                new Claim(ClaimTypes.Name, username),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
 
-                var claims = new[]
-                {
-                    new Claim(JwtRegisteredClaimNames.Email, email), // ✅ utilisé comme .Name
-                    new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                    new Claim(JwtRegisteredClaimNames.Sub, username),
-                    new Claim(ClaimTypes.Name, username),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-                };
-
-                var token = new JwtSecurityToken(
+            var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
@@ -159,6 +242,20 @@ namespace LuxAPI.Controllers
             var username = User.FindFirst(ClaimTypes.Name)?.Value;
             var userEmail = User.FindFirst(ClaimTypes.Email)?.Value; // 👈 ici
             return Ok(new { userId, username, userEmail });
+        }
+
+        /// <summary>
+        /// Infers the correct MIME type for image file responses.
+        /// </summary>
+        private static string GetContentType(string fileName)
+        {
+            var ext = Path.GetExtension(fileName).ToLowerInvariant();
+            return ext switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                _ => "application/octet-stream"
+            };
         }
     }
 }
