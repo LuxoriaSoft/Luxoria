@@ -30,7 +30,7 @@
       <h2 class="text-lg font-semibold mb-2">Ajouter un utilisateur à cette collection</h2>
       <input v-model="newEmail" placeholder="Email" class="input input-bordered w-full max-w-xs" />
       <button @click="addUser" class="btn btn-secondary mt-2">Partager</button>
-      <p class="text-sm mt-2 text-green-600" v-if="shareMessage">{{ shareMessage }}</p>
+      <p class="text-sm mt-2" :class="shareMessageClass" v-if="shareMessage">{{ shareMessage }}</p>
     </div>
 <!-- Chat temps réel -->
 <div class="mb-8 p-4 border rounded shadow bg-white">
@@ -128,7 +128,7 @@ onMounted(async () => {
     messages.value = collection.value.chatMessages.map(m => ({
       sender: m.senderUsername,
       senderEmail: m.senderEmail,
-      avatar: m.avatarFileName,
+      avatar: m.avatarFileName ?? 'default_avatar.jpg',
       text: m.message,
       sentAt: m.sentAt,
       isMine: m.senderUsername === username.value
@@ -175,14 +175,11 @@ function formatTime(dateStr) {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-function getAvatarUrl(email) {
-  if (!email) return '/default_avatar.jpg';
-
-  // Construit le nom de fichier attendu : exemple -> 123e4567_avatar.jpg
-  const filename = `${encodeURIComponent(email)}_avatar.jpg`;
-
+function getAvatarUrl(filename) {
+  if (!filename) return '/default_avatar.jpg';
   return `http://localhost:5269/auth/avatar/${filename}`;
 }
+
 
 
 
@@ -258,6 +255,8 @@ async function deleteImage(photoId) {
   }
 }
 
+const shareMessageClass = ref("text-green-600")
+
 async function addUser() {
   if (!newEmail.value) return
 
@@ -274,11 +273,13 @@ async function addUser() {
       }
     )
     shareMessage.value = 'Utilisateur ajouté avec succès.'
+    shareMessageClass.value = 'text-green-600'
     collection.value.allowedEmails.push({ email: newEmail.value })
     newEmail.value = ''
   } catch (err) {
     console.error("Erreur lors de l'ajout :", err)
-    shareMessage.value = 'Erreur lors du partage.'
+    shareMessage.value = err.response?.data || 'Erreur lors du partage.'
+    shareMessageClass.value = 'text-red-500'
   }
 }
 </script>

@@ -89,16 +89,18 @@ export default {
         await authService.register(this.username, this.email, this.password);
         const token = await authService.loginAndGetToken(this.username, this.password);
 
-        if (this.avatarFile) {
-          const formData = new FormData();
-          formData.append("file", this.avatarFile);
+      if (this.avatarFile instanceof File) {
+        const formData = new FormData();
+        formData.append("file", this.avatarFile);
 
-          await fetch("http://localhost:5269/auth/upload-avatar", {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-            body: formData,
-          });
-        }
+        await fetch("http://localhost:5269/auth/upload-avatar", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        });
+      }
 
         alert("Account created!");
         this.$router.push("/");

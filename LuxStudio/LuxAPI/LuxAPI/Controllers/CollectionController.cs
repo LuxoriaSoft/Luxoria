@@ -72,7 +72,7 @@ public async Task<IActionResult> GetCollections()
             m.SentAt,
             AvatarFileName = _context.Users
                 .Where(u => u.Email == m.SenderEmail)
-                .Select(u => u.AvatarFileName)
+                .Select(u => u.AvatarFileName ?? "default_avatar.jpg")
                 .FirstOrDefault()
         })
     });
@@ -188,25 +188,36 @@ public async Task<IActionResult> GetCollections()
         }
 
         [HttpPatch("{collectionId}/allowedEmails")]
+        [Authorize]
         public async Task<IActionResult> AddAllowedEmail(Guid collectionId, [FromBody] EmailDto dto)
         {
             var currentUserEmail = User?.Identity?.Name;
             if (string.IsNullOrEmpty(currentUserEmail))
                 return Unauthorized("Utilisateur non authentifié.");
 
-            var collection = await _context.Collections.Include(c => c.AllowedEmails).FirstOrDefaultAsync(c => c.Id == collectionId);
+            var collection = await _context.Collections
+                .Include(c => c.AllowedEmails)
+                .FirstOrDefaultAsync(c => c.Id == collectionId);
+
             if (collection == null)
                 return NotFound("Collection non trouvée.");
 
-            if (!collection.AllowedEmails.Any(a => a.Email == currentUserEmail))
+            if (!collection.AllowedEmails.Any(a => a.Email.Equals(currentUserEmail, StringComparison.OrdinalIgnoreCase)))
                 return Forbid("Vous n'avez pas accès à cette collection.");
 
             if (!new EmailAddressAttribute().IsValid(dto.Email))
                 return BadRequest("Format d'email invalide.");
 
-            if (collection.AllowedEmails.Any(a => a.Email.Equals(dto.Email, StringComparison.OrdinalIgnoreCase)))
-                return BadRequest("Cet email est déjà autorisé.");
+            // Vérifie que l'utilisateur existe en base
+            var userExists = await _context.Users.AnyAsync(u => u.Email == dto.Email);
+            if (!userExists)
+                return BadRequest("Aucun utilisateur ne correspond à cet email.");
 
+            // Vérifie que l'email n'est pas déjà autorisé
+            if (collection.AllowedEmails.Any(a => a.Email.Equals(dto.Email, StringComparison.OrdinalIgnoreCase)))
+                return BadRequest("Cet utilisateur est déjà autorisé.");
+
+            // Ajoute le nouvel accès
             collection.AllowedEmails.Add(new CollectionAccess
             {
                 Email = dto.Email,
@@ -214,8 +225,9 @@ public async Task<IActionResult> GetCollections()
             });
 
             await _context.SaveChangesAsync();
-            return Ok(collection);
+            return Ok(new { message = "Utilisateur ajouté avec succès." });
         }
+
 
         [Authorize]
         [HttpDelete("photo/{id}")]
@@ -309,9 +321,9 @@ public async Task<IActionResult> GetCollections()
             if (collection == null)
                 return NotFound("Collection non trouvée.");
 
-            // Récupère l'utilisateur à partir de son email pour récupérer l'avatar
+            // Récupère l'utilisateur pour son avatar
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.SenderEmail);
-            var avatarFileName = user?.AvatarFileName ?? string.Empty;
+            var avatarFileName = user?.AvatarFileName ?? "default_avatar.jpg";
 
             var message = new ChatMessage
             {
@@ -325,7 +337,7 @@ public async Task<IActionResult> GetCollections()
             _context.ChatMessages.Add(message);
             await _context.SaveChangesAsync();
 
-            // Envoie du message au groupe SignalR avec l'avatar
+            // ✅ Envoie le message avec avatar et date
             await _chatHub.Clients.Group(collectionId.ToString())
                 .SendAsync("ReceiveMessage", dto.SenderUsername, dto.Message, avatarFileName, message.SentAt);
 

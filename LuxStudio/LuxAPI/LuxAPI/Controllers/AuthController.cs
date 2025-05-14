@@ -94,10 +94,10 @@ namespace LuxAPI.Controllers
         /// <returns>Public URL of the uploaded avatar.</returns>
         [HttpPost("upload-avatar")]
         [Authorize]
-        public async Task<IActionResult> UploadAvatar(IFormFile file)
+        public async Task<IActionResult> UploadAvatar(IFormFile? file)
         {
             if (file == null || file.Length == 0)
-                return BadRequest("No file uploaded.");
+                return Ok(new { message = "No avatar uploaded." });
 
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(userIdStr, out var userId))
@@ -114,18 +114,17 @@ namespace LuxAPI.Controllers
             var fileName = $"{userId}_avatar{extension}";
             var filePath = $"avatars/{fileName}";
 
-            // Upload vers MinIO
             using (var stream = file.OpenReadStream())
             {
                 await _minioService.UploadFileAsync("user-files", filePath, stream, file.ContentType);
             }
 
-            // Mise à jour du champ dans la DB
             user.AvatarFileName = fileName;
             await _context.SaveChangesAsync();
 
             return Ok(new { avatarUrl = $"/auth/avatar/{fileName}" });
         }
+
 
         /// <summary>
         /// Retrieves a user's avatar image by filename from MinIO.
@@ -143,13 +142,17 @@ namespace LuxAPI.Controllers
             {
                 var stream = await _minioService.GetFileAsync(bucket, path);
 
+                // Si le fichier demandé n’existe pas, fallback vers default_avatar
                 if (stream == null || stream.Length == 0)
                 {
-                    Console.WriteLine($"[Avatar] Fichier introuvable ou vide : {path}");
-                    return NotFound("Fichier non trouvé ou vide.");
-                }
+                    Console.WriteLine($"[Avatar] Fichier introuvable : {path}, fallback vers default_avatar.jpg");
 
-                Console.WriteLine($"[Avatar] Fichier trouvé : {path} (stream size: {stream.Length})");
+                    var defaultStream = await _minioService.GetFileAsync(bucket, "avatars/default_avatar.jpg");
+                    if (defaultStream == null || defaultStream.Length == 0)
+                        return NotFound("Avatar par défaut également introuvable.");
+
+                    return File(defaultStream, "image/jpeg");
+                }
 
                 return File(stream, GetContentType(fileName));
             }
@@ -159,7 +162,6 @@ namespace LuxAPI.Controllers
                 return StatusCode(500, "Erreur lors de la récupération du fichier.");
             }
         }
-
 
         /// <summary>
         /// Authenticates a user by validating their credentials and issuing a JWT token.
