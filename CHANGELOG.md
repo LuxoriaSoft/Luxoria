@@ -1,3 +1,10 @@
+## [1.32.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.32.0...v1.32.1) (2025-05-15)
+
+
+### Bug Fixes
+
+* Move dependabot to .github folder, from .github/workflows folder ([d543680](https://github.com/LuxoriaSoft/Luxoria/commit/d5436800500ce7e68cca651bb2dc0f156929bb06))
+
 # [1.32.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.31.1...v1.32.0) (2025-05-11)
 
 
