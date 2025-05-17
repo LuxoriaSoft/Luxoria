@@ -96,8 +96,8 @@ namespace LuxAPI.Controllers
         [Authorize]
         public async Task<IActionResult> UploadAvatar(IFormFile? file)
         {
-            if (file == null || file.Length == 0)
-                return Ok(new { message = "No avatar uploaded." });
+            if (!IsValidFile(file))
+                return BadRequest("Invalid file uploaded.");
 
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(userIdStr, out var userId))
@@ -258,6 +258,24 @@ namespace LuxAPI.Controllers
                 ".png" => "image/png",
                 _ => "application/octet-stream"
             };
+        }
+    
+        /// <summary>
+        /// Validates the uploaded file to ensure it meets the required criteria.
+        /// </summary>
+        /// <param name="file">The file to validate.</param>
+        /// <returns>True if the file is valid; otherwise, false.</returns>
+        private bool IsValidFile(IFormFile? file)
+        {
+            if (file == null || file.Length == 0)
+                return false;
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(extension))
+                return false;
+
+            return true;
         }
     }
 }
