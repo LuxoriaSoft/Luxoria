@@ -17,7 +17,7 @@ export default {
   data() {
     return {
       clientId: "fece71c8-afe9-4a35-bbed-267f6995f8f3", // Replace with your client ID
-      redirectUri: "http://localhost:5678", // URL to redirect after successful authorization
+      redirectUri: window.appConfig.redirectUri, // Redirect URI from appConfig
       state: null, // Random state value for security
     };
   },
@@ -36,7 +36,7 @@ export default {
       }
 
       // Construct the authorization URL without appending the JWT token in the query
-      const authorizationUrl = `http://localhost:5269/sso/authorize?clientId=${this.clientId}&responseType=code&redirectUri=${encodeURIComponent(this.redirectUri)}&state=${this.state}`;
+      const authorizationUrl = `${window.appConfig.apiUrl}/sso/authorize?clientId=${this.clientId}&responseType=code&redirectUri=${encodeURIComponent(this.redirectUri)}&state=${this.state}`;
 
       try {
         const response = await fetch(authorizationUrl, {

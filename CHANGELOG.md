@@ -1,3 +1,123 @@
+## [1.32.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.32.0...v1.32.1) (2025-05-15)
+
+
+### Bug Fixes
+
+* Move dependabot to .github folder, from .github/workflows folder ([d543680](https://github.com/LuxoriaSoft/Luxoria/commit/d5436800500ce7e68cca651bb2dc0f156929bb06))
+
+# [1.32.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.31.1...v1.32.0) (2025-05-11)
+
+
+### Bug Fixes
+
+* Add API_URL environment variable to luxstudio container ([9de6552](https://github.com/LuxoriaSoft/Luxoria/commit/9de6552995355c7c2fec0ed56ace206cdbaefcc3))
+* Add context to build-and-push job in CircleCI configuration ([c67603f](https://github.com/LuxoriaSoft/Luxoria/commit/c67603ff8fe34c75b493432e1d79b3ce8c6af85b))
+* Add debug step to check DockerHub credentials before login ([a0f628d](https://github.com/LuxoriaSoft/Luxoria/commit/a0f628d92f9b02c6008bfa725615cd4fb4d19015))
+* Correct build context paths for luxapi and luxstudio in Azure Pipelines configuration ([91f90fa](https://github.com/LuxoriaSoft/Luxoria/commit/91f90fadacb2c9c35e41cbef43b76c12c92753fb))
+* Move context declaration for build-and-push job to workflows section ([b086199](https://github.com/LuxoriaSoft/Luxoria/commit/b0861998684a58ede96b56f3a88beba280e319c6))
+* Rename job from build-images to build-and-push and update logging steps ([af1d20b](https://github.com/LuxoriaSoft/Luxoria/commit/af1d20b080ea27cca771487bbc9cc68218fa791f))
+* Rename job from build-local to build-images and update image tag logging ([621bb85](https://github.com/LuxoriaSoft/Luxoria/commit/621bb85396e7622ea686c28845a8c84569365549))
+* Restore imageTag variable format for tagging in Azure Pipelines ([214b2d1](https://github.com/LuxoriaSoft/Luxoria/commit/214b2d1186b2194773222b1df8aee2af115a884f))
+* Update display name for BuildAndPush stage in Azure Pipelines configuration ([0e9447c](https://github.com/LuxoriaSoft/Luxoria/commit/0e9447c30c2c45b3451f10128dc800e00e5b784d))
+* Update display name for BuildAndPush stage in Azure Pipelines configuration ([0af18c8](https://github.com/LuxoriaSoft/Luxoria/commit/0af18c8a8bb34d54e9e2fb91ccd3136ef2ce7f95))
+* Update Docker login command for consistency in username flag usage ([e3537e4](https://github.com/LuxoriaSoft/Luxoria/commit/e3537e445aa3357ac098793d1429cc82e31d616a))
+* Update Dockerfile paths for luxapi and luxstudio in Azure Pipelines configuration ([2d896d4](https://github.com/LuxoriaSoft/Luxoria/commit/2d896d45f293a34a5069fe60ef9792e295882712))
+* Update FrontEnd__URI and API_URL environment variables for luxapi and luxstudio deployments ([673eb81](https://github.com/LuxoriaSoft/Luxoria/commit/673eb81f3afb4bc5027d2750e6473ac12d503d2e))
+* Update imageTag variable format for consistency in Azure Pipelines ([e8aea4c](https://github.com/LuxoriaSoft/Luxoria/commit/e8aea4c5a7fd3d7ae1236cce5adf9b7da6c95a84))
+* Update imageTag variable format for consistency in Azure Pipelines ([6052948](https://github.com/LuxoriaSoft/Luxoria/commit/6052948c5fa3b408301a6c42f1e5e7907c416cb3))
+* Update imageTag variable to use Build.BuildId for tagging in Azure Pipelines ([c70c2ba](https://github.com/LuxoriaSoft/Luxoria/commit/c70c2ba6f9583696ab62673f067fa9c58575d664))
+* Update imageTag variable to use Build.BuildNumber for consistency in Azure Pipelines ([646d314](https://github.com/LuxoriaSoft/Luxoria/commit/646d314dfc903f3c3d321a83a507d8d30e9b3104))
+* Update imageTag variable to use Build.SourceVersion for tagging in Azure Pipelines ([1f8aa5d](https://github.com/LuxoriaSoft/Luxoria/commit/1f8aa5de8623376cb7b8e176ac9c9a6b037dcc6c))
+* Update imageTag variable to use conditional logic for tagging in Azure Pipelines ([31393a4](https://github.com/LuxoriaSoft/Luxoria/commit/31393a4aecd10c7f3377499ba8ff92841bc18358))
+* Update ingress configuration to use luxstudio-service instead of pluto-service ([bfa3c60](https://github.com/LuxoriaSoft/Luxoria/commit/bfa3c606ad1425403244d3dbdb60ee66c3d357f2))
+* Update ingress configurations for LuxStudio in Pluto and Saturn namespaces to include TLS settings and cert-manager annotations ([bfdd9b0](https://github.com/LuxoriaSoft/Luxoria/commit/bfdd9b06c8c72011e7760a3d80eaa04f133ca057))
+* Update kustomization.yaml to use patches with target for ingress configuration ([93a91d5](https://github.com/LuxoriaSoft/Luxoria/commit/93a91d54c23e6a29c492796408627da6ed19fdb8))
+* Update secretName for TLS configuration in luxstudio-ingress ([bbe93a1](https://github.com/LuxoriaSoft/Luxoria/commit/bbe93a1d5598d9f52a0351fac8cf886f5c63dbc9))
+* Update secretName for TLS configuration in luxstudio-ingress ([fca2963](https://github.com/LuxoriaSoft/Luxoria/commit/fca29637f339037a76df071c7a36cb5a05360ff1))
+
+
+### Features
+
+* Add ArgoCD application configuration for LuxStudio in Pluto namespace ([7107523](https://github.com/LuxoriaSoft/Luxoria/commit/71075238e3957556548e4080b4068d31f681c8ac))
+* Add CircleCI configuration file for CI/CD setup ([a3dcec3](https://github.com/LuxoriaSoft/Luxoria/commit/a3dcec36dbeecac37f3df4347acd1a01267b53b9))
+* Add CircleCI configuration for building LuxAPI and LuxStudio Docker images ([6417b1f](https://github.com/LuxoriaSoft/Luxoria/commit/6417b1fd0b9a59b7bf6f6c5fb6bb33ad14213c0e))
+* Add Docker and Kubernetes configurations for LuxStudio deployment ([1edf148](https://github.com/LuxoriaSoft/Luxoria/commit/1edf1481000be5aebd972e7dbb9a3b68c77826e6))
+* Add Docker support with Dockerfile, entrypoint script, and .dockerignore; include config.js for runtime API URL replacement ([9a361de](https://github.com/LuxoriaSoft/Luxoria/commit/9a361deafb2c0e19b3c1ddbd4301cdde63440ee0))
+* Add luxportal service to Docker Compose; update routing and error handling in Login component ([31216ba](https://github.com/LuxoriaSoft/Luxoria/commit/31216ba92e8f79126900bbdd487a8a33e50dcd34))
+* Add Minio configuration and implement collection-related models with relationships ([524f688](https://github.com/LuxoriaSoft/Luxoria/commit/524f688c92a42893a920b2d9921e24ad1bc300fa))
+* Add starter Azure Pipelines configuration ([92e8416](https://github.com/LuxoriaSoft/Luxoria/commit/92e841632291b730f7820ec9fc658aa8aeb127ce))
+* Enhance SystemController to include database connectivity checks and update Docker Compose for improved service configuration ([9785604](https://github.com/LuxoriaSoft/Luxoria/commit/9785604ba6c7292c28e2fec6d27be963754198df))
+* Implement dynamic image tagging in CircleCI configuration ([f9020de](https://github.com/LuxoriaSoft/Luxoria/commit/f9020de1c4330c97311295c2ab5a61dfda4c8e65))
+* Remove old ingress and configmap configurations; add new deployment and service for LuxStudio in Pluto and Saturn namespaces ([67c198f](https://github.com/LuxoriaSoft/Luxoria/commit/67c198f2cc26c15cdef5b7700003ec2140d46f29))
+* Update Azure Pipelines configuration for Docker builds; remove unused adminer service from Docker Compose ([589580c](https://github.com/LuxoriaSoft/Luxoria/commit/589580c962f7a038be305ae20e88914e5f4eb2b9))
+* Update Dockerfile for specific Node and Nginx versions; add nginx.conf for server configuration; refactor auth services to use dynamic API URLs from appConfig ([5dfc019](https://github.com/LuxoriaSoft/Luxoria/commit/5dfc01938138888d394e6a151748972b856b3212))
+
+## [1.31.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.31.0...v1.31.1) (2025-04-08)
+
+
+### Bug Fixes
+
+* Add Unit tests for LuxExport ([a868c40](https://github.com/LuxoriaSoft/Luxoria/commit/a868c40d95253a87c173d3088d180526e3e71eaf))
+* Clean unused code ([0935f7c](https://github.com/LuxoriaSoft/Luxoria/commit/0935f7c3731dbac49bc6a8e936ea5fb768f27741))
+* Commentaries in code ([b778fd2](https://github.com/LuxoriaSoft/Luxoria/commit/b778fd25ddf4cf7ddc6d055b3d212889554dc4b0))
+* Documentation for lux-export ([c2e9292](https://github.com/LuxoriaSoft/Luxoria/commit/c2e929270ec1ad90c390b85100c98254effdb53f))
+* Export File Naming backend ([f1ace86](https://github.com/LuxoriaSoft/Luxoria/commit/f1ace86486026346387d35ee33ef533f95d72662))
+* Export location back-end ([1a9fc8d](https://github.com/LuxoriaSoft/Luxoria/commit/1a9fc8da9e2005722cce6f2db329dc2084300513))
+* Export location back-end ([7fce05d](https://github.com/LuxoriaSoft/Luxoria/commit/7fce05d100d1e933e9b9581841dd826d5ed951c8))
+* Export Pop Up with progress bar and previsualization ([af849b8](https://github.com/LuxoriaSoft/Luxoria/commit/af849b81be165ce0d39d523030ea6cfb7363279c))
+* File Path for assets + color profile  + removing broken file format ([845c5ba](https://github.com/LuxoriaSoft/Luxoria/commit/845c5ba9a97bdd23890059100f853f67935a0387))
+* File Picker in content dialog + content dialog size ([a658ef3](https://github.com/LuxoriaSoft/Luxoria/commit/a658ef3b2301a20db9110e5351dfb65fa7b140ce))
+* Initialisation of the modal using LMGUI ([32b1eb7](https://github.com/LuxoriaSoft/Luxoria/commit/32b1eb7b387a2dd1114cd87ed10bf4fe6de1acee))
+* Lux Export Interface ([769e797](https://github.com/LuxoriaSoft/Luxoria/commit/769e79708af2e18f773d72ee5e24f697f36eeb91))
+* Lux Export Interface ([e8f7c28](https://github.com/LuxoriaSoft/Luxoria/commit/e8f7c288f4580975eff0be44c73a3f778ca7f8be))
+* LuxExport refactor from window to modal ([e658762](https://github.com/LuxoriaSoft/Luxoria/commit/e6587623537d670c47dc7ba67ea729051eb7f9ae))
+* Update counter value on multiple photo export ([672312f](https://github.com/LuxoriaSoft/Luxoria/commit/672312f0e705514b1b41451d9d29601e0e83f7de))
+* Using window instead of modal because of WinUi restrictions ([9a8f279](https://github.com/LuxoriaSoft/Luxoria/commit/9a8f2794063caea6f723e6f221a4a4ff63f41bb9))
+
+# [1.31.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.30.0...v1.31.0) (2025-03-07)
+
+
+### Bug Fixes
+
+* Simplify LoadWindowCaption by using local variable 'path' ([c975768](https://github.com/LuxoriaSoft/Luxoria/commit/c9757680610f2062da186592c19839e6a14bb5f9))
+
+
+### Features
+
+* Add ApplicationIcon 'Luxoria_icon.ico' + Add Luxoria official logo on SplashScreen ([b0142b5](https://github.com/LuxoriaSoft/Luxoria/commit/b0142b57c9a5a177af0c6d5d35c7aa860ca8f188))
+* Create LoadWindowCaption method to load an ico for window caption and taskbar ([12e9b56](https://github.com/LuxoriaSoft/Luxoria/commit/12e9b568113a0784b00b512f18ab530cf9aac191))
+
+# [1.30.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.29.1...v1.30.0) (2025-03-06)
+
+
+### Bug Fixes
+
+* Add Filters (ReadOnlyDictionary?) in ImageData and fix some tests ([cb66737](https://github.com/LuxoriaSoft/Luxoria/commit/cb66737678a99cb5e856876136ecc7df5df47c24))
+* Bring clarification and fix nullable variables object? sender => object sender ([9b2128c](https://github.com/LuxoriaSoft/Luxoria/commit/9b2128c37e098f7e1b1845471f456707b3abe2d8))
+* Changes Score alignment from Center to Right ([458d0dd](https://github.com/LuxoriaSoft/Luxoria/commit/458d0dde3b1bb5f5e457d4bf2dfbb40ddd42beef))
+* Remove gray border to the ItemList on FilterView ([d2b388d](https://github.com/LuxoriaSoft/Luxoria/commit/d2b388ddd75e352a16229c5606dbf364528235bf))
+* Remove total weight (1.0 => 100) on the PipelineService ([13c4db9](https://github.com/LuxoriaSoft/Luxoria/commit/13c4db9d993124526255d450429e8542e3c95976))
+* Replace Dictionary by ImmutableDictionary (Catalog) in FilterService ([0ac9ee7](https://github.com/LuxoriaSoft/Luxoria/commit/0ac9ee795113fdded8f89ac6855f136b4072bffb))
+* Upgrade Luxoria.Algorithm.BrisqueScore from 3.0.2.4100 to 3.0.3.4100 ([5633377](https://github.com/LuxoriaSoft/Luxoria/commit/563337755d4e43f186aa60e518f8a8b406037123))
+
+
+### Features
+
+* Add base of filters selection with params (weight) ([a277aee](https://github.com/LuxoriaSoft/Luxoria/commit/a277aeeee23891d835d1dc31838809a863693131))
+* Add FilterCatalog Event to fetch the entire available filters (ReadyToUse) ([c8850ef](https://github.com/LuxoriaSoft/Luxoria/commit/c8850ef730b49e7d3b5ed78720ef3b8127e07e3d))
+* Add StatusView foundation for LuxFilter UI (ListView, ViewModel, ...) ([9235ed6](https://github.com/LuxoriaSoft/Luxoria/commit/9235ed6e528c86ddd2767579557b8a9c6dd1f5cb))
+* Add the Status (Logger) UI on LuxFilter 3rd part ([c4d2631](https://github.com/LuxoriaSoft/Luxoria/commit/c4d2631f081e2f6ee53a908cb9d285038bb6fe81))
+* Create Filtering Status View (LuxFilter.Views.StatusView) ([535adb0](https://github.com/LuxoriaSoft/Luxoria/commit/535adb0a387331ad22633b0b95efec67b8b14ba3))
+
+## [1.29.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.29.0...v1.29.1) (2025-02-18)
+
+
+### Bug Fixes
+
+* Change Compute method usage in LuxFilter.Tests cases ([c23a1b5](https://github.com/LuxoriaSoft/Luxoria/commit/c23a1b5a73c86c5ae55d77ec2afec4d4091888f9))
+* Change type of return of Pipeline[Compute] method ([ac8910a](https://github.com/LuxoriaSoft/Luxoria/commit/ac8910acae65315b8a06df2ae147e2455f0df353))
+* Static path to assets folder on LuxFilter.TestMain ([18e3ec3](https://github.com/LuxoriaSoft/Luxoria/commit/18e3ec3b3e6fc6251ef952e4a5eea9d921801d42))
+
 # [1.29.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.28.0...v1.29.0) (2025-02-17)
 
 

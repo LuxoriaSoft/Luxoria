@@ -19,6 +19,9 @@ Luxoria Standard Modules (LuxStd Modules) are a collection of core modules desig
 - Provides a filtering pipeline for processing and scoring digital assets.
 - Uses a modular filtering algorithm framework with weighted execution.
 
+### 3. `LuxExport` [Read More](LUXEXPORT.md)
+- Provides advanced export functionalities for asset collections.
+- Supports multi-format output, custom file naming, and export conflict resolution.
 
 ## Conclusion
 LuxStd Modules form the backbone of the Luxoria ecosystem, ensuring a robust, scalable, and modular approach to handling digital assets. Their event-driven and extensible design makes them ideal for a wide range of applications within the system.

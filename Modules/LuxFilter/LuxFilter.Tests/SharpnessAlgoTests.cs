@@ -1,4 +1,5 @@
 ﻿using LuxFilter.Algorithms.ImageQuality;
+using Luxoria.Modules.Models;
 using SkiaSharp;
 
 namespace LuxFilter.Tests
@@ -17,7 +18,7 @@ namespace LuxFilter.Tests
             var algorithm = new SharpnessAlgo();
             var bitmap = new SKBitmap(50, 40);
 
-            var result = algorithm.Compute(bitmap, 50, 40);
+            var result = algorithm.Compute(new(bitmap, FileExtension.UNKNOWN));
             Assert.True(result >= 0);
         }
 
@@ -31,7 +32,7 @@ namespace LuxFilter.Tests
             var algorithm = new SharpnessAlgo();
             var bitmap = new SKBitmap(50, 40);
             bitmap.Erase(SKColors.Black);
-            var result = algorithm.Compute(bitmap, 50, 40);
+            var result = algorithm.Compute(new(bitmap, FileExtension.UNKNOWN));
             Assert.Equal(0, result);
         }
 
@@ -44,7 +45,7 @@ namespace LuxFilter.Tests
             var algorithm = new SharpnessAlgo();
             var bitmap = new SKBitmap(50, 40);
             bitmap.Erase(SKColors.White);
-            var result = algorithm.Compute(bitmap, 50, 40);
+            var result = algorithm.Compute(new(bitmap, FileExtension.UNKNOWN));
             Assert.Equal(0, result);
         }
     }
