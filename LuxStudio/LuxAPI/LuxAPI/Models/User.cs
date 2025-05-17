@@ -37,6 +37,8 @@ public class User
     [Required]
     public required string PasswordHash { get; set; }
 
+    public string? AvatarFileName { get; set; }
+
     /// <summary>
     /// Gets or sets the date and time when the user was created.
     /// </summary>

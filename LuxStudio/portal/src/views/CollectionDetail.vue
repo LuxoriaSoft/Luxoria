@@ -30,14 +30,49 @@
       <h2 class="text-lg font-semibold mb-2">Ajouter un utilisateur à cette collection</h2>
       <input v-model="newEmail" placeholder="Email" class="input input-bordered w-full max-w-xs" />
       <button @click="addUser" class="btn btn-secondary mt-2">Partager</button>
-      <p class="text-sm mt-2 text-green-600" v-if="shareMessage">{{ shareMessage }}</p>
+      <p class="text-sm mt-2" :class="shareMessageClass" v-if="shareMessage">{{ shareMessage }}</p>
     </div>
+<!-- Chat temps réel -->
+<div class="mb-8 p-4 border rounded shadow bg-white">
+  <h2 class="text-lg font-semibold mb-2">Discussion</h2>
+  <p class="text-sm text-gray-500 mb-4">
+    Connecté en tant que : <strong>{{ username.value }}</strong>
+  </p>
+  <p class="text-xs text-gray-500">[Debug] Vous êtes : {{ username }}</p>
 
-    <!-- Section Chat -->
-    <div class="mb-8">
-      <h2 class="text-lg font-semibold mb-2">Chat (à venir)</h2>
-      <p class="text-gray-400">Interface de chat temps réel à implémenter.</p>
+  <div class="h-64 overflow-y-auto mb-4 border p-2 rounded bg-gray-50" ref="chatContainer">
+    <div
+      v-for="(msg, index) in messages"
+      :key="index"
+      :class="['chat', msg.isMine ? 'chat-end' : 'chat-start']"
+    >
+      <div class="chat-image avatar">
+        <div class="w-10 rounded-full">
+          <img :src="`http://localhost:5269/auth/avatar/${msg.avatar}`" alt="avatar" />
+        </div>
+      </div>
+      <div class="chat-header">
+        {{ msg.isMine ? 'Vous' : msg.sender }}
+        <time class="text-xs opacity-50 ml-2">{{ formatTime(msg.sentAt) }}</time>
+      </div>
+      <div class="chat-bubble" :class="msg.isMine ? 'bg-blue-600 text-white' : ''">
+        {{ msg.text }}
+      </div>
     </div>
+  </div>
+
+
+  <div class="flex gap-2">
+    <input
+      v-model="chatMessage"
+      placeholder="Votre message..."
+      class="input input-bordered flex-1"
+      @keyup.enter="sendMessage"
+    />
+    <button @click="sendMessage" class="btn btn-primary">Envoyer</button>
+  </div>
+</div>
+
 
     <!-- Utilisateurs autorisés -->
     <div>
@@ -50,9 +85,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
+import * as signalR from '@microsoft/signalr'
 
 const route = useRoute()
 const collection = ref(null)
@@ -62,21 +98,121 @@ const uploadMessage = ref("")
 const newEmail = ref("")
 const shareMessage = ref("")
 
+// Chat
+const chatMessage = ref('')
+const messages = ref([])
+const chatContainer = ref(null)
+let connection = null
+const username = ref('Utilisateur')
+const userEmail = ref('')
+
 onMounted(async () => {
   const token = localStorage.getItem('token')
   const id = route.params.id
 
   try {
+    // 1. Fetch user first (needed for comparison)
+    const whoamiRes = await axios.get('http://localhost:5269/auth/whoami', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    username.value = whoamiRes.data.username || 'Utilisateur'
+    userEmail.value = whoamiRes.data.userEmail || ''
+
+    // 2. Fetch collection after having username
     const response = await axios.get(`http://localhost:5269/api/collection/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     collection.value = response.data
+
+    // 3. Map messages with proper comparison
+    messages.value = collection.value.chatMessages.map(m => ({
+      sender: m.senderUsername,
+      senderEmail: m.senderEmail,
+      avatar: m.avatarFileName ?? 'default_avatar.jpg',
+      text: m.message,
+      sentAt: m.sentAt,
+      isMine: m.senderUsername === username.value
+    }))
   } catch (err) {
-    console.error('Erreur chargement collection :', err)
+    console.error('Erreur lors du chargement ou de l’identification :', err)
   } finally {
     loading.value = false
   }
+
+  // SignalR setup (inchangé)
+  connection = new signalR.HubConnectionBuilder()
+    .withUrl('http://localhost:5269/hubs/chat', {
+      accessTokenFactory: () => localStorage.getItem('token')
+    })
+    .withAutomaticReconnect()
+    .build()
+
+  connection.on('ReceiveMessage', (sender, text, avatar, sentAt) => {
+    messages.value.push({ sender, text, avatar, sentAt, isMine: sender === username.value })
+    scrollToBottom()
+  })
+
+  await connection.start()
+  await connection.invoke('JoinCollection', id)
 })
+
+
+onUnmounted(() => {
+  if (connection) {
+    connection.invoke('LeaveCollection', route.params.id)
+    connection.stop()
+  }
+})
+
+function scrollToBottom() {
+  setTimeout(() => {
+    chatContainer.value.scrollTop = chatContainer.value.scrollHeight
+  }, 0)
+}
+
+function formatTime(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function getAvatarUrl(filename) {
+  if (!filename) return '/default_avatar.jpg';
+  return `http://localhost:5269/auth/avatar/${filename}`;
+}
+
+
+
+
+async function sendMessage() {
+  if (!chatMessage.value.trim()) return;
+
+  const token = localStorage.getItem('token');
+  const collectionId = route.params.id;
+
+  try {
+    await axios.post(
+      `http://localhost:5269/api/collection/${collectionId}/chat`,
+      {
+        senderEmail: userEmail.value,
+        senderUsername: username.value,
+        message: chatMessage.value.trim(),
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    chatMessage.value = '';
+  } catch (err) {
+    console.error('Erreur lors de l’envoi du message :', err);
+  }
+}
+
+
+
 
 async function handleUpload() {
   const file = fileInput.value?.files[0]
@@ -119,6 +255,8 @@ async function deleteImage(photoId) {
   }
 }
 
+const shareMessageClass = ref("text-green-600")
+
 async function addUser() {
   if (!newEmail.value) return
 
@@ -126,7 +264,7 @@ async function addUser() {
     const token = localStorage.getItem('token')
     await axios.patch(
       `http://localhost:5269/api/collection/${route.params.id}/allowedEmails`,
-      { email: newEmail.value }, // ← objet JSON
+      { email: newEmail.value },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -134,13 +272,14 @@ async function addUser() {
         }
       }
     )
-
     shareMessage.value = 'Utilisateur ajouté avec succès.'
+    shareMessageClass.value = 'text-green-600'
     collection.value.allowedEmails.push({ email: newEmail.value })
     newEmail.value = ''
   } catch (err) {
     console.error("Erreur lors de l'ajout :", err)
-    shareMessage.value = 'Erreur lors du partage.'
+    shareMessage.value = err.response?.data || 'Erreur lors du partage.'
+    shareMessageClass.value = 'text-red-500'
   }
 }
 </script>

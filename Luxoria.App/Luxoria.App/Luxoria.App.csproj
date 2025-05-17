@@ -4,8 +4,8 @@
     <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>Luxoria.App</RootNamespace>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x86;x64;ARM64</Platforms>
+	<ApplicationManifest>app.manifest</ApplicationManifest>
 	<RuntimeIdentifiers Condition="$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)')) &gt;= 8">win-x86;win-x64;win-arm64</RuntimeIdentifiers>
 	<RuntimeIdentifiers Condition="$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)')) &lt; 8">win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>
@@ -18,26 +18,28 @@
 
   <PropertyGroup>
 	<WindowsSdkPackageVersion>10.0.26100.57</WindowsSdkPackageVersion>
+	<PackageIcon>Luxoria_icon.png</PackageIcon>
+	<ApplicationIcon>Assets\Luxoria_icon.ico</ApplicationIcon>
+	<ApplicationManifest>app.manifest</ApplicationManifest>
+	<PackageProjectUrl>docs.luxoria.bluepelicansoft.com</PackageProjectUrl>
+	<NeutralLanguage>en-GB</NeutralLanguage>
+	<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+	<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+	<Copyright>LuxoriaSoft (https://github.com/LuxoriaSoft)</Copyright>
+	<Description>https://github.com/LuxoriaSoft/Luxoria
+https://docs.luxoria.bluepelicansoft.com</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Views\ImportationControl - Copier.xaml.cs" />
-  </ItemGroup>
-
-	<ItemGroup>
     <None Remove="Components\MainMenuBarComponent.xaml" />
     <None Remove="SplashScreen.xaml" />
-    <None Remove="Views\ImportationControl - Copier.xaml" />
     <None Remove="Views\ImportationControl.xaml" />
     <None Remove="Views\ModuleManagerWindow.xaml" />
     <None Remove="Views\OpenCollectionControl.xaml" />
   </ItemGroup>
 
-	<ItemGroup>
-	  <Page Remove="Views\ImportationControl - Copier.xaml" />
-	</ItemGroup>
 
-	<ItemGroup>
+  <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\Square150x150Logo.scale-200.png" />
@@ -101,6 +103,23 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\LICENSE.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Assets\Luxoria_logo.svg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Assets\Luxoria_icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <!--

@@ -44,7 +44,7 @@ public class LuxImport : IModule, IModuleUI
 
         // Add a menu bar item to the main menu bar
         List<ISmartButton> smartButtons = new List<ISmartButton>();
-        Dictionary<SmartButtonType, Page> page = new Dictionary<SmartButtonType, Page>
+        Dictionary<SmartButtonType, Object> page = new Dictionary<SmartButtonType, Object>
         {
             { SmartButtonType.Modal, new MainImportView(_eventBus) }
         };

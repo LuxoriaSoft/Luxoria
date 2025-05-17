@@ -11,7 +11,7 @@ export class AuthService {
    * Initializes the authentication service with the API base URL.
    */
   constructor() {
-    this.apiUrl = 'http://localhost:5269'; // Update this URL according to your API environment
+    this.apiUrl = window.appConfig.API_URL;
   }
 
   /**
@@ -63,6 +63,31 @@ export class AuthService {
       }
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'An error occurred during login.');
+    }
+  }
+
+  /**
+   * Logs in without CAPTCHA and returns the JWT token.
+   * Used during internal flows like uploading an avatar after registration.
+   * @param username - The username.
+   * @param password - The password.
+   * @returns The JWT token.
+   */
+  async loginAndGetToken(username: string, password: string): Promise<string> {
+    try {
+      const response = await axios.post(`${this.apiUrl}/Auth/login`, {
+        username,
+        password,
+        captchaToken: "", // Empty if not using CAPTCHA here
+      });
+
+      if (response.status === 200) {
+        return response.data.token;
+      } else {
+        throw new Error("Login failed.");
+      }
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || "An error occurred during login.");
     }
   }
 }

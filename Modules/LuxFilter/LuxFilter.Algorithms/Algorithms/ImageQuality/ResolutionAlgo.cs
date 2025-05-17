@@ -1,5 +1,5 @@
 ﻿using LuxFilter.Algorithms.Interfaces;
-using SkiaSharp;
+using Luxoria.Modules.Models;
 
 namespace LuxFilter.Algorithms.ImageQuality
 {
@@ -22,10 +22,6 @@ namespace LuxFilter.Algorithms.ImageQuality
         /// <param name="height"></param>
         /// <param name="width"></param>
         /// <returns>Returns the computed score of the algorithm</returns>
-        public double Compute(SKBitmap bitmap, int height, int width)
-        {
-            // Get the resolution of the image
-            return height * width;
-        }
+        public double Compute(ImageData data) => data.Height * data.Width;
     }
 }

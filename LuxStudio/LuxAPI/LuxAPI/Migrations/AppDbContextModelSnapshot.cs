@@ -64,6 +64,10 @@ namespace LuxAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("SenderUsername")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("SentAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -247,6 +251,9 @@ namespace LuxAPI.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<string>("AvatarFileName")
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");

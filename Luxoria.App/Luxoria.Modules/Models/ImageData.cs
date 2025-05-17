@@ -34,6 +34,11 @@ public class ImageData
     public ReadOnlyDictionary<string, string> EXIF { get; }
 
     /// <summary>
+    /// Contains the filter scores for the image.
+    /// </summary>
+    public ReadOnlyDictionary<string, double>? Filters { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ImageData"/> class.
     /// </summary>
     /// <param name="bitmap">The bitmap (SKBitmap) data of the image.</param>
@@ -43,7 +48,8 @@ public class ImageData
     {
         Bitmap = bitmap ?? throw new ArgumentNullException(nameof(bitmap));
         Format = format;
-        EXIF = new ReadOnlyDictionary<string, string>(exifMetaData ?? new Dictionary<string, string>());
+        EXIF = new ReadOnlyDictionary<string, string>(exifMetaData ?? []);
+        Filters = null;
     }
 
     /// <summary>

@@ -6,22 +6,25 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
+using LuxAPI.DAL;
+
 public class SystemControllerTests
 {
     private readonly Mock<ILogger<SystemController>> _mockLogger;
+    private readonly Mock<AppDbContext> _mockDbContext;
     private readonly SystemController _controller;
 
     public SystemControllerTests()
     {
         _mockLogger = new Mock<ILogger<SystemController>>();
-        _controller = new SystemController(_mockLogger.Object);
+        _controller = new SystemController(_mockLogger.Object, _mockDbContext.Object);
     }
 
     [Fact]
-    public void GetStatus_ReturnsOkResultWithStatus()
+    public async Task GetStatus_ReturnsOkResultWithStatus()
     {
         // Act
-        var result = _controller.GetStatus() as OkObjectResult;
+        var result = await _controller.GetStatus() as OkObjectResult;
 
         // Assert
         Assert.NotNull(result);

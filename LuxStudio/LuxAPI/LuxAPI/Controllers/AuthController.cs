@@ -4,6 +4,7 @@ using System.Text;
 using LuxAPI.DAL;
 using LuxAPI.Models;
 using LuxAPI.Models.DTOs;
+using LuxAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
@@ -21,6 +22,7 @@ namespace LuxAPI.Controllers
         private readonly ILogger<AuthController> _logger;
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly MinioService _minioService;
 
         /// <summary>
         /// Initializes the authentication controller with logging, database context, and configuration.
@@ -28,11 +30,17 @@ namespace LuxAPI.Controllers
         /// <param name="logger">Logger service for tracking authentication events.</param>
         /// <param name="context">Database context for accessing user data.</param>
         /// <param name="configuration">Configuration service for retrieving JWT settings.</param>
-        public AuthController(ILogger<AuthController> logger, AppDbContext context, IConfiguration configuration)
+        /// <param name="minioService">Custom service for MinIO file storage operations.</param>
+        public AuthController(
+            ILogger<AuthController> logger,
+            AppDbContext context,
+            IConfiguration configuration,
+            MinioService minioService)
         {
             _logger = logger;
             _context = context;
             _configuration = configuration;
+            _minioService = minioService;
         }
 
         /// <summary>
@@ -76,6 +84,83 @@ namespace LuxAPI.Controllers
 
             _logger.LogInformation("User registered successfully: {Username}", registration.Username);
             return Ok("User registered successfully.");
+        }
+
+        /// <summary>
+        /// Uploads a user's avatar image to MinIO and stores the filename in the database.
+        /// Requires authentication.
+        /// </summary>
+        /// <param name="file">The avatar image file.</param>
+        /// <returns>Public URL of the uploaded avatar.</returns>
+        [HttpPost("upload-avatar")]
+        [Authorize]
+        public async Task<IActionResult> UploadAvatar(IFormFile? file)
+        {
+            if (!IsValidFile(file))
+                return BadRequest("Invalid file uploaded.");
+
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized("Invalid user ID.");
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+                return NotFound("User not found.");
+
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!new[] { ".jpg", ".jpeg", ".png" }.Contains(extension))
+                return BadRequest("Unsupported file type.");
+
+            var fileName = $"{userId}_avatar{extension}";
+            var filePath = $"avatars/{fileName}";
+
+            using (var stream = file.OpenReadStream())
+            {
+                await _minioService.UploadFileAsync("user-files", filePath, stream, file.ContentType);
+            }
+
+            user.AvatarFileName = fileName;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { avatarUrl = $"/auth/avatar/{fileName}" });
+        }
+
+
+        /// <summary>
+        /// Retrieves a user's avatar image by filename from MinIO.
+        /// </summary>
+        /// <param name="fileName">The filename of the avatar image.</param>
+        /// <returns>The image file if it exists, or 404 if not.</returns>
+        [HttpGet("avatar/{fileName}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAvatar(string fileName)
+        {
+            var bucket = "user-files";
+            var path = $"avatars/{fileName}";
+
+            try
+            {
+                var stream = await _minioService.GetFileAsync(bucket, path);
+
+                // Si le fichier demandé n’existe pas, fallback vers default_avatar
+                if (stream == null || stream.Length == 0)
+                {
+                    Console.WriteLine($"[Avatar] Fichier introuvable : {path}, fallback vers default_avatar.jpg");
+
+                    var defaultStream = await _minioService.GetFileAsync(bucket, "avatars/default_avatar.jpg");
+                    if (defaultStream == null || defaultStream.Length == 0)
+                        return NotFound("Avatar par défaut également introuvable.");
+
+                    return File(defaultStream, "image/jpeg");
+                }
+
+                return File(stream, GetContentType(fileName));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Avatar] Erreur : {ex.Message}");
+                return StatusCode(500, "Erreur lors de la récupération du fichier.");
+            }
         }
 
         /// <summary>
@@ -131,6 +216,7 @@ namespace LuxAPI.Controllers
                 new Claim(JwtRegisteredClaimNames.Email, email), // ✅ utilisé comme .Name
                 new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
                 new Claim(JwtRegisteredClaimNames.Sub, username),
+                new Claim(ClaimTypes.Name, username),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
@@ -156,7 +242,40 @@ namespace LuxAPI.Controllers
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var username = User.FindFirst(ClaimTypes.Name)?.Value;
-            return Ok(new { userId, username });
+            var userEmail = User.FindFirst(ClaimTypes.Email)?.Value; // 👈 ici
+            return Ok(new { userId, username, userEmail });
+        }
+
+        /// <summary>
+        /// Infers the correct MIME type for image file responses.
+        /// </summary>
+        private static string GetContentType(string fileName)
+        {
+            var ext = Path.GetExtension(fileName).ToLowerInvariant();
+            return ext switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                _ => "application/octet-stream"
+            };
+        }
+    
+        /// <summary>
+        /// Validates the uploaded file to ensure it meets the required criteria.
+        /// </summary>
+        /// <param name="file">The file to validate.</param>
+        /// <returns>True if the file is valid; otherwise, false.</returns>
+        private bool IsValidFile(IFormFile? file)
+        {
+            if (file == null || file.Length == 0)
+                return false;
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(extension))
+                return false;
+
+            return true;
         }
     }
 }

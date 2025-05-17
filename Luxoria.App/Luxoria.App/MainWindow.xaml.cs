@@ -1,5 +1,6 @@
 using Luxoria.App.EventHandlers;
 using Luxoria.App.Interfaces;
+using Luxoria.GModules;
 using Luxoria.GModules.Interfaces;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
@@ -9,247 +10,267 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using WinRT.Interop;
 
-namespace Luxoria.App;
-
-public sealed partial class MainWindow : Window
+namespace Luxoria.App
 {
-    private readonly IEventBus _eventBus;
-    private readonly ILoggerService _loggerService;
-
-    // Handlers for different events
-    private readonly ImageUpdatedHandler _imageUpdatedHandler;
-    private readonly CollectionUpdatedHandler _collectionUpdatedHandler;
-    private readonly IModuleService _moduleService;
-    private readonly IModuleUIService _uiService;
-
-
     /// <summary>
-    /// Constructor for the main window of the application.
+    /// The main application window that handles UI initialization, event subscriptions, 
+    /// and module-based component loading.
     /// </summary>
-    public MainWindow(IEventBus eventBus, ILoggerService loggerService, IModuleService moduleService, IModuleUIService uiService)
+    public sealed partial class MainWindow : Window
     {
-        InitializeComponent();
+        private readonly IEventBus _eventBus;
+        private readonly ILoggerService _loggerService;
+        private readonly IModuleService _moduleService;
+        private readonly IModuleUIService _uiService;
 
-        // Dependency injection
-        _eventBus = eventBus;
-        _loggerService = loggerService;
+        // Event handlers
+        private readonly ImageUpdatedHandler _imageUpdatedHandler;
+        private readonly CollectionUpdatedHandler _collectionUpdatedHandler;
 
-        // Initialize event handlers
-        _imageUpdatedHandler = new ImageUpdatedHandler(_loggerService);
-        _collectionUpdatedHandler = new CollectionUpdatedHandler(_loggerService);
-
-        _moduleService = moduleService;
-        _uiService = uiService;
-
-        // Subscribe handlers to the event bus
-        InitializeEventBus();
-
-        // LoadComponents
-        LoadComponents();
-
-        // Load the default collection
-        LoadDefaultCollection();
-    }
-
-    /// <summary>
-    /// Initialize the event bus and subscribe handlers to events.
-    /// </summary>
-    private void InitializeEventBus()
-    {
-        // Subscribe to events that will be published through the event bus
-        _eventBus.Subscribe<CollectionUpdatedEvent>(_collectionUpdatedHandler.OnCollectionUpdated);
-
-        // Subscribe to the window handle request event
-        _eventBus.Subscribe<RequestWindowHandleEvent>(OnRequestWindowHandle);
-    }
-
-    /// <summmary>
-    /// </summmary>
-    public void EnableEasyLoader()
-    {
-
-    }
-
-    /// <summary>
-    /// Displays a modal dialog with the specified content and title.
-    /// Ensures the content is properly detached when the dialog closes 
-    /// to prevent reusing issues in future dialogs.
-    /// </summary>
-    /// <param name="content">The UI element to display inside the modal.</param>
-    /// <param name="title">The title of the modal dialog.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    private async Task ShowModalAsync(UIElement content, string title)
-    {
-        var dialog = new ContentDialog
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MainWindow"/> class.
+        /// </summary>
+        /// <param name="eventBus">Event bus for handling global events.</param>
+        /// <param name="loggerService">Service for logging application activity.</param>
+        /// <param name="moduleService">Service for managing modules.</param>
+        /// <param name="uiService">Service for managing UI modules.</param>
+        public MainWindow(IEventBus eventBus, ILoggerService loggerService, IModuleService moduleService, IModuleUIService uiService)
         {
-            Title = title,
-            Content = content,
-            CloseButtonText = "Close",
-            XamlRoot = this.Content.XamlRoot
-        };
+            InitializeComponent();
 
-        dialog.Closed += (_, _) =>
+            _eventBus = eventBus;
+            _loggerService = loggerService;
+            _moduleService = moduleService;
+            _uiService = uiService;
+
+            _imageUpdatedHandler = new ImageUpdatedHandler(_loggerService);
+            _collectionUpdatedHandler = new CollectionUpdatedHandler(_loggerService);
+
+            // Load App Icon
+            LoadWindowCaption("Luxoria_icon");
+
+            InitializeEventBus();
+            LoadComponents();
+        }
+
+        /// <summary>
+        /// Loads the application icon from the specified file path.
+        /// </summary>
+        /// <param name="iconName">Icon Name without extension e.g Luxoria_logo</param>
+        /// <exception cref="FileNotFoundException">To be thrown if file do NOT exist</exception>
+        private void LoadWindowCaption(string iconName)
         {
-            dialog.Content = null; // Manually remove content before reusing it
-        };
+            string path = Path.Combine(AppContext.BaseDirectory, $"Assets/{iconName}.ico");
 
-        await dialog.ShowAsync();
-    }
+            if (!Path.Exists(path)) throw new FileNotFoundException($"Icon file not found at path: {path}");
 
-    /// <summary>
-    /// </summary>
-    private void LoadComponents()
-    {
-        foreach (var item in _moduleService
-            .GetModules()
-            .Where(m => m is IModuleUI)
-            .SelectMany(m => ((IModuleUI)m).Items))
+            AppWindow.SetIcon(path);
+        }
+
+        /// <summary>
+        /// Subscribes to necessary events for the application.
+        /// </summary>
+        private void InitializeEventBus()
         {
-            Debug.WriteLine("Item: " + item.Name);
+            _eventBus.Subscribe<CollectionUpdatedEvent>(_collectionUpdatedHandler.OnCollectionUpdated);
+            _eventBus.Subscribe<RequestWindowHandleEvent>(OnRequestWindowHandle);
+        }
 
-            Action act = async () =>
+        /// <summary>
+        /// Displays a modal dialog with the specified content and title.
+        /// </summary>
+        /// <param name="content">The UI element to display in the modal.</param>
+        /// <param name="title">The title of the modal dialog.</param>
+        private async Task ShowModalAsync(UIElement content, string title)
+        {
+            var dialog = new ContentDialog
             {
-
-                var button = item.IsLeftLocated ? MainMenu.GetLeftButton(item.Name) : MainMenu.GetRightButton(item.Name);
-
-                if (button == null)
-                {
-                    Debug.WriteLine($"Button not found for item: {item.Name}");
-                    return;
-                }
-
-                if (item.SmartButtons.Count > 1)
-                {
-                    var flyout = new MenuFlyout();
-
-                    foreach (var smartButton in item.SmartButtons)
-                    {
-                        var flyoutItem = new MenuFlyoutItem
-                        {
-                            Text = smartButton.Name
-                        };
-
-                        flyoutItem.Click += async (sender, e) =>
-                        {
-                            foreach (var gmodule in smartButton.Pages)
-                            {
-                                if (gmodule.Value == null)
-                                {
-                                    Debug.WriteLine($"[FlyoutItem Click] Page null for type {gmodule.Key}");
-                                    continue;
-                                }
-
-                                switch (gmodule.Key)
-                                {
-                                    case GModules.SmartButtonType.Window:
-                                        var newWindow = new Microsoft.UI.Xaml.Window();
-                                        newWindow.Content = gmodule.Value;
-                                        newWindow.Activate();
-                                        break;
-
-                                    case GModules.SmartButtonType.LeftPanel:
-                                        LeftPanelContent.Content = gmodule.Value;
-                                        break;
-
-                                    case GModules.SmartButtonType.MainPanel:
-                                        CenterPanelContent.Content = gmodule.Value;
-                                        break;
-
-                                    case GModules.SmartButtonType.RightPanel:
-                                        RightPanelContent.Content = gmodule.Value;
-                                        break;
-
-                                    case GModules.SmartButtonType.BottomPanel:
-                                        BottomPanelContent.Content = gmodule.Value;
-                                        break;
-
-                                    case GModules.SmartButtonType.Modal:
-                                        var modalContent = gmodule.Value;
-                                        await ShowModalAsync(modalContent, item.Name);
-                                        break;
-                                }
-                            }
-                        };
-
-                        flyout.Items.Add(flyoutItem);
-                    }
-
-                    FlyoutBase.SetAttachedFlyout(button, flyout);
-
-                    FlyoutBase.ShowAttachedFlyout(button);
-                }
-                else if (item.SmartButtons.Count == 1)
-                {
-                    foreach (var gmodule in item.SmartButtons[0].Pages)
-                    {
-                        switch (gmodule.Key)
-                        {
-                            case GModules.SmartButtonType.Window:
-                                var newWindow = new Microsoft.UI.Xaml.Window();
-                                newWindow.Content = gmodule.Value;
-                                newWindow.Activate();
-                                break;
-
-                            case GModules.SmartButtonType.LeftPanel:
-                                LeftPanelContent.Content = gmodule.Value;
-                                break;
-
-                            case GModules.SmartButtonType.MainPanel:
-                                CenterPanelContent.Content = gmodule.Value;
-                                break;
-
-                            case GModules.SmartButtonType.RightPanel:
-                                RightPanelContent.Content = gmodule.Value;
-                                break;
-
-                            case GModules.SmartButtonType.BottomPanel:
-                                BottomPanelContent.Content = gmodule.Value;
-                                break;
-
-                            case GModules.SmartButtonType.Modal:
-                                var modalContent = gmodule.Value;
-                                await ShowModalAsync(modalContent, item.Name);
-                                break;
-                        }
-                    }
-                }
+                Title = title,
+                Content = content,
+                CloseButtonText = "Close",
+                XamlRoot = this.Content.XamlRoot
             };
-            if (item.IsLeftLocated)
+
+            // Prevent reuse issues
+            dialog.Closed += (_, _) => dialog.Content = null;
+
+            await dialog.ShowAsync();
+        }
+
+        /// <summary>
+        /// Loads UI components from registered modules and attaches buttons to the menu.
+        /// </summary>
+        private void LoadComponents()
+        {
+            foreach (var item in _moduleService.GetModules().OfType<IModuleUI>().SelectMany(m => m.Items))
             {
-                MainMenu.AddLeftButton(item.Name, act);
+                _loggerService.Log($"[x] Loading: {item.Name} components ({item.SmartButtons.Count} items)");
+
+                void HandleButtonClick()
+                {
+                    _ = HandleButtonClickAsync(item);
+                }
+
+                if (item.IsLeftLocated)
+                {
+                    MainMenu.AddLeftButton(item.Name, HandleButtonClick);
+                }
+                else
+                {
+                    MainMenu.AddRightButton(item.Name, HandleButtonClick);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the click event for menu buttons and determines whether to show a flyout menu or load a smart button directly.
+        /// </summary>
+        /// <param name="item">The menu item associated with the button.</param>
+        private async Task HandleButtonClickAsync(ILuxMenuBarItem item)
+        {
+            var button = item.IsLeftLocated ? MainMenu.GetLeftButton(item.Name) : MainMenu.GetRightButton(item.Name);
+            if (button == null)
+            {
+                Debug.WriteLine($"[Warning] Button not found for item: {item.Name}");
+                return;
+            }
+
+            if (item.SmartButtons.Count > 1)
+            {
+                AttachFlyoutMenu(button, item);
             }
             else
             {
-                MainMenu.AddRightButton(item.Name, act);
+                await HandleSmartButtonClick((SmartButton)item.SmartButtons.First());
             }
         }
-    }
 
-    private void OnRequestWindowHandle(RequestWindowHandleEvent e)
-    {
-        var handle = WindowNative.GetWindowHandle(this);
-        Debug.WriteLine($"/SENDING Window Handle: {handle}");
-        e.OnHandleReceived?.Invoke(handle); // Send back the handle
-    }
-
-    private void LoadDefaultCollection()
-    {
-        /*
-        var openCollectionEvt = new OpenCollectionEvent("testCollection", "C:\\Users\\pastcque\\source\\repos\\LuxoriaSoft\\Luxoria\\assets\\BaseCollection");
-
-        openCollectionEvt.OnEventCompleted += (_, _) =>
+        /// <summary>
+        /// Attaches a flyout menu to a button containing multiple smart button options.
+        /// </summary>
+        /// <param name="button">The UI element to attach the flyout menu to.</param>
+        /// <param name="item">The menu item containing multiple smart buttons.</param>
+        private void AttachFlyoutMenu(UIElement button, ILuxMenuBarItem item)
         {
-            _loggerService.Log("Collection import completed successfully.");
-        };
+            if (button is not FrameworkElement frameworkElement) return;
 
-        Task.Run(async () =>
+            var flyout = new MenuFlyout();
+
+            foreach (var smartButton in item.SmartButtons.Cast<SmartButton>())
+            {
+                var flyoutItem = new MenuFlyoutItem { Text = smartButton.Name };
+                flyoutItem.Click += async (_, __) => await HandleSmartButtonClick(smartButton);
+                flyout.Items.Add(flyoutItem);
+            }
+
+            FlyoutBase.SetAttachedFlyout(frameworkElement, flyout);
+            FlyoutBase.ShowAttachedFlyout(frameworkElement);
+        }
+
+        /// <summary>
+        /// Handles the click event for an individual smart button and loads the corresponding UI element.
+        /// </summary>
+        /// <param name="smartButton">The smart button that was clicked.</param>
+        private async Task HandleSmartButtonClick(SmartButton smartButton)
         {
-            await _eventBus.Publish(openCollectionEvt);
-        });
-        */
+            foreach (var (key, value) in smartButton.Pages)
+            {
+                if (value == null)
+                {
+                    Debug.WriteLine($"[Warning] Page is null for type {key}");
+                    continue;
+                }
+
+
+                if (value is Page)
+                {
+                    Page valuePage = (Page)value;
+                    if (valuePage is null)
+                    {
+                        Debug.WriteLine($"[Warning] Page is null for type {key}");
+                        continue;
+                    }
+
+                    switch (key)
+                    {
+                        case SmartButtonType.Window:
+                            new Window { Content = valuePage }.Activate();
+                            break;
+                        case SmartButtonType.LeftPanel:
+                            LeftPanelContent.Content = valuePage;
+                            break;
+                        case SmartButtonType.MainPanel:
+                            CenterPanelContent.Content = valuePage;
+                            break;
+                        case SmartButtonType.RightPanel:
+                            RightPanelContent.Content = valuePage;
+                            break;
+                        case SmartButtonType.BottomPanel:
+                            BottomPanelContent.Content = valuePage;
+                            break;
+                        case SmartButtonType.Modal:
+                            await ShowModalAsync(valuePage, smartButton.Name);
+                            break;
+                    }
+                }
+                else if (value is ContentDialog)
+                {
+                    ContentDialog valueDialog = (ContentDialog)value;
+
+                    if (valueDialog is null)
+                    {
+                        Debug.WriteLine($"[Warning] Dialog is null for type {key}");
+                        continue;
+                    }
+
+                    switch (key)
+                    {
+                        case SmartButtonType.Modal:
+                            if (valueDialog.XamlRoot == null)
+                                valueDialog.XamlRoot = this.Content.XamlRoot;
+                            await valueDialog.ShowAsync();
+                            break;
+                    }
+                }
+                else if (value is Window)
+                {
+                    Window valueWindow = new Window();
+                    Window testWindow = (Window)value;
+                    valueWindow.Content = testWindow.Content;
+
+
+                    Debug.WriteLine($"[x] Loading Window: {valueWindow}");
+
+                    if (valueWindow is null)
+                    {
+                        Debug.WriteLine($"[Warning] Window is null for type {key}");
+                        continue;
+                    }
+
+                    switch (key)
+                    {
+                        case SmartButtonType.Window:
+                            valueWindow.Activate();
+                            break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the request for the window handle and returns it via the event.
+        /// </summary>
+        /// <param name="e">The event containing the request for the window handle.</param>
+        private void OnRequestWindowHandle(RequestWindowHandleEvent e)
+        {
+            var handle = WindowNative.GetWindowHandle(this);
+            Debug.WriteLine($"/SENDING Window Handle: {handle}");
+            e.OnHandleReceived?.Invoke(handle);
+        }
     }
 }

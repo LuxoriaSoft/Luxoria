@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:components="using:Luxoria.App.Components"
-    Title="Luxoria App."
+    Title="Luxoria"
     mc:Ignorable="d">
 
     <Grid>

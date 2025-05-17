@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: luxapi-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: luxapi-app
+  template:
+    metadata:
+      labels:
+        app: luxapi-app
+    spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:17.2-alpine3.21
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting 20s before checking PostgreSQL readiness..."
+              sleep 20
+              until pg_isready -h luxdb -p 5432 -U postgres; do
+                echo "PostgreSQL not ready, waiting..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready."
+          env:
+            - name: PGPASSWORD
+              value: password
+      containers:
+        - name: luxapi-container
+          image: luxoria/luxapi:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ConnectionStrings__DefaultConnection
+              value: Host=luxdb;Database=luxoria;Username=postgres;Password=password
+            - name: JWT_SECRET
+              value: your_jwt_secret
+            - name: JWT_EXPIRATION
+              value: "3600"
+            - name: ENVIRONMENT
+              value: SATURN
+            - name: PORT
+              value: "8080"
+            - name: FrontEnd__URI
+              value: http://studio.saturn.luxoria.bluepelicansoft.com

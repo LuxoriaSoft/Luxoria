@@ -1,0 +1,8 @@
+resources:
+  - namespace.yaml
+  - ../../base
+
+namespace: luxstudio-saturn
+
+patchesStrategicMerge:
+  - patch-ingress.yaml

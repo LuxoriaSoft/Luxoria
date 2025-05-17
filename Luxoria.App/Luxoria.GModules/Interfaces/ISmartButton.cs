@@ -11,6 +11,6 @@ namespace Luxoria.GModules.Interfaces
     {
         string Name { get; }
         string Description { get; }
-        Dictionary<SmartButtonType, Page> Pages { get; }
+        Dictionary<SmartButtonType, Object> Pages { get; }
     }
 }

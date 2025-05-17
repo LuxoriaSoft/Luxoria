@@ -23,6 +23,8 @@ namespace LuxAPI.Models
         [EmailAddress(ErrorMessage = "Invalid email format.")]
         public string SenderEmail { get; set; } = string.Empty;
 
+        public string SenderUsername { get; set; } // 👈 nouveau champ
+
         [Required(ErrorMessage = "Message is required.")]
         public string Message { get; set; } = string.Empty;
 

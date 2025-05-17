@@ -5,11 +5,12 @@ namespace LuxAPI.Hubs
 {
 public class ChatHub : Hub
 {
-    public async Task SendMessage(string collectionId, string senderEmail, string message)
+    public async Task SendMessage(string collectionId, string senderDisplayName, string message)
     {
         //share message to all clients in the group
-        await Clients.Group(collectionId).SendAsync("ReceiveMessage", senderEmail, message);
+        await Clients.Group(collectionId).SendAsync("ReceiveMessage", senderDisplayName, message);
     }
+
 
     public async Task JoinCollection(string collectionId)
     {
