@@ -1,3 +1,21 @@
+# [1.33.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.32.1...v1.33.0) (2025-05-17)
+
+
+### Bug Fixes
+
+* Improve file upload validation in AuthController and update logout method in Dashboard ([7a9ee7c](https://github.com/LuxoriaSoft/Luxoria/commit/7a9ee7c07fee2ffb5eb576c81be8c2cd3d513412))
+* Update API_URL in config files for consistency and environment variable support ([42db9f3](https://github.com/LuxoriaSoft/Luxoria/commit/42db9f319ee0a2e415bc4ba624fd1bf0ca3738e8))
+
+
+### Features
+
+* add real-time chat functionality with username support ([17accc1](https://github.com/LuxoriaSoft/Luxoria/commit/17accc1378d5cf28cf2c3d5d812c02b858dcdf41))
+* Add user avatar upload and retrieval functionality ([e308b63](https://github.com/LuxoriaSoft/Luxoria/commit/e308b637e7d87eb98d128951d214d3c730be213e))
+* Enhance JWT token generation to include user email and secure collection retrieval with authorization ([6bc0db2](https://github.com/LuxoriaSoft/Luxoria/commit/6bc0db27caf152dea90f38893f9abed35ed3c419))
+* Implement SignalR chat functionality and add allowed email management for collections ([75c1da4](https://github.com/LuxoriaSoft/Luxoria/commit/75c1da40b6f29b77b155653a87a95df69a7566a8))
+* Improve avatar handling and user feedback in registration and collection management ([5bdf4c3](https://github.com/LuxoriaSoft/Luxoria/commit/5bdf4c3f45228c98210e3434cb12fc9490096545))
+* update Vite version and add CollectionDetail view ([70b3732](https://github.com/LuxoriaSoft/Luxoria/commit/70b37323d44b51d70d844d5e818000b5ce56b262))
+
 ## [1.32.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.32.0...v1.32.1) (2025-05-15)
 
 
