@@ -5,6 +5,10 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Any;
+using LuxAPI.Hubs;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using LuxAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +41,8 @@ builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(DB_DEFAULT_CONNECTION));
 
+builder.Services.AddSingleton<MinioService>(); // <-- AJOUT ICI
+
 // Configure JWT Authentication
 builder.Services.AddAuthentication(options =>
 {
@@ -54,7 +60,8 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidAudience = JWT_AUDIENCE,
         ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero
+        ClockSkew = TimeSpan.Zero,
+        NameClaimType = ClaimTypes.Email
     };
 
     options.Events = new JwtBearerEvents
@@ -73,6 +80,9 @@ builder.Services.AddAuthentication(options =>
 // Add controllers
 builder.Services.AddControllers();
 
+// Add SignalR
+builder.Services.AddSignalR();
+
 // Configure CORS
 builder.Services.AddCors(options =>
 {
@@ -89,7 +99,6 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "LuxAPI", Version = "v1" });
 
-    // Configuration to include the token schema in Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme",
@@ -139,6 +148,13 @@ if (app.Environment.IsDevelopment())
 // Enable CORS
 app.UseCors();
 
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
+// Hub mapping to "/hubs/chat"
+// This is where the SignalR hub is registered in the application pipeline
+app.MapHub<ChatHub>("/hubs/chat");
+
 app.Run();

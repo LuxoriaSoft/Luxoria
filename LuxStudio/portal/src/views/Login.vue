@@ -24,10 +24,12 @@
           required
         />
       </div>
+
       <!-- hCaptcha Widget -->
       <div>
         <div ref="hcaptcha" class="h-captcha"></div>
       </div>
+
       <button 
         type="submit" 
         class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded transition duration-300 disabled:opacity-50" 
@@ -35,7 +37,14 @@
       >
         Login
       </button>
+
       <p v-if="errorMessage" class="text-red-500 mt-4 text-sm">{{ errorMessage }}</p>
+
+      <!-- Redirect to register -->
+      <p class="text-sm text-gray-300 mt-4 text-center">
+        No account?
+        <router-link to="/register" class="text-blue-400 hover:underline">Sign up here.</router-link>
+      </p>
     </form>
   </div>
 </template>
@@ -48,7 +57,7 @@ export default {
     return {
       username: '',
       password: '',
-      captchaToken: '', // Stores the hCaptcha token
+      captchaToken: '',
       errorMessage: '',
     };
   },
@@ -58,17 +67,13 @@ export default {
         window.hcaptcha.render(this.$refs.hcaptcha, {
           sitekey: "3406257c-d7d0-4ca2-93ec-dc3cf6346ac4",
           callback: (token) => {
-            this.captchaToken = token; // Stores the validated hCaptcha token
+            this.captchaToken = token;
           }
         });
       }
     });
   },
   methods: {
-    /**
-     * Handles user login by calling the authentication service.
-     * If successful, stores the JWT token and redirects the user.
-     */
     async handleLogin() {
       const authService = new AuthService();
       try {
@@ -77,12 +82,11 @@ export default {
           this.password,
           this.captchaToken
         );
-        localStorage.setItem('token', token); // Stores the JWT token in localStorage
+        localStorage.setItem('token', token);
         const redirect = this.$route.query.redirect || '/dashboard';
-        this.$router.push(redirect); // Redirects user after login
+        this.$router.push(redirect);
       } catch (error) {
-        // if 401 or 403, set error message
-        this.errorMessage = 'Invalid username or password';
+        this.errorMessage = error.message || 'An unexpected error occurred.';
       }
     },
   },
