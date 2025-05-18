@@ -1,9 +1,19 @@
 var builder = WebApplication.CreateBuilder(args);
 
+/**
+ * ENVIRONMENT VARIABLES
+*/
+string LUXORIA_WEBSITE = builder.Configuration["Luxoria:Website"]
+                         ?? throw new ArgumentNullException("Luxoria:Website");
+
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+// Add controllers
+builder.Services.AddControllers();
+
+// Build the application
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -12,30 +22,13 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// Redirect HTTP requests to HTTPS
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+// Map Controllers
+app.MapControllers();
 
-app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast");
+// Default Route '/' redirect to luxoria's website
+app.MapGet("/", () => Results.Redirect(LUXORIA_WEBSITE));
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
