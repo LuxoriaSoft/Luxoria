@@ -37,7 +37,7 @@ jobs:
             
       # Build Luxoria.App
       - name: Build Luxoria.App
-        run: dotnet build Luxoria.App/Luxoria.App.sln -c ${{ matrix.configuration }} -r ${{ matrix.platform }}
+        run: dotnet build Luxoria.App/Luxoria.App.sln --no-incremental -c ${{ matrix.configuration }} -r ${{ matrix.platform }}
 
       # Build and upload LuxImport
       - name: Build LuxImport
