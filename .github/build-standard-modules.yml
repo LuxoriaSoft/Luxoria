@@ -1,0 +1,63 @@
+name: Luxoria Standard Modules Release
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feat/unpackaged-version
+      - release/*
+      - feat/*
+
+jobs:
+  build-and-upload:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        configuration: [Release]
+        platform: [x64, x86, arm64]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.x'
+
+      - name: Setup MSBuild.exe
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      # Optional: Restore NuGet packages globally
+      - name: Restore NuGet packages
+        run: dotnet restore
+
+      ### Build each module and upload artifact ###
+      - name: Build LuxImport
+        run: dotnet build Modules/LuxImport/LuxImport.csproj -c ${{ matrix.configuration }} -p:Platform=${{ matrix.platform }}
+
+      - name: Upload LuxImport artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: LuxImport-${{ matrix.platform }}
+          path: Modules/LuxImport/bin/${{ matrix.configuration }}
+
+      - name: Build LuxFilter
+        run: dotnet build Modules/LuxFilter/LuxFilter.csproj -c ${{ matrix.configuration }} -p:Platform=${{ matrix.platform }}
+
+      - name: Upload LuxFilter artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: LuxFilter-${{ matrix.platform }}
+          path: Modules/LuxFilter/bin/${{ matrix.configuration }}
+
+      - name: Build LuxEditor
+        run: dotnet build Modules/LuxEditor/LuxEditor.csproj -c ${{ matrix.configuration }} -p:Platform=${{ matrix.platform }}
+
+      - name: Upload LuxEditor artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: LuxEditor-${{ matrix.platform }}
+          path: Modules/LuxEditor/bin/${{ matrix.configuration }}
