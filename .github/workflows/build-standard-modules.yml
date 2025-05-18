@@ -2,12 +2,7 @@ name: Luxoria Standard Modules Release
 
 on:
   push:
-    branches:
-      - main
-      - develop
-      - feat/unpackaged-version
-      - release/*
-      - feat/*
+
 
 jobs:
   build-and-upload:
