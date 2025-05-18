@@ -37,7 +37,7 @@ jobs:
 
       # Build and upload LuxImport
       - name: Build LuxImport
-        run: dotnet build Modules/LuxImport/LuxImport.csproj -c ${{ matrix.configuration }} -p:Platform=${{ matrix.platform }}
+        run: dotnet build Modules/LuxImport/LuxImport.sln -c ${{ matrix.configuration }} -p:Platform=${{ matrix.platform }}
 
       - name: Upload LuxImport artifact
         uses: actions/upload-artifact@v4
@@ -47,7 +47,7 @@ jobs:
 
       # Build and upload LuxFilter
       - name: Build LuxFilter
-        run: dotnet build Modules/LuxFilter/LuxFilter.csproj -c ${{ matrix.configuration }} -p:Platform=${{ matrix.platform }}
+        run: dotnet build Modules/LuxFilter/LuxFilter.sln -c ${{ matrix.configuration }} -p:Platform=${{ matrix.platform }}
 
       - name: Upload LuxFilter artifact
         uses: actions/upload-artifact@v4
@@ -57,7 +57,7 @@ jobs:
 
       # Build and upload LuxEditor
       - name: Build LuxEditor
-        run: dotnet build Modules/LuxEditor/LuxEditor.csproj -c ${{ matrix.configuration }} -p:Platform=${{ matrix.platform }}
+        run: dotnet build Modules/LuxEditor/LuxEditor.sln -c ${{ matrix.configuration }} -p:Platform=${{ matrix.platform }}
 
       - name: Upload LuxEditor artifact
         uses: actions/upload-artifact@v4
