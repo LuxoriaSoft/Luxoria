@@ -41,7 +41,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: LuxImport-${{ matrix.platform }}
-          path: Modules/LuxImport/LuxImport/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/publish
+          path: Modules/LuxImport/LuxImport/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}
 
       # Build and upload LuxFilter
       - name: Build LuxFilter
@@ -51,7 +51,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: LuxFilter-${{ matrix.platform }}
-          path: Modules/LuxFilter/LuxFilter/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/publish
+          path: Modules/LuxFilter/LuxFilter/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}
 
       # Build and upload LuxEditor
       - name: Build LuxEditor
@@ -61,7 +61,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: LuxEditor-${{ matrix.platform }}
-          path: Modules/LuxEditor/LuxEditor/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/publish
+          path: Modules/LuxEditor/LuxEditor/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}
 
       # Build and upload LuxExport
       - name: Build LuxExport
@@ -71,4 +71,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: LuxExport-${{ matrix.platform }}
-          path: Modules/LuxExport/LuxExport/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/publish
+          path: Modules/LuxExport/LuxExport/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}
