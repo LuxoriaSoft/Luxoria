@@ -31,7 +31,19 @@ jobs:
             
       # Build Luxoria.App
       - name: Build Luxoria.App
-        run: dotnet build Luxoria.App/Luxoria.App.sln --no-incremental -p:PackOnBuild=false -maxcpucount:1 -c ${{ matrix.configuration }} -r ${{ matrix.platform }}
+        run: |
+          if ("${{ matrix.platform }}" -eq "win-x86") {
+            $platformTarget = "x86"
+          } elseif ("${{ matrix.platform }}" -eq "win-x64") {
+            $platformTarget = "x64"
+          } elseif ("${{ matrix.platform }}" -eq "win-arm64") {
+            $platformTarget = "ARM64"
+          } else {
+            throw "Unknown platform: ${{ matrix.platform }}"
+          }
+          dotnet build Luxoria.App/Luxoria.App.sln --no-incremental -p:PackOnBuild=false -maxcpucount:1 -c ${{ matrix.configuration }} -r ${{ matrix.platform }} -p:PlatformTarget=$platformTarget
+        shell: pwsh
+
 
       # Build and upload LuxImport
       - name: Build LuxImport
