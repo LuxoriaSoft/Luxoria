@@ -2,6 +2,12 @@ name: Luxoria Standard Modules Release
 
 on:
   push:
+    branches:
+      - main
+      - develop
+      - feat/unpackaged-version
+      - release/*
+      - feat/*
 
 jobs:
   build-and-upload:
@@ -24,34 +30,35 @@ jobs:
       - name: Setup MSBuild.exe
         uses: microsoft/setup-msbuild@v1.0.2
 
-      # Optional: Restore NuGet packages globally
       - name: Restore NuGet packages
         run: dotnet restore
 
-      ### Build each module and upload artifact ###
+      # Build and upload LuxImport
       - name: Build LuxImport
         run: dotnet build Modules/LuxImport/LuxImport.csproj -c ${{ matrix.configuration }} -p:Platform=${{ matrix.platform }}
 
       - name: Upload LuxImport artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: LuxImport-${{ matrix.platform }}
           path: Modules/LuxImport/bin/${{ matrix.configuration }}
 
+      # Build and upload LuxFilter
       - name: Build LuxFilter
         run: dotnet build Modules/LuxFilter/LuxFilter.csproj -c ${{ matrix.configuration }} -p:Platform=${{ matrix.platform }}
 
       - name: Upload LuxFilter artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: LuxFilter-${{ matrix.platform }}
           path: Modules/LuxFilter/bin/${{ matrix.configuration }}
 
+      # Build and upload LuxEditor
       - name: Build LuxEditor
         run: dotnet build Modules/LuxEditor/LuxEditor.csproj -c ${{ matrix.configuration }} -p:Platform=${{ matrix.platform }}
 
       - name: Upload LuxEditor artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: LuxEditor-${{ matrix.platform }}
           path: Modules/LuxEditor/bin/${{ matrix.configuration }}
