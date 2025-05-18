@@ -25,8 +25,12 @@ jobs:
       - name: Setup MSBuild.exe
         uses: microsoft/setup-msbuild@v1.0.2
 
-      - name: Restore NuGet packages
-        run: dotnet restore
+      # Restore the application to populate the obj folder with RuntimeIdentifiers
+      - name: Restore the application
+        run: msbuild $env:Solution_Name /t:Restore /p:Configuration=$env:Configuration
+        env:
+          Configuration: ${{ matrix.configuration }}
+        working-directory: ./Luxoria.App
 
       # Build and upload LuxImport
       - name: Build LuxImport
