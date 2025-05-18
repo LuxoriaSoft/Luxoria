@@ -41,41 +41,41 @@ jobs:
 
       # Build and upload LuxImport
       - name: Build LuxImport
-        run: dotnet build Modules/LuxImport/LuxImport/LuxImport.csproj --no-incremental -c ${{ matrix.configuration }} -r ${{ matrix.platform }}
+        run: dotnet publish Modules/LuxImport/LuxImport/LuxImport.csproj --no-incremental -c ${{ matrix.configuration }} -r ${{ matrix.platform }}
 
       - name: Upload LuxImport artifact
         uses: actions/upload-artifact@v4
         with:
           name: LuxImport-${{ matrix.platform }}
-          path: Modules/LuxImport/LuxImport/bin/${{ matrix.configuration }}/net9.0-windows10.0.26100.0/${{ matrix.platform }}
+          path: Modules/LuxImport/LuxImport/bin/${{ matrix.configuration }}/net9.0-windows10.0.26100.0/${{ matrix.platform }}/publish
 
 
       # Build and upload LuxFilter
       - name: Build LuxFilter
-        run: dotnet build Modules/LuxFilter/LuxFilter/LuxFilter.csproj --no-incremental -c ${{ matrix.configuration }} -r ${{ matrix.platform }}
+        run: dotnet publish Modules/LuxFilter/LuxFilter/LuxFilter.csproj --no-incremental -c ${{ matrix.configuration }} -r ${{ matrix.platform }}
 
       - name: Upload LuxFilter artifact
         uses: actions/upload-artifact@v4
         with:
           name: LuxFilter-${{ matrix.platform }}
-          path: Modules/LuxFilter/LuxFilter/bin/${{ matrix.configuration }}/net9.0-windows10.0.26100.0/${{ matrix.platform }}
+          path: Modules/LuxFilter/LuxFilter/bin/${{ matrix.configuration }}/net9.0-windows10.0.26100.0/${{ matrix.platform }}/publish
 
       # Build and upload LuxEditor
       - name: Build LuxEditor
-        run: dotnet build Modules/LuxEditor/LuxEditor/LuxEditor.csproj --no-incremental -c ${{ matrix.configuration }} -r ${{ matrix.platform }}
+        run: dotnet publish Modules/LuxEditor/LuxEditor/LuxEditor.csproj --no-incremental -c ${{ matrix.configuration }} -r ${{ matrix.platform }}
 
       - name: Upload LuxEditor artifact
         uses: actions/upload-artifact@v4
         with:
           name: LuxEditor-${{ matrix.platform }}
-          path: Modules/LuxEditor/LuxEditor/bin/${{ matrix.configuration }}/net9.0-windows10.0.26100.0/${{ matrix.platform }}
+          path: Modules/LuxEditor/LuxEditor/bin/${{ matrix.configuration }}/net9.0-windows10.0.26100.0/${{ matrix.platform }}/publish
 
       # Build and upload LuxExport
       - name: Build LuxExport
-        run: dotnet build Modules/LuxExport/LuxExport/LuxExport.csproj --no-incremental -c ${{ matrix.configuration }} -r ${{ matrix.platform }}
+        run: dotnet publish Modules/LuxExport/LuxExport/LuxExport.csproj --no-incremental -c ${{ matrix.configuration }} -r ${{ matrix.platform }}
       
       - name: Upload LuxExport artifact
         uses: actions/upload-artifact@v4
         with:
           name: LuxExport-${{ matrix.platform }}
-          path: Modules/LuxExport/LuxExport/bin/${{ matrix.configuration }}/net9.0-windows10.0.26100.0/${{ matrix.platform }}
+          path: Modules/LuxExport/LuxExport/bin/${{ matrix.configuration }}/net9.0-windows10.0.26100.0/${{ matrix.platform }}/publish
