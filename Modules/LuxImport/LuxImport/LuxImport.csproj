@@ -39,12 +39,14 @@
 
 
 	<ItemGroup>
-    <Reference Include="Luxoria.GModules">
-      <HintPath>..\..\..\Luxoria.App\Luxoria.GModules\bin\Debug\net9.0-windows10.0.26100.0\Luxoria.GModules.dll</HintPath>
-    </Reference>
-    <Reference Include="Luxoria.Modules">
-      <HintPath>..\..\..\Luxoria.App\Luxoria.Modules\bin\Debug\net9.0\Luxoria.Modules.dll</HintPath>
-    </Reference>
+    <ItemGroup>
+	<Reference Include="Luxoria.GModules">
+		<HintPath>..\..\..\Luxoria.App\Luxoria.GModules\bin\$(Configuration)\net9.0-windows10.0.26100.0\Luxoria.GModules.dll</HintPath>
+	</Reference>
+	<Reference Include="Luxoria.Modules">
+		<HintPath>..\..\..\Luxoria.App\Luxoria.Modules\bin\$(Configuration)\net9.0\Luxoria.Modules.dll</HintPath>
+	</Reference>
+	</ItemGroup>
   </ItemGroup>
 
 
