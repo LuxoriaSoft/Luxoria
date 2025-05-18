@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         configuration: [Release]
-        platform: [win-x64]
+        platform: [win-x64, win-x86, win-arm64]
     
     env:
       Solution_Name: Luxoria.App.sln
