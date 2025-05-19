@@ -23,6 +23,9 @@ Modules
 */
 
 use clap::{Parser, Subcommand};
+use serde::Deserialize;
+use std::fs;
+use std::fmt;
 
 #[derive(Parser)]
 #[command(name = "luxcli", version, about = "Luxoria CLI Tool")]
@@ -61,10 +64,65 @@ enum ModSubcommands {
 }
 
 struct Project {
-    name: String,
-    path: String,
-    luxconfig_path: String,
+    luxmod_path: String,
+    data: ModuleInfo,
 }
+
+#[derive(Debug, Deserialize)]
+struct ModuleInfo {
+    luxmodversion: u32,
+    name: String,
+    description: String,
+    author: String,
+    email: String,
+    license: String,
+    url: String,
+    repository: String,
+    compatibility: Compatibility,
+    dependencies: std::collections::HashMap<String, String>,
+    keywords: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct Compatibility {
+    #[serde(rename = "mininumVersion")]
+    mininum_version: String,
+    #[serde(rename = "maximumVersion")]
+    maximum_version: String,
+}
+
+// Implement Display for pretty printing
+
+impl fmt::Display for ModuleInfo {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "ModuleInfo:")?;
+        writeln!(f, "  Name: {}", self.name)?;
+        writeln!(f, "  Description: {}", self.description)?;
+        writeln!(f, "  Author: {}", self.author)?;
+        writeln!(f, "  Email: {}", self.email)?;
+        writeln!(f, "  License: {}", self.license)?;
+        writeln!(f, "  URL: {}", self.url)?;
+        writeln!(f, "  Repository: {}", self.repository)?;
+        writeln!(f, "  Luxmod Version: {}", self.luxmodversion)?;
+        writeln!(f, "  Compatibility: {}", self.compatibility)?;
+        writeln!(f, "  Dependencies:")?;
+        for (k, v) in &self.dependencies {
+            writeln!(f, "    {}: {}", k, v)?;
+        }
+        writeln!(f, "  Keywords: {:?}", self.keywords)
+    }
+}
+
+impl fmt::Display for Compatibility {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "[mininumVersion: {}, maximumVersion: {}]",
+            self.mininum_version, self.maximum_version
+        )
+    }
+}
+
 
 fn get_projectcfg(path: &str) -> Result<Project, String> {
     // Check if the path exists
@@ -79,14 +137,22 @@ fn get_projectcfg(path: &str) -> Result<Project, String> {
     }
 
     // Check if the luxmod.json file is valid
+    let luxmod_content = fs::read_to_string(&luxmod_path).map_err(|_| {
+        format!("Failed to read luxmod.json file at {}", luxmod_path)
+    })?;
+
+    let luxmod: ModuleInfo = serde_json::from_str(&luxmod_content).map_err(|_| {
+        format!("Failed to parse luxmod.json file at {}", luxmod_path)
+    })?;
 
 
     return Ok(Project {
-        name: "Luxoria".to_string(),
-        path: "path".to_string(),
-        luxconfig_path: "luxconfig_path".to_string(),
+        luxmod_path,
+        data: luxmod,
     });
 }
+
+
 
 fn main() {
     let cli = Cli::parse();
@@ -106,9 +172,10 @@ fn main() {
                 println!("LuxCLI > Building module in directory: {}...", dir);
                 match get_projectcfg(&dir) {
                     Ok(project) => {
-                        println!("Project name: {}", project.name);
-                        println!("Project path: {}", project.path);
-                        println!("Luxconfig path: {}", project.luxconfig_path);
+                        println!("Project name: {}", project.data.name);
+                        println!("Project path: {}", project.luxmod_path);
+                        // Print the module info
+                        println!("{}", project.data);
                     }
                     Err(e) => {
                         println!("Error: {}", e);
@@ -117,6 +184,17 @@ fn main() {
             }
             ModSubcommands::Clear { dir } => {
                 println!("LuxCLI > Clearing module in directory: {}...", dir);
+                match get_projectcfg(&dir) {
+                    Ok(project) => {
+                        println!("Project name: {}", project.data.name);
+                        println!("Project path: {}", project.luxmod_path);
+                        // Print the module info
+                        println!("{}", project.data);
+                    }
+                    Err(e) => {
+                        println!("Error: {}", e);
+                    }
+                }
             }
         },
     }
