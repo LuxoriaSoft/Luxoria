@@ -1,0 +1,133 @@
+name: Luxoria Standard Modules Release
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build-and-upload:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        configuration: [Release]
+        platform: [win-x64, win-x86, win-arm64]
+
+    env:
+      Solution_Name: Luxoria.App.sln
+      Framework_Version: net9.0-windows10.0.26100.0
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up the .NET SDK (version 9.x)
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.x'
+
+      # Set up MSBuild for Windows build environment
+      - name: Setup MSBuild.exe
+        uses: microsoft/setup-msbuild@v1.0.2
+            
+      # Build the main Luxoria.App solution
+      - name: Build Luxoria.App
+        run: |
+          if ("${{ matrix.platform }}" -eq "win-x86") {
+            $platformTarget = "x86"
+          } elseif ("${{ matrix.platform }}" -eq "win-x64") {
+            $platformTarget = "x64"
+          } elseif ("${{ matrix.platform }}" -eq "win-arm64") {
+            $platformTarget = "ARM64"
+          } else {
+            throw "Unknown platform: ${{ matrix.platform }}"
+          }
+          dotnet build Luxoria.App/Luxoria.App.sln --no-incremental -p:PackOnBuild=false -maxcpucount:1 -c ${{ matrix.configuration }} -r ${{ matrix.platform }} -p:PlatformTarget=$platformTarget
+        shell: pwsh
+
+      # Build, rename, and upload LuxImport module
+      - name: Build LuxImport
+        run: dotnet publish Modules/LuxImport/LuxImport/LuxImport.csproj -c ${{ matrix.configuration }} -r ${{ matrix.platform }}
+
+      - name: Rename LuxImport.dll
+        run: |
+          $framework = "${{ env.Framework_Version }}"
+          $config = "${{ matrix.configuration }}"
+          $platform = "${{ matrix.platform }}"
+          $publishDir = "Modules/LuxImport/LuxImport/bin/$config/$framework/$platform/publish"
+          $sourcePath = Join-Path $publishDir "LuxImport.dll"
+          $newName = "LuxImport.Lux.dll"
+          Rename-Item -Path $sourcePath -NewName $newName
+        shell: pwsh
+
+      - name: Upload LuxImport artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LuxImport-${{ matrix.platform }}
+          path: Modules/LuxImport/LuxImport/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}
+
+      # Build, rename, and upload LuxFilter module
+      - name: Build LuxFilter
+        run: dotnet publish Modules/LuxFilter/LuxFilter/LuxFilter.csproj -c ${{ matrix.configuration }} -r ${{ matrix.platform }}
+      
+      - name: Rename LuxFilter.dll
+        run: |
+          $framework = "${{ env.Framework_Version }}"
+          $config = "${{ matrix.configuration }}"
+          $platform = "${{ matrix.platform }}"
+          $publishDir = "Modules/LuxFilter/LuxFilter/bin/$config/$framework/$platform/publish"
+          $sourcePath = Join-Path $publishDir "LuxFilter.dll"
+          $newName = "LuxFilter.Lux.dll"
+          Rename-Item -Path $sourcePath -NewName $newName
+        shell: pwsh
+
+      - name: Upload LuxFilter artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LuxFilter-${{ matrix.platform }}
+          path: Modules/LuxFilter/LuxFilter/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}
+
+      # Build, rename, and upload LuxEditor module
+      - name: Build LuxEditor
+        run: dotnet publish Modules/LuxEditor/LuxEditor/LuxEditor.csproj -c ${{ matrix.configuration }} -r ${{ matrix.platform }}
+      
+      - name: Rename LuxEditor.dll
+        run: |
+          $framework = "${{ env.Framework_Version }}"
+          $config = "${{ matrix.configuration }}"
+          $platform = "${{ matrix.platform }}"
+          $publishDir = "Modules/LuxEditor/LuxEditor/bin/$config/$framework/$platform/publish"
+          $sourcePath = Join-Path $publishDir "LuxEditor.dll"
+          $newName = "LuxEditor.Lux.dll"
+          Rename-Item -Path $sourcePath -NewName $newName
+        shell: pwsh
+
+      - name: Upload LuxEditor artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LuxEditor-${{ matrix.platform }}
+          path: Modules/LuxEditor/LuxEditor/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}
+
+      # Build, rename, and upload LuxExport module
+      - name: Build LuxExport
+        run: dotnet publish Modules/LuxExport/LuxExport/LuxExport.csproj -c ${{ matrix.configuration }} -r ${{ matrix.platform }}
+
+      - name: Rename LuxExport.dll
+        run: |
+          $framework = "${{ env.Framework_Version }}"
+          $config = "${{ matrix.configuration }}"
+          $platform = "${{ matrix.platform }}"
+          $publishDir = "Modules/LuxExport/LuxExport/bin/$config/$framework/$platform/publish"
+          $sourcePath = Join-Path $publishDir "LuxExport.dll"
+          $newName = "LuxExport.Lux.dll"
+          Rename-Item -Path $sourcePath -NewName $newName
+        shell: pwsh
+      
+      - name: Upload LuxExport artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LuxExport-${{ matrix.platform }}
+          path: Modules/LuxExport/LuxExport/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}
