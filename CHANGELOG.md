@@ -1,3 +1,26 @@
+## [1.33.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.33.0...v1.33.1) (2025-05-19)
+
+
+### Bug Fixes
+
+* Add maxcpucount option to Luxoria.App build step in workflow ([24318f8](https://github.com/LuxoriaSoft/Luxoria/commit/24318f8ae64f9e3801413d5e947568673349882c))
+* Add optional flag to disable Luxoria.SDK's PackOnBuild option ([170a40d](https://github.com/LuxoriaSoft/Luxoria/commit/170a40d71ca983c728015bcf27dac4909a5ded08))
+* Add renaming steps for LuxImport, LuxFilter, LuxEditor, and LuxExport DLLs in build workflow ([e38ad92](https://github.com/LuxoriaSoft/Luxoria/commit/e38ad928a743c1202e8afda6fd95d22560b14dc3))
+* Change Reference Paths in LuxImport csproj file ([eb5e51e](https://github.com/LuxoriaSoft/Luxoria/commit/eb5e51eb7c3f713559760841cccea395a7d96c7e))
+* Cleanup unused dependencies in LuxImport ([d9843df](https://github.com/LuxoriaSoft/Luxoria/commit/d9843df3a9acbc8e9e8d0274158792f43de862c6))
+* Correct artifact paths for LuxImport, LuxFilter, LuxEditor, and LuxExport in build workflow ([ba1225e](https://github.com/LuxoriaSoft/Luxoria/commit/ba1225e009637b647d54c5d18dd4614cc8d24bd4))
+* Enhance platform targeting for Luxoria.App build step to include win-arm64 ([c155fae](https://github.com/LuxoriaSoft/Luxoria/commit/c155fae7663e12e078bd65a648b3c86c15d7ccc0))
+* Expand platform matrix to include win-x86 and win-arm64 for build jobs ([a4a8215](https://github.com/LuxoriaSoft/Luxoria/commit/a4a821543e6262010db2f53b68e4f42837b01bc9))
+* Refactor DLL renaming steps for LuxImport, LuxFilter, LuxEditor, and LuxExport to use Join-Path for improved path handling ([065e7af](https://github.com/LuxoriaSoft/Luxoria/commit/065e7af3a94399bf97e582815c3a181dd9391882))
+* Replacing DLLRef by ProjectRef for both Luxoria.GModules & Luxoria.Modules ([d97f099](https://github.com/LuxoriaSoft/Luxoria/commit/d97f0999b2a2220921be3cddb76dc01b8b7d287b))
+* Update artifact paths and rename steps for LuxImport, LuxFilter, LuxEditor, and LuxExport in build workflow ([1ecf85a](https://github.com/LuxoriaSoft/Luxoria/commit/1ecf85a215d68c01b68b0d12ea47b32182fa13cc))
+* Update artifact paths for LuxImport, LuxFilter, LuxEditor, and LuxExport in build workflow ([991449b](https://github.com/LuxoriaSoft/Luxoria/commit/991449be68f991a8edba553c1f759b255095d932))
+* Update artifact paths for LuxImport, LuxFilter, LuxEditor, and LuxExport in build workflow ([6c70b31](https://github.com/LuxoriaSoft/Luxoria/commit/6c70b31a021fdf381a778cf02c8a567857442532))
+* Update build steps to use 'dotnet build' for LuxImport, LuxFilter, LuxEditor, and LuxExport, and adjust artifact paths ([23c5c8d](https://github.com/LuxoriaSoft/Luxoria/commit/23c5c8df45439ee084fcc9f0cc54147b3a2ca681))
+* Update build steps to use 'dotnet publish' for LuxImport, LuxFilter, LuxEditor, and LuxExport ([c055bc0](https://github.com/LuxoriaSoft/Luxoria/commit/c055bc05270cddd3777e3d2386e902f06cee6c72))
+* Update build steps to use 'dotnet publish' for LuxImport, LuxFilter, LuxEditor, and LuxExport, and adjust artifact paths ([fda3076](https://github.com/LuxoriaSoft/Luxoria/commit/fda30762765ace7f31018d517c34d4addd45d559))
+* Update build workflow to enhance module upload steps and improve comments for clarity ([6af42f1](https://github.com/LuxoriaSoft/Luxoria/commit/6af42f11b36c1a6bba07f4578b7a0b2971dfd6ae))
+
 # [1.33.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.32.1...v1.33.0) (2025-05-17)
 
 
