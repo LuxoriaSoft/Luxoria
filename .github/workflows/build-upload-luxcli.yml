@@ -17,8 +17,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build binaries in "${{ matrix.BUILD_TARGET }}" mode
-        run: cargo build --profile ${{ matrix.BUILD_TARGET }}
+      - name: Build LuxCLI in "${{ matrix.BUILD_TARGET }}" mode
+        run: cargo build --manifest-path luxcli/Cargo.toml --profile ${{ matrix.BUILD_TARGET }}
+
+
       
       # DO NOT HAVE UNIT TESTS
       #- name: Run tests in "${{ matrix.BUILD_TARGET }}" mode
