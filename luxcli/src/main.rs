@@ -26,6 +26,7 @@ use clap::{Parser, Subcommand};
 use serde::Deserialize;
 use std::fs;
 use std::fmt;
+use std::vec;
 
 #[derive(Parser)]
 #[command(name = "luxcli", version, about = "Luxoria CLI Tool")]
@@ -152,7 +153,22 @@ fn get_projectcfg(path: &str) -> Result<Project, String> {
     });
 }
 
+fn get_os_arch() -> String {
+    let os = std::env::consts::OS;
+    let arch = std::env::consts::ARCH;
+    format!("{}-{}", os, arch)
+}
 
+fn is_arch_compatible(os_arch: &str) -> bool {
+    let compatibility_list: Vec<&'static str> = vec![
+        "windows-x86_64",
+        "windows-x86",
+        "windows-arm64"
+    ];
+
+    // Check if the current OS/Arch is in the compatibility list
+    compatibility_list.contains(&os_arch)
+}
 
 fn main() {
     let cli = Cli::parse();
@@ -170,6 +186,16 @@ fn main() {
         Commands::Mod { subcommand } => match subcommand {
             ModSubcommands::Build { dir } => {
                 println!("LuxCLI > Building module in directory: {}...", dir);
+                
+                let os_arch = get_os_arch();
+                println!("OS/Arch: {}", os_arch);
+
+                // Check if the architecture is compatible
+                if !is_arch_compatible(&os_arch) {
+                    println!("Error: Architecture not compatible for building. (expected: windows-x86_64, windows-x86, windows-arm64)");
+                    return;
+                }
+
                 match get_projectcfg(&dir) {
                     Ok(project) => {
                         println!("Project name: {}", project.data.name);
