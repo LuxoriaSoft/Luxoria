@@ -22,5 +22,15 @@
         "Standard",
         "Base",
         "Fondation"
-    ]
+    ],
+    "build": {
+        "config": "Release",
+        "csproj": "LuxImport/LuxImport.csproj",
+        "DllName": "LuxImport.dll",
+        "runtimes": {
+            "x64": "win-x64",
+            "x86": "win-x86",
+            "arm64": "win-arm64"
+        }
+    }
 }

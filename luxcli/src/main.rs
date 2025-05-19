@@ -27,6 +27,7 @@ use serde::Deserialize;
 use std::fs;
 use std::fmt;
 use std::vec;
+use std::process::Command;
 
 #[derive(Parser)]
 #[command(name = "luxcli", version, about = "Luxoria CLI Tool")]
@@ -59,6 +60,9 @@ enum ModSubcommands {
         /// Optional architecture (x86, x64 or arm64)
         #[arg(short, long)]
         arch: Option<String>,
+        /// Optional Configuration (Debug or Release)
+        #[arg(short, long)]
+        config: Option<String>,
     },
     /// Clear a module
     Clear {
@@ -85,6 +89,7 @@ struct ModuleInfo {
     compatibility: Compatibility,
     dependencies: std::collections::HashMap<String, String>,
     keywords: Vec<String>,
+    build: Build,
 }
 
 #[derive(Debug, Deserialize)]
@@ -93,6 +98,18 @@ struct Compatibility {
     mininum_version: String,
     #[serde(rename = "maximumVersion")]
     maximum_version: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct Build {
+    #[serde(rename = "config")]
+    config: String,
+    #[serde(rename = "csproj")]
+    csproj_path: String,
+    #[serde(rename = "DllName")]
+    dll_name: String,
+    #[serde(rename = "runtimes")]
+    runtimes: std::collections::HashMap<String, String>,
 }
 
 // Implement Display for pretty printing
@@ -113,7 +130,15 @@ impl fmt::Display for ModuleInfo {
         for (k, v) in &self.dependencies {
             writeln!(f, "    {}: {}", k, v)?;
         }
-        writeln!(f, "  Keywords: {:?}", self.keywords)
+        writeln!(f, "  Keywords: {:?}", self.keywords)?;
+        writeln!(f, "  Build Settings:")?;
+        writeln!(f, "    Build Configuration: {}", self.build.config)?;
+        writeln!(f, "    Csproj Path: {}", self.build.csproj_path)?;
+        writeln!(f, "    Dll Name: {}", self.build.dll_name)?;
+        for (k, v) in &self.build.runtimes {
+            writeln!(f, "    => {} : {}", k, v)?;
+        }
+        Ok(())
     }
 }
 
@@ -185,6 +210,27 @@ fn get_short_arch(arch: &str) -> String {
     }
 }
 
+// Execute dotnet publish PATH_TO_MAIN_CSPROJ -c CONFIGURATION -r RUNTIME_ID
+fn publish_module(path: &str, config: &str, runtime_id: &str) {
+    let output = Command::new("dotnet")
+        .arg("publish")
+        .arg(path)
+        .arg("-c")
+        .arg(config)
+        .arg("-r")
+        .arg(runtime_id)
+        .output()
+        .expect("Failed to start dotnet process");
+
+    if output.status.success() {
+        println!("Built Successfully :\n{}", String::from_utf8_lossy(&output.stdout));
+    } else {
+        println!("Build failed!");
+        println!("{}", String::from_utf8_lossy(&output.stdout));
+    }
+}
+
+
 fn main() {
     let cli = Cli::parse();
 
@@ -199,14 +245,15 @@ fn main() {
             println!("LuxCLI > Showing project info...");
         }
         Commands::Mod { subcommand } => match subcommand {
-            ModSubcommands::Build { dir, arch } => {
+            ModSubcommands::Build { dir, arch, config } => {
                 println!("LuxCLI > Building module in directory: {}...", dir);
                 
                 let os_arch = get_os_arch();
-                let short_arch = get_short_arch(&os_arch);
+                let mut short_arch = get_short_arch(&os_arch);
 
                 if let Some(arch) = arch {
                     println!("Architecture: {}", arch);
+                    short_arch = get_short_arch(&arch);
                 } else {
                     println!("Architecture: {}", os_arch);
                     // Check if the architecture is compatible
@@ -222,6 +269,27 @@ fn main() {
                         println!("Project path: {}", project.luxmod_path);
                         // Print the module info
                         println!("{}", project.data);
+
+                        // Retrieve build configuration (Debug or Release)
+                        let build_config = config.unwrap_or(project.data.build.config);
+                        
+                        // Retrieve runtime ID
+                        let runtime_id = match project.data.build.runtimes.get(&short_arch) {
+                            Some(id) => id,
+                            None => {
+                                println!("Error: Runtime ID not found for architecture: {}", short_arch);
+                                return;
+                            }
+                        };
+
+                        println!("Build configuration: {}", build_config);
+                        println!("Runtime ID: {}", runtime_id);
+
+                        // Concatenate path to csproj
+                        let csproj_path = format!("{}/{}", dir, project.data.build.csproj_path);
+
+                        // Publish the module
+                        publish_module(&csproj_path, &build_config, &runtime_id);
                     }
                     Err(e) => {
                         println!("Error: {}", e);
