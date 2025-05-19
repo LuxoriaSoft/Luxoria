@@ -1,14 +1,18 @@
 using System;
 using System.IO;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using LuxAPI.DAL;
 using LuxAPI.Models;
+using LuxAPI.Hubs;
+using LuxAPI.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Minio;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LuxAPI.Controllers
 {
@@ -17,67 +21,127 @@ namespace LuxAPI.Controllers
     public class CollectionController : ControllerBase
     {
         private readonly AppDbContext _context;
-        private readonly IMinioClient _minioClient;
+        private readonly MinioService _minioService;
+        private readonly IHubContext<ChatHub> _chatHub;
         private readonly string _bucketName = "photos-bucket";
-        private readonly string _minioEndpoint = string.Empty;
 
-        public CollectionController(AppDbContext context, IConfiguration configuration)
+        public CollectionController(AppDbContext context, MinioService minioService, IHubContext<ChatHub> chatHub)
         {
             _context = context;
-            // Initialisation du client MinIO depuis la configuration (compatible avec MinIO v6.0.4)
-            _minioClient = new MinioClient()
-                                .WithEndpoint(configuration["Minio:Endpoint"])
-                                .WithCredentials(configuration["Minio:AccessKey"], configuration["Minio:SecretKey"])
-                                .Build();
-            _minioEndpoint = configuration["Minio:Endpoint"] ?? string.Empty;
+            _minioService = minioService;
+            _chatHub = chatHub;
         }
 
-        // GET: api/collection
-        [HttpGet]
-        public async Task<IActionResult> GetCollections()
+[Authorize]
+[HttpGet]
+public async Task<IActionResult> GetCollections()
+{
+    var currentUserEmail = User?.Identity?.Name;
+    if (string.IsNullOrEmpty(currentUserEmail))
+        return Unauthorized("Utilisateur non authentifié.");
+
+    var collections = await _context.Collections
+        .Include(c => c.AllowedEmails)
+        .Include(c => c.Photos)
+            .ThenInclude(p => p.Comments)
+        .Include(c => c.ChatMessages)
+        .Where(c => c.AllowedEmails.Any(a => a.Email == currentUserEmail))
+        .ToListAsync();
+
+    var result = collections.Select(c => new
+    {
+        c.Id,
+        c.Name,
+        c.Description,
+        AllowedEmails = c.AllowedEmails.Select(a => a.Email),
+        Photos = c.Photos.Select(p => new {
+            p.Id,
+            p.FilePath,
+            p.Status,
+            Comments = p.Comments.Select(cm => new {
+                cm.Id,
+                cm.CommentText,
+                cm.CreatedAt
+            })
+        }),
+        ChatMessages = c.ChatMessages.Select(m => new
         {
-            var collections = await _context.Collections
-                .Include(c => c.AllowedEmails)
-                .Include(c => c.ChatMessages)
-                .Include(c => c.Photos)
-                    .ThenInclude(p => p.Comments)
-                .ToListAsync();
+            m.SenderUsername,
+            m.SenderEmail,
+            m.Message,
+            m.SentAt,
+            AvatarFileName = _context.Users
+                .Where(u => u.Email == m.SenderEmail)
+                .Select(u => u.AvatarFileName ?? "default_avatar.jpg")
+                .FirstOrDefault()
+        })
+    });
 
-            return Ok(collections);
-        }
+    return Ok(result);
+}
 
-        // GET: api/collection/{id}
+
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCollection(Guid id)
         {
             var collection = await _context.Collections
                 .Include(c => c.AllowedEmails)
                 .Include(c => c.ChatMessages)
-                .Include(c => c.Photos)
-                    .ThenInclude(p => p.Comments)
+                .Include(c => c.Photos).ThenInclude(p => p.Comments)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (collection == null)
                 return NotFound("Collection non trouvée.");
 
-            return Ok(collection);
+            // Manuellement mapper les messages avec les avatars
+            var chatMessagesWithAvatars = collection.ChatMessages.Select(m => new
+            {
+                m.SenderUsername,
+                m.SenderEmail,
+                m.Message,
+                m.SentAt,
+                AvatarFileName = _context.Users
+                    .Where(u => u.Email == m.SenderEmail)
+                    .Select(u => u.AvatarFileName)
+                    .FirstOrDefault()
+            });
+
+            var result = new
+            {
+                collection.Id,
+                collection.Name,
+                collection.Description,
+                AllowedEmails = collection.AllowedEmails.Select(a => a.Email),
+                Photos = collection.Photos.Select(p => new {
+                    p.Id,
+                    p.FilePath,
+                    p.Status,
+                    Comments = p.Comments.Select(c => new {
+                        c.Id,
+                        c.CommentText,
+                        c.CreatedAt
+                    })
+                }),
+                ChatMessages = chatMessagesWithAvatars
+            };
+
+            return Ok(result);
         }
 
-        // POST: api/collection
+
         [HttpPost]
         public async Task<IActionResult> CreateCollection([FromBody] CreateCollectionDto dto)
         {
             if (dto == null)
                 return BadRequest("Données invalides.");
 
-            // Création de la collection sans les accès
             var collection = new Collection
             {
                 Name = dto.Name,
                 Description = dto.Description
             };
 
-            // Ajout des accès avec affectation de la collection
             if (dto.AllowedEmails != null)
             {
                 foreach (var email in dto.AllowedEmails)
@@ -96,21 +160,16 @@ namespace LuxAPI.Controllers
             return CreatedAtAction(nameof(GetCollection), new { id = collection.Id }, collection);
         }
 
-        // PUT: api/collection/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCollection(Guid id, [FromBody] UpdateCollectionDto dto)
         {
-            var collection = await _context.Collections
-                .Include(c => c.AllowedEmails)
-                .FirstOrDefaultAsync(c => c.Id == id);
-
+            var collection = await _context.Collections.Include(c => c.AllowedEmails).FirstOrDefaultAsync(c => c.Id == id);
             if (collection == null)
                 return NotFound("Collection non trouvée.");
 
             collection.Name = dto.Name;
             collection.Description = dto.Description;
 
-            // Remplacement complet de la liste des emails autorisés
             collection.AllowedEmails.Clear();
             if (dto.AllowedEmails != null)
             {
@@ -124,13 +183,88 @@ namespace LuxAPI.Controllers
                 }
             }
 
-            _context.Collections.Update(collection);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpPatch("{collectionId}/allowedEmails")]
+        [Authorize]
+        public async Task<IActionResult> AddAllowedEmail(Guid collectionId, [FromBody] EmailDto dto)
+        {
+            var currentUserEmail = User?.Identity?.Name;
+            if (string.IsNullOrEmpty(currentUserEmail))
+                return Unauthorized("Utilisateur non authentifié.");
+
+            var collection = await _context.Collections
+                .Include(c => c.AllowedEmails)
+                .FirstOrDefaultAsync(c => c.Id == collectionId);
+
+            if (collection == null)
+                return NotFound("Collection non trouvée.");
+
+            if (!collection.AllowedEmails.Any(a => a.Email.Equals(currentUserEmail, StringComparison.OrdinalIgnoreCase)))
+                return Forbid("Vous n'avez pas accès à cette collection.");
+
+            if (!new EmailAddressAttribute().IsValid(dto.Email))
+                return BadRequest("Format d'email invalide.");
+
+            // Vérifie que l'utilisateur existe en base
+            var userExists = await _context.Users.AnyAsync(u => u.Email == dto.Email);
+            if (!userExists)
+                return BadRequest("Aucun utilisateur ne correspond à cet email.");
+
+            // Vérifie que l'email n'est pas déjà autorisé
+            if (collection.AllowedEmails.Any(a => a.Email.Equals(dto.Email, StringComparison.OrdinalIgnoreCase)))
+                return BadRequest("Cet utilisateur est déjà autorisé.");
+
+            // Ajoute le nouvel accès
+            collection.AllowedEmails.Add(new CollectionAccess
+            {
+                Email = dto.Email,
+                CollectionId = collectionId
+            });
+
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Utilisateur ajouté avec succès." });
+        }
+
+
+        [Authorize]
+        [HttpDelete("photo/{id}")]
+        public async Task<IActionResult> DeletePhoto(Guid id)
+        {
+            var photo = await _context.Photos.FirstOrDefaultAsync(p => p.Id == id);
+            if (photo == null)
+                return NotFound("Image non trouvée.");
+
+            var objectName = Path.GetFileName(new Uri(photo.FilePath).AbsolutePath);
+            await _minioService.DeleteFileAsync(_bucketName, objectName);
+
+            _context.Photos.Remove(photo);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        // DELETE: api/collection/{id}
+        [HttpGet("image/{filename}")]
+        public async Task<IActionResult> GetImage(string filename)
+        {
+            var stream = await _minioService.GetFileAsync(_bucketName, filename);
+            if (stream == null) return NotFound("Fichier introuvable.");
+            return File(stream, GetContentType(filename));
+        }
+
+        private static string GetContentType(string fileName)
+        {
+            var ext = Path.GetExtension(fileName).ToLowerInvariant();
+            return ext switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                _ => "application/octet-stream"
+            };
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCollection(Guid id)
         {
@@ -140,16 +274,12 @@ namespace LuxAPI.Controllers
 
             _context.Collections.Remove(collection);
             await _context.SaveChangesAsync();
-
             return NoContent();
         }
 
-        // POST: api/collection/{collectionId}/upload
-        // Upload d'un fichier image (png, jpg, jpeg) vers minIO et création de l'entité Photo associée
         [HttpPost("{collectionId}/upload")]
         public async Task<IActionResult> UploadPhoto(Guid collectionId, [FromForm] IFormFile file)
         {
-            // Vérifier que la collection existe
             var collection = await _context.Collections.FindAsync(collectionId);
             if (collection == null)
                 return NotFound("Collection non trouvée.");
@@ -157,43 +287,25 @@ namespace LuxAPI.Controllers
             if (file == null || file.Length == 0)
                 return BadRequest("Aucun fichier sélectionné.");
 
-            // Validation de l'extension
             var permittedExtensions = new[] { ".png", ".jpg", ".jpeg" };
             var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (string.IsNullOrEmpty(ext) || !permittedExtensions.Contains(ext))
-                return BadRequest("Type de fichier non supporté. Seuls les fichiers PNG et JPG sont autorisés.");
+            if (!permittedExtensions.Contains(ext))
+                return BadRequest("Type de fichier non supporté.");
 
-            // Générer un nom unique pour l'objet
             var objectName = $"{Guid.NewGuid()}{ext}";
 
-            // Vérifier l'existence du bucket et le créer si nécessaire (API de MinIO 6.0.4)
-            bool bucketExists = await _minioClient.BucketExistsAsync(new Minio.DataModel.Args.BucketExistsArgs().WithBucket(_bucketName));
-            if (!bucketExists)
-            {
-                await _minioClient.MakeBucketAsync(new Minio.DataModel.Args.MakeBucketArgs().WithBucket(_bucketName));
-            }
-
-            // Upload du fichier dans le bucket minIO
             using (var stream = file.OpenReadStream())
             {
-                var putObjectArgs = new Minio.DataModel.Args.PutObjectArgs()
-                    .WithBucket(_bucketName)
-                    .WithObject(objectName)
-                    .WithStreamData(stream)
-                    .WithObjectSize(file.Length)
-                    .WithContentType(file.ContentType);
-                await _minioClient.PutObjectAsync(putObjectArgs);
+                await _minioService.UploadFileAsync(_bucketName, objectName, stream, file.ContentType);
             }
 
-            // Construire l'URL d'accès à l'image (adaptée à votre configuration)
-            var fileUrl = $"https://{_minioEndpoint}/{_bucketName}/{objectName}";
+            var fileUrl = $"http://localhost:5269/api/collection/image/{objectName}";
 
-            // Création de l'entité Photo dans la base de données
             var photo = new Photo
             {
                 CollectionId = collectionId,
                 FilePath = fileUrl,
-                Status = PhotoStatus.Pending // Statut initial par défaut
+                Status = PhotoStatus.Pending
             };
 
             _context.Photos.Add(photo);
@@ -202,7 +314,6 @@ namespace LuxAPI.Controllers
             return CreatedAtAction(nameof(GetCollection), new { id = collectionId }, photo);
         }
 
-        // POST: api/collection/{collectionId}/chat
         [HttpPost("{collectionId}/chat")]
         public async Task<IActionResult> AddChatMessage(Guid collectionId, [FromBody] CreateChatMessageDto dto)
         {
@@ -210,16 +321,25 @@ namespace LuxAPI.Controllers
             if (collection == null)
                 return NotFound("Collection non trouvée.");
 
+            // Récupère l'utilisateur pour son avatar
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.SenderEmail);
+            var avatarFileName = user?.AvatarFileName ?? "default_avatar.jpg";
+
             var message = new ChatMessage
             {
                 CollectionId = collectionId,
                 SenderEmail = dto.SenderEmail,
+                SenderUsername = dto.SenderUsername,
                 Message = dto.Message,
                 SentAt = DateTime.UtcNow
             };
 
             _context.ChatMessages.Add(message);
             await _context.SaveChangesAsync();
+
+            // ✅ Envoie le message avec avatar et date
+            await _chatHub.Clients.Group(collectionId.ToString())
+                .SendAsync("ReceiveMessage", dto.SenderUsername, dto.Message, avatarFileName, message.SentAt);
 
             return CreatedAtAction(nameof(GetCollection), new { id = collectionId }, message);
         }
@@ -233,7 +353,7 @@ namespace LuxAPI.Controllers
         public string Description { get; set; }
         public List<string> AllowedEmails { get; set; }
     }
-//SYSTEME DE DICTONNAIRE pour éviter de préciser les champs à modifier
+
     public class UpdateCollectionDto
     {
         public string? Name { get; set; }
@@ -244,7 +364,13 @@ namespace LuxAPI.Controllers
     public class CreateChatMessageDto
     {
         public string SenderEmail { get; set; }
+        public string SenderUsername { get; set; }
         public string Message { get; set; }
+    }
+
+    public class EmailDto
+    {
+        public string Email { get; set; }
     }
 
     #endregion

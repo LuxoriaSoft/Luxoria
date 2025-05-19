@@ -1,3 +1,3 @@
 window.appConfig = {
-    API_URL: '__API_URL__'  // This will be replaced at runtime
+    API_URL: 'http://localhost:5269'  // This will be replaced at runtime
 };

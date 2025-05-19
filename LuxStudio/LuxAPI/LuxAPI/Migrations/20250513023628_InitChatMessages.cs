@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LuxAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitChatMessages : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -76,6 +76,7 @@ namespace LuxAPI.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     CollectionId = table.Column<Guid>(type: "uuid", nullable: false),
                     SenderEmail = table.Column<string>(type: "text", nullable: false),
+                    SenderUsername = table.Column<string>(type: "text", nullable: false),
                     Message = table.Column<string>(type: "text", nullable: false),
                     SentAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
