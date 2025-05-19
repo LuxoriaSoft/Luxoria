@@ -60,25 +60,63 @@ enum ModSubcommands {
     },
 }
 
+struct Project {
+    name: String,
+    path: String,
+    luxconfig_path: String,
+}
+
+fn get_projectcfg(path: &str) -> Result<Project, String> {
+    // Check if the path exists
+    if !std::path::Path::new(path).exists() {
+        return Err(String::from("Path does not exist (expected: LuxMod or ./LuxMod/luxmod.json"));
+    }
+
+    // Check if the path contains a luxmod.json file
+    let luxmod_path: String = format!("{}/luxmod.json", path);
+    if !std::path::Path::new(&luxmod_path).exists() {
+        return Err(String::from("Path does not contain a luxmod.json file (expected: luxmod.json)"));
+    }
+
+    // Check if the luxmod.json file is valid
+
+
+    return Ok(Project {
+        name: "Luxoria".to_string(),
+        path: "path".to_string(),
+        luxconfig_path: "luxconfig_path".to_string(),
+    });
+}
+
 fn main() {
     let cli = Cli::parse();
 
     match cli.command {
         Commands::Build => {
-            println!("Building the project...");
+            println!("LuxCLI > Building the project...");
         }
         Commands::Clear => {
-            println!("Clearing the project...");
+            println!("LuxCLI > Clearing the project...");
         }
         Commands::Info => {
-            println!("Showing project info...");
+            println!("LuxCLI > Showing project info...");
         }
         Commands::Mod { subcommand } => match subcommand {
             ModSubcommands::Build { dir } => {
-                println!("Building module in directory: {}", dir);
+                println!("LuxCLI > Building module in directory: {}...", dir);
+                match get_projectcfg(&dir) {
+                    Ok(project) => {
+                        println!("Project name: {}", project.name);
+                        println!("Project path: {}", project.path);
+                        println!("Luxconfig path: {}", project.luxconfig_path);
+                    }
+                    Err(e) => {
+                        println!("Error: {}", e);
+                    }
+                }
             }
             ModSubcommands::Clear { dir } => {
-                println!("Clearing module in directory: {}", dir);
+                println!("LuxCLI > Clearing module in directory: {}...", dir);
             }
         },
     }
