@@ -169,7 +169,7 @@ namespace LuxEditor.Components
             slider.OnValueChanged = val =>
             {
                 if (currentImage == null) return;
-                currentImage.Filters[key] = val;
+                currentImage.Settings[key] = val;
                 ApplyFilters();
                 UpdateResetButtonsVisibility();
             };
@@ -177,7 +177,7 @@ namespace LuxEditor.Components
             if (style != null)
                 slider.ApplyStyle(style);
 
-            _panelManager!.RegisterSlider(key, slider);
+            _panelManager!.RegisterControl(key, slider);
             return slider;
         }
 
@@ -205,7 +205,7 @@ namespace LuxEditor.Components
                 {
                     slider.ResetToDefault();
                     if (currentImage != null)
-                        currentImage.Filters[slider.Key] = slider.DefaultValue;
+                        currentImage.Settings[slider.Key] = slider.DefaultValue;
                 }
             }
 
@@ -223,7 +223,7 @@ namespace LuxEditor.Components
                     {
                         slider.ResetToDefault();
                         if (currentImage != null)
-                            currentImage.Filters[slider.Key] = slider.DefaultValue;
+                            currentImage.Settings[slider.Key] = slider.DefaultValue;
                     }
                 }
             }
@@ -236,9 +236,9 @@ namespace LuxEditor.Components
         {
             if (currentImage == null || _panelManager == null) return;
 
-            foreach (var (key, value) in currentImage.Filters)
+            foreach (var (key, value) in currentImage.Settings)
             {
-                _panelManager.GetSlider(key)?.SetValue(value);
+                _panelManager.GetControl<EditorSlider>(key)?.SetValue((float) value);
             }
 
             UpdateResetButtonsVisibility();
@@ -258,9 +258,9 @@ namespace LuxEditor.Components
                 category.SetResetVisible(modified);
             }
 
-            bool anyChanged = currentImage.Filters.Any(f =>
+            bool anyChanged = currentImage.Settings.Any(f =>
             {
-                var s = _panelManager!.GetSlider(f.Key);
+                var s = _panelManager!.GetControl<EditorSlider>(f.Key);
                 return s != null && Math.Abs(s.GetValue() - s.DefaultValue) > 0.01f;
             });
 
@@ -299,7 +299,7 @@ namespace LuxEditor.Components
             if (currentImage?.OriginalBitmap == null)
                 return;
 
-            var filteredBitmap = await ImageProcessingManager.ApplyFiltersAsync(currentImage.OriginalBitmap, currentImage.Filters);
+            var filteredBitmap = await ImageProcessingManager.ApplyFiltersAsync(currentImage.OriginalBitmap, currentImage.Settings);
 
             currentImage.EditedBitmap = filteredBitmap;
             OnEditorImageUpdated?.Invoke(filteredBitmap);

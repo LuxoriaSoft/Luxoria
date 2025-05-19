@@ -34,5 +34,10 @@ public class EditorGroupExpander : IEditorControl
         _container.Children.Add(category.GetElement());
     }
 
+    public void AddControl(IEditorGroupItem item)
+    {
+        _container.Children.Add(item.GetElement());
+    }
+
     public UIElement GetElement() => _expander;
 }

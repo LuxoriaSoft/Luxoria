@@ -7,7 +7,7 @@ namespace LuxEditor.Logic
 {
     public static class ImageProcessingManager
     {
-        private static SKColorFilter CreateCombinedColorFilter(Dictionary<string, float> filters)
+        private static SKColorFilter CreateCombinedColorFilter(Dictionary<string, object> filters)
         {
             var cf = SKColorFilter.CreateColorMatrix(CreateBaseMatrix(filters));
 
@@ -33,7 +33,7 @@ namespace LuxEditor.Logic
             return SKImageFilter.CreateCompose(a, b);
         }
 
-        public static async Task<SKBitmap> ApplyFiltersAsync(SKBitmap source, Dictionary<string, float> filters)
+        public static async Task<SKBitmap> ApplyFiltersAsync(SKBitmap source, Dictionary<string, object> filters)
         {
             return await Task.Run(() =>
             {
@@ -63,13 +63,13 @@ namespace LuxEditor.Logic
         /// <summary>
         /// Constructs a color matrix applying exposure, contrast, saturation, temperature, and tint.
         /// </summary>
-        private static float[] CreateBaseMatrix(Dictionary<string, float> filters)
+        private static float[] CreateBaseMatrix(Dictionary<string, object> filters)
         {
-            float exposure = filters.TryGetValue("Exposure", out var exp) ? exp : 0f;
-            float contrast = filters.TryGetValue("Contrast", out var con) ? con : 0f;
-            float saturation = filters.TryGetValue("Saturation", out var sat) ? sat : 0f;
-            float temperature = filters.TryGetValue("Temperature", out var temp) ? temp : 6500f;
-            float tint = filters.TryGetValue("Tint", out var ti) ? ti : 0f;
+            float exposure = filters.TryGetValue("Exposure", out var exp) ? (float) exp : 0f;
+            float contrast = filters.TryGetValue("Contrast", out var con) ? (float) con : 0f;
+            float saturation = filters.TryGetValue("Saturation", out var sat) ? (float) sat : 0f;
+            float temperature = filters.TryGetValue("Temperature", out var temp) ? (float) temp : 6500f;
+            float tint = filters.TryGetValue("Tint", out var ti) ? (float) ti : 0f;
 
             var exposureGain = MathF.Pow(2, exposure);
 
@@ -118,12 +118,12 @@ namespace LuxEditor.Logic
         /// Builds a table‐based filter that adjusts shadows and highlights.
         /// Shadows/Highlights values are in –100…100.
         /// </summary>
-        private static SKColorFilter? CreateShadowsHighlightsFilter(Dictionary<string, float> filters)
+        private static SKColorFilter? CreateShadowsHighlightsFilter(Dictionary<string, Object> filters)
         {
             filters.TryGetValue("Shadows", out var rawSh);
             filters.TryGetValue("Highlights", out var rawHi);
-            float shadows = rawSh / 100f;
-            float highlights = rawHi / 100f;
+            float shadows = (float) rawSh / 100f;
+            float highlights = (float) rawHi / 100f;
 
             if (MathF.Abs(shadows) < 1e-6 && MathF.Abs(highlights) < 1e-6)
                 return null;
@@ -151,12 +151,12 @@ namespace LuxEditor.Logic
             return SKColorFilter.CreateTable(table);
         }
 
-        static SKColorFilter? CreateBlacksWhitesLUT(Dictionary<string, float> filters)
+        static SKColorFilter? CreateBlacksWhitesLUT(Dictionary<string, Object> filters)
         {
             filters.TryGetValue("Blacks", out var rawB);
             filters.TryGetValue("Whites", out var rawW);
-            float blacks = Math.Clamp(rawB / 100f, -1f, 1f);
-            float whites = Math.Clamp(rawW / 100f, -1f, 1f);
+            float blacks = Math.Clamp((float) rawB / 100f, -1f, 1f);
+            float whites = Math.Clamp((float) rawW / 100f, -1f, 1f);
             if (Math.Abs(blacks) < 1e-6f && Math.Abs(whites) < 1e-6f)
                 return null;
 
@@ -173,10 +173,10 @@ namespace LuxEditor.Logic
             return SKColorFilter.CreateTable(table);
         }
 
-        static SKColorFilter? CreateDehazeFilter(Dictionary<string, float> filters)
+        static SKColorFilter? CreateDehazeFilter(Dictionary<string, Object> filters)
         {
             filters.TryGetValue("Dehaze", out var raw);
-            float h = Math.Clamp(raw / 100f, 0f, 1f);
+            float h = Math.Clamp((float) raw / 100f, 0f, 1f);
             if (h <= 0f) return null;
 
             var table = new byte[256];
@@ -191,10 +191,10 @@ namespace LuxEditor.Logic
             return SKColorFilter.CreateTable(table);
         }
 
-        static SKImageFilter? CreateTextureFilter(Dictionary<string, float> filters)
+        static SKImageFilter? CreateTextureFilter(Dictionary<string, Object> filters)
         {
             filters.TryGetValue("Texture", out var raw);
-            float t = Math.Clamp(raw / 100f, 0f, 1f);
+            float t = Math.Clamp((float) raw / 100f, 0f, 1f);
             if (t <= 0f) return null;
 
             float amt = t;
@@ -219,10 +219,10 @@ namespace LuxEditor.Logic
             );
         }
 
-        static SKImageFilter? CreateClarityFilter(Dictionary<string, float> filters)
+        static SKImageFilter? CreateClarityFilter(Dictionary<string, Object> filters)
         {
             filters.TryGetValue("Clarity", out var raw);
-            float c = Math.Clamp(raw / 100f, 0f, 1f);
+            float c = Math.Clamp((float) raw / 100f, 0f, 1f);
             if (c <= 0f) return null;
 
             // 5x5 unsharp-mask for mid-frequency boost
@@ -250,10 +250,10 @@ namespace LuxEditor.Logic
         }
 
 
-        private static SKColorFilter? CreateVibranceFilter(Dictionary<string, float> filters)
+        private static SKColorFilter? CreateVibranceFilter(Dictionary<string, Object> filters)
         {
             if (!filters.TryGetValue("Vibrance", out var raw)) return null;
-            float vibrance = Math.Clamp(raw / 100f, -1f, 1f);
+            float vibrance = Math.Clamp((float) raw / 100f, -1f, 1f);
             if (Math.Abs(vibrance) < 1e-6f) return null;
 
             const string sksl = @"
