@@ -26,7 +26,8 @@ use clap::{Parser, Subcommand};
 use serde::Deserialize;
 use std::fs;
 use std::fmt;
-use std::vec;
+use std::path::{Path, PathBuf};
+use std::collections::HashMap;
 use std::process::Command;
 
 #[derive(Parser)]
@@ -38,13 +39,9 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Build the project
     Build,
-    /// Clear the project
     Clear,
-    /// Show project info
     Info,
-    /// Work with modules
     Mod {
         #[command(subcommand)]
         subcommand: ModSubcommands,
@@ -57,6 +54,8 @@ enum ModSubcommands {
     Build {
         /// Directory to build
         dir: String,
+        /// Target path to Luxoria.App (./Luxoria.App)
+        target: String,
         /// Optional architecture (x86, x64 or arm64)
         #[arg(short, long)]
         arch: Option<String>,
@@ -72,7 +71,7 @@ enum ModSubcommands {
 }
 
 struct Project {
-    luxmod_path: String,
+    luxmod_path: PathBuf,
     data: ModuleInfo,
 }
 
@@ -87,7 +86,7 @@ struct ModuleInfo {
     url: String,
     repository: String,
     compatibility: Compatibility,
-    dependencies: std::collections::HashMap<String, String>,
+    dependencies: HashMap<String, String>,
     keywords: Vec<String>,
     build: Build,
 }
@@ -102,17 +101,17 @@ struct Compatibility {
 
 #[derive(Debug, Deserialize)]
 struct Build {
-    #[serde(rename = "config")]
     config: String,
     #[serde(rename = "csproj")]
     csproj_path: String,
-    #[serde(rename = "DllName")]
+    #[serde(rename = "dll")]
     dll_name: String,
-    #[serde(rename = "runtimes")]
-    runtimes: std::collections::HashMap<String, String>,
+    #[serde(rename = "bin")]
+    bin_path: String,
+    runtimes: HashMap<String, String>,
+    #[serde(rename = "targetFramework")]
+    target_framework: String,
 }
-
-// Implement Display for pretty printing
 
 impl fmt::Display for ModuleInfo {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -135,6 +134,8 @@ impl fmt::Display for ModuleInfo {
         writeln!(f, "    Build Configuration: {}", self.build.config)?;
         writeln!(f, "    Csproj Path: {}", self.build.csproj_path)?;
         writeln!(f, "    Dll Name: {}", self.build.dll_name)?;
+        writeln!(f, "    Bin Folder: {}", self.build.bin_path)?;
+        writeln!(f, "    Target Framework: {}", self.build.target_framework)?;
         for (k, v) in &self.build.runtimes {
             writeln!(f, "    => {} : {}", k, v)?;
         }
@@ -152,66 +153,51 @@ impl fmt::Display for Compatibility {
     }
 }
 
-
 fn get_projectcfg(path: &str) -> Result<Project, String> {
-    // Check if the path exists
-    if !std::path::Path::new(path).exists() {
-        return Err(String::from("Path does not exist (expected: LuxMod or ./LuxMod/luxmod.json)"));
+    let base = Path::new(path);
+    if !base.exists() {
+        return Err("Path does not exist (expected: LuxMod or ./LuxMod/luxmod.json)".to_string());
     }
 
-    // Check if the path contains a luxmod.json file
-    let luxmod_path: String = format!("{}/luxmod.json", path);
-    if !std::path::Path::new(&luxmod_path).exists() {
-        return Err(String::from("Path does not contain a luxmod.json file (expected: luxmod.json)"));
+    let luxmod_path = base.join("luxmod.json");
+    if !luxmod_path.exists() {
+        return Err("Path does not contain a luxmod.json file (expected: luxmod.json)".to_string());
     }
 
-    // Check if the luxmod.json file is valid
-    let luxmod_content = fs::read_to_string(&luxmod_path).map_err(|_| {
-        format!("Failed to read luxmod.json file at {}", luxmod_path)
-    })?;
+    let luxmod_content = fs::read_to_string(&luxmod_path)
+        .map_err(|_| format!("Failed to read luxmod.json file at {:?}", luxmod_path))?;
 
-    let luxmod: ModuleInfo = serde_json::from_str(&luxmod_content).map_err(|_| {
-        format!("Failed to parse luxmod.json file at {}", luxmod_path)
-    })?;
+    let luxmod: ModuleInfo = serde_json::from_str(&luxmod_content)
+        .map_err(|_| format!("Failed to parse luxmod.json file at {:?}", luxmod_path))?;
 
-
-    return Ok(Project {
+    Ok(Project {
         luxmod_path,
         data: luxmod,
-    });
+    })
 }
 
 fn get_os_arch() -> String {
-    let os = std::env::consts::OS;
-    let arch = std::env::consts::ARCH;
-    format!("{}-{}", os, arch)
+    format!("{}-{}", std::env::consts::OS, std::env::consts::ARCH)
 }
 
 fn is_arch_compatible(os_arch: &str) -> bool {
-    let compatibility_list: Vec<&'static str> = vec![
-        "windows-x86_64",
-        "windows-x86",
-        "windows-arm64"
-    ];
-
-    // Check if the current OS/Arch is in the compatibility list
-    compatibility_list.contains(&os_arch)
+    matches!(
+        os_arch,
+        "windows-x86_64" | "windows-x86" | "windows-arm64"
+    )
 }
 
 fn get_short_arch(arch: &str) -> String {
     match arch {
-        "x86_64" => "x64".to_string(),
-        "windows-x86_64" => "x64".to_string(),
-        "x86" => "x86".to_string(),
-        "windows-x86" => "x86".to_string(),
-        "arm64" => "arm64".to_string(),
-        "windows-arm64" => "arm64".to_string(),
-        _ => arch.to_string(),
+        "x86_64" | "windows-x86_64" => "x64",
+        "x86" | "windows-x86" => "x86",
+        "arm64" | "windows-arm64" => "arm64",
+        _ => arch,
     }
+    .to_string()
 }
 
-// Execute dotnet publish PATH_TO_MAIN_CSPROJ -c CONFIGURATION -r RUNTIME_ID
-fn publish_module(path: &str, config: &str, runtime_id: &str) -> Result<(), String> {
+fn publish_module(path: &Path, config: &str, runtime_id: &str) -> Result<(), String> {
     let output = Command::new("dotnet")
         .arg("publish")
         .arg(path)
@@ -223,107 +209,146 @@ fn publish_module(path: &str, config: &str, runtime_id: &str) -> Result<(), Stri
         .expect("Failed to start dotnet process");
 
     if output.status.success() {
-        println!("Built Successfully :\n{}", String::from_utf8_lossy(&output.stdout));
+        println!("Build succeeded.");
+        println!("{}", String::from_utf8_lossy(&output.stdout));
         Ok(())
     } else {
-        println!("Build failed!");
+        println!("Build failed.");
         println!("{}", String::from_utf8_lossy(&output.stdout));
         Err(format!(
-            "Build failed with error: {}",
+            "Build failed: {}",
             String::from_utf8_lossy(&output.stderr)
         ))
     }
+}
+
+fn upload_dir(module_name: &str, source: &Path, target: &Path) -> Result<(), String> {
+    let source = source.join(module_name);
+
+    if !source.exists() {
+        return Ok(());
+    }
+
+    if !target.exists() {
+        return Err(format!("Target path does not exist: {:?}", target));
+    }
+
+    // if target + module_name exists, remove it
+    let target_dir = target.join(module_name);
+    if target_dir.exists() {
+        fs::remove_dir_all(&target_dir)
+            .map_err(|_| format!("Failed to remove existing target directory: {:?}", target_dir))?;
+    }
+
+    println!("Uploading from {:?} to {:?}", source, target);
+    // copy the directory from source to target
+    fs::create_dir_all(target)
+        .map_err(|_| format!("Failed to create target directory: {:?}", target))?;
+    Ok(())
+}
+
+fn upload_module(
+    module_name: &str,
+    path: &Path,
+    target: &Path,
+    short_arch: &str,
+    config: &str,
+    target_framework: &str,
+    runtime_id: &str,
+) -> Result<(), String> {
+    let published_path = target
+        .join("Luxoria.App")
+        .join("bin")
+        .join(short_arch)
+        .join(config)
+        .join(target_framework);
+    let source = path.join(config).join(target_framework).join(runtime_id);
+    let luxoria_bin_dir = published_path.join(runtime_id);
+    let modules_dir = published_path.join(runtime_id).join("modules");
+
+    if !modules_dir.exists() {
+        println!("Creating modules directory: {:?}", modules_dir);
+        fs::create_dir_all(&modules_dir)
+            .map_err(|_| format!("Failed to create modules directory: {:?}", modules_dir))?;
+    }
+
+    // Compiled graphics
+    upload_dir(module_name, &source, &luxoria_bin_dir)?;
+    Ok(())
 }
 
 fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Build => {
-            println!("LuxCLI > Building the project...");
-        }
-        Commands::Clear => {
-            println!("LuxCLI > Clearing the project...");
-        }
-        Commands::Info => {
-            println!("LuxCLI > Showing project info...");
-        }
+        Commands::Build => println!("LuxCLI > Building the project..."),
+        Commands::Clear => println!("LuxCLI > Clearing the project..."),
+        Commands::Info => println!("LuxCLI > Showing project info..."),
         Commands::Mod { subcommand } => match subcommand {
-            ModSubcommands::Build { dir, arch, config } => {
-                println!("LuxCLI > Building module in directory: {}...", dir);
-                
+            ModSubcommands::Build { dir, arch, config, target } => {
+                let target_path = Path::new(&target);
+                if !target_path.exists() {
+                    eprintln!("Error: Target path does not exist: {:?}", target_path);
+                    return;
+                }
+
                 let os_arch = get_os_arch();
                 let mut short_arch = get_short_arch(&os_arch);
 
                 if let Some(arch) = arch {
-                    println!("Architecture: {}", arch);
                     short_arch = get_short_arch(&arch);
-                } else {
-                    println!("Architecture: {}", os_arch);
-                    // Check if the architecture is compatible
-                    if !is_arch_compatible(&os_arch) {
-                        println!("Error: Architecture not compatible for building. (expected: windows-x86_64, windows-x86, windows-arm64)");
-                        return;
-                    }
+                } else if !is_arch_compatible(&os_arch) {
+                    eprintln!("Unsupported architecture: {}", os_arch);
+                    return;
                 }
 
                 match get_projectcfg(&dir) {
                     Ok(project) => {
-                        println!("Project name: {}", project.data.name);
-                        println!("Project path: {}", project.luxmod_path);
-                        // Print the module info
                         println!("{}", project.data);
-
-                        // Retrieve build configuration (Debug or Release)
-                        let build_config = config.unwrap_or(project.data.build.config);
-                        
-                        // Retrieve runtime ID
+                        let build_config = config.unwrap_or(project.data.build.config.clone());
                         let runtime_id = match project.data.build.runtimes.get(&short_arch) {
                             Some(id) => id,
                             None => {
-                                println!("Error: Runtime ID not found for architecture: {}", short_arch);
+                                eprintln!("Runtime ID not found for architecture: {}", short_arch);
                                 return;
                             }
                         };
 
-                        println!("Build configuration: {}", build_config);
-                        println!("Runtime ID: {}", runtime_id);
+                        let csproj_path = Path::new(&dir).join(&project.data.build.csproj_path);
 
-                        // Concatenate path to csproj
-                        let csproj_path = format!("{}/{}", dir, project.data.build.csproj_path);
-
-                        // Publish the module
-                        println!("Publishing module...");
-                        match publish_module(&csproj_path, &build_config, runtime_id) {
-                            Ok(_) => {
-                                println!("Module built successfully!");
-                            }
-                            Err(e) => {
-                                println!("Error: {}", e);
-                                // return an error code
-                                std::process::exit(1);
-                            }
+                        if let Err(e) = publish_module(&csproj_path, &build_config, runtime_id) {
+                            eprintln!("Error: {}", e);
+                            std::process::exit(1);
                         }
+
+                        let bin_path = Path::new(&dir).join(&project.data.build.bin_path);
+
+                        if let Err(e) = upload_module(
+                            &project.data.name,
+                            &bin_path,
+                            target_path,
+                            &short_arch,
+                            &build_config,
+                            &project.data.build.target_framework,
+                            runtime_id,
+                        ) {
+                            eprintln!("Error: {}", e);
+                            std::process::exit(1);
+                        }
+
+                        println!("Module built and uploaded successfully.");
                     }
                     Err(e) => {
-                        println!("Error: {}", e);
-                        // return an error code
+                        eprintln!("Error: {}", e);
                         std::process::exit(1);
                     }
                 }
             }
             ModSubcommands::Clear { dir } => {
-                println!("LuxCLI > Clearing module in directory: {}...", dir);
                 match get_projectcfg(&dir) {
-                    Ok(project) => {
-                        println!("Project name: {}", project.data.name);
-                        println!("Project path: {}", project.luxmod_path);
-                        // Print the module info
-                        println!("{}", project.data);
-                    }
+                    Ok(project) => println!("{}", project.data),
                     Err(e) => {
-                        println!("Error: {}", e);
-                        // Return an error code
+                        eprintln!("Error: {}", e);
                         std::process::exit(1);
                     }
                 }

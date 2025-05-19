@@ -25,12 +25,14 @@
     ],
     "build": {
         "config": "Release",
-        "csproj": "LuxImport/LuxImport.csproj",
-        "DllName": "LuxImport.dll",
+        "csproj": "LuxImport\\LuxImport.csproj",
+        "dll": "LuxImport.dll",
+        "bin": "LuxImport\\bin",
         "runtimes": {
             "x64": "win-x64",
             "x86": "win-x86",
             "arm64": "win-arm64"
-        }
+        },
+        "targetFramework": "net9.0-windows10.0.26100.0"
     }
 }
