@@ -49,19 +49,19 @@ jobs:
       - name: Build LuxImport
         run: dotnet publish Modules/LuxImport/LuxImport/LuxImport.csproj -c ${{ matrix.configuration }} -r ${{ matrix.platform }}
 
+      # Rename publish/LuxImport.dll to publish/LuxImport.Lux.dll
+      - name: Rename LuxImport.dll
+        run: |
+          $sourcePath = "Modules/LuxImport/LuxImport/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/publish/LuxImport.dll"
+          $destinationPath = "Modules/LuxImport/LuxImport/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/publish/LuxImport.Lux.dll"
+          Rename-Item -Path $sourcePath -NewName $destinationPath
+        shell: pwsh
+
       - name: Upload LuxImport artifact
         uses: actions/upload-artifact@v4
         with:
           name: LuxImport-${{ matrix.platform }}
           path: Modules/LuxImport/LuxImport/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}
-      
-      # Rename publish/LuxImport.dll to publish/LuxImport.Lux.dll
-      - name: Rename LuxImport.dll
-        run: |
-          $sourcePath = "Modules/LuxImport/LuxImport/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/LuxImport.dll"
-          $destinationPath = "Modules/LuxImport/LuxImport/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/LuxImport.Lux.dll"
-          Rename-Item -Path $sourcePath -NewName $destinationPath
-        shell: pwsh
 
       # Build and upload LuxFilter
       - name: Build LuxFilter
@@ -70,8 +70,8 @@ jobs:
       # Rename publish/LuxFilter.dll to publish/LuxFilter.Lux.dll
       - name: Rename LuxFilter.dll
         run: |
-          $sourcePath = "Modules/LuxFilter/LuxFilter/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/LuxFilter.dll"
-          $destinationPath = "Modules/LuxFilter/LuxFilter/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/LuxFilter.Lux.dll"
+          $sourcePath = "Modules/LuxFilter/LuxFilter/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/publish/LuxFilter.dll"
+          $destinationPath = "Modules/LuxFilter/LuxFilter/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/publish/LuxFilter.Lux.dll"
           Rename-Item -Path $sourcePath -NewName $destinationPath
         shell: pwsh
 
@@ -88,8 +88,8 @@ jobs:
       # Rename publish/LuxEditor.dll to publish/LuxEditor.Lux.dll
       - name: Rename LuxEditor.dll
         run: |
-          $sourcePath = "Modules/LuxEditor/LuxEditor/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/LuxEditor.dll"
-          $destinationPath = "Modules/LuxEditor/LuxEditor/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/LuxEditor.Lux.dll"
+          $sourcePath = "Modules/LuxEditor/LuxEditor/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/publish/LuxEditor.dll"
+          $destinationPath = "Modules/LuxEditor/LuxEditor/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/publish/LuxEditor.Lux.dll"
           Rename-Item -Path $sourcePath -NewName $destinationPath
         shell: pwsh
       - name: Upload LuxEditor artifact
@@ -105,8 +105,8 @@ jobs:
       # Rename publish/LuxExport.dll to publish/LuxExport.Lux.dll
       - name: Rename LuxExport.dll
         run: |
-          $sourcePath = "Modules/LuxExport/LuxExport/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/LuxExport.dll"
-          $destinationPath = "Modules/LuxExport/LuxExport/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/LuxExport.Lux.dll"
+          $sourcePath = "Modules/LuxExport/LuxExport/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/publish/LuxExport.dll"
+          $destinationPath = "Modules/LuxExport/LuxExport/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}/publish/LuxExport.Lux.dll"
           Rename-Item -Path $sourcePath -NewName $destinationPath
         shell: pwsh
       
