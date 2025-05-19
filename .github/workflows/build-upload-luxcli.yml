@@ -5,33 +5,43 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
-
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
-        BUILD_TARGET: [release] # refers to a cargo profile
-    outputs:
-      release_built: ${{ steps.set-output.outputs.release_built }}
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            profile: release
+            runner: ubuntu-latest
+
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            profile: release
+            runner: windows-latest
+
+          - os: windows-latest
+            target: i686-pc-windows-msvc
+            profile: release
+            runner: windows-latest
+
+          - os: windows-latest
+            target: aarch64-pc-windows-msvc
+            profile: release
+            runner: windows-latest
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build LuxCLI in "${{ matrix.BUILD_TARGET }}" mode
-        run: cargo build --manifest-path luxcli/Cargo.toml --profile ${{ matrix.BUILD_TARGET }}
+      - name: Set up Rust for target ${{ matrix.target }}
+        run: rustup target add ${{ matrix.target }}
 
-      # DO NOT HAVE UNIT TESTS
-      #- name: Run tests in "${{ matrix.BUILD_TARGET }}" mode
-      #  run: cargo test --profile ${{ matrix.BUILD_TARGET }}
+      - name: Build LuxCLI (${{ matrix.target }})
+        run: cargo build --manifest-path luxcli/Cargo.toml --profile ${{ matrix.profile }} --target ${{ matrix.target }}
 
-      - name: List dir -r target
-        run: ls -r luxcli/target/release
-
-      - name: Upload LuxCLI binary
-        id: set-output
+      - name: Upload LuxCLI binary for ${{ matrix.target }}
         uses: actions/upload-artifact@v4
         with:
-          name: luxcli-${{ matrix.BUILD_TARGET }}
-          path: luxcli/target/${{ matrix.BUILD_TARGET }}
-
-      
+          name: luxcli-${{ matrix.target }}
+          path: luxcli/target/${{ matrix.target }}/release/
