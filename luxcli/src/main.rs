@@ -56,6 +56,9 @@ enum ModSubcommands {
     Build {
         /// Directory to build
         dir: String,
+        /// Optional architecture (x86, x64 or arm64)
+        #[arg(short, long)]
+        arch: Option<String>,
     },
     /// Clear a module
     Clear {
@@ -170,6 +173,18 @@ fn is_arch_compatible(os_arch: &str) -> bool {
     compatibility_list.contains(&os_arch)
 }
 
+fn get_short_arch(arch: &str) -> String {
+    match arch {
+        "x86_64" => "x64".to_string(),
+        "windows-x86_64" => "x64".to_string(),
+        "x86" => "x86".to_string(),
+        "windows-x86" => "x86".to_string(),
+        "arm64" => "arm64".to_string(),
+        "windows-arm64" => "arm64".to_string(),
+        _ => arch.to_string(),
+    }
+}
+
 fn main() {
     let cli = Cli::parse();
 
@@ -184,16 +199,21 @@ fn main() {
             println!("LuxCLI > Showing project info...");
         }
         Commands::Mod { subcommand } => match subcommand {
-            ModSubcommands::Build { dir } => {
+            ModSubcommands::Build { dir, arch } => {
                 println!("LuxCLI > Building module in directory: {}...", dir);
                 
                 let os_arch = get_os_arch();
-                println!("OS/Arch: {}", os_arch);
+                let short_arch = get_short_arch(&os_arch);
 
-                // Check if the architecture is compatible
-                if !is_arch_compatible(&os_arch) {
-                    println!("Error: Architecture not compatible for building. (expected: windows-x86_64, windows-x86, windows-arm64)");
-                    return;
+                if let Some(arch) = arch {
+                    println!("Architecture: {}", arch);
+                } else {
+                    println!("Architecture: {}", os_arch);
+                    // Check if the architecture is compatible
+                    if !is_arch_compatible(&short_arch) {
+                        println!("Error: Architecture not compatible for building. (expected: windows-x86_64, windows-x86, windows-arm64)");
+                        return;
+                    }
                 }
 
                 match get_projectcfg(&dir) {
