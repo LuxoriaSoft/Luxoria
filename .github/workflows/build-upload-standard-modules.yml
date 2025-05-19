@@ -31,7 +31,7 @@ jobs:
 
       # Set up MSBuild for Windows build environment
       - name: Setup MSBuild.exe
-        uses: microsoft/setup-msbuild@v1.0.2
+        uses: microsoft/setup-msbuild@v2.0.0
             
       # Build the main Luxoria.App solution
       - name: Build Luxoria.App
