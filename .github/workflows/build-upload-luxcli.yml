@@ -24,4 +24,11 @@ jobs:
       #- name: Run tests in "${{ matrix.BUILD_TARGET }}" mode
       #  run: cargo test --profile ${{ matrix.BUILD_TARGET }}
 
+      - name: Upload LuxCLI binary
+        id: set-output
+        uses: actions/upload-artifact@v4
+        with:
+          name: luxcli-${{ matrix.BUILD_TARGET }}
+          path: luxcli/target/${{ matrix.BUILD_TARGET }}/luxcli/${{ matrix.BUILD_TARGET }}
+
       
