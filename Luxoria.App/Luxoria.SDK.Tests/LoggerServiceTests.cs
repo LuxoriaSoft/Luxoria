@@ -1,12 +1,7 @@
-﻿using Xunit;
-using Moq;
-using Luxoria.SDK.Interfaces;
-using Luxoria.SDK.Models;
+﻿using Luxoria.SDK.Models;
 using Luxoria.SDK.Services;
-using System;
-using System.Diagnostics;
-using System.Collections.Generic;
 using Luxoria.SDK.Services.Targets;
+using System.Diagnostics;
 
 namespace Luxoria.SDK.Tests
 {

@@ -1,7 +1,5 @@
-﻿using System;
-using Luxoria.Modules.Models;
+﻿using Luxoria.Modules.Models;
 using SkiaSharp;
-using Xunit;
 
 namespace Luxoria.App.Tests
 {
