@@ -156,7 +156,7 @@ impl fmt::Display for Compatibility {
 fn get_projectcfg(path: &str) -> Result<Project, String> {
     // Check if the path exists
     if !std::path::Path::new(path).exists() {
-        return Err(String::from("Path does not exist (expected: LuxMod or ./LuxMod/luxmod.json"));
+        return Err(String::from("Path does not exist (expected: LuxMod or ./LuxMod/luxmod.json)"));
     }
 
     // Check if the path contains a luxmod.json file
@@ -211,7 +211,7 @@ fn get_short_arch(arch: &str) -> String {
 }
 
 // Execute dotnet publish PATH_TO_MAIN_CSPROJ -c CONFIGURATION -r RUNTIME_ID
-fn publish_module(path: &str, config: &str, runtime_id: &str) {
+fn publish_module(path: &str, config: &str, runtime_id: &str) -> Result<(), String> {
     let output = Command::new("dotnet")
         .arg("publish")
         .arg(path)
@@ -224,12 +224,16 @@ fn publish_module(path: &str, config: &str, runtime_id: &str) {
 
     if output.status.success() {
         println!("Built Successfully :\n{}", String::from_utf8_lossy(&output.stdout));
+        Ok(())
     } else {
         println!("Build failed!");
         println!("{}", String::from_utf8_lossy(&output.stdout));
+        Err(format!(
+            "Build failed with error: {}",
+            String::from_utf8_lossy(&output.stderr)
+        ))
     }
 }
-
 
 fn main() {
     let cli = Cli::parse();
@@ -257,7 +261,7 @@ fn main() {
                 } else {
                     println!("Architecture: {}", os_arch);
                     // Check if the architecture is compatible
-                    if !is_arch_compatible(&short_arch) {
+                    if !is_arch_compatible(&os_arch) {
                         println!("Error: Architecture not compatible for building. (expected: windows-x86_64, windows-x86, windows-arm64)");
                         return;
                     }
@@ -289,10 +293,22 @@ fn main() {
                         let csproj_path = format!("{}/{}", dir, project.data.build.csproj_path);
 
                         // Publish the module
-                        publish_module(&csproj_path, &build_config, &runtime_id);
+                        println!("Publishing module...");
+                        match publish_module(&csproj_path, &build_config, runtime_id) {
+                            Ok(_) => {
+                                println!("Module built successfully!");
+                            }
+                            Err(e) => {
+                                println!("Error: {}", e);
+                                // return an error code
+                                std::process::exit(1);
+                            }
+                        }
                     }
                     Err(e) => {
                         println!("Error: {}", e);
+                        // return an error code
+                        std::process::exit(1);
                     }
                 }
             }
@@ -307,6 +323,8 @@ fn main() {
                     }
                     Err(e) => {
                         println!("Error: {}", e);
+                        // Return an error code
+                        std::process::exit(1);
                     }
                 }
             }
