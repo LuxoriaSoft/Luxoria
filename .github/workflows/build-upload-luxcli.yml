@@ -25,13 +25,13 @@ jobs:
       #  run: cargo test --profile ${{ matrix.BUILD_TARGET }}
 
       - name: List dir -r target
-        run: ls -r luxcli/target
+        run: ls -r luxcli/target/release
 
       - name: Upload LuxCLI binary
         id: set-output
         uses: actions/upload-artifact@v4
         with:
           name: luxcli-${{ matrix.BUILD_TARGET }}
-          path: luxcli/target/${{ matrix.BUILD_TARGET }}/luxcli/${{ matrix.BUILD_TARGET }}
+          path: luxcli/target/${{ matrix.BUILD_TARGET }}
 
       
