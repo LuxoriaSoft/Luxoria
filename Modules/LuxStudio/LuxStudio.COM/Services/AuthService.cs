@@ -10,17 +10,28 @@ public class AuthService
 
     private readonly string _clientId = "ba258d95-aa1a-4d75-b0ea-669a9db1b4b2";
     private readonly string _redirectUri = "http://localhost:5001/callback";
-    private readonly string _ssoBaseUrl = "http://129.12.234.243:3000/sso/authorize";
+    private readonly string _ssoBaseUrl = "https://studio.pluto.luxoria.bluepelicansoft.com/sso/authorize";
+    private HttpListener? listener;
 
+    /// <summary>
+    /// Builds the authorization URL for the SSO login flow.
+    /// </summary>
+    /// <returns>Url to explored</returns>
     public string BuildAuthorizationUrl()
     {
         var encodedRedirectUri = HttpUtility.UrlEncode(_redirectUri);
         return $"{_ssoBaseUrl}?clientId={_clientId}&responseType=code&redirectUri={encodedRedirectUri}";
     }
 
+    /// <summary>
+    /// Creates a new HttpListener and starts listening for incoming requests.
+    /// </summary>
+    /// <param name="timeoutInSeconds">Timeout before killing listening</param>
+    /// <returns>True if authentified, otherwise False</returns>
+    /// <exception cref="ArgumentNullException"></exception>
     public async Task<bool> StartLoginFlowAsync(int timeoutInSeconds = 120)
     {
-        using var listener = new HttpListener();
+        listener = new HttpListener();
         listener.Prefixes.Add(_redirectUri + "/");
         listener.Start();
 
@@ -50,8 +61,8 @@ public class AuthService
             var request = context.Request;
             var response = context.Response;
 
-            var query = HttpUtility.ParseQueryString(request.Url.Query);
-            var code = query["code"]; // SSO returns ?code=...
+            var query = HttpUtility.ParseQueryString(request?.Url?.Query ?? throw new ArgumentNullException());
+            var code = query["code"];
 
             if (!string.IsNullOrWhiteSpace(code))
             {
@@ -81,6 +92,21 @@ public class AuthService
             Debug.WriteLine($"Unexpected error: {ex.Message}");
             listener.Stop();
             return false;
+        }
+    }
+
+    /// <summary>
+    /// Termines the listener and stops listening for incoming requests.
+    /// </summary>
+    public void StopLoginFlow()
+    {
+        try
+        {
+            listener?.Stop();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error stopping listener: {ex.Message}");
         }
     }
 }

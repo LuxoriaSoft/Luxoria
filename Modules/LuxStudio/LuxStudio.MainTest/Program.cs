@@ -2,7 +2,7 @@
 using LuxStudio.COM.Services;
 using System.Diagnostics;
 
-AuthService authSvc = new AuthService();
+AuthService authSvc = new();
 
 await authSvc.StartLoginFlowAsync();
 
