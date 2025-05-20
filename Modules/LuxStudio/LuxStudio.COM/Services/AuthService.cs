@@ -6,40 +6,42 @@ namespace LuxStudio.COM.Services;
 
 public class AuthService
 {
-    public string? AccessToken { get; private set; }
-    public string? RefreshToken { get; private set; }
+    public string? AuthorizationCode { get; private set; }
 
-    private readonly string _loginUrl = "http://localhost:5000/login";
-    private readonly string _callbackUrl = "http://localhost:5001/callback";
+    private readonly string _clientId = "ba258d95-aa1a-4d75-b0ea-669a9db1b4b2";
+    private readonly string _redirectUri = "http://localhost:5001/callback";
+    private readonly string _ssoBaseUrl = "http://129.12.234.243:3000/sso/authorize";
 
-    public AuthService(string loginUrl = "https://studio.pluto.luxoria.bluepelicansoft.com/auth/sso")
+    public string BuildAuthorizationUrl()
     {
-        _loginUrl = loginUrl;
+        var encodedRedirectUri = HttpUtility.UrlEncode(_redirectUri);
+        return $"{_ssoBaseUrl}?clientId={_clientId}&responseType=code&redirectUri={encodedRedirectUri}";
     }
 
     public async Task<bool> StartLoginFlowAsync(int timeoutInSeconds = 120)
     {
         using var listener = new HttpListener();
-        listener.Prefixes.Add(_callbackUrl + "/");
+        listener.Prefixes.Add(_redirectUri + "/");
         listener.Start();
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutInSeconds));
+
         try
         {
-            // Open browser to login page
+            // Open browser with SSO login URL
             Process.Start(new ProcessStartInfo
             {
-                FileName = _loginUrl,
+                FileName = BuildAuthorizationUrl(),
                 UseShellExecute = true
             });
 
-            // Wait for the callback request with cancellation
+            // Wait for the redirect (or timeout)
             var contextTask = listener.GetContextAsync();
             var completedTask = await Task.WhenAny(contextTask, Task.Delay(Timeout.Infinite, cts.Token));
 
             if (completedTask != contextTask)
             {
-                // Timeout occurred
+                // Timeout
                 listener.Stop();
                 return false;
             }
@@ -49,29 +51,36 @@ public class AuthService
             var response = context.Response;
 
             var query = HttpUtility.ParseQueryString(request.Url.Query);
-            var token = query["token"]; // or "code", depending on your flow
+            var code = query["code"]; // SSO returns ?code=...
 
-            if (token != null)
+            if (!string.IsNullOrWhiteSpace(code))
             {
-                AccessToken = token;
+                AuthorizationCode = code;
 
-                var responseString = "<html><body>Login successful! You can close this window.</body></html>";
+                var responseString = "<html><body><h1>Login successful!</h1>You can close this window.</body></html>";
                 var buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
                 response.ContentLength64 = buffer.Length;
-                await response.OutputStream.WriteAsync(buffer);
-                response.Close();
-
+                await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
+                response.OutputStream.Close();
+                listener.Stop();
                 return true;
             }
 
             response.StatusCode = 400;
             response.Close();
+            listener.Stop();
             return false;
         }
         catch (OperationCanceledException)
         {
-            listener.Stop(); // Clean up listener
-            return false;     // Timeout or user closed the browser without completing
+            listener.Stop();
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Unexpected error: {ex.Message}");
+            listener.Stop();
+            return false;
         }
     }
 }
