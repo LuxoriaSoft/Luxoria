@@ -41,6 +41,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\LuxStudio.COM\LuxStudio.COM.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <Page Update="Components\CollectionManagementView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </Page>
