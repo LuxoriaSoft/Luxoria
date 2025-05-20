@@ -17,42 +17,61 @@ public class AuthService
         _loginUrl = loginUrl;
     }
 
-    public async Task<bool> StartLoginFlowAsync()
+    public async Task<bool> StartLoginFlowAsync(int timeoutInSeconds = 120)
     {
         using var listener = new HttpListener();
         listener.Prefixes.Add(_callbackUrl + "/");
         listener.Start();
 
-        // Open browser to login page
-        Process.Start(new ProcessStartInfo
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutInSeconds));
+        try
         {
-            FileName = _loginUrl,
-            UseShellExecute = true
-        });
+            // Open browser to login page
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = _loginUrl,
+                UseShellExecute = true
+            });
 
-        // Wait for the callback request
-        var context = await listener.GetContextAsync();
-        var request = context.Request;
-        var response = context.Response;
+            // Wait for the callback request with cancellation
+            var contextTask = listener.GetContextAsync();
+            var completedTask = await Task.WhenAny(contextTask, Task.Delay(Timeout.Infinite, cts.Token));
 
-        var query = HttpUtility.ParseQueryString(request.Url.Query);
-        var token = query["token"]; // or "code", depending on your flow
+            if (completedTask != contextTask)
+            {
+                // Timeout occurred
+                listener.Stop();
+                return false;
+            }
 
-        if (token != null)
-        {
-            AccessToken = token;
-            // Optionally exchange code for tokens here if needed
+            var context = await contextTask;
+            var request = context.Request;
+            var response = context.Response;
 
-            // Send a response to the browser
-            var responseString = "<html><body>Login successful! You can close this window.</body></html>";
-            var buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
-            response.ContentLength64 = buffer.Length;
-            await response.OutputStream.WriteAsync(buffer);
+            var query = HttpUtility.ParseQueryString(request.Url.Query);
+            var token = query["token"]; // or "code", depending on your flow
+
+            if (token != null)
+            {
+                AccessToken = token;
+
+                var responseString = "<html><body>Login successful! You can close this window.</body></html>";
+                var buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+                response.ContentLength64 = buffer.Length;
+                await response.OutputStream.WriteAsync(buffer);
+                response.Close();
+
+                return true;
+            }
+
+            response.StatusCode = 400;
             response.Close();
-
-            return true;
+            return false;
         }
-
-        return false;
+        catch (OperationCanceledException)
+        {
+            listener.Stop(); // Clean up listener
+            return false;     // Timeout or user closed the browser without completing
+        }
     }
 }
