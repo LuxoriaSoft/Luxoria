@@ -71,7 +71,7 @@ namespace LuxEditor.Logic
             float temperature = filters.TryGetValue("Temperature", out var temp) ? (float) temp : 6500f;
             float tint = filters.TryGetValue("Tint", out var ti) ? (float) ti : 0f;
 
-            var exposureGain = MathF.Pow(2, exposure);
+            var exposureGain = MathF.Pow(2, (exposure / 5));
 
             // Temperature
             var (redShift,  greenShift, blueShift) = CreateWhiteBalanceMatrix(temperature, tint);
@@ -86,7 +86,7 @@ namespace LuxEditor.Logic
             float bSat = lumB * (1f - satFactor);
 
             // Contrast
-            float contrastFactor = 1f + (contrast / 100f);
+            float contrastFactor = 1f + (contrast / 500f);
             float translate = 128f * (1f - contrastFactor);
 
             return new float[]
