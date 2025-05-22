@@ -176,8 +176,7 @@ namespace LuxEditor.Logic
         static SKColorFilter? CreateDehazeFilter(Dictionary<string, Object> filters)
         {
             filters.TryGetValue("Dehaze", out var raw);
-            float h = Math.Clamp((float) raw / 100f, 0f, 1f);
-            if (h <= 0f) return null;
+            float h = Math.Clamp((float) raw / 200f, -1f, 1f);
 
             var table = new byte[256];
             for (int i = 0; i < 256; i++)
@@ -191,21 +190,21 @@ namespace LuxEditor.Logic
             return SKColorFilter.CreateTable(table);
         }
 
-        static SKImageFilter? CreateTextureFilter(Dictionary<string, Object> filters)
+        static SKImageFilter? CreateTextureFilter(Dictionary<string, object> filters)
         {
-            filters.TryGetValue("Texture", out var raw);
-            float t = Math.Clamp((float) raw / 100f, 0f, 1f);
-            if (t <= 0f) return null;
+            if (!filters.TryGetValue("Texture", out var raw))
+                return null;
+            float t = Math.Clamp(Convert.ToSingle(raw) / 100f, -1f, 1f);
+            if (Math.Abs(t) < 1e-6f)
+                return null;
 
-            float amt = t;
-            float center = 1f + 8f * amt;
-            float neighbor = -amt;
-
-            float[] kernel = new float[]
+            float center = 1f + 8f * t;
+            float neighbor = -t;
+            var kernel = new float[]
             {
-        0,        neighbor,      0,
-        neighbor, center,        neighbor,
-        0,        neighbor,      0
+                neighbor, neighbor, neighbor,
+                neighbor, center,    neighbor,
+                neighbor, neighbor, neighbor
             };
 
             return SKImageFilter.CreateMatrixConvolution(
@@ -213,8 +212,8 @@ namespace LuxEditor.Logic
                 kernel,
                 gain: 1f,
                 bias: 0f,
-                new SKPointI(1, 1),
-                SKShaderTileMode.Clamp,
+                kernelOffset: new SKPointI(1, 1),
+                tileMode: SKShaderTileMode.Clamp,
                 convolveAlpha: false
             );
         }
