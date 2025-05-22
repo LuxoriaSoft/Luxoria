@@ -1,12 +1,15 @@
 ﻿using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LuxEditor.Logic
 {
     public static class ImageProcessingManager
     {
+        private static GRContext? _grContext = CreateGpuContext();
+
         /// <summary>
         /// Creates a color filter that combines all the filters.
         /// </summary>
@@ -50,11 +53,18 @@ namespace LuxEditor.Logic
         /// <param name="source"></param>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public static async Task<SKBitmap> ApplyFiltersAsync(SKBitmap source, Dictionary<string, object> filters)
+        public static Task<SKBitmap> ApplyFiltersAsync(
+            SKBitmap source,
+            Dictionary<string, object> filters,
+            CancellationToken ct = default)
         {
-            return await Task.Run(() =>
+            return Task.Run(() =>
             {
-                var target = new SKBitmap(source.Width, source.Height, source.ColorType, source.AlphaType);
+                ct.ThrowIfCancellationRequested();
+
+                var target = new SKBitmap(source.Width, source.Height,
+                                          source.ColorType, source.AlphaType);
+
                 using var surface = SKSurface.Create(target.Info);
                 using var canvas = surface.Canvas;
                 canvas.Clear(SKColors.Transparent);
@@ -67,11 +77,16 @@ namespace LuxEditor.Logic
 
                 canvas.DrawBitmap(source, 0, 0, paint);
                 canvas.Flush();
-                surface.ReadPixels(target.Info, target.GetPixels(), target.RowBytes, 0, 0);
+
+                ct.ThrowIfCancellationRequested();
+
+                surface.ReadPixels(target.Info, target.GetPixels(),
+                                   target.RowBytes, 0, 0);
 
                 return target;
-            });
+            }, ct);
         }
+
 
         /// <summary>
         /// Creates a base color matrix for the image processing.
@@ -80,11 +95,11 @@ namespace LuxEditor.Logic
         /// <returns></returns>
         private static float[] CreateBaseMatrix(Dictionary<string, object> filters)
         {
-            float exposure = filters.TryGetValue("Exposure", out var exp) ? (float) exp : 0f;
-            float contrast = filters.TryGetValue("Contrast", out var con) ? (float) con : 0f;
-            float saturation = filters.TryGetValue("Saturation", out var sat) ? (float) sat : 0f;
-            float temperature = filters.TryGetValue("Temperature", out var temp) ? (float) temp : 6500f;
-            float tint = filters.TryGetValue("Tint", out var ti) ? (float) ti : 0f;
+            float exposure = filters.TryGetValue("Exposure", out var exp) ? (float)exp : 0f;
+            float contrast = filters.TryGetValue("Contrast", out var con) ? (float)con : 0f;
+            float saturation = filters.TryGetValue("Saturation", out var sat) ? (float)sat : 0f;
+            float temperature = filters.TryGetValue("Temperature", out var temp) ? (float)temp : 6500f;
+            float tint = filters.TryGetValue("Tint", out var ti) ? (float)ti : 0f;
 
             if (contrast < 0f)
             {
@@ -94,7 +109,7 @@ namespace LuxEditor.Logic
             var exposureGain = MathF.Pow(2, exposure / 4);
 
             // Temperature
-            var (redShift,  greenShift, blueShift) = CreateWhiteBalanceMatrix(temperature, tint);
+            var (redShift, greenShift, blueShift) = CreateWhiteBalanceMatrix(temperature, tint);
 
             // Saturation
             const float lumR = 0.2126f;
@@ -108,7 +123,7 @@ namespace LuxEditor.Logic
             // Contrast
             float contrastFactor = 1f + (contrast / 500f);
             float translate = 128f * (1f - contrastFactor);
-            
+
 
             return new float[]
             {
@@ -144,8 +159,8 @@ namespace LuxEditor.Logic
         {
             filters.TryGetValue("Shadows", out var rawSh);
             filters.TryGetValue("Highlights", out var rawHi);
-            float shadows = (float) rawSh / 100f;
-            float highlights = (float) rawHi / 100f;
+            float shadows = (float)rawSh / 100f;
+            float highlights = (float)rawHi / 100f;
 
             if (MathF.Abs(shadows) < 1e-6 && MathF.Abs(highlights) < 1e-6)
                 return null;
@@ -182,8 +197,8 @@ namespace LuxEditor.Logic
         {
             filters.TryGetValue("Blacks", out var rawB);
             filters.TryGetValue("Whites", out var rawW);
-            float blacks = Math.Clamp((float) rawB / 100f, -1f, 1f);
-            float whites = Math.Clamp((float) rawW / 100f, -1f, 1f);
+            float blacks = Math.Clamp((float)rawB / 100f, -1f, 1f);
+            float whites = Math.Clamp((float)rawW / 100f, -1f, 1f);
             if (Math.Abs(blacks) < 1e-6f && Math.Abs(whites) < 1e-6f)
                 return null;
 
@@ -208,7 +223,7 @@ namespace LuxEditor.Logic
         static SKColorFilter? CreateDehazeFilter(Dictionary<string, Object> filters)
         {
             filters.TryGetValue("Dehaze", out var raw);
-            float h = Math.Clamp((float) raw / 200f, -1f, 1f);
+            float h = Math.Clamp((float)raw / 200f, -1f, 1f);
 
             var table = new byte[256];
             for (int i = 0; i < 256; i++)
@@ -274,7 +289,7 @@ namespace LuxEditor.Logic
         private static SKColorFilter? CreateVibranceFilter(Dictionary<string, Object> filters)
         {
             if (!filters.TryGetValue("Vibrance", out var raw)) return null;
-            float vibrance = Math.Clamp((float) raw / 100f, -1f, 1f);
+            float vibrance = Math.Clamp((float)raw / 100f, -1f, 1f);
             if (Math.Abs(vibrance) < 1e-6f) return null;
 
             const string sksl = @"
@@ -319,7 +334,7 @@ namespace LuxEditor.Logic
             float blueShift = 1f - 0.2f * temperatureRatio;
 
             float greenShift = 1f - (tint / 100f);
-            
+
             redShift = Math.Clamp(redShift, 0.5f, 2.5f);
             greenShift = Math.Clamp(greenShift, 0.5f, 2.5f);
             blueShift = Math.Clamp(blueShift, 0.5f, 2.5f);
@@ -379,5 +394,90 @@ namespace LuxEditor.Logic
             int targetWidth = (int)(targetHeight * aspectRatio);
             return ResizeBitmap(source, targetWidth, targetHeight);
         }
+
+        /// <summary>
+        /// Creates a GPU context for image processing.
+        /// </summary>
+        /// <returns></returns>
+        private static GRContext? CreateGpuContext()
+        {
+            try { return GRContext.CreateGl(); }
+            catch { return null; }
+        }
+
+        /// <summary>
+        /// Resizes the bitmap using the CPU.
+        /// </summary>
+        /// <param name="src"></param>
+        /// <param name="w"></param>
+        /// <param name="h"></param>
+        /// <param name="draft"></param>
+        /// <returns></returns>
+        private static SKBitmap ResizeOnCpu(SKBitmap src, int h, bool draft)
+        {
+            float ratio = (float)src.Width / src.Height;
+            int w = (int)(h * ratio);
+            var dstInfo = new SKImageInfo(w, h, src.ColorType, src.AlphaType);
+            var dst = new SKBitmap(dstInfo);
+            using var s = SKSurface.Create(dstInfo);
+            var canvas = s.Canvas;
+
+            var sampling = new SKSamplingOptions(
+                draft ? SKFilterMode.Nearest : SKFilterMode.Linear,
+                SKMipmapMode.None);
+
+            canvas.Clear();
+            canvas.DrawImage(SKImage.FromBitmap(src),
+                             new SKRect(0, 0, w, h),
+                             sampling);
+            canvas.Flush();
+            s.Snapshot().ReadPixels(dstInfo, dst.GetPixels(), dst.RowBytes, 0, 0);
+            return dst;
+        }
+
+        /// <summary>
+        /// Upscales the bitmap to the specified height using the GPU if available.
+        /// </summary>
+        /// <param name="src"></param>
+        /// <param name="targetHeight"></param>
+        /// <param name="draft"></param>
+        /// <returns></returns>
+        public static SKImage Upscale(
+            SKBitmap src, int targetHeight, bool draft = true)
+        {
+            if (_grContext == null)
+                return SKImage.FromBitmap(ResizeOnCpu(src, targetHeight, draft));
+
+            float ratio = (float)src.Width / src.Height;
+            int targetWidth = (int)(targetHeight * ratio);
+
+            var info = new SKImageInfo(targetWidth, targetHeight,
+                                       src.ColorType, src.AlphaType);
+
+            using var surface = SKSurface.Create(_grContext, true, info);
+            var canvas = surface.Canvas;
+
+            var sampling = new SKSamplingOptions(
+                draft ? SKFilterMode.Nearest : SKFilterMode.Linear,
+                SKMipmapMode.None);
+
+            canvas.Clear();
+            canvas.DrawImage(SKImage.FromBitmap(src),
+                             new SKRect(0, 0, targetWidth, targetHeight),
+                             sampling);
+            canvas.Flush();
+
+            return surface.Snapshot();
+        }
+
+        /// <summary>
+        /// Applies the filters to the source bitmap and returns a new bitmap.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="filters"></param>
+        /// <returns></returns>
+        public static Task<SKBitmap> ApplyFiltersAsync(
+            SKBitmap source, Dictionary<string, object> filters)
+            => ApplyFiltersAsync(source, filters, CancellationToken.None);
     }
 }

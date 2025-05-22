@@ -81,7 +81,7 @@ namespace LuxEditor.Components
                     _images.Add(image);
                     int index = _images.Count - 1;
 
-                    var preview = image.PreviewBitmap ?? image.OriginalBitmap;
+                    var preview = image.ThumbnailBitmap ?? image.PreviewBitmap ?? image.OriginalBitmap;
 
                     var border = new Border
                     {
@@ -127,7 +127,7 @@ namespace LuxEditor.Components
                     int index = _imagePanel.Children.IndexOf(border);
                     if (index < _images.Count)
                     {
-                        var bitmap = _images[index].PreviewBitmap ?? _images[index].OriginalBitmap;
+                        var bitmap = _images[index].ThumbnailBitmap ?? _images[index].PreviewBitmap ?? _images[index].OriginalBitmap;
                         double scale = availableHeight / bitmap.Height;
                         double width = bitmap.Width * scale;
 
@@ -151,7 +151,7 @@ namespace LuxEditor.Components
 
             if (index >= 0 && index < _images.Count)
             {
-                var bitmap = _images[index].PreviewBitmap ?? _images[index].OriginalBitmap;
+                var bitmap = _images[index].ThumbnailBitmap ?? _images[index].PreviewBitmap ?? _images[index].OriginalBitmap;
                 float scale = Math.Min((float)e.Info.Width / bitmap.Width, (float)e.Info.Height / bitmap.Height);
                 float offsetX = (e.Info.Width - bitmap.Width * scale) / 2;
                 float offsetY = (e.Info.Height - bitmap.Height * scale) / 2;

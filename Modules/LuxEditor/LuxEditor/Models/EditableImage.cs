@@ -8,9 +8,11 @@ namespace LuxEditor.Models
     {
         public string FileName { get; }
         public SKBitmap OriginalBitmap { get; }
+        public SKBitmap? ThumbnailBitmap { get; set; }
         public SKBitmap? MediumBitmap { get; set; }
         public SKBitmap? PreviewBitmap { get; set; }
         public SKBitmap EditedBitmap { get; set; }
+        public SKBitmap EditedPreviewBitmap { get; set; }
         public ReadOnlyDictionary<string, string> Metadata { get; }
 
         public Dictionary<string, object> Settings { get; private set; }
@@ -31,6 +33,7 @@ namespace LuxEditor.Models
             Metadata = metadata;
             Settings = CreateDefaultSettings();
             EditedBitmap = new SKBitmap(bitmap.Width, bitmap.Height);
+            EditedPreviewBitmap = new SKBitmap(bitmap.Width, bitmap.Height);
         }
 
         /// <summary>

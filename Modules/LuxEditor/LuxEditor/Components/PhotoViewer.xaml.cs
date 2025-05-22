@@ -15,17 +15,18 @@ namespace LuxEditor.Components
         private bool _isDragging;
         private Windows.Foundation.Point _lastPoint;
 
-        private readonly SKXamlCanvas _canvas;
-        private SKBitmap? _currentImage;
+        private SKImage? _currentGpu;
+        private SKBitmap? _currentCpu;
+
+        private readonly SKXamlCanvas _canvas = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PhotoViewer"/> class.
         /// </summary>
         public PhotoViewer()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
-            _canvas = new SKXamlCanvas();
             _canvas.PaintSurface += OnPaintSurface;
 
             var viewbox = new Viewbox
@@ -35,13 +36,11 @@ namespace LuxEditor.Components
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center
             };
-
             ScrollViewerImage.Content = viewbox;
 
-
-            ImageManager.Instance.OnSelectionChanged += image =>
+            ImageManager.Instance.OnSelectionChanged += img =>
             {
-                SetImage(image.PreviewBitmap ?? image.EditedBitmap ?? image.OriginalBitmap);
+                SetImage(img.PreviewBitmap ?? img.EditedBitmap ?? img.OriginalBitmap);
             };
         }
 
@@ -49,20 +48,29 @@ namespace LuxEditor.Components
         /// Sets the image to be displayed in the photo viewer.
         /// </summary>
         /// <param name="bitmap"></param>
-        public void SetImage(SKBitmap? bitmap)
+        public void SetImage(SKImage image)
         {
-            if (bitmap == null)
-            {
-                Debug.WriteLine("No image to display.");
-                return;
-            }
+            _currentGpu?.Dispose();
+            _currentGpu = image;
+            _currentCpu = null;
 
-            Debug.WriteLine("SKXamlCanvas received image.");
-            _currentImage = bitmap;
+            _canvas.Width = image.Width;
+            _canvas.Height = image.Height;
+            _canvas.Invalidate();
+        }
+
+        /// <summary>
+        /// Sets the image to be displayed in the photo viewer.
+        /// </summary>
+        /// <param name="bitmap"></param>
+        public void SetImage(SKBitmap bitmap)
+        {
+            _currentCpu = bitmap;
+            _currentGpu?.Dispose();
+            _currentGpu = null;
 
             _canvas.Width = bitmap.Width;
             _canvas.Height = bitmap.Height;
-
             _canvas.Invalidate();
         }
 
@@ -71,15 +79,15 @@ namespace LuxEditor.Components
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
+        private void OnPaintSurface(object? sender, SKPaintSurfaceEventArgs e)
         {
             var canvas = e.Surface.Canvas;
             canvas.Clear(SKColors.Transparent);
 
-            if (_currentImage != null)
-            {
-                canvas.DrawBitmap(_currentImage, 0, 0);
-            }
+            if (_currentGpu != null)
+                canvas.DrawImage(_currentGpu, 0, 0);
+            else if (_currentCpu != null)
+                canvas.DrawBitmap(_currentCpu, 0, 0);
         }
 
         /// <summary>

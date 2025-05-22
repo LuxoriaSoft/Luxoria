@@ -9,8 +9,7 @@
     mc:Ignorable="d"
     Background="#2E2E2E"
     KeyDown="OnKeyDown"
-    IsTabStop="True"
-    KeyUp="OnKeyUp">
+    IsTabStop="True">
 
     <!-- Root Grid -->
     <Grid Padding="0">
