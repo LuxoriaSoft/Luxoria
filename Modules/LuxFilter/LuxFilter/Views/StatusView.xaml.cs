@@ -107,6 +107,17 @@ public sealed partial class StatusView : Page
         // Execute the pipeline
         ICollection<(Guid, Dictionary<string, double>)> pipelineResult = await _pipeline.Compute(collection.Select(asset => (asset.Id, asset.Data)).ToList());
     }
+
+    /// <summary>
+    /// St the filter view when the user clicks on the "Start Over" button
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void StartOver_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        // Set the filter view
+        _parent.SetFilterView();
+    }
 }
 
 public class ScoreItem : INotifyPropertyChanged
