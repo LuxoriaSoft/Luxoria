@@ -62,7 +62,6 @@ namespace LuxEditor.Models
                 ["Whites"] = 0f,
                 ["Blacks"] = 0f,
                 ["Texture"] = 0f,
-                ["Clarity"] = 0f,
                 ["Dehaze"] = 0f,
                 ["Vibrance"] = 0f,
                 ["Saturation"] = 0f,

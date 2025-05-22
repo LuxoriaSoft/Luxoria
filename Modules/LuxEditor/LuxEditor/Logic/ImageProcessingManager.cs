@@ -45,10 +45,7 @@ namespace LuxEditor.Logic
                 var paint = new SKPaint
                 {
                     ColorFilter = CreateCombinedColorFilter(filters),
-                    ImageFilter = ComposeImageFilters(
-                        CreateTextureFilter(filters),
-                        CreateClarityFilter(filters)
-                    )
+                    ImageFilter = CreateTextureFilter(filters)
                 };
 
                 canvas.DrawBitmap(source, 0, 0, paint);
@@ -190,64 +187,43 @@ namespace LuxEditor.Logic
             return SKColorFilter.CreateTable(table);
         }
 
-        static SKImageFilter? CreateTextureFilter(Dictionary<string, object> filters)
+        private static SKImageFilter? CreateTextureFilter(Dictionary<string, object> filters)
         {
             if (!filters.TryGetValue("Texture", out var raw))
                 return null;
+
             float t = Math.Clamp(Convert.ToSingle(raw) / 100f, -1f, 1f);
             if (Math.Abs(t) < 1e-6f)
                 return null;
 
-            float center = 1f + 8f * t;
-            float neighbor = -t;
-            var kernel = new float[]
+            if (t > 0f)
             {
-                neighbor, neighbor, neighbor,
-                neighbor, center,    neighbor,
-                neighbor, neighbor, neighbor
-            };
+                float a = t;
+                float center = 1f + 4f * a;
+                float neighbor = -a;
 
-            return SKImageFilter.CreateMatrixConvolution(
-                new SKSizeI(3, 3),
-                kernel,
-                gain: 1f,
-                bias: 0f,
-                kernelOffset: new SKPointI(1, 1),
-                tileMode: SKShaderTileMode.Clamp,
-                convolveAlpha: false
-            );
-        }
-
-        static SKImageFilter? CreateClarityFilter(Dictionary<string, Object> filters)
-        {
-            filters.TryGetValue("Clarity", out var raw);
-            float c = Math.Clamp((float) raw / 100f, 0f, 1f);
-            if (c <= 0f) return null;
-
-            // 5x5 unsharp-mask for mid-frequency boost
-            float amt = c;
-            float center = 1f + 24f * amt;
-            float surround = -amt;
-
-            var kernel = new float[25];
-            for (int y = 0; y < 5; y++)
-                for (int x = 0; x < 5; x++)
+                var kernel = new float[]
                 {
-                    int idx = y * 5 + x;
-                    kernel[idx] = (x == 2 && y == 2) ? center : surround;
-                }
+                    0,        neighbor, 0,
+                    neighbor, center,   neighbor,
+                    0,        neighbor, 0
+                };
 
-            return SKImageFilter.CreateMatrixConvolution(
-                new SKSizeI(5, 5),
-                kernel,
-                gain: 1f,
-                bias: 0f,
-                new SKPointI(2, 2),
-                SKShaderTileMode.Clamp,
-                convolveAlpha: false
-            );
+                return SKImageFilter.CreateMatrixConvolution(
+                    kernelSize: new SKSizeI(3, 3),
+                    kernel: kernel,
+                    gain: 1f,
+                    bias: 0f,
+                    kernelOffset: new SKPointI(1, 1),
+                    tileMode: SKShaderTileMode.Clamp,
+                    convolveAlpha: false);
+            }
+            else
+            {
+                float sigma = Math.Abs(t) * 3.0f;
+                return SKImageFilter.CreateBlur(sigma, sigma);
+            }
         }
-
 
         private static SKColorFilter? CreateVibranceFilter(Dictionary<string, Object> filters)
         {

@@ -88,7 +88,6 @@ namespace LuxEditor.Components
             AddCategory(rootExpander, "Presence", "Presence", new IEditorGroupItem[]
             {
                 CreateSliderWithPreset("Texture"),
-                CreateSliderWithPreset("Clarity"),
                 CreateSliderWithPreset("Dehaze"),
                 CreateSeparator(),
 
@@ -132,7 +131,7 @@ namespace LuxEditor.Components
                 step = 0.05f;
             }
             else if (key == "Highlights" || key == "Shadows" ||
-                     key == "Whites" || key == "Blacks" || key == "Clarity" ||
+                     key == "Whites" || key == "Blacks" ||
                      key == "Texture" || key == "Dehaze" || key == "Vibrance" || key == "Saturation")
             {
                 min = -100;
