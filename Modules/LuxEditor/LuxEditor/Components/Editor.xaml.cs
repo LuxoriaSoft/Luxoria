@@ -32,6 +32,9 @@ namespace LuxEditor.Components
 
         public event Action<SKBitmap> OnEditorImageUpdated;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Editor"/> class.
+        /// </summary>
         public Editor()
         {
             InitializeComponent();
@@ -39,6 +42,10 @@ namespace LuxEditor.Components
             ImageManager.Instance.OnSelectionChanged += SetEditableImage;
         }
 
+        /// <summary>
+        /// Sets the editable image for the editor.
+        /// </summary>
+        /// <param name="image"></param>
         public void SetEditableImage(EditableImage image)
         {
             currentImage = image;
@@ -52,6 +59,9 @@ namespace LuxEditor.Components
             ApplyFilters();
         }
 
+        /// <summary>
+        /// Builds the UI for the editor.
+        /// </summary>
         private void BuildEditorUI()
         {
             var rootExpander = new EditorGroupExpander("Basic");
@@ -98,6 +108,12 @@ namespace LuxEditor.Components
             _panelManager!.AddCategory(rootExpander);
         }
 
+        /// <summary>
+        /// Creates a slider with preset values based on the key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="style"></param>
+        /// <returns></returns>
         private EditorSlider CreateSliderWithPreset(string key, EditorStyle? style = null)
         {
             var (min, max, def, decimals, step) = GetSliderPreset(key);
@@ -159,6 +175,17 @@ namespace LuxEditor.Components
             return (min, max, def, decimals, step);
         }
 
+        /// <summary>
+        /// Creates a slider control for the editor UI.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <param name="def"></param>
+        /// <param name="style"></param>
+        /// <param name="decimalPlaces"></param>
+        /// <param name="step"></param>
+        /// <returns></returns>
         private EditorSlider CreateSlider(string key, float min, float max, float def,
                                           EditorStyle? style = null, int decimalPlaces = 0, float step = 1f)
         {
@@ -179,8 +206,19 @@ namespace LuxEditor.Components
             return slider;
         }
 
+        /// <summary>
+        /// Creates a separator control for the editor UI.
+        /// </summary>
+        /// <returns></returns>
         private EditorSeparator CreateSeparator() => new EditorSeparator();
 
+        /// <summary>
+        /// Adds a category to the editor UI.
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="key"></param>
+        /// <param name="title"></param>
+        /// <param name="items"></param>
         private void AddCategory(EditorGroupExpander parent, string key, string title, IEnumerable<IEditorGroupItem> items)
         {
             var category = new EditorCategory(key, title);
@@ -193,6 +231,10 @@ namespace LuxEditor.Components
             parent.AddCategory(category);
         }
 
+        /// <summary>
+        /// Resets the category settings to default values.
+        /// </summary>
+        /// <param name="key"></param>
         private void ResetCategory(string key)
         {
             if (!_categories.TryGetValue(key, out var category)) return;
@@ -211,6 +253,11 @@ namespace LuxEditor.Components
             UpdateResetButtonsVisibility();
         }
 
+        /// <summary>
+        /// Resets all settings to default values.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ResetAllClicked(object sender, RoutedEventArgs e)
         {
             foreach (var category in _categories.Values)
@@ -230,6 +277,9 @@ namespace LuxEditor.Components
             UpdateResetButtonsVisibility();
         }
 
+        /// <summary>
+        /// Updates the UI of the sliders based on the current image settings.
+        /// </summary>
         private void UpdateSliderUI()
         {
             if (currentImage == null || _panelManager == null) return;
@@ -242,6 +292,9 @@ namespace LuxEditor.Components
             UpdateResetButtonsVisibility();
         }
 
+        /// <summary>
+        /// Updates the visibility of the reset buttons based on the current settings.
+        /// </summary>
         private void UpdateResetButtonsVisibility()
         {
             if (currentImage == null) return;
@@ -265,6 +318,9 @@ namespace LuxEditor.Components
             ResetAllButton.Visibility = anyChanged ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        /// <summary>
+        /// Applies the filters to the current image based on the settings.
+        /// </summary>
         private async void ApplyFilters()
         {
             lock (updateLock)
@@ -280,6 +336,10 @@ namespace LuxEditor.Components
             await applyFiltersTask;
         }
 
+        /// <summary>
+        /// Applies the filters asynchronously.
+        /// </summary>
+        /// <returns></returns>
         private async Task ApplyFiltersAsync()
         {
             await Task.Delay(50); // debounce
@@ -303,6 +363,11 @@ namespace LuxEditor.Components
             OnEditorImageUpdated?.Invoke(filteredBitmap);
         }
 
+        /// <summary>
+        /// Handles the key down event for undo and redo functionality.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.Control)
@@ -320,6 +385,11 @@ namespace LuxEditor.Components
             }
         }
 
+        /// <summary>
+        /// Handles the key up event to reset the ctrlPressed flag.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnKeyUp(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.Control)

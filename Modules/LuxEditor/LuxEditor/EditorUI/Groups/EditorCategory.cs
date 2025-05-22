@@ -16,6 +16,11 @@ namespace LuxEditor.EditorUI.Groups
 
         public event Action<string>? OnResetClicked;
 
+        /// <summary>
+        /// Creates a new category for the editor UI.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="title"></param>
         public EditorCategory(string key, string title)
         {
             _key = key;
@@ -55,19 +60,35 @@ namespace LuxEditor.EditorUI.Groups
             _container.Children.Add(headerGrid);
         }
 
+        /// <summary>
+        /// Adds a category to the editor UI.
+        /// </summary>
+        /// <param name="item"></param>
         public void AddControl(IEditorGroupItem item)
         {
             _items.Add(item);
             _container.Children.Add(item.GetElement());
         }
 
+        /// <summary>
+        /// Get Items in the category.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<IEditorGroupItem> GetItems() => _items;
 
+        /// <summary>
+        /// Sets the visibility of the reset button.
+        /// </summary>
+        /// <param name="visible"></param>
         public void SetResetVisible(bool visible)
         {
             _resetButton.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        /// <summary>
+        /// Gets the UI element for this category.
+        /// </summary>
+        /// <returns></returns>
         public UIElement GetElement() => _container;
     }
 }

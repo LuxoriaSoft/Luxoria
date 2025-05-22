@@ -18,6 +18,9 @@ namespace LuxEditor.Components
         private readonly SKXamlCanvas _canvas;
         private SKBitmap? _currentImage;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PhotoViewer"/> class.
+        /// </summary>
         public PhotoViewer()
         {
             this.InitializeComponent();
@@ -41,6 +44,11 @@ namespace LuxEditor.Components
                 SetImage(image.PreviewBitmap ?? image.EditedBitmap ?? image.OriginalBitmap);
             };
         }
+
+        /// <summary>
+        /// Sets the image to be displayed in the photo viewer.
+        /// </summary>
+        /// <param name="bitmap"></param>
         public void SetImage(SKBitmap? bitmap)
         {
             if (bitmap == null)
@@ -58,6 +66,11 @@ namespace LuxEditor.Components
             _canvas.Invalidate();
         }
 
+        /// <summary>
+        /// Handles the PaintSurface event of the SKXamlCanvas.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
         {
             var canvas = e.Surface.Canvas;
@@ -65,21 +78,15 @@ namespace LuxEditor.Components
 
             if (_currentImage != null)
             {
-                //var info = e.Info;
-
-                //float scale = Math.Min(
-                //    (float)info.Width / _currentImage.Width,
-                //    (float)info.Height / _currentImage.Height);
-
-                //float offsetX = (info.Width - _currentImage.Width * scale) / 2f;
-                //float offsetY = (info.Height - _currentImage.Height * scale) / 2f;
-
-                //canvas.Translate(offsetX, offsetY);
-                //canvas.Scale(scale);
                 canvas.DrawBitmap(_currentImage, 0, 0);
             }
         }
 
+        /// <summary>
+        /// Handles the PointerPressed event of the ScrollViewerImage.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ScrollViewerImage_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             _isDragging = true;
@@ -87,6 +94,11 @@ namespace LuxEditor.Components
             (sender as UIElement)?.CapturePointer(e.Pointer);
         }
 
+        /// <summary>
+        /// Handles the PointerMoved event of the ScrollViewerImage.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ScrollViewerImage_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             if (!_isDragging) return;
@@ -104,12 +116,22 @@ namespace LuxEditor.Components
             _lastPoint = currentPoint;
         }
 
+        /// <summary>
+        /// Handles the PointerReleased event of the ScrollViewerImage.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ScrollViewerImage_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             _isDragging = false;
             (sender as UIElement)?.ReleasePointerCaptures();
         }
 
+        /// <summary>
+        /// Handles the PointerCanceled event of the ScrollViewerImage.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ScrollViewerImage_PointerCanceled(object sender, PointerRoutedEventArgs e)
         {
             _isDragging = false;

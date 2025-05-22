@@ -13,6 +13,11 @@ namespace LuxEditor.EditorUI.Controls
     {
         private readonly UIElement _element;
 
+        /// <summary>
+        /// Creates a new separator for the editor UI.
+        /// </summary>
+        /// <param name="marginTop"></param>
+        /// <param name="marginBottom"></param>
         public EditorSeparator(double marginTop = 10, double marginBottom = 10)
         {
             _element = new Rectangle
@@ -24,6 +29,10 @@ namespace LuxEditor.EditorUI.Controls
             };
         }
 
+        /// <summary>
+        /// Gets the UI element for this separator.
+        /// </summary>
+        /// <returns></returns>
         public UIElement GetElement() => _element;
     }
 }

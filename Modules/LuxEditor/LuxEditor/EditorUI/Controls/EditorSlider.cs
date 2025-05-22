@@ -24,6 +24,15 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
 
     public Action<float>? OnValueChanged;
 
+    /// <summary>
+    /// Creates a new slider control for the editor UI.
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    /// <param name="defaultValue"></param>
+    /// <param name="decimalPlaces"></param>
+    /// <param name="stepFrequency"></param>
     public EditorSlider(string key, float min, float max, float defaultValue, int decimalPlaces = 0, float stepFrequency = 1f)
     {
         Key = key;
@@ -87,6 +96,11 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
         };
     }
 
+    /// <summary>
+    /// Handles the slider value change event.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void SliderChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         float newValue = (float)e.NewValue;
@@ -94,6 +108,11 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
         OnValueChanged?.Invoke(newValue);
     }
 
+    /// <summary>
+    /// Handles the value box edit event.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void ValueBoxEdited(object sender, RoutedEventArgs e)
     {
         if (float.TryParse(_valueBox.Text, out float parsed))
@@ -109,6 +128,11 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
         }
     }
 
+    /// <summary>
+    /// Handles the Enter key event in the value box.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void ValueBoxEnterKey(object sender, KeyRoutedEventArgs e)
     {
         if (e.Key == Windows.System.VirtualKey.Enter)
@@ -118,11 +142,18 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
         }
     }
 
+    /// <summary>
+    /// Resets the slider to its default value.
+    /// </summary>
     public void ResetToDefault()
     {
         SetValue(DefaultValue);
     }
 
+    /// <summary>
+    /// Applies a style to the slider based on the provided EditorStyle.
+    /// </summary>
+    /// <param name="style"></param>
     public void ApplyStyle(EditorStyle style)
     {
         if (style.ShowTicks)
@@ -157,6 +188,10 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
         }
     }
 
+    /// <summary>
+    /// Sets the value of the slider and updates the value box.
+    /// </summary>
+    /// <param name="value"></param>
     public void SetValue(float value)
     {
         float clamped = Math.Clamp(value, (float)_slider.Minimum, (float)_slider.Maximum);
@@ -164,7 +199,15 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
         _valueBox.Text = clamped.ToString($"F{_decimalPlaces}");
     }
 
+    /// <summary>
+    /// Gets the current value of the slider.
+    /// </summary>
+    /// <returns></returns>
     public float GetValue() => (float)_slider.Value;
 
+    /// <summary>
+    /// Gets the UI element for this slider control.
+    /// </summary>
+    /// <returns></returns>
     public UIElement GetElement() => _container;
 }

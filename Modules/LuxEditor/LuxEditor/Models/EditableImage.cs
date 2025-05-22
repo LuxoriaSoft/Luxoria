@@ -18,6 +18,12 @@ namespace LuxEditor.Models
         private readonly Stack<Dictionary<string, object>> _history = new();
         private readonly Stack<Dictionary<string, object>> _redo = new();
 
+        /// <summary>
+        /// Creates a new EditableImage instance.
+        /// </summary>
+        /// <param name="bitmap"></param>
+        /// <param name="metadata"></param>
+        /// <param name="fileName"></param>
         public EditableImage(SKBitmap bitmap, ReadOnlyDictionary<string, string> metadata, string fileName)
         {
             FileName = fileName;
@@ -27,12 +33,19 @@ namespace LuxEditor.Models
             EditedBitmap = new SKBitmap(bitmap.Width, bitmap.Height);
         }
 
+        /// <summary>
+        /// Saves the current state of the settings to the history stack.
+        /// </summary>
         public void SaveState()
         {
             _history.Push(CloneSettings(Settings));
             _redo.Clear();
         }
 
+        /// <summary>
+        /// Restores the settings to the last saved state.
+        /// </summary>
+        /// <returns></returns>
         public bool Undo()
         {
             if (_history.Count == 0) return false;
@@ -41,6 +54,10 @@ namespace LuxEditor.Models
             return true;
         }
 
+        /// <summary>
+        /// Restores the settings to the next state in the redo stack.
+        /// </summary>
+        /// <returns></returns>
         public bool Redo()
         {
             if (_redo.Count == 0) return false;
@@ -49,6 +66,10 @@ namespace LuxEditor.Models
             return true;
         }
 
+        /// <summary>
+        /// Creates a default settings dictionary with initial values.
+        /// </summary>
+        /// <returns></returns>
         private static Dictionary<string, object> CreateDefaultSettings()
         {
             return new Dictionary<string, object>
@@ -68,6 +89,11 @@ namespace LuxEditor.Models
             };
         }
 
+        /// <summary>
+        /// Clones the settings dictionary to create a new instance.
+        /// </summary>
+        /// <param name="src"></param>
+        /// <returns></returns>
         private static Dictionary<string, object> CloneSettings(Dictionary<string, object> src)
         {
             var copy = new Dictionary<string, object>(src.Count);

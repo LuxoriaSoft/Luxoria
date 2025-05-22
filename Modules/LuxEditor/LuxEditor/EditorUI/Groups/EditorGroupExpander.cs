@@ -9,6 +9,10 @@ public class EditorGroupExpander : IEditorControl
     private readonly Expander _expander;
     private readonly StackPanel _container;
 
+    /// <summary>
+    /// Creates a new expander group for the editor UI.
+    /// </summary>
+    /// <param name="title"></param>
     public EditorGroupExpander(string title)
     {
         _container = new StackPanel
@@ -29,15 +33,27 @@ public class EditorGroupExpander : IEditorControl
         };
     }
 
+    /// <summary>
+    /// Adds a category to the expander.
+    /// </summary>
+    /// <param name="category"></param>
     public void AddCategory(EditorCategory category)
     {
         _container.Children.Add(category.GetElement());
     }
 
+    /// <summary>
+    /// Adds a control to the expander.
+    /// </summary>
+    /// <param name="item"></param>
     public void AddControl(IEditorGroupItem item)
     {
         _container.Children.Add(item.GetElement());
     }
 
+    /// <summary>
+    /// Gets the UI element for this expander group.
+    /// </summary>
+    /// <returns></returns>
     public UIElement GetElement() => _expander;
 }

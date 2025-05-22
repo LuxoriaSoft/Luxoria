@@ -15,6 +15,9 @@ namespace LuxEditor.Components
     {
         public ObservableCollection<KeyValueStringPair> ExifData { get; } = new();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Infos"/> class.
+        /// </summary>
         public Infos()
         {
             this.InitializeComponent();

@@ -71,6 +71,11 @@ public static class ExifHelper
         return result.Count > 0 ? result.ToArray() : null;
     }
 
+    /// <summary>
+    /// Tries to get the raw white balance in Kelvin from metadata.
+    /// </summary>
+    /// <param name="meta"></param>
+    /// <returns></returns>
     public static float? TryGetRawWhiteBalanceKelvin(IReadOnlyDictionary<string, string> meta)
     {
         if (meta.TryGetValue("Unknown tag (0x7010)", out var raw))

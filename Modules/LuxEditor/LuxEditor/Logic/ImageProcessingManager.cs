@@ -7,6 +7,11 @@ namespace LuxEditor.Logic
 {
     public static class ImageProcessingManager
     {
+        /// <summary>
+        /// Creates a color filter that combines all the filters.
+        /// </summary>
+        /// <param name="filters"></param>
+        /// <returns></returns>
         private static SKColorFilter CreateCombinedColorFilter(Dictionary<string, object> filters)
         {
             var cf = SKColorFilter.CreateColorMatrix(CreateBaseMatrix(filters));
@@ -26,6 +31,12 @@ namespace LuxEditor.Logic
             return cf;
         }
 
+        /// <summary>
+        /// Creates a texture filter that combines all the filters.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
         private static SKImageFilter? ComposeImageFilters(SKImageFilter? a, SKImageFilter? b)
         {
             if (a == null) return b;
@@ -33,6 +44,12 @@ namespace LuxEditor.Logic
             return SKImageFilter.CreateCompose(a, b);
         }
 
+        /// <summary>
+        /// Applies the filters to the source bitmap and returns a new bitmap.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="filters"></param>
+        /// <returns></returns>
         public static async Task<SKBitmap> ApplyFiltersAsync(SKBitmap source, Dictionary<string, object> filters)
         {
             return await Task.Run(() =>
@@ -56,10 +73,11 @@ namespace LuxEditor.Logic
             });
         }
 
-
         /// <summary>
-        /// Constructs a color matrix applying exposure, contrast, saturation, temperature, and tint.
+        /// Creates a base color matrix for the image processing.
         /// </summary>
+        /// <param name="filters"></param>
+        /// <returns></returns>
         private static float[] CreateBaseMatrix(Dictionary<string, object> filters)
         {
             float exposure = filters.TryGetValue("Exposure", out var exp) ? (float) exp : 0f;
@@ -68,7 +86,12 @@ namespace LuxEditor.Logic
             float temperature = filters.TryGetValue("Temperature", out var temp) ? (float) temp : 6500f;
             float tint = filters.TryGetValue("Tint", out var ti) ? (float) ti : 0f;
 
-            var exposureGain = MathF.Pow(2, (exposure / 5));
+            if (contrast < 0f)
+            {
+                exposure += contrast * 5;
+            }
+
+            var exposureGain = MathF.Pow(2, exposure / 4);
 
             // Temperature
             var (redShift,  greenShift, blueShift) = CreateWhiteBalanceMatrix(temperature, tint);
@@ -85,6 +108,7 @@ namespace LuxEditor.Logic
             // Contrast
             float contrastFactor = 1f + (contrast / 500f);
             float translate = 128f * (1f - contrastFactor);
+            
 
             return new float[]
             {
@@ -112,9 +136,10 @@ namespace LuxEditor.Logic
         }
 
         /// <summary>
-        /// Builds a table‐based filter that adjusts shadows and highlights.
-        /// Shadows/Highlights values are in –100…100.
+        /// Creates a color filter for shadows and highlights.
         /// </summary>
+        /// <param name="filters"></param>
+        /// <returns></returns>
         private static SKColorFilter? CreateShadowsHighlightsFilter(Dictionary<string, Object> filters)
         {
             filters.TryGetValue("Shadows", out var rawSh);
@@ -148,6 +173,11 @@ namespace LuxEditor.Logic
             return SKColorFilter.CreateTable(table);
         }
 
+        /// <summary>
+        /// Create a color filter for blacks and whites
+        /// </summary>
+        /// <param name="filters"></param>
+        /// <returns></returns>
         static SKColorFilter? CreateBlacksWhitesLUT(Dictionary<string, Object> filters)
         {
             filters.TryGetValue("Blacks", out var rawB);
@@ -170,6 +200,11 @@ namespace LuxEditor.Logic
             return SKColorFilter.CreateTable(table);
         }
 
+        /// <summary>
+        /// Create a color filter for dehaze
+        /// </summary>
+        /// <param name="filters"></param>
+        /// <returns></returns>
         static SKColorFilter? CreateDehazeFilter(Dictionary<string, Object> filters)
         {
             filters.TryGetValue("Dehaze", out var raw);
@@ -187,6 +222,11 @@ namespace LuxEditor.Logic
             return SKColorFilter.CreateTable(table);
         }
 
+        /// <summary>
+        /// Creates a texture filter for the image.
+        /// </summary>
+        /// <param name="filters"></param>
+        /// <returns></returns>
         private static SKImageFilter? CreateTextureFilter(Dictionary<string, object> filters)
         {
             if (!filters.TryGetValue("Texture", out var raw))
@@ -225,6 +265,12 @@ namespace LuxEditor.Logic
             }
         }
 
+        /// <summary>
+        /// Creates a vibrance filter for the image.
+        /// </summary>
+        /// <param name="filters"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
         private static SKColorFilter? CreateVibranceFilter(Dictionary<string, Object> filters)
         {
             if (!filters.TryGetValue("Vibrance", out var raw)) return null;
@@ -243,24 +289,25 @@ namespace LuxEditor.Logic
                     return half4(rgb, inColor.a);
                 }";
 
-            // compile the SkSL
             string errorText;
             using var effect = SKRuntimeEffect.CreateColorFilter(sksl, out errorText);
             if (!string.IsNullOrEmpty(errorText))
                 throw new InvalidOperationException(errorText);
-            // :contentReference[oaicite:0]{index=0}
 
-            // set up the single uniform
             var uniforms = new SKRuntimeEffectUniforms(effect)
             {
                 ["vibrance"] = vibrance
             };
-            // :contentReference[oaicite:1]{index=1}
 
-            // no child shaders needed for this color-only effect
             return effect.ToColorFilter(uniforms);
         }
 
+        /// <summary>
+        /// Creates a white balance matrix for the image.
+        /// </summary>
+        /// <param name="temperature"></param>
+        /// <param name="tint"></param>
+        /// <returns></returns>
         private static (float r, float g, float b) CreateWhiteBalanceMatrix(float temperature, float tint)
         {
             temperature = Math.Clamp(temperature, 2000f, 50000f);
@@ -280,6 +327,13 @@ namespace LuxEditor.Logic
             return (redShift, greenShift, blueShift);
         }
 
+        /// <summary>
+        /// Resizes the bitmap to the specified width and height.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <returns></returns>
         public static SKBitmap ResizeBitmap(SKBitmap source, int width, int height)
         {
             SKBitmap resized = new SKBitmap(width, height);
@@ -296,6 +350,12 @@ namespace LuxEditor.Logic
             return resized;
         }
 
+        /// <summary>
+        /// Generates a preview bitmap with the specified height while maintaining the aspect ratio.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="targetHeight"></param>
+        /// <returns></returns>
         public static SKBitmap GeneratePreview(SKBitmap source, int targetHeight)
         {
             float aspectRatio = (float)source.Width / source.Height;
@@ -303,6 +363,12 @@ namespace LuxEditor.Logic
             return ResizeBitmap(source, targetWidth, targetHeight);
         }
 
+        /// <summary>
+        /// Generates a medium resolution bitmap with the specified maximum height while maintaining the aspect ratio.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="maxHeight"></param>
+        /// <returns></returns>
         public static SKBitmap GenerateMediumResolution(SKBitmap source, int maxHeight = 600)
         {
             if (source.Height <= maxHeight)
