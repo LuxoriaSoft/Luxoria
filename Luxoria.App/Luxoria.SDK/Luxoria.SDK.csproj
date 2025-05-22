@@ -10,6 +10,8 @@
 		<Description>Luxoria SDK</Description>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<RepositoryUrl>https://github.com/LuxoriaSoft/Luxoria</RepositoryUrl>
+
+		<PackOnBuild Condition="'$(PackOnBuild)' == ''">true</PackOnBuild>
 	</PropertyGroup>
 
 	<ItemGroup>

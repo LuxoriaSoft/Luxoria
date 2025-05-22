@@ -7,7 +7,6 @@ using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
-using Microsoft.UI.Xaml.Controls;
 using System.Diagnostics;
 
 namespace LuxImport;

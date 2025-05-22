@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: luxdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: luxdb
+  template:
+    metadata:
+      labels:
+        app: luxdb
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:17.2-alpine3.21
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_PASSWORD
+              value: password
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_DB
+              value: luxoria
+          volumeMounts:
+            - name: pgdata
+              mountPath: /var/lib/postgresql/data
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+      volumes:
+        - name: pgdata
+          emptyDir: {}
+        - name: init-scripts
+          configMap:
+            name: luxdb-init

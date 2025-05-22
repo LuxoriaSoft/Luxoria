@@ -5,16 +5,43 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Any;
+using LuxAPI.Hubs;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using LuxAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add necessary services
 builder.Services.AddHttpClient("DefaultClient"); // Named client
 
+/**
+ * ENVIRONMENT VARIABLES
+*/
+// Database connection string
+string DB_DEFAULT_CONNECTION = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new Exception("Database connection string is not set.");
+// Frontend URL
+string FRONT_URI = builder.Configuration["FrontEnd:URI"]
+    ?? throw new Exception("Frontend URL is not set.");
+
+// JWT settings
+// JWT Key
+string JWT_KEY = builder.Configuration["Jwt:Key"]
+    ?? throw new Exception("JWT Key is not set.");
+// JWT Issuer
+string JWT_ISSUER = builder.Configuration["Jwt:Issuer"]
+    ?? throw new Exception("JWT Issuer is not set.");
+// JWT Audience
+string JWT_AUDIENCE = builder.Configuration["Jwt:Audience"]
+    ?? throw new Exception("JWT Audience is not set.");
+
 // Add services
 builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(DB_DEFAULT_CONNECTION));
+
+builder.Services.AddSingleton<MinioService>(); // <-- AJOUT ICI
 
 // Configure JWT Authentication
 builder.Services.AddAuthentication(options =>
@@ -24,17 +51,17 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    var configuration = builder.Configuration;
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"])),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JWT_KEY)),
         ValidateIssuer = true,
-        ValidIssuer = configuration["Jwt:Issuer"],
+        ValidIssuer = JWT_ISSUER,
         ValidateAudience = true,
-        ValidAudience = configuration["Jwt:Audience"],
+        ValidAudience = JWT_AUDIENCE,
         ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero
+        ClockSkew = TimeSpan.Zero,
+        NameClaimType = ClaimTypes.Email
     };
 
     options.Events = new JwtBearerEvents
@@ -53,23 +80,25 @@ builder.Services.AddAuthentication(options =>
 // Add controllers
 builder.Services.AddControllers();
 
+// Add SignalR
+builder.Services.AddSignalR();
+
 // Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // Autorise le frontend sur ce port
+        policy.WithOrigins(FRONT_URI) // Allow Frontend URL
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials(); // Si vous utilisez des cookies ou des sessions
+              .AllowCredentials(); // Allow credentials
     });
 });
 
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Your API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "LuxAPI", Version = "v1" });
 
-    // Configuration to include the token schema in Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme",
@@ -99,6 +128,13 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// Run migrations using Microsoft EF
+using (var scope = builder.Services.BuildServiceProvider().CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.Migrate();
+}
+
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
@@ -106,13 +142,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Disabled for Kubernetes usage ONLY
+//app.UseHttpsRedirection();
 
 // Enable CORS
-app.UseCors(); // Ajoutez ceci avant `UseAuthorization`
+app.UseCors();
 
-
-
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
+// Hub mapping to "/hubs/chat"
+// This is where the SignalR hub is registered in the application pipeline
+app.MapHub<ChatHub>("/hubs/chat");
+
 app.Run();

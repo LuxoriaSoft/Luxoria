@@ -1,0 +1,141 @@
+version: 2.1
+
+jobs:
+  build-and-push:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - setup_remote_docker
+
+      - run:
+          name: Generate Image Tag
+          command: |
+            TAG=$(date +%Y%m%d).$(git rev-list --count HEAD)
+            echo "Generated tag: $TAG"
+            echo $TAG > image_tag.txt
+
+      - run:
+          name: Docker Login
+          command: |
+            echo "${DOCKERHUB_PASS}" | docker login -u "${DOCKERHUB_USER}" --password-stdin
+
+      - run:
+          name: Build & Push LuxAPI Image
+          command: |
+            TAG=$(cat image_tag.txt)
+            docker build -t luxoria/luxapi:$TAG -f LuxStudio/LuxAPI/LuxAPI/Dockerfile LuxStudio/LuxAPI
+            docker push luxoria/luxapi:$TAG
+
+      - run:
+          name: Build & Push LuxStudio Image
+          command: |
+            TAG=$(cat image_tag.txt)
+            docker build -t luxoria/luxstudio:$TAG -f LuxStudio/portal/Dockerfile LuxStudio/portal
+            docker push luxoria/luxstudio:$TAG
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - image_tag.txt
+
+  tag-as-dev:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - setup_remote_docker
+      - attach_workspace:
+          at: .
+      - run:
+          name: Docker Login
+          command: |
+            echo "${DOCKERHUB_PASS}" | docker login -u "${DOCKERHUB_USER}" --password-stdin
+      - run:
+          name: Tag Version as dev
+          command: |
+            TAG=$(cat image_tag.txt)
+            docker pull luxoria/luxapi:$TAG
+            docker tag luxoria/luxapi:$TAG luxoria/luxapi:dev
+            docker push luxoria/luxapi:dev
+
+            docker pull luxoria/luxstudio:$TAG
+            docker tag luxoria/luxstudio:$TAG luxoria/luxstudio:dev
+            docker push luxoria/luxstudio:dev
+
+  tag-as-latest:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - setup_remote_docker
+      - run:
+          name: Docker Login
+          command: |
+            echo "${DOCKERHUB_PASS}" | docker login -u "${DOCKERHUB_USER}" --password-stdin
+      - run:
+          name: Tag dev as latest
+          command: |
+            docker pull luxoria/luxapi:dev
+            docker tag luxoria/luxapi:dev luxoria/luxapi:latest
+            docker push luxoria/luxapi:latest
+
+            docker pull luxoria/luxstudio:dev
+            docker tag luxoria/luxstudio:dev luxoria/luxstudio:latest
+            docker push luxoria/luxstudio:latest
+
+  deploy-to-pluto:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run:
+          name: Deploy to Pluto
+          command: echo "Deploying Docker images tagged 'dev' to Pluto (Dev/Test environment)"
+
+  deploy-to-saturn:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run:
+          name: Deploy to Saturn
+          command: echo "Deploying Docker images tagged 'latest' to Saturn (Production environment)"
+
+workflows:
+  version: 2
+  promote-release:
+    jobs:
+      - build-and-push:
+          context: Luxoria
+
+      - tag-as-dev:
+          context: Luxoria
+          requires:
+            - build-and-push
+
+      - request-approval-deploy-pluto:
+          type: approval
+          requires:
+            - tag-as-dev
+
+      - deploy-to-pluto:
+          context: Luxoria
+          requires:
+            - request-approval-deploy-pluto
+
+      - request-approval-tag-latest:
+          type: approval
+          requires:
+            - deploy-to-pluto
+
+      - tag-as-latest:
+          context: Luxoria
+          requires:
+            - request-approval-tag-latest
+
+      - request-approval-deploy-saturn:
+          type: approval
+          requires:
+            - tag-as-latest
+
+      - deploy-to-saturn:
+          context: Luxoria
+          requires:
+            - request-approval-deploy-saturn

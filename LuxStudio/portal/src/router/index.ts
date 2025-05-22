@@ -3,6 +3,8 @@ import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
 import Dashboard from '../views/Dashboard.vue';
 import LinkAccount from '../views/SSO_Authorize.vue';
+import Collections from '../views/Collections.vue';
+import CollectionDetail from '../views/CollectionDetail.vue';
 
 /**
  * Defines the application routes.
@@ -10,6 +12,10 @@ import LinkAccount from '../views/SSO_Authorize.vue';
 const routes = [
   {
     path: '/',
+    redirect: '/dashboard',
+  },
+  {
+    path: '/login',
     name: 'Login',
     component: Login,
   },
@@ -22,14 +28,26 @@ const routes = [
     path: '/dashboard',
     name: 'Dashboard',
     component: Dashboard,
-    meta: { requiresAuth: true }, // Route protégée
+    meta: { requiresAuth: true },
   },
   { 
     path: '/sso/authorize',
     name: 'LinkAccount',
     component: LinkAccount,
-    meta: { requiresAuth: true }, // Route protégée
+    meta: { requiresAuth: true },
   },
+  {
+    path: '/collections',
+    name: 'Collections',
+    component: Collections,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/collections/:id',
+    name: 'CollectionDetail',
+    component: CollectionDetail,
+    meta: { requiresAuth: true },
+  }
 ];
 
 /**
@@ -65,7 +83,7 @@ router.beforeEach(async (to, _, next) => {
   if (to.meta.requiresAuth) {
     if (!token || isTokenExpired(token)) {
       console.log("Token expired, redirecting to login...");
-      return next({ path: "/", query: { redirect: to.fullPath } });
+      return next({ path: "/login", query: { redirect: to.fullPath } });
     }
   }
 
