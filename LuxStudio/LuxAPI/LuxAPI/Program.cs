@@ -22,8 +22,12 @@ builder.Services.AddHttpClient("DefaultClient"); // Named client
 string DB_DEFAULT_CONNECTION = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new Exception("Database connection string is not set.");
 // Frontend URL
-string FRONT_URI = builder.Configuration["FrontEnd:URI"]
+string FRONT_URI = builder.Configuration["URI:FrontEnd"]
     ?? throw new Exception("Frontend URL is not set.");
+
+// Backend URL
+string BACKEND_URI = builder.Configuration["URI:Backend"]
+    ?? throw new Exception("Backend URL is not set.");
 
 // JWT settings
 // JWT Key
