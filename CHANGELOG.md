@@ -1,3 +1,12 @@
+# [1.34.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.33.2...v1.34.0) (2025-05-23)
+
+
+### Features
+
+* Add DesktopController for API versioning and configuration endpoint ([e3d6575](https://github.com/LuxoriaSoft/Luxoria/commit/e3d6575aab2b9a6353587ff552001f5d018a5a99))
+* Add initial migration files for database schema creation ([99e5601](https://github.com/LuxoriaSoft/Luxoria/commit/99e56015ea1552f2e91559866ad05f7ea530f8f4))
+* Enhance DesktopController to include configuration endpoint and update appsettings for URI structure ([0fa13c9](https://github.com/LuxoriaSoft/Luxoria/commit/0fa13c956e247fc885663e4bd5ae1e742887a3a3))
+
 ## [1.33.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.33.1...v1.33.2) (2025-05-22)
 
 
