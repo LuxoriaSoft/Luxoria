@@ -40,5 +40,10 @@ namespace LuxAPI.Models
         [Required(ErrorMessage = "Redirect URI is required.")]
         [MaxLength(200, ErrorMessage = "Redirect URI cannot exceed 200 characters.")]
         public required string RedirectUri { get; set; }
+
+        /// <summary>
+        /// boolean IsDefault that make the first client as true and all the rest as false
+        /// </summary>
+        public bool IsDefault { get; set; } = false;
     }
 }

@@ -132,8 +132,26 @@ var app = builder.Build();
 using (var scope = builder.Services.BuildServiceProvider().CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    // Run pending migrations
     dbContext.Database.Migrate();
+
+    // Seed default Client if empty
+    if (!dbContext.Clients.Any())
+    {
+        dbContext.Clients.Add(new LuxAPI.Models.Client
+        {
+            Id = Guid.NewGuid(),
+            ClientId = Guid.NewGuid(),
+            ClientSecret = Guid.NewGuid().ToString("N"),
+            RedirectUri = "http://localhost:5001/callback",
+            IsDefault = true
+        });
+
+        dbContext.SaveChanges();
+    }
 }
+
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
