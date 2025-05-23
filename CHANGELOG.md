@@ -1,3 +1,61 @@
+## [1.33.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.33.1...v1.33.2) (2025-05-22)
+
+
+### Bug Fixes
+
+* Buildsystem script to build luxEditor (removing AppX in file path) ([c88c51e](https://github.com/LuxoriaSoft/Luxoria/commit/c88c51ea0f7a6f5eb637e9d6f5896330a16156cf))
+* Contrast filter + add comments to uncommented functions ([9980a28](https://github.com/LuxoriaSoft/Luxoria/commit/9980a28569d5e896e2d4b567973f8c507984272c))
+* Exposition / contrast / tint / temperature / saturation method ([68ae0d8](https://github.com/LuxoriaSoft/Luxoria/commit/68ae0d8e4e33b8688f58a47139a1442e95b2a2d6))
+* Refactor LuxEditor for better performances ([cfcfaf0](https://github.com/LuxoriaSoft/Luxoria/commit/cfcfaf0adb64d0c6c85fb972c9bfa062e5dd5643))
+* refactoring luxeditor for better performances ([be16379](https://github.com/LuxoriaSoft/Luxoria/commit/be16379951d81a4932d8185355d883fc6d208c3a))
+* refactoring luxeditor for better performances ([09593cc](https://github.com/LuxoriaSoft/Luxoria/commit/09593ccd23130518ba155aa7b0b13df4184aa546))
+* Removing clarity filter ([2e0fb2a](https://github.com/LuxoriaSoft/Luxoria/commit/2e0fb2a901ee05c360fa78d8c030b7e3bdfa46ae))
+* Rework Editor Module, removing xaml code for modularity ([1452ded](https://github.com/LuxoriaSoft/Luxoria/commit/1452ded886ec54434390f40ca912425f54120df1))
+* Texture function ([d0d6b7b](https://github.com/LuxoriaSoft/Luxoria/commit/d0d6b7b67881063f91275822b3b76b8c7250fcd3))
+* Using separators between sliders and reorganizing the sliders ([8964b47](https://github.com/LuxoriaSoft/Luxoria/commit/8964b47964c1b0d39bbc0b90dbdfd3f7a8de6a14))
+* Using separators between sliders and reorganizing the sliders ([e5c446c](https://github.com/LuxoriaSoft/Luxoria/commit/e5c446c03fa67cca55373afbe6a96e2f9031b97b))
+
+## [1.33.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.33.0...v1.33.1) (2025-05-19)
+
+
+### Bug Fixes
+
+* Add maxcpucount option to Luxoria.App build step in workflow ([24318f8](https://github.com/LuxoriaSoft/Luxoria/commit/24318f8ae64f9e3801413d5e947568673349882c))
+* Add optional flag to disable Luxoria.SDK's PackOnBuild option ([170a40d](https://github.com/LuxoriaSoft/Luxoria/commit/170a40d71ca983c728015bcf27dac4909a5ded08))
+* Add renaming steps for LuxImport, LuxFilter, LuxEditor, and LuxExport DLLs in build workflow ([e38ad92](https://github.com/LuxoriaSoft/Luxoria/commit/e38ad928a743c1202e8afda6fd95d22560b14dc3))
+* Change Reference Paths in LuxImport csproj file ([eb5e51e](https://github.com/LuxoriaSoft/Luxoria/commit/eb5e51eb7c3f713559760841cccea395a7d96c7e))
+* Cleanup unused dependencies in LuxImport ([d9843df](https://github.com/LuxoriaSoft/Luxoria/commit/d9843df3a9acbc8e9e8d0274158792f43de862c6))
+* Correct artifact paths for LuxImport, LuxFilter, LuxEditor, and LuxExport in build workflow ([ba1225e](https://github.com/LuxoriaSoft/Luxoria/commit/ba1225e009637b647d54c5d18dd4614cc8d24bd4))
+* Enhance platform targeting for Luxoria.App build step to include win-arm64 ([c155fae](https://github.com/LuxoriaSoft/Luxoria/commit/c155fae7663e12e078bd65a648b3c86c15d7ccc0))
+* Expand platform matrix to include win-x86 and win-arm64 for build jobs ([a4a8215](https://github.com/LuxoriaSoft/Luxoria/commit/a4a821543e6262010db2f53b68e4f42837b01bc9))
+* Refactor DLL renaming steps for LuxImport, LuxFilter, LuxEditor, and LuxExport to use Join-Path for improved path handling ([065e7af](https://github.com/LuxoriaSoft/Luxoria/commit/065e7af3a94399bf97e582815c3a181dd9391882))
+* Replacing DLLRef by ProjectRef for both Luxoria.GModules & Luxoria.Modules ([d97f099](https://github.com/LuxoriaSoft/Luxoria/commit/d97f0999b2a2220921be3cddb76dc01b8b7d287b))
+* Update artifact paths and rename steps for LuxImport, LuxFilter, LuxEditor, and LuxExport in build workflow ([1ecf85a](https://github.com/LuxoriaSoft/Luxoria/commit/1ecf85a215d68c01b68b0d12ea47b32182fa13cc))
+* Update artifact paths for LuxImport, LuxFilter, LuxEditor, and LuxExport in build workflow ([991449b](https://github.com/LuxoriaSoft/Luxoria/commit/991449be68f991a8edba553c1f759b255095d932))
+* Update artifact paths for LuxImport, LuxFilter, LuxEditor, and LuxExport in build workflow ([6c70b31](https://github.com/LuxoriaSoft/Luxoria/commit/6c70b31a021fdf381a778cf02c8a567857442532))
+* Update build steps to use 'dotnet build' for LuxImport, LuxFilter, LuxEditor, and LuxExport, and adjust artifact paths ([23c5c8d](https://github.com/LuxoriaSoft/Luxoria/commit/23c5c8df45439ee084fcc9f0cc54147b3a2ca681))
+* Update build steps to use 'dotnet publish' for LuxImport, LuxFilter, LuxEditor, and LuxExport ([c055bc0](https://github.com/LuxoriaSoft/Luxoria/commit/c055bc05270cddd3777e3d2386e902f06cee6c72))
+* Update build steps to use 'dotnet publish' for LuxImport, LuxFilter, LuxEditor, and LuxExport, and adjust artifact paths ([fda3076](https://github.com/LuxoriaSoft/Luxoria/commit/fda30762765ace7f31018d517c34d4addd45d559))
+* Update build workflow to enhance module upload steps and improve comments for clarity ([6af42f1](https://github.com/LuxoriaSoft/Luxoria/commit/6af42f11b36c1a6bba07f4578b7a0b2971dfd6ae))
+
+# [1.33.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.32.1...v1.33.0) (2025-05-17)
+
+
+### Bug Fixes
+
+* Improve file upload validation in AuthController and update logout method in Dashboard ([7a9ee7c](https://github.com/LuxoriaSoft/Luxoria/commit/7a9ee7c07fee2ffb5eb576c81be8c2cd3d513412))
+* Update API_URL in config files for consistency and environment variable support ([42db9f3](https://github.com/LuxoriaSoft/Luxoria/commit/42db9f319ee0a2e415bc4ba624fd1bf0ca3738e8))
+
+
+### Features
+
+* add real-time chat functionality with username support ([17accc1](https://github.com/LuxoriaSoft/Luxoria/commit/17accc1378d5cf28cf2c3d5d812c02b858dcdf41))
+* Add user avatar upload and retrieval functionality ([e308b63](https://github.com/LuxoriaSoft/Luxoria/commit/e308b637e7d87eb98d128951d214d3c730be213e))
+* Enhance JWT token generation to include user email and secure collection retrieval with authorization ([6bc0db2](https://github.com/LuxoriaSoft/Luxoria/commit/6bc0db27caf152dea90f38893f9abed35ed3c419))
+* Implement SignalR chat functionality and add allowed email management for collections ([75c1da4](https://github.com/LuxoriaSoft/Luxoria/commit/75c1da40b6f29b77b155653a87a95df69a7566a8))
+* Improve avatar handling and user feedback in registration and collection management ([5bdf4c3](https://github.com/LuxoriaSoft/Luxoria/commit/5bdf4c3f45228c98210e3434cb12fc9490096545))
+* update Vite version and add CollectionDetail view ([70b3732](https://github.com/LuxoriaSoft/Luxoria/commit/70b37323d44b51d70d844d5e818000b5ce56b262))
+
 ## [1.32.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.32.0...v1.32.1) (2025-05-15)
 
 

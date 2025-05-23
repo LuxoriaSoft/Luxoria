@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
@@ -23,18 +23,13 @@
     <PackageReference Include="SkiaSharp" Version="3.116.1" />
     <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.116.1" />
     <PackageReference Include="SkiaSharp.Views.WinUI" Version="3.116.1" />
+
+    <PackageReference Include="Luxoria.SDK" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Luxoria.GModules">
-      <HintPath>..\..\..\Luxoria.App\Luxoria.GModules\bin\Debug\net9.0-windows10.0.26100.0\Luxoria.GModules.dll</HintPath>
-    </Reference>
-    <Reference Include="Luxoria.Modules">
-      <HintPath>..\..\..\Luxoria.App\Luxoria.GModules\bin\Debug\net9.0-windows10.0.26100.0\Luxoria.Modules.dll</HintPath>
-    </Reference>
-    <Reference Include="Luxoria.SDK">
-      <HintPath>..\..\..\Luxoria.App\Luxoria.GModules\bin\Debug\net9.0-windows10.0.26100.0\Luxoria.SDK.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+		<ProjectReference Include="..\..\..\Luxoria.App\Luxoria.GModules\Luxoria.GModules.csproj" />
+		<ProjectReference Include="..\..\..\Luxoria.App\Luxoria.Modules\Luxoria.Modules.csproj" />
+	</ItemGroup>
   <ItemGroup>
     <Page Update="Components\Infos.xaml">
       <Generator>MSBuild:Compile</Generator>
