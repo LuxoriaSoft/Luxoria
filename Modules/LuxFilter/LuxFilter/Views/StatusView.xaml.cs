@@ -1,11 +1,13 @@
 using LuxFilter.Interfaces;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models;
+using Luxoria.Modules.Models.Events;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 
 namespace LuxFilter.Views;
@@ -45,6 +47,10 @@ public sealed partial class StatusView : Page
         // Attach pipeline event handlers
         _pipeline.OnScoreComputed += OnScoreComputedEvent;
         _pipeline.OnPipelineFinished += OnPipelineCompletedEvent;
+        _pipeline.OnScoreComputed += (sender, args) =>
+        {
+            Debug.WriteLine($"Score computed for ImageId: {args.Item1}, Score: {args.Item2:F2}");
+        };
 
         // Start pipeline execution
         StartPipeline(collection);
@@ -80,6 +86,13 @@ public sealed partial class StatusView : Page
         {
             StatusMessage.Text = $"Pipeline Completed in {duration.TotalSeconds:F2} sec";
             ProgressIndicator.IsActive = false;
+        });
+
+        // Notify the user that the pipeline has completed
+        _eventBus.Publish(new ToastNotificationEvent
+        {
+            Title = "Filter",
+            Message = $"Pipeline completed in {duration.TotalSeconds:F2} seconds.",
         });
     }
 
