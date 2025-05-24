@@ -1,3 +1,4 @@
+using LuxEditor.Services;
 using Microsoft.UI.Xaml.Controls;
 using System.Collections.ObjectModel;
 
@@ -14,10 +15,18 @@ namespace LuxEditor.Components
     {
         public ObservableCollection<KeyValueStringPair> ExifData { get; } = new();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Infos"/> class.
+        /// </summary>
         public Infos()
         {
             this.InitializeComponent();
             ExifListView.ItemsSource = ExifData;
+            ImageManager.Instance.OnSelectionChanged += (image) =>
+            {
+                DisplayExifData(image.Metadata);
+            };
+
         }
 
         /// <summary>
@@ -30,11 +39,14 @@ namespace LuxEditor.Components
 
             foreach (var entry in metadata)
             {
-                ExifData.Add(new KeyValueStringPair
+                if (entry.Key != null && !entry.Key.ToLower().StartsWith("unknown"))
                 {
-                    Key = entry.Key,
-                    Value = entry.Value
-                });
+                    ExifData.Add(new KeyValueStringPair
+                    {
+                        Key = entry.Key,
+                        Value = entry.Value
+                    });
+                }
             }
         }
     }
