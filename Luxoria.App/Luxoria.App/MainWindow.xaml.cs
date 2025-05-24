@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.UI.Notifications;
 using WinRT.Interop;
 
 namespace Luxoria.App
@@ -79,6 +80,7 @@ namespace Luxoria.App
         {
             _eventBus.Subscribe<CollectionUpdatedEvent>(_collectionUpdatedHandler.OnCollectionUpdated);
             _eventBus.Subscribe<RequestWindowHandleEvent>(OnRequestWindowHandle);
+            _eventBus.Subscribe<ToastNotificationEvent>(OnToastNotificationHandle);
         }
 
         /// <summary>
@@ -271,6 +273,19 @@ namespace Luxoria.App
             var handle = WindowNative.GetWindowHandle(this);
             Debug.WriteLine($"/SENDING Window Handle: {handle}");
             e.OnHandleReceived?.Invoke(handle);
+        }
+
+        /// <summary>
+        /// Handles toast notification event by displaying a toast notification.
+        /// </summary>
+        /// <param name="e">The event containing the toast notification data.</param>
+        private void OnToastNotificationHandle(ToastNotificationEvent e)
+        {
+            var toastXml = ToastNotificationManager.GetTemplateContent(ToastTemplateType.ToastText01);
+            var textNodes = toastXml.GetElementsByTagName("text");
+            textNodes[0].AppendChild(toastXml.CreateTextNode(e.Message));
+            var toast = new ToastNotification(toastXml);
+            ToastNotificationManager.CreateToastNotifier($"Luxoria - {e.Title}").Show(toast);
         }
     }
 }

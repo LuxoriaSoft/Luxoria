@@ -9,7 +9,6 @@ using Luxoria.SDK.Services;
 using Luxoria.SDK.Services.Targets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Reflection;
 
 namespace Luxoria.App.Logics
 {

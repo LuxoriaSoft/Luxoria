@@ -1,6 +1,5 @@
 ﻿using Luxoria.Modules.Models.Events;
 using Moq;
-using System.Threading.Tasks;
 
 namespace Luxoria.Modules.Tests
 {
