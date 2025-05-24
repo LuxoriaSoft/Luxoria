@@ -1,13 +1,18 @@
 ﻿using System.Diagnostics;
 using System.Net;
 using System.Web;
+using Luxoria.SDK.Interfaces;
+using Luxoria.SDK.Models;
+using Luxoria.SDK.Services;
+using Luxoria.SDK.Services.Targets;
 
 namespace LuxStudio.COM.Services;
 
 public class AuthService
 {
     public string? AuthorizationCode { get; private set; }
-
+    private readonly ILoggerService _logger = new LoggerService(LogLevel.Debug, new DebugLogTarget());
+    private readonly string _section = "LuxCOM/Authentification";
     private readonly string _clientId = "ba258d95-aa1a-4d75-b0ea-669a9db1b4b2";
     private readonly string _redirectUri = "http://localhost:5001/callback";
     private readonly string _ssoBaseUrl = "https://studio.pluto.luxoria.bluepelicansoft.com/sso/authorize";
@@ -31,6 +36,8 @@ public class AuthService
     /// <exception cref="ArgumentNullException"></exception>
     public async Task<bool> StartLoginFlowAsync(int timeoutInSeconds = 120)
     {
+        _logger.Log("Starting SSO login processus...", _section, LogLevel.Info);
+        _logger.Log($"Redirect URI: {_redirectUri}", _section, LogLevel.Debug);
         listener = new HttpListener();
         listener.Prefixes.Add(_redirectUri + "/");
         listener.Start();
