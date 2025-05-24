@@ -30,12 +30,15 @@ services:
       - luxdb
     environment:
       - ConnectionStrings__DefaultConnection=Host=luxdb;Database=luxoria;Username=postgres;Password=password
-      - JWT_SECRET=your_jwt_secret
+      - JWT_SECRET=$(openssl rand -hex 32)
       - JWT_EXPIRATION=3600
       - ENVIRONMENT=SATURN
       - PORT=8080
       - Uri__FrontEnd=http://129.12.234.243:3000
       - Uri__Backend=http://129.12.234.243:5555
+      - Minio__Endpoint=minio:9000
+      - Minio__AccessKey=your-access-key
+      - Minio__SecretKey=your-secret-key
     ports:
       - 5555:8080
     networks:
