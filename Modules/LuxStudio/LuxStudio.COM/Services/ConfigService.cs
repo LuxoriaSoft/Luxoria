@@ -2,6 +2,7 @@ using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
 using Luxoria.SDK.Services;
 using Luxoria.SDK.Services.Targets;
+using LuxStudio.COM.Models;
 
 namespace LuxStudio.COM.Services;
 
@@ -25,7 +26,12 @@ public class ConfigService
     /// <summary>
     /// Lux Studio API URL.
     /// </summary>
-    public readonly string _luxStudioApiUrl;
+    private readonly string _luxStudioApiUrl;
+
+    /// <summary>
+    /// Lux Studio configuration model.
+    /// </summary>
+    private readonly LuxStudioConfig _config;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConfigService"/> class.
@@ -35,14 +41,14 @@ public class ConfigService
     /// <param name="luxStudioURL">Url to LuxStudio (should include http / https) (e.g https://studio.example.com)</param>
     /// <exception cref="ArgumentNullException">Throws if LuxStudioURL is null</exception>
     /// <exception cref="ArgumentException">Throws if the LuxStudioURL do NOT mach an URL format</exception>
-    public ConfigService(string luxStudioURL)
+    public ConfigService(string luxStudioUrl)
     {
-        _luxStudioUrl = luxStudioURL ?? throw new ArgumentNullException(nameof(luxStudioURL), "Lux Studio URL cannot be null.");
+        _luxStudioUrl = luxStudioUrl ?? throw new ArgumentNullException(nameof(luxStudioUrl), "Lux Studio URL cannot be null.");
 
         // Check if the URL is valid
         if (!Uri.IsWellFormedUriString(_luxStudioUrl, UriKind.Absolute))
         {
-            throw new ArgumentException("The provided Lux Studio URL is not valid.", nameof(luxStudioURL));
+            throw new ArgumentException("The provided Lux Studio URL is not valid.", nameof(luxStudioUrl));
         }
 
         // Check if the URL is reachable
@@ -58,6 +64,9 @@ public class ConfigService
         {
             throw new InvalidOperationException("Failed to retrieve API URL from the Lux Studio configuration.");
         }
+        
+        // Fetch the Lux Studio configuration
+        _config = FetchConfigAsync().GetAwaiter().GetResult() ?? throw new Exception("Failed to retrieve Lux Studio configuration.");
     }
 
     /// <summary>
@@ -82,9 +91,12 @@ public class ConfigService
 
     /// <summary>
     /// Gets '/config.js' from Lux Studio URL and extracts the API_URL variable.
+    /// From the following content:
+    /// ```json
     /// window.appConfig = {
-    ///    API_URL: 'https://api.studio.pluto.luxoria.bluepelicansoft.com'  // This will be replaced at runtime
+    ///    API_URL: 'Url'  // This will be replaced at runtime
     /// };
+    /// ```
     /// </summary>
     private async Task<string> GetApiUrlAsync()
     {
@@ -110,6 +122,13 @@ public class ConfigService
             throw;
         }
     }
+
+    /// <summary>
+    /// Fetch the Lux Studio configuration from the API URL.
+    /// </summary>
+    /// <returns>LuxStudioConfig model filled with the data fetched from LuxAPI</returns>
+    private Task<LuxStudioConfig?> FetchConfigAsync() =>
+        LuxStudioConfig.FetchFromUrlAsync(new Uri(new Uri(_luxStudioApiUrl), "/desktop/config").ToString());
     
     /// <summary>
     /// Get the Lux Studio URL
@@ -122,4 +141,10 @@ public class ConfigService
     /// </summary>
     /// <returns>LuxAPI as a string</returns>
     public string GetApiUrl() => _luxStudioApiUrl;
+    
+    /// <summary>
+    /// Get the Lux Studio configuration model.
+    /// </summary>
+    /// <returns>LuxStudioConfig model</returns>
+    public LuxStudioConfig GetConfig() => _config;
 }
