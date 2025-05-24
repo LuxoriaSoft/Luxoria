@@ -34,7 +34,8 @@ services:
       - JWT_EXPIRATION=3600
       - ENVIRONMENT=SATURN
       - PORT=8080
-      - FrontEnd__URI=http://localhost:3000
+      - Uri__FrontEnd=http://129.12.234.243:3000
+      - Uri__Backend=http://129.12.234.243:5555
     ports:
       - 5555:8080
     networks:
@@ -48,7 +49,7 @@ services:
     depends_on:
       - luxapi
     environment:
-      - API_URL=http://localhost:5555
+      - API_URL=http://129.12.234.243:5555
     ports:
       - 3000:80
 

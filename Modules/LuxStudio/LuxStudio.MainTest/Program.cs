@@ -10,8 +10,8 @@ Console.WriteLine("Lux Studio API URL: " + configSvc.GetApiUrl());
 
 var config = configSvc.GetConfig();
 
-//AuthService authSvc = new();
+AuthService authSvc = new(config);
 
-//await authSvc.StartLoginFlowAsync();
+await authSvc.StartLoginFlowAsync();
 
-//Debug.WriteLine(authSvc.AuthorizationCode);
+Debug.WriteLine(authSvc.AuthorizationCode);

@@ -5,6 +5,7 @@ using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
 using Luxoria.SDK.Services;
 using Luxoria.SDK.Services.Targets;
+using LuxStudio.COM.Models;
 
 namespace LuxStudio.COM.Services;
 
@@ -16,16 +17,26 @@ public class AuthService
     public string? AuthorizationCode { get; private set; }
     private readonly ILoggerService _logger = new LoggerService(LogLevel.Info, new DebugLogTarget());
     private readonly string _section = "LuxCOM/Authentification";
-    private readonly string _clientId = "ba258d95-aa1a-4d75-b0ea-669a9db1b4b2";
-    private readonly string _redirectUri = "http://localhost:5001/callback";
-    private readonly string _ssoBaseUrl = "https://studio.pluto.luxoria.bluepelicansoft.com/sso/authorize";
+    private readonly string _clientId;
+    private readonly string _redirectUri;
+    private readonly string _ssoBaseUrl;
     private HttpListener? listener;
+
+    /// <summary>
+    /// Consturctor for the AuthService.
+    /// </summary>
+    public AuthService(LuxStudioConfig config)
+    {
+        _clientId = config?.Sso?.Params?.ClientId ?? throw new NullReferenceException();
+        _redirectUri = config?.Sso?.Params?.RedirectUrl ?? throw new NullReferenceException();
+        _ssoBaseUrl = config?.Sso?.Url ?? throw new NullReferenceException();
+    }
 
     /// <summary>
     /// Builds the authorization URL for the SSO login flow.
     /// </summary>
     /// <returns>Url to explored</returns>
-    public string BuildAuthorizationUrl()
+    private string BuildAuthorizationUrl()
     {
         var encodedRedirectUri = HttpUtility.UrlEncode(_redirectUri);
         return $"{_ssoBaseUrl}?clientId={_clientId}&responseType=code&redirectUri={encodedRedirectUri}";
