@@ -4,10 +4,10 @@ using Luxoria.Modules.Models;
 using Luxoria.Modules.Models.Events;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 
 namespace LuxFilter.Views;
@@ -25,6 +25,11 @@ public sealed partial class StatusView : Page
     /// ScoreList property
     /// </summary>
     public ObservableCollection<ScoreItem> ScoreList { get; } = [];
+
+    /// <summary>
+    /// Scores to be exported as a dictionary
+    /// </summary>
+    private ConcurrentDictionary<Guid, double> _scores { get; } = [];
 
     /// <summary>
     /// Constructor
@@ -47,10 +52,6 @@ public sealed partial class StatusView : Page
         // Attach pipeline event handlers
         _pipeline.OnScoreComputed += OnScoreComputedEvent;
         _pipeline.OnPipelineFinished += OnPipelineCompletedEvent;
-        _pipeline.OnScoreComputed += (sender, args) =>
-        {
-            Debug.WriteLine($"Score computed for ImageId: {args.Item1}, Score: {args.Item2:F2}");
-        };
 
         // Start pipeline execution
         StartPipeline(collection);
@@ -62,6 +63,8 @@ public sealed partial class StatusView : Page
     private void OnScoreComputedEvent(object sender, (Guid, double) args)
     {
         var (imageId, score) = args;
+
+        _scores[imageId] = score;
 
         // Update the log and progress
         DispatcherQueue.TryEnqueue(() =>
@@ -92,8 +95,17 @@ public sealed partial class StatusView : Page
         _eventBus.Publish(new ToastNotificationEvent
         {
             Title = "Filter",
-            Message = $"Pipeline completed in {duration.TotalSeconds:F2} seconds.",
+            Message = $"Pipeline completed in {duration.TotalSeconds:F2} seconds. ({_scores.Count} asset(s))",
         });
+
+        // Publish the scores to the event bus
+        _eventBus.Publish(new CollectionEvaluationCompletedEvent
+        {
+            AssetsScores = _scores.ToDictionary(x => x.Key, x => x.Value),
+        });
+
+        // Clear scores
+        _scores.Clear();
     }
 
     /// <summary>
@@ -128,6 +140,10 @@ public sealed partial class StatusView : Page
     /// <param name="e"></param>
     private void StartOver_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
+        // Clear the scores and reset the view
+        ScoreList.Clear();
+        _scores.Clear();
+
         // Set the filter view
         _parent.SetFilterView();
     }

@@ -13,7 +13,7 @@ public class CollectionEvaluationCompletedEvent : IEvent
     /// <summary>
     /// Contains the scores for each asset in the collection.
     /// </summary>
-    public Dictionary<Guid, Dictionary<string, double>> AssetsScores { get; } = [];
+    public Dictionary<Guid, double> AssetsScores { get; set; } = [];
 
     /// <summary>
     /// Computed at
