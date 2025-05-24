@@ -1,9 +1,14 @@
 ﻿using LuxStudio.COM;
 using LuxStudio.COM.Services;
+using System;
 using System.Diagnostics;
 
-AuthService authSvc = new();
+ConfigService configSvc = new("https://studio.pluto.luxoria.bluepelicansoft.com/");
 
-await authSvc.StartLoginFlowAsync();
+Console.WriteLine("Lux Studio URL: " + configSvc.GetFrontUrl());
+Console.WriteLine("Lux Studio API URL: " + configSvc.GetApiUrl());
+//AuthService authSvc = new();
 
-Debug.WriteLine(authSvc.AuthorizationCode);
+//await authSvc.StartLoginFlowAsync();
+
+//Debug.WriteLine(authSvc.AuthorizationCode);

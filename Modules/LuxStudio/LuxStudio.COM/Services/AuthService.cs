@@ -8,10 +8,13 @@ using Luxoria.SDK.Services.Targets;
 
 namespace LuxStudio.COM.Services;
 
+/// <summary>
+/// Service for handling authentication via Single Sign-On (SSO).
+/// </summary>
 public class AuthService
 {
     public string? AuthorizationCode { get; private set; }
-    private readonly ILoggerService _logger = new LoggerService(LogLevel.Debug, new DebugLogTarget());
+    private readonly ILoggerService _logger = new LoggerService(LogLevel.Info, new DebugLogTarget());
     private readonly string _section = "LuxCOM/Authentification";
     private readonly string _clientId = "ba258d95-aa1a-4d75-b0ea-669a9db1b4b2";
     private readonly string _redirectUri = "http://localhost:5001/callback";
