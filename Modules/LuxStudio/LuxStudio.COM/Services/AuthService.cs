@@ -47,6 +47,7 @@ public class AuthService
         try
         {
             // Open browser with SSO login URL
+            _logger.Log("Opening browser for SSO login...", _section, LogLevel.Info);
             Process.Start(new ProcessStartInfo
             {
                 FileName = BuildAuthorizationUrl(),
@@ -54,12 +55,15 @@ public class AuthService
             });
 
             // Wait for the redirect (or timeout)
+            _logger.Log("Waiting for SSO response...", _section, LogLevel.Info);
+            _logger.Log($"Timeout set to {timeoutInSeconds} seconds.", _section, LogLevel.Debug);
             var contextTask = listener.GetContextAsync();
             var completedTask = await Task.WhenAny(contextTask, Task.Delay(Timeout.Infinite, cts.Token));
 
             if (completedTask != contextTask)
             {
                 // Timeout
+                _logger.Log("SSO login timed out.", _section, LogLevel.Warning);
                 listener.Stop();
                 return false;
             }
@@ -73,6 +77,7 @@ public class AuthService
 
             if (!string.IsNullOrWhiteSpace(code))
             {
+                _logger.Log("SSO login successful, received authorization code.", _section, LogLevel.Info);
                 AuthorizationCode = code;
 
                 var responseString = "<html><body><h1>Login successful!</h1>You can close this window.</body></html>";
@@ -83,6 +88,10 @@ public class AuthService
                 listener.Stop();
                 return true;
             }
+            else
+            {
+                _logger.Log("SSO login failed, no authorization code received.", _section, LogLevel.Error);
+            }
 
             response.StatusCode = 400;
             response.Close();
@@ -91,12 +100,13 @@ public class AuthService
         }
         catch (OperationCanceledException)
         {
+            _logger.Log("SSO login process was cancelled due to timeout.", _section, LogLevel.Warning);
             listener.Stop();
             return false;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Unexpected error: {ex.Message}");
+            _logger.Log($"Unexpected error during SSO login: {ex.Message}", _section, LogLevel.Error);
             listener.Stop();
             return false;
         }
@@ -107,13 +117,15 @@ public class AuthService
     /// </summary>
     public void StopLoginFlow()
     {
+        _logger.Log("Stopping SSO login flow...", _section, LogLevel.Info);
         try
         {
+            _logger.Log("Stopping HttpListener...", _section, LogLevel.Debug);
             listener?.Stop();
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Error stopping listener: {ex.Message}");
+            _logger.Log($"Error stopping HttpListener: {ex.Message}", _section, LogLevel.Error);
         }
     }
 }
