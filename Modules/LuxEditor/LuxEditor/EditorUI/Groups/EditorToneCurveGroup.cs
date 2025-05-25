@@ -6,12 +6,16 @@ using SkiaSharp;
 
 namespace LuxEditor.EditorUI.Groups
 {
-    /// <summary>Selector bar + hosted curve view.</summary>
+    /// <summary>
+    /// Selector bar + hosted curve view.
+    /// </summary>
     public sealed class EditorToneCurveGroup : UserControl, IEditorGroupItem
     {
         private readonly ContentPresenter _presenter;
 
-        /// <summary>Initialises UI and wires selection.</summary>
+        /// <summary>
+        /// Initialises UI and wires selection.
+        /// </summary>
         public EditorToneCurveGroup()
         {
             var root = new StackPanel { Spacing = 12 };
@@ -25,10 +29,12 @@ namespace LuxEditor.EditorUI.Groups
             var curves = new CurveBase[]
             {
                 new ParametricCurve(),
+
                 new PointCurve(),
+
                 new ColorChannelCurve(SKColors.Red),
-                new ColorChannelCurve(SKColors.Green),
-                new ColorChannelCurve(SKColors.Blue)
+                new ColorChannelCurve(SKColors.Lime),
+                new ColorChannelCurve(new SKColor(66, 140, 255))
             };
 
             selector.SelectionChanged += i => _presenter.Content = curves[i];

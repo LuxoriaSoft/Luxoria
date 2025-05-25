@@ -2,93 +2,211 @@
 using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace LuxEditor.EditorUI.Controls
 {
-    /// <summary>Luminance point curve rendered as Catmull-Rom spline.</summary>
-    public sealed class PointCurve : CurveBase
+    public class PointCurve : CurveBase
     {
+        private const int MaxPts = 16;
+        private const float Hit = .04f;
+
         private int? _drag;
         private DateTime _tap;
-        private const int MaxPts = 16;
 
-        public PointCurve()
+        private SKColor _grad0;
+        private SKColor _grad1;
+
+        #region ctor & style
+        public PointCurve() : this(
+            new SKColor(255, 255, 255, 50),          // start (opaque white)
+            new SKColor(0, 0, 0, 50))
+        { } // end   (semi-black)
+
+        public PointCurve(SKColor gradStart, SKColor gradEnd)
         {
-            ControlPoints.AddRange(new[] { new SKPoint(0, 1), new SKPoint(1, 0) });
-            Content = _canvas;
+            _grad0 = gradStart;
+            _grad1 = gradEnd;
+
+            // bottom-left → top-right
+            ControlPoints.AddRange(new[] { new SKPoint(0, 0), new SKPoint(1, 1) });
+
             _canvas.PointerPressed += Down;
             _canvas.PointerMoved += Move;
             _canvas.PointerReleased += Up;
+
+            Content = _canvas;
         }
 
+        public void SetGradient(SKColor a, SKColor b)
+        { _grad0 = a; _grad1 = b; _canvas.Invalidate(); }
+        #endregion
+
+        #region pointer
         private void Down(object s, PointerRoutedEventArgs e)
         {
             var now = DateTime.UtcNow;
             var p = ToCurve(e.GetCurrentPoint(_canvas).Position);
-            int hit = Hit(p);
-            if (e.GetCurrentPoint(_canvas).Properties.IsRightButtonPressed)
-            { if (hit > 0 && hit < ControlPoints.Count - 1) { ControlPoints.RemoveAt(hit); Redraw(); } return; }
+            int hit = HitIndex(p);
 
-            if ((now - _tap).TotalMilliseconds < 350 && hit == -1 && ControlPoints.Count < MaxPts)
-            { ControlPoints.Add(p); ControlPoints.Sort((a, b) => a.X.CompareTo(b.X)); Redraw(); }
-            else if (hit != -1) { _drag = hit; _canvas.CapturePointer(e.Pointer); }
+            if (e.GetCurrentPoint(_canvas).Properties.IsRightButtonPressed)
+            {
+                if (hit > 0 && hit < ControlPoints.Count - 1) { ControlPoints.RemoveAt(hit); Redraw(); }
+                return;
+            }
+
+            if ((now - _tap).TotalMilliseconds < 350)         // double-tap
+            {
+                if (hit == -1)                                // double-tap background ⇒ reset ALL
+                {
+                    ControlPoints.Clear();
+                    ControlPoints.AddRange(new[] { new SKPoint(0, 0), new SKPoint(1, 1) });
+                }
+                else                                           // double-tap point ⇒ SUPPR
+                {
+                    if (hit > 0 && hit < ControlPoints.Count - 1)
+                        ControlPoints.RemoveAt(hit);
+                }
+                Redraw(); _tap = now; return;
+            }
+
+            if (hit == -1 && ControlPoints.Count < MaxPts)
+            {
+                ControlPoints.Add(p);
+                ControlPoints.Sort((a, b) => a.X.CompareTo(b.X));
+                _drag = ControlPoints.IndexOf(p);
+                _canvas.CapturePointer(e.Pointer);
+                Redraw();
+            }
+            else if (hit != -1)                                // drag existing
+            {
+                _drag = hit;
+                _canvas.CapturePointer(e.Pointer);
+            }
 
             _tap = now;
         }
+
         private void Move(object s, PointerRoutedEventArgs e)
         {
             if (_drag is null) return;
+
             var p = ToCurve(e.GetCurrentPoint(_canvas).Position);
             var pt = ControlPoints[_drag.Value];
+
             pt.X = Math.Clamp(p.X, 0, 1);
             pt.Y = Math.Clamp(p.Y, 0, 1);
-            if (_drag > 0) pt.X = Math.Max(pt.X, ControlPoints[_drag.Value - 1].X + 0.01f);
-            if (_drag < ControlPoints.Count - 1) pt.X = Math.Min(pt.X, ControlPoints[_drag.Value + 1].X - 0.01f);
-            ControlPoints[_drag.Value] = pt; Redraw();
+
+            if (_drag > 0)
+                pt.X = Math.Max(pt.X, ControlPoints[_drag.Value - 1].X + 0.01f);
+            if (_drag < ControlPoints.Count - 1)
+                pt.X = Math.Min(pt.X, ControlPoints[_drag.Value + 1].X - 0.01f);
+
+            ControlPoints[_drag.Value] = pt;
+            Redraw();
         }
+
         private void Up(object s, PointerRoutedEventArgs e)
         { _drag = null; _canvas.ReleasePointerCaptures(); }
+        #endregion
 
         private void Redraw() { _canvas.Invalidate(); NotifyCurveChanged(); }
 
-        private int Hit(SKPoint p)
+        #region render
+        protected override void OnPaintSurface(object? _, SKPaintSurfaceEventArgs e)
         {
-            const float h = .04f;
+            int w = e.Info.Width, h = e.Info.Height;
+            var c = e.Surface.Canvas;
+            c.Clear(SKColors.Transparent);
+
+            // background gradient (soft)
+            using (var bg = new SKPaint
+            {
+                Shader = SKShader.CreateLinearGradient(
+                    new SKPoint(0, 0), new SKPoint(w, h),
+                    new[] { _grad0, _grad1 }, null, SKShaderTileMode.Clamp)
+            })
+                c.DrawRect(0, 0, w, h, bg);
+
+            // diagonal baseline
+            DrawDiagonal(c, w, h);
+
+            // 4×4 grid
+            using (var g = new SKPaint { Color = new SKColor(70, 70, 70, 160), StrokeWidth = 1 })
+            {
+                for (int i = 1; i < 4; i++)
+                {
+                    float x = i * w / 4f, y = i * h / 4f;
+                    c.DrawLine(x, 0, x, h, g);
+                    c.DrawLine(0, y, w, y, g);
+                }
+            }
+
+            // curve itself (white)
+            using var pen = new SKPaint { Color = SKColors.White, StrokeWidth = 2, IsAntialias = true, Style = SKPaintStyle.Stroke };
+            using var path = new SKPath();
+
+            var first = ControlPoints[0];
+            var last = ControlPoints[^1];
+
+            path.MoveTo(0, (1 - first.Y) * h);
+            path.LineTo(first.X * w, (1 - first.Y) * h);
+
+            if (ControlPoints.Count == 2)
+                path.LineTo(last.X * w, (1 - last.Y) * h);
+            else
+            {
+                var p0 = first;
+                for (int i = 0; i < ControlPoints.Count - 1; i++)
+                {
+                    var p1 = ControlPoints[i];
+                    var p2 = ControlPoints[i + 1];
+                    var p3 = i + 2 < ControlPoints.Count ? ControlPoints[i + 2] : p2;
+                    for (int t = 1; t <= 20; t++)
+                    {
+                        float s = t / 20f;
+                        var q = Catmull(p0, p1, p2, p3, s);
+                        path.LineTo(q.X * w, (1 - q.Y) * h);
+                    }
+                    p0 = p1;
+                }
+            }
+
+            path.LineTo(w, (1 - last.Y) * h);
+            c.DrawPath(path, pen);
+
+            // handles (always on top)
+            foreach (var p in ControlPoints)
+                DrawHandle(c, p.X * w, (1 - p.Y) * h);
+
+            DrawBorder(c, w, h);
+        }
+
+
+        private int HitIndex(SKPoint p)
+        {
             for (int i = 0; i < ControlPoints.Count; i++)
-                if (Dist(p, ControlPoints[i]) < h) return i;
+                if (Dist(p, ControlPoints[i]) < Hit) return i;
             return -1;
         }
-        private static float Dist(SKPoint a, SKPoint b) => MathF.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y));
-        private SKPoint ToCurve(Windows.Foundation.Point p) => new((float)(p.X / _canvas.ActualWidth), (float)(1 - p.Y / _canvas.ActualHeight));
 
-        protected override void OnPaintSurface(object? s, SKPaintSurfaceEventArgs e)
+        private static float Dist(SKPoint a, SKPoint b) =>
+            MathF.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y));
+
+        private SKPoint ToCurve(Windows.Foundation.Point p) =>
+            new((float)(p.X / _canvas.ActualWidth), (float)(1 - p.Y / _canvas.ActualHeight));
+
+        private static SKPoint Catmull(SKPoint p0, SKPoint p1, SKPoint p2, SKPoint p3, float t)
         {
-            var c = e.Surface.Canvas; c.Clear(SKColors.Transparent);
-            using var pathPaint = new SKPaint { Color = SKColors.White, StrokeWidth = 2, IsAntialias = true, Style = SKPaintStyle.Stroke };
-            using var dotPaint = new SKPaint { Color = SKColors.White, IsAntialias = true };
-
-            var pts = ControlPoints.Select(pt => new SKPoint(pt.X * e.Info.Width, (1 - pt.Y) * e.Info.Height)).ToList();
-            if (pts.Count < 2) return;
-
-            var path = new SKPath();
-            path.MoveTo(pts[0]);
-
-            // Catmull-Rom spline (centripetal alpha = 0.5) → Cubic Bézier segments
-            for (int i = 0; i < pts.Count - 1; i++)
-            {
-                var p0 = i == 0 ? pts[i] : pts[i - 1];
-                var p1 = pts[i];
-                var p2 = pts[i + 1];
-                var p3 = i + 2 < pts.Count ? pts[i + 2] : p2;
-
-                var c1 = new SKPoint(p1.X + (p2.X - p0.X) / 6f, p1.Y + (p2.Y - p0.Y) / 6f);
-                var c2 = new SKPoint(p2.X - (p3.X - p1.X) / 6f, p2.Y - (p3.Y - p1.Y) / 6f);
-                path.CubicTo(c1, c2, p2);
-            }
-            c.DrawPath(path, pathPaint);
-            foreach (var p in pts) c.DrawCircle(p, 4, dotPaint);
+            float t2 = t * t, t3 = t2 * t;
+            return new SKPoint(
+                0.5f * (2 * p1.X + (-p0.X + p2.X) * t
+                        + (2 * p0.X - 5 * p1.X + 4 * p2.X - p3.X) * t2
+                        + (-p0.X + 3 * p1.X - 3 * p2.X + p3.X) * t3),
+                0.5f * (2 * p1.Y + (-p0.Y + p2.Y) * t
+                        + (2 * p0.Y - 5 * p1.Y + 4 * p2.Y - p3.Y) * t2
+                        + (-p0.Y + 3 * p1.Y - 3 * p2.Y + p3.Y) * t3)
+            );
         }
+        #endregion
     }
 }
