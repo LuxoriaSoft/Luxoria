@@ -117,6 +117,11 @@ namespace LuxEditor.Components
             });
 
             _panelManager!.AddCategory(root);
+
+            var toneExpander = new EditorGroupExpander("Tone Curve");
+            toneExpander.AddControl(new EditorToneCurveGroup());
+            _panelManager.AddCategory(toneExpander);
+
         }
 
         /// <summary>
