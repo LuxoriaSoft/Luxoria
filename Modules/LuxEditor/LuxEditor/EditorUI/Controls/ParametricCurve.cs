@@ -9,9 +9,6 @@ using System;
 
 namespace LuxEditor.EditorUI.Controls
 {
-    /// <summary>
-    /// Parametric tone-curve control with slider reuse, double-click reset and full-width hover envelope.
-    /// </summary>
     public sealed class ParametricCurve : CurveBase
     {
         private readonly ThresholdBar _bar;
@@ -28,6 +25,8 @@ namespace LuxEditor.EditorUI.Controls
         private readonly byte[] _envH = new byte[256];
 
         private DateTime _lastTap;
+
+        public override string SettingKey => "ToneCurve_Parametric";
 
         /// <summary>
         /// Initialises the UI and draws the first curve.
@@ -337,6 +336,17 @@ namespace LuxEditor.EditorUI.Controls
 
             float X(int i) => i * (w - 1) / 255f;
             float Y(byte v) => h - v / 255f * h;
+        }
+
+        /// <summary>
+        /// Returns a copy of the current LUT for external use.
+        /// </summary>
+        /// <returns></returns>
+        public override byte[] GetLut()
+        {
+            var copy = new byte[256];
+            Array.Copy(_lut, copy, 256);
+            return copy;
         }
     }
 }

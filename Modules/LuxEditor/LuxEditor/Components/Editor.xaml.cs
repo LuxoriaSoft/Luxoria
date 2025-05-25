@@ -118,10 +118,17 @@ namespace LuxEditor.Components
 
             _panelManager!.AddCategory(root);
 
-            var toneExpander = new EditorGroupExpander("Tone Curve");
-            toneExpander.AddControl(new EditorToneCurveGroup());
-            _panelManager.AddCategory(toneExpander);
+            var toneGroup = new EditorToneCurveGroup();
+            toneGroup.CurveChanged += (key, lut) =>
+            {
+                if (currentImage == null) return;
+                currentImage.Settings[key] = lut;
+                RequestFilterUpdate();
+            };
 
+            var toneExpander = new EditorGroupExpander("Tone Curve");
+            toneExpander.AddControl(toneGroup);
+            _panelManager.AddCategory(toneExpander);
         }
 
         /// <summary>

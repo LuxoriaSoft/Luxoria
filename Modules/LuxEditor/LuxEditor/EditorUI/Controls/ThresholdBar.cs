@@ -7,9 +7,6 @@ using System;
 
 namespace LuxEditor.EditorUI.Controls
 {
-    /// <summary>
-    /// Horizontal bar with three interactive thresholds (t1 &lt; t2 &lt; t3) within [0‥1].
-    /// </summary>
     public sealed class ThresholdBar : UserControl
     {
         private readonly SKXamlCanvas _canvas = new();

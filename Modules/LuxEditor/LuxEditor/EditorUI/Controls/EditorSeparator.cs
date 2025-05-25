@@ -6,9 +6,6 @@ using Microsoft.UI.Xaml.Shapes;
 
 namespace LuxEditor.EditorUI.Controls
 {
-    /// <summary>
-    /// A visual separator line used between controls in a group.
-    /// </summary>
     public class EditorSeparator : IEditorGroupItem
     {
         private readonly UIElement _element;
