@@ -134,14 +134,27 @@ public class VaultService : IVaultService, IStorageAPI
         // Check if the vault exists
         if (_vaults.TryGetValue(vaultName, out Guid vaultId))
         {
+            // Check if a folder for the vault exists, if not create it
+            var vaultPath = Path.Combine(_vaultsDir, vaultId.ToString());
+            if (!Directory.Exists(vaultPath))
+            {
+                Directory.CreateDirectory(vaultPath);
+            }
             Vault = vaultId;
             return this;
         }
         // If the vault does not exist, create a new one
         var newVaultId = Guid.NewGuid();
+        var newVaultPath = Path.Combine(_vaultsDir, newVaultId.ToString());
+        if (!Directory.Exists(newVaultPath))
+        {
+            Directory.CreateDirectory(newVaultPath);
+        }
         _vaults[vaultName] = newVaultId;
 
         Vault = newVaultId;
+
+        SaveVaultsToManifest();
         return this;
     }
 
@@ -164,6 +177,12 @@ public class VaultService : IVaultService, IStorageAPI
         // Check if the vault exists
         if (_vaults.Remove(vaultName))
         {
+            // If the vault exists, delete its directory
+            var vaultPath = Path.Combine(_vaultsDir, _vaults[vaultName].ToString());
+            if (Directory.Exists(vaultPath))
+            {
+                Directory.Delete(vaultPath, true);
+            }
             SaveVaultsToManifest();
         }
         else
