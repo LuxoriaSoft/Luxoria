@@ -1,6 +1,7 @@
 ﻿using Luxoria.Modules.Interfaces;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
+using System.Collections.ObjectModel;
 
 namespace Luxoria.Modules;
 
@@ -35,6 +36,11 @@ public class VaultService : IVaultService, IStorageAPI
     /// Dictionnary to store vaults by their unique identifier
     /// </summary>
     private readonly Dictionary<string, Guid> _vaults = [];
+
+    /// <summary>
+    /// Selected Vault
+    /// </summary>
+    public Guid Vault { get; private set; } = Guid.Empty;
 
 
     /// <summary>
@@ -114,4 +120,57 @@ public class VaultService : IVaultService, IStorageAPI
             }
         }
     }
+
+    // ONLY ACCESSIBLE THROUGH THE IVAULTSERVICE INTERFACE
+    /// <summary>
+    /// Get a vault by using its name
+    /// </summary>
+    public IStorageAPI GetVault(string vaultName)
+    {
+        if (string.IsNullOrWhiteSpace(vaultName))
+        {
+            throw new ArgumentException("Vault name cannot be null or empty.", nameof(vaultName));
+        }
+        // Check if the vault exists
+        if (_vaults.TryGetValue(vaultName, out Guid vaultId))
+        {
+            Vault = vaultId;
+            return this;
+        }
+        // If the vault does not exist, create a new one
+        var newVaultId = Guid.NewGuid();
+        _vaults[vaultName] = newVaultId;
+
+        Vault = newVaultId;
+        return this;
+    }
+
+    /// <summary>
+    /// Get all vaults
+    /// </summary>
+    /// <returns>A read-only collection of vault names</returns>
+    public ICollection<(string, Guid)> GetVaults() =>
+        new ReadOnlyCollection<(string, Guid)>(_vaults.Select(v => (v.Key, v.Value)).ToList());
+
+    /// <summary>
+    /// Delete a vault by its name
+    /// </summary>
+    public void DeleteVault(string vaultName)
+    {
+        if (string.IsNullOrWhiteSpace(vaultName))
+        {
+            throw new ArgumentException("Vault name cannot be null or empty.", nameof(vaultName));
+        }
+        // Check if the vault exists
+        if (_vaults.Remove(vaultName))
+        {
+            SaveVaultsToManifest();
+        }
+        else
+        {
+            throw new KeyNotFoundException($"Vault '{vaultName}' does not exist.");
+        }
+    }
+
+    // ONLY ACCESSIBLE THROUGH THE ISTORAGEAPI INTERFACE
 }
