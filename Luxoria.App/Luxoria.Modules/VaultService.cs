@@ -192,4 +192,72 @@ public class VaultService : IVaultService, IStorageAPI
     }
 
     // ONLY ACCESSIBLE THROUGH THE ISTORAGEAPI INTERFACE
+
+    /// <summary>
+    /// Save an object to the current vault using a key
+    /// </summary>
+    /// <param name="key">Key under which the object will be stored</param>
+    /// <param name="value">Value (object) to be stored/updated</param>
+    /// <exception cref="ArgumentException">If one of the params is null</exception>
+    /// <exception cref="InvalidOperationException">If a vault has NOT been selected</exception>
+    public void Save(string key, object value)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            throw new ArgumentException("Key cannot be null or empty.", nameof(key));
+        }
+        if (Vault == Guid.Empty)
+        {
+            throw new InvalidOperationException("No vault is currently selected.");
+        }
+        var vaultPath = Path.Combine(_vaultsDir, Vault.ToString(), key);
+        File.WriteAllText(vaultPath, value.ToString() ?? string.Empty);
+    }
+
+    /// <summary>
+    /// Retrieve an object from the current vault using a key
+    /// </summary>
+    /// <param name="key">Key used to retreived the object</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException">The key is null or empty</exception>
+    /// <exception cref="InvalidOperationException">If a vault has NOT been selected</exception>
+    /// <exception cref="FileNotFoundException">If key is NOT attached to an object</exception>
+    public object Get(string key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            throw new ArgumentException("Key cannot be null or empty.", nameof(key));
+        }
+        if (Vault == Guid.Empty)
+        {
+            throw new InvalidOperationException("No vault is currently selected.");
+        }
+        var vaultPath = Path.Combine(_vaultsDir, Vault.ToString(), key);
+        if (File.Exists(vaultPath))
+        {
+            return File.ReadAllText(vaultPath);
+        }
+        throw new FileNotFoundException($"Key '{key}' not found in the current vault.");
+    }
+
+    /// <summary>
+    /// Retrieve all objects in the current vault
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException">If the vault has NOT been selected</exception>
+    /// <exception cref="DirectoryNotFoundException">If the vault does NOT exist</exception>
+    public ICollection<Guid> GetObjects()
+    {
+        if (Vault == Guid.Empty)
+        {
+            throw new InvalidOperationException("No vault is currently selected.");
+        }
+        var vaultPath = Path.Combine(_vaultsDir, Vault.ToString());
+        if (!Directory.Exists(vaultPath))
+        {
+            throw new DirectoryNotFoundException($"Vault '{Vault}' does not exist.");
+        }
+        string[] files = Directory.GetFiles(vaultPath);
+        return [.. files.Select(file => new Guid(Path.GetFileNameWithoutExtension(file)))];
+    }
 }
