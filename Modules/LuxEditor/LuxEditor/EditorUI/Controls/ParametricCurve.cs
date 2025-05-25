@@ -9,7 +9,9 @@ using System;
 
 namespace LuxEditor.EditorUI.Controls
 {
-    /// <summary>Parametric tone-curve control with slider reuse, double-click reset and full-width hover envelope.</summary>
+    /// <summary>
+    /// Parametric tone-curve control with slider reuse, double-click reset and full-width hover envelope.
+    /// </summary>
     public sealed class ParametricCurve : CurveBase
     {
         private readonly ThresholdBar _bar;
@@ -27,7 +29,9 @@ namespace LuxEditor.EditorUI.Controls
 
         private DateTime _lastTap;
 
-        /// <summary>Initialises the UI and draws the first curve.</summary>
+        /// <summary>
+        /// Initialises the UI and draws the first curve.
+        /// </summary>
         public ParametricCurve()
         {
             var root = new StackPanel { Spacing = 8 };
@@ -58,7 +62,9 @@ namespace LuxEditor.EditorUI.Controls
             UpdateCurve();
         }
 
-        /// <summary>Creates an <see cref="EditorSlider"/> wired to events.</summary>
+        /// <summary>
+        /// Creates an <see cref="EditorSlider"/> wired to events.
+        /// </summary>
         private EditorSlider CreateSlider(string label, int region, Panel host)
         {
             var slider = new EditorSlider(label, -100, 100, 0, 0, 1f)
@@ -74,7 +80,9 @@ namespace LuxEditor.EditorUI.Controls
             return slider;
         }
 
-        /// <summary>Handles pointer-down on the grid (drag or double-click reset).</summary>
+        /// <summary>
+        /// Handles pointer-down on the grid (drag or double-click reset).
+        /// </summary>
         private void GridDown(object sender, PointerRoutedEventArgs e)
         {
             var now = DateTime.UtcNow;
@@ -95,7 +103,9 @@ namespace LuxEditor.EditorUI.Controls
             _canvas.CapturePointer(e.Pointer);
         }
 
-        /// <summary>Handles pointer-move for dragging and hover tracking.</summary>
+        /// <summary>
+        /// Handles pointer-move for dragging and hover tracking.
+        /// </summary>
         private void GridMove(object sender, PointerRoutedEventArgs e)
         {
             if (!_dragging)
@@ -113,18 +123,24 @@ namespace LuxEditor.EditorUI.Controls
             UpdateCurve();
         }
 
-        /// <summary>Releases the drag operation.</summary>
+        /// <summary>
+        /// Releases the drag operation.
+        /// </summary>
         private void GridUp(object sender, PointerRoutedEventArgs e)
         {
             _dragging = false;
             _canvas.ReleasePointerCaptures();
         }
 
-        /// <summary>Returns the slider associated with a region index.</summary>
+        /// <summary>
+        /// Returns the slider associated with a region index.
+        /// </summary>
         private EditorSlider GetSlider(int region) =>
             region switch { 0 => _high, 1 => _light, 2 => _dark, _ => _shadow };
 
-        /// <summary>Maps an X coordinate to its region index.</summary>
+        /// <summary>
+        /// Maps an X coordinate to its region index.
+        /// </summary>
         private int RegionFromX(double x)
         {
             double w = _canvas.ActualWidth;
@@ -134,7 +150,9 @@ namespace LuxEditor.EditorUI.Controls
             return x < t1 ? 3 : x < t2 ? 2 : x < t3 ? 1 : 0;
         }
 
-        /// <summary>Sets the current hover region and invalidates the canvas.</summary>
+        /// <summary>
+        /// Sets the current hover region and invalidates the canvas.
+        /// </summary>
         private void SetHover(int region)
         {
             if (_hoverRegion == region) return;
@@ -143,10 +161,14 @@ namespace LuxEditor.EditorUI.Controls
             _canvas.Invalidate();
         }
 
-        /// <summary>Updates hover state from an X coordinate.</summary>
+        /// <summary>
+        /// Updates hover state from an X coordinate.
+        /// </summary>
         private void UpdateHover(double x) => SetHover(RegionFromX(x));
 
-        /// <summary>Rebuilds the LUT, hover envelope and redraws.</summary>
+        /// <summary>
+        /// Rebuilds the LUT, hover envelope and redraws.
+        /// </summary>
         private void UpdateCurve()
         {
             BuildLut(_lut,
@@ -162,7 +184,9 @@ namespace LuxEditor.EditorUI.Controls
             _canvas.Invalidate();
         }
 
-        /// <summary>Calculates the min/max envelope for the current hover region.</summary>
+        /// <summary>
+        /// Calculates the min/max envelope for the current hover region.
+        /// </summary>
         private void RecomputeEnvelope()
         {
             if (_hoverRegion == -1) return;
@@ -185,7 +209,9 @@ namespace LuxEditor.EditorUI.Controls
                      _hoverRegion == 0 ? 100 : h);
         }
 
-        /// <summary>Generates a 256-entry LUT for given slider values.</summary>
+        /// <summary>
+        /// Generates a 256-entry LUT for given slider values.
+        /// </summary>
         private void BuildLut(byte[] dst, double sVal, double dVal, double lVal, double hVal)
         {
             Span<double> y = stackalloc double[5];
@@ -253,7 +279,9 @@ namespace LuxEditor.EditorUI.Controls
             }
         }
 
-        /// <summary>Draws grid, curve and hover envelope.</summary>
+        /// <summary>
+        /// Draws grid, curve and hover envelope.
+        /// </summary>
         protected override void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
         {
             int w = e.Info.Width;
