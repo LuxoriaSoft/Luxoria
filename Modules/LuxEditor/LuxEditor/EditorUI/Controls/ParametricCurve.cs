@@ -289,6 +289,8 @@ namespace LuxEditor.EditorUI.Controls
             var c = e.Surface.Canvas;
             c.Clear(SKColors.Transparent);
 
+            DrawDiagonal(c, w, h);
+
             using var grid = new SKPaint { Color = new SKColor(80, 80, 80), StrokeWidth = 1 };
             for (int i = 1; i < 4; i++)
             {
@@ -329,7 +331,9 @@ namespace LuxEditor.EditorUI.Controls
                 IsAntialias = true,
                 Style = SKPaintStyle.Stroke
             };
+
             c.DrawPath(curve, white);
+            DrawBorder(c, w, h);
 
             float X(int i) => i * (w - 1) / 255f;
             float Y(byte v) => h - v / 255f * h;

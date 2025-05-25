@@ -1,26 +1,19 @@
 ﻿using SkiaSharp;
-using SkiaSharp.Views.Windows;
 
 namespace LuxEditor.EditorUI.Controls
 {
-    /// <summary>Single RGB-channel point curve (placeholder).</summary>
-    public sealed class ColorChannelCurve : CurveBase
+    public sealed class ColorChannelCurve : PointCurve
     {
-        private readonly SKColor _col;
-
-        /// <summary>Creates a channel-specific curve.</summary>
-        public ColorChannelCurve(SKColor col)
-        {
-            _col = col;
-            Content = _canvas;
-        }
-
-        protected override void OnPaintSurface(object? sender, SKPaintSurfaceEventArgs e)
-        {
-            var c = e.Surface.Canvas;
-            c.Clear(SKColors.Transparent);
-            using var p = new SKPaint { Color = _col, StrokeWidth = 2, IsAntialias = true, Style = SKPaintStyle.Stroke };
-            c.DrawLine(0, e.Info.Height, e.Info.Width, 0, p);
-        }
+        /// <summary>
+        /// Initialises a new color channel curve with a semi-tinted background and white stroke.
+        /// </summary>
+        /// <param name="tint"></param>
+        public ColorChannelCurve(SKColor tint)
+            : base(
+                new SKColor(tint.Red, tint.Green, tint.Blue, 50),
+                new SKColor((byte)(255 - tint.Red),
+                            (byte)(255 - tint.Green),
+                            (byte)(255 - tint.Blue), 50))
+        { }
     }
 }

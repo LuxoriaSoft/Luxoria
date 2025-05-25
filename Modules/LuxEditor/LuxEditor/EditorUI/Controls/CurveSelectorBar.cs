@@ -8,14 +8,17 @@ using System;
 
 namespace LuxEditor.EditorUI.Controls
 {
-    /// <summary>Horizontal bar that toggles between Parametric, Point, R, G, B modes.</summary>
     public sealed class CurveSelectorBar : StackPanel
     {
         public event Action<int>? SelectionChanged;
 
         private readonly ToggleButton[] _buttons;
 
-        /// <summary>Builds the five-button selector.</summary>
+        public int SelectedIndex { get; private set; }
+
+        /// <summary>
+        /// Builds the five-button selector.
+        /// </summary>
         public CurveSelectorBar()
         {
             Orientation = Orientation.Horizontal;
@@ -44,9 +47,11 @@ namespace LuxEditor.EditorUI.Controls
             _buttons[0].IsChecked = true;
         }
 
-        /// <summary>Currently selected index (0-4).</summary>
-        public int SelectedIndex { get; private set; }
-
+        /// <summary>
+        /// Handles the checked event to ensure only one button is selected at a time.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnChecked(object sender, RoutedEventArgs e)
         {
             foreach (var b in _buttons)
@@ -55,12 +60,20 @@ namespace LuxEditor.EditorUI.Controls
             }
         }
 
+        /// <summary>
+        /// Handles the click event to update the selected index and fire the selection changed event.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnClicked(object sender, RoutedEventArgs e)
         {
             SelectedIndex = (int)((ToggleButton)sender).Tag;
             SelectionChanged?.Invoke(SelectedIndex);
         }
 
+        /// <summary>
+        /// Renders the icons for each button in the selector bar.
+        /// </summary>
         private void RenderIcons()
         {
             _buttons[0].Content = BuildCircleIcon(Windows.UI.Color.FromArgb(255, 200, 200, 200));
@@ -70,6 +83,11 @@ namespace LuxEditor.EditorUI.Controls
             _buttons[4].Content = BuildCircleIcon(Windows.UI.Color.FromArgb(255, 66, 140, 255));
         }
 
+        /// <summary>
+        /// Builds a circle icon with the specified color.
+        /// </summary>
+        /// <param name="color"></param>
+        /// <returns></returns>
         private static UIElement BuildCircleIcon(Windows.UI.Color color) =>
             new Ellipse { Width = 12, Height = 12, Fill = new SolidColorBrush(color) };
     }
