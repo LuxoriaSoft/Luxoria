@@ -1,3 +1,39 @@
+# [1.35.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.34.0...v1.35.0) (2025-05-25)
+
+
+### Features
+
+* Add "Start Over" button on filter's status view ([5f5242f](https://github.com/LuxoriaSoft/Luxoria/commit/5f5242fa0b2d8bce6f0b7f391760e8a57f7f9a36))
+* Add ToastNotificationEvent and StartOver button on LuxImport's indexication process view ([a252502](https://github.com/LuxoriaSoft/Luxoria/commit/a252502f50ad44b423b84b78ac70c0233d77b581))
+* Bring OpenAI CLIP model as Color Visual Aesthetics analysis ([95afeff](https://github.com/LuxoriaSoft/Luxoria/commit/95afeff4fe2233f9f8ed41cf0dec991e243579f0))
+* Enhance pipeline event handling and user notifications ([8e30189](https://github.com/LuxoriaSoft/Luxoria/commit/8e3018908e97281fb2413e920c5a3053fc6c3f07))
+
+# [1.34.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.33.2...v1.34.0) (2025-05-23)
+
+
+### Features
+
+* Add DesktopController for API versioning and configuration endpoint ([e3d6575](https://github.com/LuxoriaSoft/Luxoria/commit/e3d6575aab2b9a6353587ff552001f5d018a5a99))
+* Add initial migration files for database schema creation ([99e5601](https://github.com/LuxoriaSoft/Luxoria/commit/99e56015ea1552f2e91559866ad05f7ea530f8f4))
+* Enhance DesktopController to include configuration endpoint and update appsettings for URI structure ([0fa13c9](https://github.com/LuxoriaSoft/Luxoria/commit/0fa13c956e247fc885663e4bd5ae1e742887a3a3))
+
+## [1.33.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.33.1...v1.33.2) (2025-05-22)
+
+
+### Bug Fixes
+
+* Buildsystem script to build luxEditor (removing AppX in file path) ([c88c51e](https://github.com/LuxoriaSoft/Luxoria/commit/c88c51ea0f7a6f5eb637e9d6f5896330a16156cf))
+* Contrast filter + add comments to uncommented functions ([9980a28](https://github.com/LuxoriaSoft/Luxoria/commit/9980a28569d5e896e2d4b567973f8c507984272c))
+* Exposition / contrast / tint / temperature / saturation method ([68ae0d8](https://github.com/LuxoriaSoft/Luxoria/commit/68ae0d8e4e33b8688f58a47139a1442e95b2a2d6))
+* Refactor LuxEditor for better performances ([cfcfaf0](https://github.com/LuxoriaSoft/Luxoria/commit/cfcfaf0adb64d0c6c85fb972c9bfa062e5dd5643))
+* refactoring luxeditor for better performances ([be16379](https://github.com/LuxoriaSoft/Luxoria/commit/be16379951d81a4932d8185355d883fc6d208c3a))
+* refactoring luxeditor for better performances ([09593cc](https://github.com/LuxoriaSoft/Luxoria/commit/09593ccd23130518ba155aa7b0b13df4184aa546))
+* Removing clarity filter ([2e0fb2a](https://github.com/LuxoriaSoft/Luxoria/commit/2e0fb2a901ee05c360fa78d8c030b7e3bdfa46ae))
+* Rework Editor Module, removing xaml code for modularity ([1452ded](https://github.com/LuxoriaSoft/Luxoria/commit/1452ded886ec54434390f40ca912425f54120df1))
+* Texture function ([d0d6b7b](https://github.com/LuxoriaSoft/Luxoria/commit/d0d6b7b67881063f91275822b3b76b8c7250fcd3))
+* Using separators between sliders and reorganizing the sliders ([8964b47](https://github.com/LuxoriaSoft/Luxoria/commit/8964b47964c1b0d39bbc0b90dbdfd3f7a8de6a14))
+* Using separators between sliders and reorganizing the sliders ([e5c446c](https://github.com/LuxoriaSoft/Luxoria/commit/e5c446c03fa67cca55373afbe6a96e2f9031b97b))
+
 ## [1.33.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.33.0...v1.33.1) (2025-05-19)
 
 

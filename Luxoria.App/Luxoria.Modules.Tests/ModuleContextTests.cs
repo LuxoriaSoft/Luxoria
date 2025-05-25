@@ -1,7 +1,5 @@
-﻿using System;
-using Luxoria.Modules;
+﻿using Luxoria.Modules;
 using Luxoria.Modules.Models;
-using Xunit;
 
 namespace Luxoria.App.Tests
 {
