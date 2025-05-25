@@ -6,10 +6,8 @@ using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
-using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace LuxFilter;
@@ -22,7 +20,7 @@ public class LuxFilter : IModule, IModuleUI
 
     public string Name => "LuxFilter";
     public string Description => "Generic Luxoria Filtering Module";
-    public string Version => "1.0.1";
+    public string Version => "1.0.2";
 
     private const string CATEGORY = nameof(LuxFilter);
 
