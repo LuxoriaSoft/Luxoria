@@ -16,32 +16,33 @@ namespace LuxEditor.EditorUI.Controls
         private SKColor _grad0;
         private SKColor _grad1;
 
-        #region ctor & style
+        private readonly byte[] _lut = new byte[256];
+
+        public override string SettingKey => "ToneCurve_Point";
+
         public PointCurve() : this(
-            new SKColor(255, 255, 255, 50),          // start (opaque white)
+            new SKColor(255, 255, 255, 50),
             new SKColor(0, 0, 0, 50))
-        { } // end   (semi-black)
+        { }
 
         public PointCurve(SKColor gradStart, SKColor gradEnd)
         {
             _grad0 = gradStart;
             _grad1 = gradEnd;
 
-            // bottom-left → top-right
             ControlPoints.AddRange(new[] { new SKPoint(0, 0), new SKPoint(1, 1) });
 
             _canvas.PointerPressed += Down;
             _canvas.PointerMoved += Move;
             _canvas.PointerReleased += Up;
 
+            BuildLut();
             Content = _canvas;
         }
 
         public void SetGradient(SKColor a, SKColor b)
         { _grad0 = a; _grad1 = b; _canvas.Invalidate(); }
-        #endregion
 
-        #region pointer
         private void Down(object s, PointerRoutedEventArgs e)
         {
             var now = DateTime.UtcNow;
@@ -50,23 +51,26 @@ namespace LuxEditor.EditorUI.Controls
 
             if (e.GetCurrentPoint(_canvas).Properties.IsRightButtonPressed)
             {
-                if (hit > 0 && hit < ControlPoints.Count - 1) { ControlPoints.RemoveAt(hit); Redraw(); }
+                if (hit > 0 && hit < ControlPoints.Count - 1) { ControlPoints.RemoveAt(hit); Redraw(); BuildLut();}
                 return;
             }
 
-            if ((now - _tap).TotalMilliseconds < 350)         // double-tap
+            if ((now - _tap).TotalMilliseconds < 350)
             {
-                if (hit == -1)                                // double-tap background ⇒ reset ALL
+                if (hit == -1)
                 {
                     ControlPoints.Clear();
                     ControlPoints.AddRange(new[] { new SKPoint(0, 0), new SKPoint(1, 1) });
                 }
-                else                                           // double-tap point ⇒ SUPPR
+                else
                 {
                     if (hit > 0 && hit < ControlPoints.Count - 1)
                         ControlPoints.RemoveAt(hit);
                 }
-                Redraw(); _tap = now; return;
+                Redraw();
+                BuildLut();
+                _tap = now;
+                return;
             }
 
             if (hit == -1 && ControlPoints.Count < MaxPts)
@@ -76,8 +80,9 @@ namespace LuxEditor.EditorUI.Controls
                 _drag = ControlPoints.IndexOf(p);
                 _canvas.CapturePointer(e.Pointer);
                 Redraw();
+                BuildLut();
             }
-            else if (hit != -1)                                // drag existing
+            else if (hit != -1)
             {
                 _drag = hit;
                 _canvas.CapturePointer(e.Pointer);
@@ -103,22 +108,21 @@ namespace LuxEditor.EditorUI.Controls
 
             ControlPoints[_drag.Value] = pt;
             Redraw();
+            BuildLut();
         }
 
         private void Up(object s, PointerRoutedEventArgs e)
         { _drag = null; _canvas.ReleasePointerCaptures(); }
-        #endregion
 
-        private void Redraw() { _canvas.Invalidate(); NotifyCurveChanged(); }
 
-        #region render
+        private void Redraw() { _canvas.Invalidate(); }
+
         protected override void OnPaintSurface(object? _, SKPaintSurfaceEventArgs e)
         {
             int w = e.Info.Width, h = e.Info.Height;
             var c = e.Surface.Canvas;
             c.Clear(SKColors.Transparent);
 
-            // background gradient (soft)
             using (var bg = new SKPaint
             {
                 Shader = SKShader.CreateLinearGradient(
@@ -127,7 +131,6 @@ namespace LuxEditor.EditorUI.Controls
             })
                 c.DrawRect(0, 0, w, h, bg);
 
-            // diagonal baseline
             DrawDiagonal(c, w, h);
 
             // 4×4 grid
@@ -181,7 +184,11 @@ namespace LuxEditor.EditorUI.Controls
             DrawBorder(c, w, h);
         }
 
-
+        /// <summary>
+        /// Finds the index of the control point that is closest to the given point.
+        /// </summary>
+        /// <param name="p"></param>
+        /// <returns></returns>
         private int HitIndex(SKPoint p)
         {
             for (int i = 0; i < ControlPoints.Count; i++)
@@ -189,12 +196,32 @@ namespace LuxEditor.EditorUI.Controls
             return -1;
         }
 
+        /// <summary>
+        /// Calculates the distance between two points in 2D space.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
         private static float Dist(SKPoint a, SKPoint b) =>
             MathF.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y));
 
+        /// <summary>
+        /// Converts a Windows.Foundation.Point to a normalized SKPoint for the curve.
+        /// </summary>
+        /// <param name="p"></param>
+        /// <returns></returns>
         private SKPoint ToCurve(Windows.Foundation.Point p) =>
             new((float)(p.X / _canvas.ActualWidth), (float)(1 - p.Y / _canvas.ActualHeight));
 
+        /// <summary>
+        /// Calculates a point on a Catmull-Rom spline given four control points and a parameter t (0 to 1).
+        /// </summary>
+        /// <param name="p0"></param>
+        /// <param name="p1"></param>
+        /// <param name="p2"></param>
+        /// <param name="p3"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
         private static SKPoint Catmull(SKPoint p0, SKPoint p1, SKPoint p2, SKPoint p3, float t)
         {
             float t2 = t * t, t3 = t2 * t;
@@ -207,6 +234,61 @@ namespace LuxEditor.EditorUI.Controls
                         + (-p0.Y + 3 * p1.Y - 3 * p2.Y + p3.Y) * t3)
             );
         }
-        #endregion
+
+
+        /// <summary>
+        /// Builds the Look-Up Table (LUT) for tone mapping based on the current control points.
+        /// </summary>
+        private void BuildLut()
+        {
+            for (int i = 0; i < 256; i++)
+            {
+                float x = i / 255f;
+                _lut[i] = (byte)(Evaluate(x) * 255f + .5f);
+            }
+            NotifyCurveChanged();
+        }
+
+        /// <summary>
+        /// Evaluates the curve at a given x-coordinate (0 to 1) using Catmull-Rom splines.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        private float Evaluate(float x)
+        {
+            if (ControlPoints.Count == 2)
+                return Lerp(ControlPoints[0], ControlPoints[1], x);
+
+            int i = ControlPoints.FindLastIndex(p => p.X <= x);
+            i = Math.Clamp(i, 0, ControlPoints.Count - 2);
+
+            SKPoint p0 = i > 0 ? ControlPoints[i - 1] : ControlPoints[i];
+            SKPoint p1 = ControlPoints[i];
+            SKPoint p2 = ControlPoints[i + 1];
+            SKPoint p3 = i + 2 < ControlPoints.Count ? ControlPoints[i + 2] : p2;
+
+            float t = (x - p1.X) / (p2.X - p1.X);
+            return Catmull(p0, p1, p2, p3, t).Y;
+        }
+
+        /// <summary>
+        /// Linearly interpolates between two points based on the x-coordinate.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        private static float Lerp(SKPoint a, SKPoint b, float x) => a.Y + (b.Y - a.Y) * ((x - a.X) / (b.X - a.X));
+
+        /// <summary>
+        /// Returns a copy of the LUT (Look-Up Table) used for tone mapping.
+        /// </summary>
+        /// <returns></returns>
+        public override byte[] GetLut()
+        {
+            var copy = new byte[256];
+            Array.Copy(_lut, copy, 256);
+            return copy;
+        }
     }
 }

@@ -6,13 +6,12 @@ using System.Collections.Generic;
 
 namespace LuxEditor.EditorUI.Controls
 {
-    /// <summary>
-    /// Abstract drawing surface for every curve control.
-    /// </summary>
     public abstract class CurveBase : UserControl
     {
         protected readonly SKXamlCanvas _canvas;
         protected readonly List<SKPoint> ControlPoints = new();
+
+        public abstract string SettingKey { get; }
 
         /// <summary>
         /// Initialises the common canvas.
@@ -78,5 +77,12 @@ namespace LuxEditor.EditorUI.Controls
         /// Notifies subscribers that the curve has changed.
         /// </summary>
         protected void NotifyCurveChanged() => CurveChanged?.Invoke();
+
+        /// <summary>
+        /// Returns the LUT (Look-Up Table) for the curve, which is a byte array representing the curve's values.
+        /// </summary>
+        /// <returns></returns>
+        public abstract byte[] GetLut();
+
     }
 }

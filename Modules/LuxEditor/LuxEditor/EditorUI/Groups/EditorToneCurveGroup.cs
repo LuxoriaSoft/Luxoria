@@ -3,15 +3,14 @@ using LuxEditor.EditorUI.Interfaces;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using SkiaSharp;
+using System;
 
 namespace LuxEditor.EditorUI.Groups
 {
-    /// <summary>
-    /// Selector bar + hosted curve view.
-    /// </summary>
     public sealed class EditorToneCurveGroup : UserControl, IEditorGroupItem
     {
         private readonly ContentPresenter _presenter;
+        public event Action<string, byte[]>? CurveChanged;
 
         /// <summary>
         /// Initialises UI and wires selection.
@@ -32,10 +31,13 @@ namespace LuxEditor.EditorUI.Groups
 
                 new PointCurve(),
 
-                new ColorChannelCurve(SKColors.Red),
-                new ColorChannelCurve(SKColors.Lime),
-                new ColorChannelCurve(new SKColor(66, 140, 255))
+                new ColorChannelCurve("ToneCurve_Red",   SKColors.Red),
+                new ColorChannelCurve("ToneCurve_Green", SKColors.Lime),
+                new ColorChannelCurve("ToneCurve_Blue",  new SKColor(66, 140, 255))
             };
+
+            foreach (var c in curves)
+                c.CurveChanged += () => CurveChanged?.Invoke(c.SettingKey, c.GetLut());
 
             selector.SelectionChanged += i => _presenter.Content = curves[i];
             _presenter.Content = curves[0];
