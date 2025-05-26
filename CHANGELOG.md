@@ -1,3 +1,17 @@
+# [1.36.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.35.0...v1.36.0) (2025-05-26)
+
+
+### Bug Fixes
+
+* Create a directory for each vault, and, Delete the vault's drectory when deleting the specified vault ([a5de0a7](https://github.com/LuxoriaSoft/Luxoria/commit/a5de0a73c6c928ad931cf7202122b7a015d157ae))
+
+
+### Features
+
+* Add fondation of VaultService & StorageAPI ([d01f4df](https://github.com/LuxoriaSoft/Luxoria/commit/d01f4df313ee0976fba41eeb5981cb4e7a95e42f))
+* Add vault management methods to IVaultService ([08a28fa](https://github.com/LuxoriaSoft/Luxoria/commit/08a28fa7136903a333ab338f5b757a2bfdf7a7ef))
+* Complete StorageAPI for Modules ([6674868](https://github.com/LuxoriaSoft/Luxoria/commit/6674868b1be80ae145e8ebc8b776a14aefdb603b))
+
 # [1.35.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.34.0...v1.35.0) (2025-05-25)
 
 
