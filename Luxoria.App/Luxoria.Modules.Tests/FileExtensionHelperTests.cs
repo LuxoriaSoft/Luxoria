@@ -1,10 +1,5 @@
 ﻿using Luxoria.Modules.Models;
 using Luxoria.Modules.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Luxoria.Modueles.Tests
 {

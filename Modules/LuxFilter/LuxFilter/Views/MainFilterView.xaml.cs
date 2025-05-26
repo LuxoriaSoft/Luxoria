@@ -3,7 +3,6 @@ using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models;
 using Luxoria.SDK.Interfaces;
 using Microsoft.UI.Xaml.Controls;
-using System.Collections;
 using System.Collections.Generic;
 
 // To learn more about WinUI, the WinUI project structure,

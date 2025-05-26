@@ -1,7 +1,6 @@
 name: LuxStudio/LuxAPI Build
 
 on:
-  push:
   pull_request:
     types: [opened, synchronize, reopened]
 

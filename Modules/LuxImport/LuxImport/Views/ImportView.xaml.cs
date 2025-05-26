@@ -1,5 +1,3 @@
-using LuxImport.Interfaces;
-using LuxImport.Repositories;
 using LuxImport.Services;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;

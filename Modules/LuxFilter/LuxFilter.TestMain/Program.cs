@@ -15,6 +15,7 @@ var pipeline = new PipelineService(loggerService);
 pipeline
     .AddAlgorithm(new LuxFilter.Algorithms.ImageQuality.SharpnessAlgo(), 0.75)
     .AddAlgorithm(new LuxFilter.Algorithms.ImageQuality.ResolutionAlgo(), 0.15)
+    .AddAlgorithm(new LuxFilter.Algorithms.ColorVisualAesthetics.CLIPAlgo(), 0.15)
     .AddAlgorithm(new LuxFilter.Algorithms.PerceptualMetrics.BrisqueAlgo(), 0.1);
 
 // Get the root directory of the application
@@ -38,6 +39,7 @@ loggerService.Log("Decoding images...");
 
 loggerService.Log("Decoding landscape_4k.jpg...");
 SKBitmap image = SKBitmap.Decode(Path.Combine(baseDirectory, "assets", "landscape_4k.jpg"));
+SKBitmap image4 = SKBitmap.Decode(Path.Combine(baseDirectory, "assets", "landscape_4k.jpg"));
 loggerService.Log("Decoding landscape_bad_quality.jpeg...");
 SKBitmap image2 = SKBitmap.Decode(Path.Combine(baseDirectory, "assets", "landscape_bad_quality.jpeg"));
 loggerService.Log("Decoding net_logo.png...");
@@ -61,7 +63,8 @@ IEnumerable<(Guid, Dictionary<string, double>)> scores = await pipeline.Compute(
 [
     (Guid.NewGuid(), new(image, FileExtension.UNKNOWN)),
     (Guid.NewGuid(), new(image2, FileExtension.UNKNOWN)),
-    (Guid.NewGuid(), new (image3, FileExtension.UNKNOWN))
+    (Guid.NewGuid(), new (image3, FileExtension.UNKNOWN)),
+    (Guid.NewGuid(), new (image4, FileExtension.UNKNOWN))
 ]);
 
 loggerService.Log("Scores computed !");

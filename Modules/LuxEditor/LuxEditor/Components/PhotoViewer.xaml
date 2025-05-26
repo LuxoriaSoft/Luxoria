@@ -22,11 +22,6 @@
             PointerReleased="ScrollViewerImage_PointerReleased"
             PointerCanceled="ScrollViewerImage_PointerCanceled">
 
-            <Image
-                x:Name="DisplayImage"
-                Stretch="Uniform" 
-                VerticalAlignment="Center" 
-                HorizontalAlignment="Center" />
         </ScrollViewer>
 
     </Grid>

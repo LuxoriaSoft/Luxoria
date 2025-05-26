@@ -1,7 +1,5 @@
-using Luxoria.Modules.Models;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
-using System.Linq;
 using Windows.UI.Notifications;
 
 namespace Luxoria.App.EventHandlers;

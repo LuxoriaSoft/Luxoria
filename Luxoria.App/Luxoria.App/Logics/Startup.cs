@@ -9,7 +9,6 @@ using Luxoria.SDK.Services;
 using Luxoria.SDK.Services.Targets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Reflection;
 
 namespace Luxoria.App.Logics
 {
@@ -25,7 +24,16 @@ namespace Luxoria.App.Logics
             logger.Log("Configuring services...", LOG_SECTION, LogLevel.Info);
             // Register services here
 
-            // Register services from Luxoria.Core
+            // Register services from Luxoria.SDK (first)
+            // Register Logger Service
+            logger.Log("Registering Logger Service...", LOG_SECTION, LogLevel.Info);
+            services.AddSingleton(logger as ILoggerService);
+            logger.Log("Logger Service registered successfully !", LOG_SECTION, LogLevel.Info);
+
+            // Register Vault Service
+            logger.Log("Registering Vault Service...", LOG_SECTION, LogLevel.Info);
+            services.AddSingleton<IVaultService>(new VaultService(logger));
+            logger.Log("Vault Service registered successfully !", LOG_SECTION, LogLevel.Info);
 
             // Register Event Bus
             logger.Log("Registering Event Bus...", LOG_SECTION, LogLevel.Info);
@@ -36,11 +44,6 @@ namespace Luxoria.App.Logics
             logger.Log("Registering Module Loader...", LOG_SECTION, LogLevel.Info);
             services.AddSingleton<IModuleService, ModuleService>();
             logger.Log("Module Loader registered successfully !", LOG_SECTION, LogLevel.Info);
-
-            // Register Logger Service
-            logger.Log("Registering Logger Service...", LOG_SECTION, LogLevel.Info);
-            services.AddSingleton(logger as ILoggerService);
-            logger.Log("Logger Service registered successfully !", LOG_SECTION, LogLevel.Info);
 
             // Register ModuleUI Service
             logger.Log("Registering IModuleUI...", LOG_SECTION, LogLevel.Info);

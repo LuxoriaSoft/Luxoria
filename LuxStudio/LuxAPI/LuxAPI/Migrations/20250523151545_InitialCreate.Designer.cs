@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuxAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250513185152_AddAvatarToUser")]
-    partial class AddAvatarToUser
+    [Migration("20250523151545_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -94,6 +94,9 @@ namespace LuxAPI.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("RedirectUri")
                         .IsRequired()

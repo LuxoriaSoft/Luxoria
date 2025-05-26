@@ -92,6 +92,9 @@ namespace LuxAPI.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("RedirectUri")
                         .IsRequired()
                         .HasMaxLength(200)

@@ -14,7 +14,8 @@ public class FilterService
         {
             { "Resolution", new Algorithms.ImageQuality.ResolutionAlgo() },
             { "Sharpness", new Algorithms.ImageQuality.SharpnessAlgo() },
-            { "Brisque", new Algorithms.PerceptualMetrics.BrisqueAlgo() }
+            { "Brisque", new Algorithms.PerceptualMetrics.BrisqueAlgo() },
+            { "CLIP", new Algorithms.ColorVisualAesthetics.CLIPAlgo() }
         }
     );
 }

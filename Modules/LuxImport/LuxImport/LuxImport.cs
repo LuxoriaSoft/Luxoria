@@ -7,7 +7,6 @@ using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
-using Microsoft.UI.Xaml.Controls;
 using System.Diagnostics;
 
 namespace LuxImport;
@@ -20,7 +19,7 @@ public class LuxImport : IModule, IModuleUI
 
     public string Name => "LuxImport";
     public string Description => "Generic Luxoria Importation Module";
-    public string Version => "1.0.2";
+    public string Version => "1.0.3";
 
     /// <summary>
     /// The list of menu bar items to be added to the main menu bar.

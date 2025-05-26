@@ -22,8 +22,12 @@ builder.Services.AddHttpClient("DefaultClient"); // Named client
 string DB_DEFAULT_CONNECTION = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new Exception("Database connection string is not set.");
 // Frontend URL
-string FRONT_URI = builder.Configuration["FrontEnd:URI"]
+string FRONT_URI = builder.Configuration["URI:FrontEnd"]
     ?? throw new Exception("Frontend URL is not set.");
+
+// Backend URL
+string BACKEND_URI = builder.Configuration["URI:Backend"]
+    ?? throw new Exception("Backend URL is not set.");
 
 // JWT settings
 // JWT Key
@@ -132,8 +136,26 @@ var app = builder.Build();
 using (var scope = builder.Services.BuildServiceProvider().CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    // Run pending migrations
     dbContext.Database.Migrate();
+
+    // Seed default Client if empty
+    if (!dbContext.Clients.Any())
+    {
+        dbContext.Clients.Add(new LuxAPI.Models.Client
+        {
+            Id = Guid.NewGuid(),
+            ClientId = Guid.NewGuid(),
+            ClientSecret = Guid.NewGuid().ToString("N"),
+            RedirectUri = "http://localhost:5001/callback",
+            IsDefault = true
+        });
+
+        dbContext.SaveChanges();
+    }
 }
+
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
