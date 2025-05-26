@@ -1,3 +1,19 @@
+# [1.37.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.36.0...v1.37.0) (2025-05-26)
+
+
+### Bug Fixes
+
+* Clarify LFS disabling steps in mirror workflow ([d89a709](https://github.com/LuxoriaSoft/Luxoria/commit/d89a709b684bf510a58384077ae59c152a421211))
+* Improve LFS smudge disabling in mirror workflow ([1f1f74b](https://github.com/LuxoriaSoft/Luxoria/commit/1f1f74b8ebe301ff5c5429f2a1e684b530734c33))
+* Remove duplicate Git LFS disable step in mirror workflow ([c37b4d9](https://github.com/LuxoriaSoft/Luxoria/commit/c37b4d98d276cb69dbc04ff99acf7fa7b9f30562))
+* Remove LFS smudge disabling steps from mirror workflow ([5100493](https://github.com/LuxoriaSoft/Luxoria/commit/51004938f430a72257a088521a19992a347b73cf))
+* Remove push trigger from workflow files ([662c4aa](https://github.com/LuxoriaSoft/Luxoria/commit/662c4aa45bd9975d495f6b9ebe99a614e5f75da1))
+
+
+### Features
+
+* Disable lda-build, which is a clone of build-upload-lda ([5bf3d96](https://github.com/LuxoriaSoft/Luxoria/commit/5bf3d96ca8ee2f2445707a8600bdf7d80efbe83c))
+
 # [1.36.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.35.0...v1.36.0) (2025-05-26)
 
 
