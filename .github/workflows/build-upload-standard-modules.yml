@@ -2,8 +2,10 @@ name: Luxoria Standard Modules Release
 
 on:
   push:
-  pull_request:
-    types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - develop
+      - release/*
 
 jobs:
   build-and-upload:
