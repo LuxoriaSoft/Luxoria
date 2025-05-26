@@ -31,7 +31,7 @@ jobs:
 
       # Set up .NET SDK
       - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.x'  # Specify the .NET SDK version you are using
       
