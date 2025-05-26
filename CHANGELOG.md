@@ -1,3 +1,22 @@
+# [1.38.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.37.2...v1.38.0) (2025-05-26)
+
+
+### Bug Fixes
+
+* Add pull request trigger for main, develop, and release branches in workflows ([fe151cb](https://github.com/LuxoriaSoft/Luxoria/commit/fe151cbdb3c2585f30774f24e3ef3d9b9b99638c))
+* Correct path to requirements.txt in LuxFilter model installation step ([a768a03](https://github.com/LuxoriaSoft/Luxoria/commit/a768a039da453ddf902c7ef285e84768dbb6d520))
+* Remove CI branches from workflow trigger ([93f791d](https://github.com/LuxoriaSoft/Luxoria/commit/93f791defa7c2d5866a7a316733966361d3e85d6))
+* Update .gitignore to include negative.txt and positive.txt ([2f43ac4](https://github.com/LuxoriaSoft/Luxoria/commit/2f43ac42da5f59e6a69be6bac86945c9ad00b2fa))
+* Update ONNX export script to accept output directory as an argument ([c699539](https://github.com/LuxoriaSoft/Luxoria/commit/c699539e7bf2edee6239c70aa952d81b4baae15d))
+
+
+### Features
+
+* Add CI trigger for feature and fix branches in workflow ([88f5d80](https://github.com/LuxoriaSoft/Luxoria/commit/88f5d8073a46abebcc87a79184c6b2591af7ca15))
+* Add ONNX export functionality and requirements for CLIP model ([3621032](https://github.com/LuxoriaSoft/Luxoria/commit/3621032a1ae9b00f008132e867343f13413cf94b))
+* Add Python 3.12 setup and install requirements for Luxoria LuxFilter Model ([fbcf683](https://github.com/LuxoriaSoft/Luxoria/commit/fbcf683d5eba3ecf281421e9cf0d4241c41bf241))
+* Set up Python 3.12 and install Luxoria LuxFilter Model requirements in SonarCloud analysis workflow ([d8080b3](https://github.com/LuxoriaSoft/Luxoria/commit/d8080b3724bc22b4e4e8570d7a84df6ae115e9c4))
+
 ## [1.37.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.37.1...v1.37.2) (2025-05-26)
 
 
