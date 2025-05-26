@@ -1,3 +1,10 @@
+## [1.37.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.37.1...v1.37.2) (2025-05-26)
+
+
+### Bug Fixes
+
+* Remove LFS filter for ONNX files ([a026a97](https://github.com/LuxoriaSoft/Luxoria/commit/a026a976494c42341a2c86d827800a618495b591))
+
 ## [1.37.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.37.0...v1.37.1) (2025-05-26)
 
 
