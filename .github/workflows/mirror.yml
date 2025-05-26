@@ -6,13 +6,16 @@ jobs:
   mirror:
     runs-on: ubuntu-latest
     steps:
+      - name: Disable Git LFS
+        run: git config --global filter.lfs.smudge "git-lfs smudge --skip"
+
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       
-      - name: Disable Git LFS
-        run: git config --global filter.lfs.smudge "git-lfs smudge --skip"
-        
+      - name: Allow incomplete LFS pushes
+        run: git config lfs.allowincompletepush true
+      
       - uses: pixta-dev/repository-mirroring-action@v1
         with:
           target_repo_url:
