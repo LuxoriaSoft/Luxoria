@@ -2,10 +2,12 @@ import torch
 import numpy as np
 from transformers import CLIPProcessor, CLIPModel
 import os
+import sys
 
 # Config
 model_id = "openai/clip-vit-base-patch32"
-output_dir = "./"
+output_dir = (sys.argv[1] if len(sys.argv) > 1 else "./")
+
 positive_prompt = "an outstanding picture"
 negative_prompt = "a horrible picture"
 
