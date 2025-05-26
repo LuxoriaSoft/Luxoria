@@ -1,12 +1,14 @@
 using LuxFilter.Interfaces;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models;
+using Luxoria.Modules.Models.Events;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.ComponentModel;
+using System.Linq;
 
 namespace LuxFilter.Views;
 
@@ -23,6 +25,11 @@ public sealed partial class StatusView : Page
     /// ScoreList property
     /// </summary>
     public ObservableCollection<ScoreItem> ScoreList { get; } = [];
+
+    /// <summary>
+    /// Scores to be exported as a dictionary
+    /// </summary>
+    private ConcurrentDictionary<Guid, double> _scores { get; } = [];
 
     /// <summary>
     /// Constructor
@@ -57,6 +64,8 @@ public sealed partial class StatusView : Page
     {
         var (imageId, score) = args;
 
+        _scores[imageId] = score;
+
         // Update the log and progress
         DispatcherQueue.TryEnqueue(() =>
         {
@@ -81,6 +90,22 @@ public sealed partial class StatusView : Page
             StatusMessage.Text = $"Pipeline Completed in {duration.TotalSeconds:F2} sec";
             ProgressIndicator.IsActive = false;
         });
+
+        // Notify the user that the pipeline has completed
+        _eventBus.Publish(new ToastNotificationEvent
+        {
+            Title = "Filter",
+            Message = $"Pipeline completed in {duration.TotalSeconds:F2} seconds. ({_scores.Count} asset(s))",
+        });
+
+        // Publish the scores to the event bus
+        _eventBus.Publish(new CollectionEvaluationCompletedEvent
+        {
+            AssetsScores = _scores.ToDictionary(x => x.Key, x => x.Value),
+        });
+
+        // Clear scores
+        _scores.Clear();
     }
 
     /// <summary>
@@ -106,6 +131,21 @@ public sealed partial class StatusView : Page
 
         // Execute the pipeline
         ICollection<(Guid, Dictionary<string, double>)> pipelineResult = await _pipeline.Compute(collection.Select(asset => (asset.Id, asset.Data)).ToList());
+    }
+
+    /// <summary>
+    /// St the filter view when the user clicks on the "Start Over" button
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void StartOver_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        // Clear the scores and reset the view
+        ScoreList.Clear();
+        _scores.Clear();
+
+        // Set the filter view
+        _parent.SetFilterView();
     }
 }
 
