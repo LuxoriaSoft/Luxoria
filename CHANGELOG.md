@@ -1,3 +1,10 @@
+## [1.37.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.37.0...v1.37.1) (2025-05-26)
+
+
+### Bug Fixes
+
+* Disable LFS storage ([7871ef5](https://github.com/LuxoriaSoft/Luxoria/commit/7871ef55dec00995262ccbd8836811cd3f7418f1))
+
 # [1.37.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.36.0...v1.37.0) (2025-05-26)
 
 
