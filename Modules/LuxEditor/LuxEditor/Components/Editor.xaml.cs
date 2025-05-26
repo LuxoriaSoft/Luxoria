@@ -1,3 +1,4 @@
+using LuxEditor.Controls;
 using LuxEditor.EditorUI;
 using LuxEditor.EditorUI.Controls;
 using LuxEditor.EditorUI.Groups;
@@ -6,6 +7,7 @@ using LuxEditor.EditorUI.Models;
 using LuxEditor.Logic;
 using LuxEditor.Models;
 using LuxEditor.Services;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -24,16 +26,15 @@ namespace LuxEditor.Components
     public sealed partial class Editor : Page
     {
         private EditableImage? currentImage;
-
         private EditorPanelManager? _panelManager;
         private readonly Dictionary<string, EditorCategory> _categories = new();
         private readonly ConcurrentDictionary<string, EditorSlider> _sliderCache = new();
-
         private CancellationTokenSource? _cts;
         private int _renderRunning;
         private bool _pendingUpdate;
-
         public event Action<SKImage> OnEditorImageUpdated;
+
+        private readonly Dictionary<TreeViewNode, object> _nodeMap = new();
 
         /// <summary>
         /// Style for the temperature slider.
@@ -59,23 +60,109 @@ namespace LuxEditor.Components
         public Editor()
         {
             InitializeComponent();
+
             _panelManager = new EditorPanelManager(EditorStackPanel);
             ImageManager.Instance.OnSelectionChanged += SetEditableImage;
+
+            var toolBar = new ToolSelectorBar();
+            ToolBarHost.Content = toolBar;
+            toolBar.SelectionChanged += OnToolSelectionChanged;
+
+            AddLayerBtn.Click += OnAddLayerClicked;
+            RemoveLayerBtn.Click += OnRemoveLayerClicked;
+            LayerTreeView.SelectionChanged += OnLayerTreeSelectionChanged;
+
+            LayerManager.Instance.Layers.CollectionChanged += (_, __) => RefreshLayerTree();
+            RefreshLayerTree();
+
+            OnToolSelectionChanged(this, 0);
         }
 
-        /// <summary>
-        /// Sets the editable image for the editor.
-        /// </summary>
-        /// <param name="image"></param>
+        private void OnAddLayerClicked(object sender, RoutedEventArgs e)
+        {
+            LayerManager.Instance.AddLayer(BrushType.Brush);
+            RefreshLayerTree();
+        }
+
+        private void OnRemoveLayerClicked(object sender, RoutedEventArgs e)
+        {
+            LayerManager.Instance.RemoveSelectedLayer();
+            RefreshLayerTree();
+        }
+
+        private void OnLayerTreeSelectionChanged(TreeView sender, TreeViewSelectionChangedEventArgs e)
+        {
+            OperationDetailsHost.Visibility = Visibility.Collapsed;
+            OperationDetailsHost.Content = null;
+
+            if (e.AddedItems.Count == 0 || e.AddedItems[0] is not TreeViewNode node)
+                return;
+
+            if (_nodeMap.TryGetValue(node, out var model) && model is MaskOperation op)
+            {
+                OperationDetailsHost.Content = new OperationDetailsPanel(op);
+                OperationDetailsHost.Visibility = Visibility.Visible;
+            }
+        }
+
+        private TreeViewNode? FindNodeByLayer(Layer target, IList<TreeViewNode> nodes)
+        {
+            foreach (var node in nodes)
+            {
+                if (node.Content is Border b && b.Tag == target)
+                    return node;
+
+                var found = FindNodeByLayer(target, node.Children);
+                if (found != null)
+                    return found;
+            }
+            return null;
+        }
+
+        private void RefreshLayerTree()
+        {
+            LayerTreeView.RootNodes.Clear();
+            _nodeMap.Clear();
+
+            foreach (var layer in LayerManager.Instance.LayersFiltered)
+            {
+                var layerNode = new TreeViewNode
+                {
+                    Content = layer.Name,
+                    IsExpanded = true
+                };
+                _nodeMap[layerNode] = layer;
+
+                if (!layer.Operations.Any())
+                    layer.Operations.Add(new MaskOperation(BrushType.Brush));
+
+                foreach (var op in layer.Operations)
+                {
+                    var opNode = new TreeViewNode
+                    {
+                        Content = $"{op.BrushType} ({op.Mode})"
+                    };
+                    _nodeMap[opNode] = op;
+                    layerNode.Children.Add(opNode);
+                }
+
+                LayerTreeView.RootNodes.Add(layerNode);
+            }
+        }
+
+        private void OnToolSelectionChanged(object sender, int idx)
+        {
+            EditorScrollViewer.Visibility = idx == 0 ? Visibility.Visible : Visibility.Collapsed;
+            LayersUI.Visibility = idx == 1 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         public void SetEditableImage(EditableImage image)
         {
             currentImage = image;
-
             EditorStackPanel.Children.Clear();
             _categories.Clear();
             _sliderCache.Clear();
             BuildEditorUI();
-
             UpdateSliderUI();
             RequestFilterUpdate();
         }
