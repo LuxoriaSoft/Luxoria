@@ -1,7 +1,6 @@
 name: LuxStudio/Portal Build
 
 on:
-  push:
   pull_request:
     types: [opened, synchronize, reopened]
 

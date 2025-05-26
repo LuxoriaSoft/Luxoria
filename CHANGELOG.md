@@ -1,3 +1,40 @@
+## [1.37.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.37.0...v1.37.1) (2025-05-26)
+
+
+### Bug Fixes
+
+* Disable LFS storage ([7871ef5](https://github.com/LuxoriaSoft/Luxoria/commit/7871ef55dec00995262ccbd8836811cd3f7418f1))
+
+# [1.37.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.36.0...v1.37.0) (2025-05-26)
+
+
+### Bug Fixes
+
+* Clarify LFS disabling steps in mirror workflow ([d89a709](https://github.com/LuxoriaSoft/Luxoria/commit/d89a709b684bf510a58384077ae59c152a421211))
+* Improve LFS smudge disabling in mirror workflow ([1f1f74b](https://github.com/LuxoriaSoft/Luxoria/commit/1f1f74b8ebe301ff5c5429f2a1e684b530734c33))
+* Remove duplicate Git LFS disable step in mirror workflow ([c37b4d9](https://github.com/LuxoriaSoft/Luxoria/commit/c37b4d98d276cb69dbc04ff99acf7fa7b9f30562))
+* Remove LFS smudge disabling steps from mirror workflow ([5100493](https://github.com/LuxoriaSoft/Luxoria/commit/51004938f430a72257a088521a19992a347b73cf))
+* Remove push trigger from workflow files ([662c4aa](https://github.com/LuxoriaSoft/Luxoria/commit/662c4aa45bd9975d495f6b9ebe99a614e5f75da1))
+
+
+### Features
+
+* Disable lda-build, which is a clone of build-upload-lda ([5bf3d96](https://github.com/LuxoriaSoft/Luxoria/commit/5bf3d96ca8ee2f2445707a8600bdf7d80efbe83c))
+
+# [1.36.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.35.0...v1.36.0) (2025-05-26)
+
+
+### Bug Fixes
+
+* Create a directory for each vault, and, Delete the vault's drectory when deleting the specified vault ([a5de0a7](https://github.com/LuxoriaSoft/Luxoria/commit/a5de0a73c6c928ad931cf7202122b7a015d157ae))
+
+
+### Features
+
+* Add fondation of VaultService & StorageAPI ([d01f4df](https://github.com/LuxoriaSoft/Luxoria/commit/d01f4df313ee0976fba41eeb5981cb4e7a95e42f))
+* Add vault management methods to IVaultService ([08a28fa](https://github.com/LuxoriaSoft/Luxoria/commit/08a28fa7136903a333ab338f5b757a2bfdf7a7ef))
+* Complete StorageAPI for Modules ([6674868](https://github.com/LuxoriaSoft/Luxoria/commit/6674868b1be80ae145e8ebc8b776a14aefdb603b))
+
 # [1.35.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.34.0...v1.35.0) (2025-05-25)
 
 
