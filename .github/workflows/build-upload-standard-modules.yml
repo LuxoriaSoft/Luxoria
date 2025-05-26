@@ -6,8 +6,6 @@ on:
       - main
       - develop
       - release/*
-      - feat/ci/*
-      - fix/ci/*
 
 jobs:
   build-and-upload:
