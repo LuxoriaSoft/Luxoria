@@ -23,3 +23,7 @@ Debug.WriteLine(authSvc.AuthorizationCode);
 
 Debug.WriteLine(value.AccessToken);
 Debug.WriteLine(value.RefreshToken);
+
+(string AccessToken, string RefreshToken) token = await authSvc.RefreshAccessToken(value.RefreshToken);
+Console.WriteLine(token.AccessToken);
+Console.WriteLine(token.RefreshToken);

@@ -200,4 +200,59 @@ public class AuthService
             throw;
         }
     }
+
+    /// <summary>
+    /// Refreshes the access token using the refresh token.
+    /// </summary>
+    /// <param name="refreshToken">The refresh token to use for getting a new access token.</param>
+    /// <returns>A tuple containing the new access token and refresh token.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the refresh fails or response is invalid.</exception>
+    public async Task<(string AccessToken, string RefreshToken)> RefreshAccessToken(string refreshToken)
+    {
+        _logger.Log("Refreshing access token...", _section, LogLevel.Info);
+
+        var requestBody = new
+        {
+            refreshToken
+        };
+
+        var requestUri = $"{_apiBaseUrl}/sso/refresh";
+
+        try
+        {
+            using var httpClient = new HttpClient();
+            var content = new StringContent(
+                System.Text.Json.JsonSerializer.Serialize(requestBody),
+                System.Text.Encoding.UTF8,
+                "application/json");
+
+            var response = await httpClient.PostAsync(requestUri, content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMsg = $"Failed to refresh access token: {response.StatusCode}";
+                _logger.Log(errorMsg, _section, LogLevel.Error);
+                throw new InvalidOperationException(errorMsg);
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var tokenResponse = System.Text.Json.JsonSerializer.Deserialize<TokenResponse>(responseContent);
+
+            if (tokenResponse == null ||
+                string.IsNullOrWhiteSpace(tokenResponse.AccessToken) ||
+                string.IsNullOrWhiteSpace(tokenResponse.RefreshToken))
+            {
+                _logger.Log("Invalid response format from token refresh.", _section, LogLevel.Error);
+                throw new InvalidOperationException("Invalid response format from token refresh.");
+            }
+
+            _logger.Log("Access token refreshed successfully.", _section, LogLevel.Info);
+            return (tokenResponse.AccessToken, tokenResponse.RefreshToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.Log($"Exception during access token refresh: {ex.Message}", _section, LogLevel.Error);
+            throw;
+        }
+    }
 }
