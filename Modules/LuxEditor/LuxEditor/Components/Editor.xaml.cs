@@ -11,6 +11,7 @@ using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using SkiaSharp;
 using System;
 using System.Collections.Concurrent;
@@ -80,9 +81,66 @@ namespace LuxEditor.Components
 
         private void OnAddLayerClicked(object sender, RoutedEventArgs e)
         {
-            LayerManager.Instance.AddLayer(BrushType.Brush);
+            OpenBrushSelectionFlyout();
+
+        }
+
+        private void BrushButton_Click(BrushType type)
+        {
+            LayerManager.Instance.AddLayer(type);
             RefreshLayerTree();
         }
+
+        private void OpenBrushSelectionFlyout()
+        {
+            var flyout = new Flyout
+            {
+                Content = new StackPanel
+                {
+                }
+            };
+
+            var stackPanel = (StackPanel)flyout.Content;
+
+            var brushButton = new Button
+            {
+                Content = "Brush",
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                ClickMode = ClickMode.Release,
+            };
+            brushButton.Click += (s, e) => { BrushButton_Click(BrushType.Brush); flyout.Hide(); };
+            stackPanel.Children.Add(brushButton);
+
+            var linearGradientButton = new Button
+            {
+                Content = "Linear Gradient",
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                ClickMode = ClickMode.Release
+            };
+            linearGradientButton.Click += (s, e) => { BrushButton_Click(BrushType.LinearGradient); flyout.Hide(); };
+            stackPanel.Children.Add(linearGradientButton);
+
+            var radialGradientButton = new Button
+            {
+                Content = "Radial Gradient",
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                ClickMode = ClickMode.Release
+            };
+            radialGradientButton.Click += (s, e) => { BrushButton_Click(BrushType.RadialGradient); flyout.Hide(); };
+            stackPanel.Children.Add(radialGradientButton);
+
+            var colorRangeButton = new Button
+            {
+                Content = "Color Range",
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                ClickMode = ClickMode.Release
+            };
+            colorRangeButton.Click += (s, e) => { BrushButton_Click(BrushType.ColorRange); flyout.Hide(); };
+            stackPanel.Children.Add(colorRangeButton);
+
+            flyout.ShowAt(AddLayerBtn);
+        }
+
 
         private void OnRemoveLayerClicked(object sender, RoutedEventArgs e)
         {
@@ -98,11 +156,8 @@ namespace LuxEditor.Components
             if (e.AddedItems.Count == 0 || e.AddedItems[0] is not TreeViewNode node)
                 return;
 
-            if (_nodeMap.TryGetValue(node, out var model) && model is MaskOperation op)
-            {
-                OperationDetailsHost.Content = new OperationDetailsPanel(op);
-                OperationDetailsHost.Visibility = Visibility.Visible;
-            }
+            OperationDetailsHost.Content = new LayersDetailsPanel();
+            OperationDetailsHost.Visibility = Visibility.Visible;
         }
 
         private TreeViewNode? FindNodeByLayer(Layer target, IList<TreeViewNode> nodes)
