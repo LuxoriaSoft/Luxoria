@@ -1,241 +1,373 @@
-/* 
-  Explanation for "F0" etc.:
-  - "F0" in the string format displays the slider value as an integer (no decimals).
-  - "F2" would show two decimal places.
-  Choose the format that best represents each slider's range and usage.
-*/
-
+using LuxEditor.EditorUI;
+using LuxEditor.EditorUI.Controls;
+using LuxEditor.EditorUI.Groups;
+using LuxEditor.EditorUI.Interfaces;
+using LuxEditor.EditorUI.Models;
+using LuxEditor.Logic;
+using LuxEditor.Models;
+using LuxEditor.Services;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
 using SkiaSharp;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Windows.System;
+using Windows.UI.Core;
 
 namespace LuxEditor.Components
 {
     public sealed partial class Editor : Page
     {
-        private SKBitmap? _originalBitmap;
+        private EditableImage? currentImage;
 
-        public event Action<SKBitmap>? OnEditorImageUpdated;
+        private EditorPanelManager? _panelManager;
+        private readonly Dictionary<string, EditorCategory> _categories = new();
+        private readonly ConcurrentDictionary<string, EditorSlider> _sliderCache = new();
 
+        private CancellationTokenSource? _cts;
+        private int _renderRunning;
+        private bool _pendingUpdate;
+
+        public event Action<SKImage> OnEditorImageUpdated;
+
+        /// <summary>
+        /// Style for the temperature slider.
+        /// </summary>
+        private static readonly EditorStyle TempStyle = new()
+        {
+            GradientStart = Windows.UI.Color.FromArgb(255, 70, 130, 180),
+            GradientEnd = Windows.UI.Color.FromArgb(255, 255, 140, 0)
+        };
+
+        /// <summary>
+        /// Style for the tint slider.
+        /// </summary>
+        private static readonly EditorStyle TintStyle = new()
+        {
+            GradientStart = Windows.UI.Color.FromArgb(255, 130, 188, 86),
+            GradientEnd = Windows.UI.Color.FromArgb(255, 174, 116, 193)
+        };
+
+        /// <summary>
+        /// Initializes the Editor page and sets up the UI.
+        /// </summary>
         public Editor()
         {
-            this.InitializeComponent();
+            InitializeComponent();
+            _panelManager = new EditorPanelManager(EditorStackPanel);
+            ImageManager.Instance.OnSelectionChanged += SetEditableImage;
         }
 
         /// <summary>
-        /// Sets the original SKBitmap that we will process.
+        /// Sets the editable image for the editor.
         /// </summary>
-        public void SetOriginalBitmap(SKBitmap bitmap)
+        /// <param name="image"></param>
+        public void SetEditableImage(EditableImage image)
         {
-            _originalBitmap = bitmap;
-        }
+            currentImage = image;
 
-        // -----------------------
-        // Slider Handlers
-        // -----------------------
+            EditorStackPanel.Children.Clear();
+            _categories.Clear();
+            _sliderCache.Clear();
+            BuildEditorUI();
 
-        private void ExposureSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (ExposureValueLabel != null)
-                ExposureValueLabel.Text = (e.NewValue / 1000).ToString("F2");
-            ProcessImage();
-        }
-
-        private void ContrastSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (ContrastValueLabel != null)
-                ContrastValueLabel.Text = (e.NewValue / 1000).ToString("F2");
-            ProcessImage();
-        }
-
-        private void HighlightsSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (HighlightsValueLabel != null)
-                HighlightsValueLabel.Text = (e.NewValue / 1000).ToString("F2");
-            ProcessImage();
-        }
-
-        private void ShadowsSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (ShadowsValueLabel != null)
-                ShadowsValueLabel.Text = (e.NewValue / 1000).ToString("F2");
-            ProcessImage();
-        }
-
-        private void TemperatureSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (TemperatureValueLabel != null)
-                TemperatureValueLabel.Text = e.NewValue.ToString("F0");
-            ProcessImage();
-        }
-
-        private void TintSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (TintValueLabel != null)
-                TintValueLabel.Text = e.NewValue.ToString("F0");
-            ProcessImage();
-        }
-
-        private void SaturationSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (SaturationValueLabel != null)
-                SaturationValueLabel.Text = e.NewValue.ToString("F0");
-            ProcessImage();
+            UpdateSliderUI();
+            RequestFilterUpdate();
         }
 
         /// <summary>
-        /// Applies all adjustments to the original image, then raises an event.
+        /// Builds the editor UI with categories and sliders.
         /// </summary>
-        private void ProcessImage()
+        private void BuildEditorUI()
         {
-            if (_originalBitmap == null)
+            var root = new EditorGroupExpander("Basic");
+
+            AddCategory(root, "WhiteBalance", "White Balance", new IEditorGroupItem[]
+            {
+                CreateSliderWithPreset("Temperature", TempStyle),
+                CreateSliderWithPreset("Tint",        TintStyle),
+                CreateSeparator()
+            });
+
+            AddCategory(root, "Tone", "Tone", new IEditorGroupItem[]
+            {
+                CreateSliderWithPreset("Exposure"),
+                CreateSliderWithPreset("Contrast"),
+                CreateSeparator(),
+                CreateSliderWithPreset("Highlights"),
+                CreateSliderWithPreset("Shadows"),
+                CreateSeparator(),
+                CreateSliderWithPreset("Whites"),
+                CreateSliderWithPreset("Blacks"),
+                CreateSeparator()
+            });
+
+            AddCategory(root, "Presence", "Presence", new IEditorGroupItem[]
+            {
+                CreateSliderWithPreset("Texture"),
+                CreateSliderWithPreset("Dehaze"),
+                CreateSeparator(),
+                CreateSliderWithPreset("Vibrance"),
+                CreateSliderWithPreset("Saturation")
+            });
+
+            _panelManager!.AddCategory(root);
+        }
+
+        /// <summary>
+        /// Creates a slider with preset values.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="style"></param>
+        /// <returns></returns>
+        private EditorSlider CreateSliderWithPreset(string key, EditorStyle? style = null)
+        {
+            var (min, max, def, dec, step) = GetSliderPreset(key);
+            return CreateSlider(key, min, max, def, style, dec, step);
+        }
+
+        /// <summary>
+        /// Gets the preset values for a slider based on its key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private static (float min, float max, float def, int dec, float step) GetSliderPreset(string key) =>
+            key switch
+            {
+                "Temperature" => (2000, 50000, 6500, 0, 100),
+                "Exposure" => (-5, 5, 0, 2, 0.05f),
+                "Contrast" => (-1, 1, 0, 2, 0.05f),
+                "Tint" => (-150, 150, 0, 0, 1),
+                _ => (-100, 100, 0, 0, 1)
+            };
+
+        /// <summary>
+        /// Creates a slider with the specified parameters.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <param name="def"></param>
+        /// <param name="style"></param>
+        /// <param name="decimals"></param>
+        /// <param name="step"></param>
+        /// <returns></returns>
+        private EditorSlider CreateSlider(string key, float min, float max, float def,
+                                          EditorStyle? style, int decimals, float step)
+        {
+            var slider = new EditorSlider(key, min, max, def, decimals, step);
+            slider.OnValueChanged = v =>
+            {
+                if (currentImage == null) return;
+                currentImage.Settings[key] = v;
+                RequestFilterUpdate();
+                UpdateResetButtonsVisibility();
+            };
+
+            style?.Let(slider.ApplyStyle);
+            _panelManager!.RegisterControl(key, slider);
+            _sliderCache[key] = slider;
+            return slider;
+        }
+
+        /// <summary>
+        /// Creates a separator for the UI.
+        /// </summary>
+        /// <returns></returns>
+        private static EditorSeparator CreateSeparator() => new();
+
+        /// <summary>
+        /// Adds a category to the editor UI.
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="key"></param>
+        /// <param name="title"></param>
+        /// <param name="items"></param>
+        private void AddCategory(EditorGroupExpander parent, string key, string title, IEnumerable<IEditorGroupItem> items)
+        {
+            var cat = new EditorCategory(key, title);
+            cat.OnResetClicked += ResetCategory;
+            foreach (var x in items) cat.AddControl(x);
+
+            _categories[key] = cat;
+            parent.AddCategory(cat);
+        }
+
+        /// <summary>
+        /// Resets the settings for a specific category.
+        /// </summary>
+        /// <param name="key"></param>
+        private void ResetCategory(string key)
+        {
+            if (!_categories.TryGetValue(key, out var cat)) return;
+            foreach (var sl in cat.GetItems().OfType<EditorSlider>())
+            {
+                sl.ResetToDefault();
+                if (currentImage != null) currentImage.Settings[sl.Key] = sl.DefaultValue;
+            }
+            RequestFilterUpdate();
+            UpdateResetButtonsVisibility();
+        }
+
+        /// <summary>
+        /// Resets all settings to their default values.
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="e"></param>
+        private void ResetAllClicked(object s, RoutedEventArgs e)
+        {
+            foreach (var sl in _sliderCache.Values)
+            {
+                sl.ResetToDefault();
+                if (currentImage != null) currentImage.Settings[sl.Key] = sl.DefaultValue;
+            }
+            RequestFilterUpdate();
+            UpdateResetButtonsVisibility();
+        }
+
+        /// <summary>
+        /// Updates the UI of the sliders based on the current image settings.
+        /// </summary>
+        private void UpdateSliderUI()
+        {
+            if (currentImage == null) return;
+            foreach (var (k, v) in currentImage.Settings)
+                if (_sliderCache.TryGetValue(k, out var sl)) sl.SetValue((float)v);
+            UpdateResetButtonsVisibility();
+        }
+
+        /// <summary>
+        /// Updates the visibility of the reset buttons based on the current settings.
+        /// </summary>
+        private void UpdateResetButtonsVisibility()
+        {
+            if (currentImage == null) return;
+
+            foreach (var cat in _categories.Values)
+            {
+                bool modified = cat.GetItems().OfType<EditorSlider>()
+                                   .Any(sl => Math.Abs(sl.GetValue() - sl.DefaultValue) > 0.01f);
+                cat.SetResetVisible(modified);
+            }
+
+            bool any = _sliderCache.Values
+                       .Any(sl => Math.Abs(sl.GetValue() - sl.DefaultValue) > 0.01f);
+            ResetAllButton.Visibility = any ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        /// <summary>
+        /// Requests an update of the filter settings.
+        /// </summary>
+        public void RequestFilterUpdate()
+        {
+            var old = Interlocked.Exchange(ref _cts, new CancellationTokenSource());
+            old?.Cancel();
+            old?.Dispose();
+
+            if (Interlocked.CompareExchange(ref _renderRunning, 1, 0) != 0)
+            {
+                _pendingUpdate = true;
                 return;
-
-            // 1) Retrieve slider values
-            float exposure = (float)ExposureSlider.Value / 1000;
-            float contrast = (float)ContrastSlider.Value / 1000;
-            float highlights = (float)HighlightsSlider.Value / 1000;
-            float shadows = (float)ShadowsSlider.Value / 1000;
-            float temperature = (float)TemperatureSlider.Value;
-            float tint = (float)TintSlider.Value;
-            float saturation = (float)SaturationSlider.Value;
-
-            // 2) First pass with color filters (exposure, contrast, saturation)
-            SKBitmap firstPassBitmap = new SKBitmap(_originalBitmap.Width, _originalBitmap.Height);
-            using (var canvas = new SKCanvas(firstPassBitmap))
-            {
-                canvas.Clear(SKColors.Transparent);
-
-                // Exposure with lighting filter
-                float exposureScale = (float)Math.Pow(2, exposure);
-                var exposureFilter = SKColorFilter.CreateLighting(
-                    new SKColor(
-                        (byte)(255 * exposureScale),
-                        (byte)(255 * exposureScale),
-                        (byte)(255 * exposureScale)),
-                    new SKColor(0, 0, 0));
-
-                // Contrast with color matrix
-                float contrastFactor = 1f + contrast;
-                float translate = 0.5f * (1f - contrastFactor);
-                float[] contrastMatrix =
-                {
-                    contrastFactor, 0,             0,             0, translate,
-                    0,             contrastFactor, 0,             0, translate,
-                    0,             0,             contrastFactor, 0, translate,
-                    0,             0,             0,             1, 0
-                };
-                var contrastFilter = SKColorFilter.CreateColorMatrix(contrastMatrix);
-
-                // Saturation with color matrix
-                float saturationFactor = 1f + (saturation / 100f);
-                float lumR = 0.3086f;
-                float lumG = 0.6094f;
-                float lumB = 0.0820f;
-                float oneMinusS = 1f - saturationFactor;
-                float r = (oneMinusS * lumR);
-                float g = (oneMinusS * lumG);
-                float b = (oneMinusS * lumB);
-                float[] saturationMatrix =
-                {
-                    r + saturationFactor, g,                     b,                     0, 0,
-                    r,                     g + saturationFactor, b,                     0, 0,
-                    r,                     g,                     b + saturationFactor, 0, 0,
-                    0,                     0,                     0,                     1, 0
-                };
-                var saturationFilter = SKColorFilter.CreateColorMatrix(saturationMatrix);
-
-                // Compose exposure->contrast->saturation
-                var contrastSaturation = SKColorFilter.CreateCompose(contrastFilter, saturationFilter);
-                var finalFilter = SKColorFilter.CreateCompose(exposureFilter, contrastSaturation);
-
-                using (var paint = new SKPaint())
-                {
-                    paint.ColorFilter = finalFilter;
-                    canvas.DrawBitmap(_originalBitmap, 0, 0, paint);
-                }
             }
 
-            // 3) Second pass (CPU) for highlights, shadows, temperature, and tint
-            SKBitmap finalBitmap = new SKBitmap(firstPassBitmap.Width, firstPassBitmap.Height);
-            for (int y = 0; y < firstPassBitmap.Height; y++)
-            {
-                for (int x = 0; x < firstPassBitmap.Width; x++)
-                {
-                    uint pixel = (uint)firstPassBitmap.GetPixel(x, y);
-                    byte alpha = (byte)((pixel >> 24) & 0xFF);
-                    byte red = (byte)((pixel >> 16) & 0xFF);
-                    byte green = (byte)((pixel >> 8) & 0xFF);
-                    byte blue = (byte)(pixel & 0xFF);
-
-                    float fr = red / 255f;
-                    float fg = green / 255f;
-                    float fb = blue / 255f;
-
-                    // Highlights
-                    float brightness = (fr + fg + fb) / 3f;
-                    if (brightness > 0.5f)
-                    {
-                        float factor = (brightness - 0.5f) * 2f;
-                        float amount = highlights * factor;
-                        fr = fr + amount * (1f - fr);
-                        fg = fg + amount * (1f - fg);
-                        fb = fb + amount * (1f - fb);
-                    }
-
-                    // Shadows
-                    brightness = (fr + fg + fb) / 3f;
-                    if (brightness < 0.5f)
-                    {
-                        float factor = (0.5f - brightness) * 2f;
-                        float amount = shadows * factor;
-                        fr = fr + amount * (1f - fr);
-                        fg = fg + amount * (1f - fg);
-                        fb = fb + amount * (1f - fb);
-                    }
-
-                    // Temperature and tint
-                    float tempFactor = temperature / 100f;
-                    float tintFactor = tint / 100f;
-
-                    // Simple scale for red and blue (temperature)
-                    float rScale = 1f + (tempFactor * 0.3f);
-                    float bScale = 1f - (tempFactor * 0.3f);
-                    fr *= rScale;
-                    fb *= bScale;
-
-                    // Simple scale for green (tint)
-                    float gScale = 1f + (tintFactor * 0.3f);
-                    fg *= gScale;
-
-                    // Optional partial compensation for red/blue with tint
-                    float inverseTintScale = 1f - (Math.Abs(tintFactor) * 0.1f);
-                    fr *= inverseTintScale;
-                    fb *= inverseTintScale;
-
-                    // Clamp
-                    fr = Math.Clamp(fr, 0f, 1f);
-                    fg = Math.Clamp(fg, 0f, 1f);
-                    fb = Math.Clamp(fb, 0f, 1f);
-
-                    // Convert to byte
-                    byte nr = (byte)(fr * 255f);
-                    byte ng = (byte)(fg * 255f);
-                    byte nb = (byte)(fb * 255f);
-
-                    uint newPixel =
-                          ((uint)alpha << 24)
-                        | ((uint)nr << 16)
-                        | ((uint)ng << 8)
-                        | (uint)nb;
-
-                    finalBitmap.SetPixel(x, y, newPixel);
-                }
-            }
-
-            // 4) Send final bitmap
-            OnEditorImageUpdated?.Invoke(finalBitmap);
+            _ = RunPipelineAsync(_cts.Token);
         }
+
+        /// <summary>
+        /// Runs the image processing pipeline asynchronously.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        private async Task RunPipelineAsync(CancellationToken token)
+        {
+            try
+            {
+                if (currentImage == null) return;
+
+                if (currentImage.PreviewBitmap != null)
+                {
+                    var prev = await ImageProcessingManager
+                        .ApplyFiltersAsync(currentImage.PreviewBitmap,
+                                           currentImage.Settings, token);
+                    token.ThrowIfCancellationRequested();
+
+                    currentImage.EditedPreviewBitmap = prev;
+                    var up = ImageProcessingManager.Upscale(
+                                prev, currentImage.OriginalBitmap.Height, true);
+                    OnEditorImageUpdated?.Invoke(up);
+                }
+
+                var full = await ImageProcessingManager
+                    .ApplyFiltersAsync(currentImage.OriginalBitmap,
+                                       currentImage.Settings, token);
+                token.ThrowIfCancellationRequested();
+
+                currentImage.EditedBitmap = full;
+                OnEditorImageUpdated?.Invoke(SKImage.FromBitmap(full));
+            }
+            catch (OperationCanceledException)
+            {
+                /// Interrupted : normal
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _renderRunning, 0);
+
+                if (Interlocked.Exchange(ref _pendingUpdate, false))
+                    RequestFilterUpdate();
+            }
+        }
+
+
+        /// <summary>
+        /// Checks if the Control key is pressed.
+        /// </summary>
+        /// <returns></returns>
+        private static bool IsCtrlDown()
+        {
+            var win = Microsoft.UI.Xaml.Window.Current;
+            return win != null &&
+                   win.CoreWindow.GetKeyState(VirtualKey.Control)
+                      .HasFlag(CoreVirtualKeyStates.Down);
+        }
+
+        /// <summary>
+        /// Handles the key down event for undo and redo operations.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnKeyDown(object? sender, KeyRoutedEventArgs e)
+        {
+            if (!IsCtrlDown() || currentImage == null) return;
+
+            switch (e.Key)
+            {
+                case VirtualKey.Z:
+                    if (currentImage.Undo())
+                    {
+                        UpdateSliderUI();
+                        RequestFilterUpdate();
+                    }
+                    break;
+
+                case VirtualKey.Y:
+                    if (currentImage.Redo())
+                    {
+                        UpdateSliderUI();
+                        RequestFilterUpdate();
+                    }
+                    break;
+            }
+        }
+    }
+
+    internal static class Ext
+    {
+        public static void Let<T>(this T obj, Action<T> block) where T : class => block(obj);
     }
 }

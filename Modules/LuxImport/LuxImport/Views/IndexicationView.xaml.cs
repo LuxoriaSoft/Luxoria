@@ -1,5 +1,6 @@
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.Diagnostics;
 
@@ -78,6 +79,14 @@ namespace LuxImport.Views
             };
 
             _eventBus.Publish(openCollectionEvent);
+        }
+
+        /// <summary>
+        /// Start over the import process
+        /// </summary>
+        private void StartOverButton_Click(object sender, RoutedEventArgs e)
+        {
+            _parent.SetImportView();
         }
     }
 }

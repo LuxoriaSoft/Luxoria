@@ -9,6 +9,11 @@ namespace Luxoria.Modules.Models;
 public class ImageData
 {
     /// <summary>
+    /// Identifier for the image instance.
+    /// </summary>
+    public Guid Id { get; } = Guid.NewGuid();
+
+    /// <summary>
     /// Contains the bitmap data of the image.
     /// </summary>
     public SKBitmap Bitmap { get; }

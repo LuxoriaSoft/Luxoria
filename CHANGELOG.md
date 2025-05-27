@@ -1,3 +1,102 @@
+# [1.38.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.37.2...v1.38.0) (2025-05-26)
+
+
+### Bug Fixes
+
+* Add pull request trigger for main, develop, and release branches in workflows ([fe151cb](https://github.com/LuxoriaSoft/Luxoria/commit/fe151cbdb3c2585f30774f24e3ef3d9b9b99638c))
+* Correct path to requirements.txt in LuxFilter model installation step ([a768a03](https://github.com/LuxoriaSoft/Luxoria/commit/a768a039da453ddf902c7ef285e84768dbb6d520))
+* Remove CI branches from workflow trigger ([93f791d](https://github.com/LuxoriaSoft/Luxoria/commit/93f791defa7c2d5866a7a316733966361d3e85d6))
+* Update .gitignore to include negative.txt and positive.txt ([2f43ac4](https://github.com/LuxoriaSoft/Luxoria/commit/2f43ac42da5f59e6a69be6bac86945c9ad00b2fa))
+* Update ONNX export script to accept output directory as an argument ([c699539](https://github.com/LuxoriaSoft/Luxoria/commit/c699539e7bf2edee6239c70aa952d81b4baae15d))
+
+
+### Features
+
+* Add CI trigger for feature and fix branches in workflow ([88f5d80](https://github.com/LuxoriaSoft/Luxoria/commit/88f5d8073a46abebcc87a79184c6b2591af7ca15))
+* Add ONNX export functionality and requirements for CLIP model ([3621032](https://github.com/LuxoriaSoft/Luxoria/commit/3621032a1ae9b00f008132e867343f13413cf94b))
+* Add Python 3.12 setup and install requirements for Luxoria LuxFilter Model ([fbcf683](https://github.com/LuxoriaSoft/Luxoria/commit/fbcf683d5eba3ecf281421e9cf0d4241c41bf241))
+* Set up Python 3.12 and install Luxoria LuxFilter Model requirements in SonarCloud analysis workflow ([d8080b3](https://github.com/LuxoriaSoft/Luxoria/commit/d8080b3724bc22b4e4e8570d7a84df6ae115e9c4))
+
+## [1.37.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.37.1...v1.37.2) (2025-05-26)
+
+
+### Bug Fixes
+
+* Remove LFS filter for ONNX files ([a026a97](https://github.com/LuxoriaSoft/Luxoria/commit/a026a976494c42341a2c86d827800a618495b591))
+
+## [1.37.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.37.0...v1.37.1) (2025-05-26)
+
+
+### Bug Fixes
+
+* Disable LFS storage ([7871ef5](https://github.com/LuxoriaSoft/Luxoria/commit/7871ef55dec00995262ccbd8836811cd3f7418f1))
+
+# [1.37.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.36.0...v1.37.0) (2025-05-26)
+
+
+### Bug Fixes
+
+* Clarify LFS disabling steps in mirror workflow ([d89a709](https://github.com/LuxoriaSoft/Luxoria/commit/d89a709b684bf510a58384077ae59c152a421211))
+* Improve LFS smudge disabling in mirror workflow ([1f1f74b](https://github.com/LuxoriaSoft/Luxoria/commit/1f1f74b8ebe301ff5c5429f2a1e684b530734c33))
+* Remove duplicate Git LFS disable step in mirror workflow ([c37b4d9](https://github.com/LuxoriaSoft/Luxoria/commit/c37b4d98d276cb69dbc04ff99acf7fa7b9f30562))
+* Remove LFS smudge disabling steps from mirror workflow ([5100493](https://github.com/LuxoriaSoft/Luxoria/commit/51004938f430a72257a088521a19992a347b73cf))
+* Remove push trigger from workflow files ([662c4aa](https://github.com/LuxoriaSoft/Luxoria/commit/662c4aa45bd9975d495f6b9ebe99a614e5f75da1))
+
+
+### Features
+
+* Disable lda-build, which is a clone of build-upload-lda ([5bf3d96](https://github.com/LuxoriaSoft/Luxoria/commit/5bf3d96ca8ee2f2445707a8600bdf7d80efbe83c))
+
+# [1.36.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.35.0...v1.36.0) (2025-05-26)
+
+
+### Bug Fixes
+
+* Create a directory for each vault, and, Delete the vault's drectory when deleting the specified vault ([a5de0a7](https://github.com/LuxoriaSoft/Luxoria/commit/a5de0a73c6c928ad931cf7202122b7a015d157ae))
+
+
+### Features
+
+* Add fondation of VaultService & StorageAPI ([d01f4df](https://github.com/LuxoriaSoft/Luxoria/commit/d01f4df313ee0976fba41eeb5981cb4e7a95e42f))
+* Add vault management methods to IVaultService ([08a28fa](https://github.com/LuxoriaSoft/Luxoria/commit/08a28fa7136903a333ab338f5b757a2bfdf7a7ef))
+* Complete StorageAPI for Modules ([6674868](https://github.com/LuxoriaSoft/Luxoria/commit/6674868b1be80ae145e8ebc8b776a14aefdb603b))
+
+# [1.35.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.34.0...v1.35.0) (2025-05-25)
+
+
+### Features
+
+* Add "Start Over" button on filter's status view ([5f5242f](https://github.com/LuxoriaSoft/Luxoria/commit/5f5242fa0b2d8bce6f0b7f391760e8a57f7f9a36))
+* Add ToastNotificationEvent and StartOver button on LuxImport's indexication process view ([a252502](https://github.com/LuxoriaSoft/Luxoria/commit/a252502f50ad44b423b84b78ac70c0233d77b581))
+* Bring OpenAI CLIP model as Color Visual Aesthetics analysis ([95afeff](https://github.com/LuxoriaSoft/Luxoria/commit/95afeff4fe2233f9f8ed41cf0dec991e243579f0))
+* Enhance pipeline event handling and user notifications ([8e30189](https://github.com/LuxoriaSoft/Luxoria/commit/8e3018908e97281fb2413e920c5a3053fc6c3f07))
+
+# [1.34.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.33.2...v1.34.0) (2025-05-23)
+
+
+### Features
+
+* Add DesktopController for API versioning and configuration endpoint ([e3d6575](https://github.com/LuxoriaSoft/Luxoria/commit/e3d6575aab2b9a6353587ff552001f5d018a5a99))
+* Add initial migration files for database schema creation ([99e5601](https://github.com/LuxoriaSoft/Luxoria/commit/99e56015ea1552f2e91559866ad05f7ea530f8f4))
+* Enhance DesktopController to include configuration endpoint and update appsettings for URI structure ([0fa13c9](https://github.com/LuxoriaSoft/Luxoria/commit/0fa13c956e247fc885663e4bd5ae1e742887a3a3))
+
+## [1.33.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.33.1...v1.33.2) (2025-05-22)
+
+
+### Bug Fixes
+
+* Buildsystem script to build luxEditor (removing AppX in file path) ([c88c51e](https://github.com/LuxoriaSoft/Luxoria/commit/c88c51ea0f7a6f5eb637e9d6f5896330a16156cf))
+* Contrast filter + add comments to uncommented functions ([9980a28](https://github.com/LuxoriaSoft/Luxoria/commit/9980a28569d5e896e2d4b567973f8c507984272c))
+* Exposition / contrast / tint / temperature / saturation method ([68ae0d8](https://github.com/LuxoriaSoft/Luxoria/commit/68ae0d8e4e33b8688f58a47139a1442e95b2a2d6))
+* Refactor LuxEditor for better performances ([cfcfaf0](https://github.com/LuxoriaSoft/Luxoria/commit/cfcfaf0adb64d0c6c85fb972c9bfa062e5dd5643))
+* refactoring luxeditor for better performances ([be16379](https://github.com/LuxoriaSoft/Luxoria/commit/be16379951d81a4932d8185355d883fc6d208c3a))
+* refactoring luxeditor for better performances ([09593cc](https://github.com/LuxoriaSoft/Luxoria/commit/09593ccd23130518ba155aa7b0b13df4184aa546))
+* Removing clarity filter ([2e0fb2a](https://github.com/LuxoriaSoft/Luxoria/commit/2e0fb2a901ee05c360fa78d8c030b7e3bdfa46ae))
+* Rework Editor Module, removing xaml code for modularity ([1452ded](https://github.com/LuxoriaSoft/Luxoria/commit/1452ded886ec54434390f40ca912425f54120df1))
+* Texture function ([d0d6b7b](https://github.com/LuxoriaSoft/Luxoria/commit/d0d6b7b67881063f91275822b3b76b8c7250fcd3))
+* Using separators between sliders and reorganizing the sliders ([8964b47](https://github.com/LuxoriaSoft/Luxoria/commit/8964b47964c1b0d39bbc0b90dbdfd3f7a8de6a14))
+* Using separators between sliders and reorganizing the sliders ([e5c446c](https://github.com/LuxoriaSoft/Luxoria/commit/e5c446c03fa67cca55373afbe6a96e2f9031b97b))
+
 ## [1.33.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.33.0...v1.33.1) (2025-05-19)
 
 
