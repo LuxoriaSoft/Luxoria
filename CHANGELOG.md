@@ -1,3 +1,24 @@
+# [1.39.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.38.1...v1.39.0) (2025-05-27)
+
+
+### Bug Fixes
+
+* Add timeout mechanism to kill the authentification process if callback has not been received after 120s ([25f507b](https://github.com/LuxoriaSoft/Luxoria/commit/25f507b0a087ad4b365d9f7607de7f03b047a598))
+
+
+### Features
+
+* Add fondation of LuxStudio Integration Module ([60e78ba](https://github.com/LuxoriaSoft/Luxoria/commit/60e78ba04669c79cef42336323a1823fa6fbaea9))
+* Add fondation of LuxStudio.COM Module (contains AuthService.cs) ([c7c0dae](https://github.com/LuxoriaSoft/Luxoria/commit/c7c0dae967c9b7d61396e8b172435538d4323e84))
+* Add LuxStudioConfig model and integrate configuration fetching in ConfigService ([0c7bca0](https://github.com/LuxoriaSoft/Luxoria/commit/0c7bca07cc6c12b6142e81ca23fdb9ac155733fc))
+* Add Minio service configuration to docker-compose and register MinioService in Program.cs ([97fe659](https://github.com/LuxoriaSoft/Luxoria/commit/97fe659fcaf0175ed06d30696cfa32548d764041))
+* Add StopLoginFlow method which allows to terminate the listener process waiting for authentification over web browser ([6e15024](https://github.com/LuxoriaSoft/Luxoria/commit/6e15024cbaae2333eaaefba3287b773605509707))
+* Enhance SSO login flow with additional logging for better traceability ([a6217f0](https://github.com/LuxoriaSoft/Luxoria/commit/a6217f035d1b086b743faa5c900215a05c23daa4))
+* Implement ConfigService for managing configuration settings and URL validation ([f777d7d](https://github.com/LuxoriaSoft/Luxoria/commit/f777d7d7c3f8607c60bdcd89441f62b72616f0b1))
+* Implement SSOService for handling Single Sign-On logic and authorization flow ([9d3369b](https://github.com/LuxoriaSoft/Luxoria/commit/9d3369b2782bf957487dd5f373d0145dbce729ab))
+* Update AuthService with logging and restructure project file ([898203d](https://github.com/LuxoriaSoft/Luxoria/commit/898203dbfff7ac270c0ab1e4ce01aab92bfe64a9))
+* Update docker-compose and AuthService for external URLs and configuration integration ([d1ce664](https://github.com/LuxoriaSoft/Luxoria/commit/d1ce6642f1b4f94fec358ceedf771cdf7799e2be))
+
 ## [1.38.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.38.0...v1.38.1) (2025-05-27)
 
 
