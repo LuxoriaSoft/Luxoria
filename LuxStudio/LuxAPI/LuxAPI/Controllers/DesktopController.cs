@@ -45,7 +45,7 @@ namespace LuxAPI.Controllers
             string apiUrl = _configuration["URI:Backend"]
                 ?? throw new InvalidOperationException("Backend URL is not set.");
 
-            var ssoAuthorizeUrl = $"{apiUrl}/sso/authorize";
+            var ssoAuthorizeUrl = $"{frontUrl}/sso/authorize";
 
             var config = new
             {
