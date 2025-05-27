@@ -6,25 +6,67 @@ using Microsoft.UI.Xaml.Media;
 using Windows.UI;
 using LuxEditor.Models;
 using LuxEditor.EditorUI.Groups;
+using System.Collections.Generic;
 
 namespace LuxEditor.Controls
 {
-    public class OperationDetailsPanel : UserControl, INotifyPropertyChanged
+    public class LayersDetailsPanel : UserControl, INotifyPropertyChanged
     {
-        private readonly MaskOperation _operation;
-        private ToggleSwitch _modeSwitch;
+        private readonly List<MaskOperation> _operation;
         private Button _colorButton;
         private ColorPicker _flyoutPicker;
         private Slider _flyoutOpacity;
         private Slider _strengthSlider;
         private ContentControl _curveControlHost;
         private Flyout _colorFlyout;
+        private Color _overlayColor = Color.FromArgb(255, 0, 0, 0);
+        private double _overlayOpacity = 1.0;
+        private double _strength = 100;
+
+        public Color OverlayColor
+        {
+            get => _overlayColor;
+            set => SetField(ref _overlayColor, value);
+        }
+
+        public double OverlayOpacity
+        {
+            get => _overlayOpacity;
+            set
+            {
+                if (value < 0) value = 0;
+                if (value > 1) value = 1;
+                SetField(ref _overlayOpacity, value);
+            }
+        }
+
+        public double Strength
+        {
+            get => _strength;
+            set
+            {
+                if (value < 0) value = 0;
+                if (value > 200) value = 200;
+                SetField(ref _strength, value);
+            }
+        }
+
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public OperationDetailsPanel(MaskOperation operation)
+        protected bool SetField<T>(ref T field, T value, [CallerMemberName] string propertyName = null!)
         {
-            _operation = operation;
+            if (Equals(field, value)) return false;
+            field = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            return true;
+        }
+
+
+        public LayersDetailsPanel()
+        {
+            _operation = new List<MaskOperation>();
+
             BuildUI();
             UpdateUI();
         }
@@ -37,29 +79,6 @@ namespace LuxEditor.Controls
                 Spacing = 12,
                 Padding = new Thickness(8)
             };
-
-            var modeLine = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
-            modeLine.Children.Add(new TextBlock
-            {
-                Text = "Mode:",
-                Foreground = new SolidColorBrush(Color.FromArgb(255, 255, 255, 255)),
-                VerticalAlignment = VerticalAlignment.Center
-            });
-            _modeSwitch = new ToggleSwitch
-            {
-                OnContent = "Add",
-                OffContent = "Sub",
-                IsOn = _operation.Mode == StrokeMode.Add
-            };
-            _modeSwitch.Toggled += (_, __) =>
-            {
-                _operation.Mode = _modeSwitch.IsOn
-                    ? StrokeMode.Add
-                    : StrokeMode.Subtract;
-                OnPropertyChanged(nameof(_operation.Mode));
-            };
-            modeLine.Children.Add(_modeSwitch);
-            root.Children.Add(modeLine);
 
             var colorLine = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
             colorLine.Children.Add(new TextBlock
@@ -78,9 +97,9 @@ namespace LuxEditor.Controls
             _flyoutPicker = new ColorPicker { IsAlphaEnabled = false };
             _flyoutPicker.ColorChanged += (_, args) =>
             {
-                _operation.OverlayColor = args.NewColor;
-                OnPropertyChanged(nameof(_operation.OverlayColor));
-                _colorButton.Background = new SolidColorBrush(_operation.OverlayColor);
+                OverlayColor = args.NewColor;
+                OnPropertyChanged(nameof(OverlayColor));
+                _colorButton.Background = new SolidColorBrush(OverlayColor);
             };
             _flyoutOpacity = new Slider
             {
@@ -88,12 +107,12 @@ namespace LuxEditor.Controls
                 Maximum = 1,
                 StepFrequency = 0.01,
                 Width = 100,
-                Value = _operation.OverlayOpacity
+                Value = OverlayOpacity
             };
             _flyoutOpacity.ValueChanged += (_, args) =>
             {
-                _operation.OverlayOpacity = args.NewValue;
-                OnPropertyChanged(nameof(_operation.OverlayOpacity));
+                OverlayOpacity = args.NewValue;
+                OnPropertyChanged(nameof(OverlayOpacity));
             };
             var flyContent = new StackPanel { Orientation = Orientation.Vertical, Spacing = 8, Padding = new Thickness(8) };
             flyContent.Children.Add(_flyoutPicker);
@@ -122,13 +141,13 @@ namespace LuxEditor.Controls
             {
                 Minimum = 0,
                 Maximum = 200,
-                Value = _operation.Strength,
+                Value = Strength,
                 Width = 150
             };
             _strengthSlider.ValueChanged += (_, args) =>
             {
-                _operation.Strength = args.NewValue;
-                OnPropertyChanged(nameof(_operation.Strength));
+                Strength = args.NewValue;
+                OnPropertyChanged(nameof(Strength));
             };
             strengthLine.Children.Add(_strengthSlider);
             root.Children.Add(strengthLine);
@@ -147,10 +166,10 @@ namespace LuxEditor.Controls
 
         private void UpdateUI()
         {
-            _colorButton.Background = new SolidColorBrush(_operation.OverlayColor);
-            _flyoutPicker.Color = _operation.OverlayColor;
-            _flyoutOpacity.Value = _operation.OverlayOpacity;
-            _strengthSlider.Value = _operation.Strength;
+            _colorButton.Background = new SolidColorBrush(OverlayColor);
+            _flyoutPicker.Color = OverlayColor;
+            _flyoutOpacity.Value = OverlayOpacity;
+            _strengthSlider.Value = Strength;
         }
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = "")

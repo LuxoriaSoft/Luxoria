@@ -19,61 +19,29 @@
         <ContentControl x:Name="ToolBarHost" Grid.Row="0"/>
 
         <Grid Grid.Row="1">
-            <ScrollViewer x:Name="EditorScrollViewer"
-                    HorizontalScrollBarVisibility="Auto"
-                    VerticalScrollBarVisibility="Auto">
-                <StackPanel x:Name="EditorStackPanel"
-                    Orientation="Vertical"/>
+            <ScrollViewer x:Name="EditorScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="EditorStackPanel" Orientation="Vertical"/>
             </ScrollViewer>
 
-            <Grid x:Name="LayersUI"
-            Visibility="Collapsed">
+            <Grid x:Name="LayersUI" Visibility="Collapsed">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0"
-                    Orientation="Vertical"
-                    Spacing="4"
-                    Padding="8">
-                    <StackPanel Orientation="Horizontal"
-                      Spacing="4">
-                        <Button x:Name="AddLayerBtn"
-                    Content="+"
-                    Width="24"
-                    Height="24"/>
-                        <Button x:Name="RemoveLayerBtn"
-                    Content="–"
-                    Width="24"
-                    Height="24"/>
+                <StackPanel Grid.Row="0" Orientation="Vertical" Spacing="4" Padding="8">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Button x:Name="AddLayerBtn" Content="+" Width="24" Height="24" Padding="0" />
+                        <Button x:Name="RemoveLayerBtn" Content="-" Width="24" Height="24" Padding="0" />
                     </StackPanel>
 
-                    <TreeView x:Name="LayerTreeView"
-          Height="200"
-          SelectionMode="Single"/>
-
-
+                    <TreeView x:Name="LayerTreeView" Height="200" SelectionMode="Single" Background="#2a2a2a"/>
                 </StackPanel>
 
-                <ContentControl x:Name="OperationDetailsHost"
-                Grid.Row="1"
-                Visibility="Collapsed"
-                Margin="8"
-                Padding="8"
-                BorderBrush="Gray"
-                BorderThickness="1"
-                Background="#55222288"/>
-
-
+                <ContentControl x:Name="OperationDetailsHost" Grid.Row="1" Visibility="Collapsed" Margin="8" Padding="8" BorderBrush="Gray" BorderThickness="1" Background="#55222288"/>
             </Grid>
         </Grid>
 
-        <Button x:Name="ResetAllButton"
-            Grid.Row="2"
-            Content="Reset All"
-            HorizontalAlignment="Stretch"
-            Click="ResetAllClicked"
-            Visibility="Collapsed"/>
+        <Button x:Name="ResetAllButton" Grid.Row="2" Content="Reset All" HorizontalAlignment="Stretch" Click="ResetAllClicked" Visibility="Collapsed"/>
     </Grid>
 </Page>
