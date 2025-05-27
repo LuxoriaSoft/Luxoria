@@ -9,8 +9,11 @@ namespace LuxEditor.Models
 {
     public class MaskOperation : INotifyPropertyChanged
     {
+        static private uint _nextId = 1;
+
         private BrushType _brushType;
-        private StrokeMode _mode;
+        private BooleanOperationMode _mode;
+        private uint _id;
 
         public BrushType BrushType
         {
@@ -18,18 +21,21 @@ namespace LuxEditor.Models
             set => SetField(ref _brushType, value);
         }
 
-        public StrokeMode Mode
+        public BooleanOperationMode Mode
         {
             get => _mode;
             set => SetField(ref _mode, value);
         }
 
+        public uint Id => _id;
+
         public ObservableCollection<Stroke> Strokes { get; } = new ObservableCollection<Stroke>();
 
-        public MaskOperation(BrushType brushType, StrokeMode mode = StrokeMode.Add)
+        public MaskOperation(BrushType brushType, BooleanOperationMode mode = BooleanOperationMode.Add)
         {
             _brushType = brushType;
             _mode = mode;
+            _id = _nextId++;
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

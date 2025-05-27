@@ -28,7 +28,7 @@ namespace LuxEditor.Controls
             Orientation = Orientation.Horizontal;
             Spacing = 8;
 
-            _overallButton = CreateTabButton("Overall", 0);
+            _overallButton = CreateTabButton("Edit", 0);
             _layersButton = CreateTabButton("Layers", 1);
 
             Children.Add(_overallButton);

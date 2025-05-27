@@ -3,7 +3,7 @@ using SkiaSharp;
 
 namespace LuxEditor.Models
 {
-    public enum StrokeMode
+    public enum BooleanOperationMode
     {
         Add,
         Subtract
@@ -13,9 +13,9 @@ namespace LuxEditor.Models
     {
         public SKPath Path { get; }
 
-        public StrokeMode Mode { get; set; }
+        public BooleanOperationMode Mode { get; set; }
 
-        public Stroke(SKPath path, StrokeMode mode = StrokeMode.Add)
+        public Stroke(SKPath path, BooleanOperationMode mode = BooleanOperationMode.Add)
         {
             Path = path ?? throw new ArgumentNullException(nameof(path));
             Mode = mode;

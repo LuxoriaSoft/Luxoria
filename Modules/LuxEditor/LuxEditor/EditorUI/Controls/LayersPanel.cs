@@ -35,7 +35,7 @@ namespace LuxEditor.Controls
             _addButton = new Button { Content = "+", Width = 24, Height = 24 };
             _removeButton = new Button { Content = "–", Width = 24, Height = 24 };
             _addButton.Click += (s, e) => ShowAddFlyout();
-            _removeButton.Click += (s, e) => LayerManager.Instance.RemoveSelectedLayer();
+            _removeButton.Click += (s, e) => LayerManager.Instance.RemoveLayer();
             btnLine.Children.Add(_addButton);
             btnLine.Children.Add(_removeButton);
             root.Children.Add(btnLine);

@@ -10,12 +10,14 @@ using LuxEditor.Services;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using SkiaSharp;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,7 +38,7 @@ namespace LuxEditor.Components
         public event Action<SKImage> OnEditorImageUpdated;
 
         private readonly Dictionary<TreeViewNode, object> _nodeMap = new();
-
+        
         /// <summary>
         /// Style for the temperature slider.
         /// </summary>
@@ -71,6 +73,7 @@ namespace LuxEditor.Components
 
             AddLayerBtn.Click += OnAddLayerClicked;
             RemoveLayerBtn.Click += OnRemoveLayerClicked;
+            LayerTreeView.RightTapped += OnLayerTreeRightTapped;
             LayerTreeView.SelectionChanged += OnLayerTreeSelectionChanged;
 
             LayerManager.Instance.Layers.CollectionChanged += (_, __) => RefreshLayerTree();
@@ -82,7 +85,6 @@ namespace LuxEditor.Components
         private void OnAddLayerClicked(object sender, RoutedEventArgs e)
         {
             OpenBrushSelectionFlyout();
-
         }
 
         private void BrushButton_Click(BrushType type)
@@ -93,50 +95,38 @@ namespace LuxEditor.Components
 
         private void OpenBrushSelectionFlyout()
         {
-            var flyout = new Flyout
-            {
-                Content = new StackPanel
-                {
-                }
-            };
+            var flyout = new MenuFlyout();
 
-            var stackPanel = (StackPanel)flyout.Content;
-
-            var brushButton = new Button
+            var brushButton = new MenuFlyoutItem
             {
-                Content = "Brush",
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                ClickMode = ClickMode.Release,
+                Text = "Brush",
             };
             brushButton.Click += (s, e) => { BrushButton_Click(BrushType.Brush); flyout.Hide(); };
-            stackPanel.Children.Add(brushButton);
+            flyout.Items.Add(brushButton);
 
-            var linearGradientButton = new Button
+            var linearGradientButton = new MenuFlyoutItem
             {
-                Content = "Linear Gradient",
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                ClickMode = ClickMode.Release
+                Text = "Linear Gradient",
+
             };
             linearGradientButton.Click += (s, e) => { BrushButton_Click(BrushType.LinearGradient); flyout.Hide(); };
-            stackPanel.Children.Add(linearGradientButton);
+            flyout.Items.Add(linearGradientButton);
 
-            var radialGradientButton = new Button
+            var radialGradientButton = new MenuFlyoutItem
             {
-                Content = "Radial Gradient",
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                ClickMode = ClickMode.Release
+                Text = "Radial Gradient",
+
             };
             radialGradientButton.Click += (s, e) => { BrushButton_Click(BrushType.RadialGradient); flyout.Hide(); };
-            stackPanel.Children.Add(radialGradientButton);
+            flyout.Items.Add(radialGradientButton);
 
-            var colorRangeButton = new Button
+            var colorRangeButton = new MenuFlyoutItem
             {
-                Content = "Color Range",
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                ClickMode = ClickMode.Release
+                Text = "Color Range",
+
             };
             colorRangeButton.Click += (s, e) => { BrushButton_Click(BrushType.ColorRange); flyout.Hide(); };
-            stackPanel.Children.Add(colorRangeButton);
+            flyout.Items.Add(colorRangeButton);
 
             flyout.ShowAt(AddLayerBtn);
         }
@@ -144,7 +134,7 @@ namespace LuxEditor.Components
 
         private void OnRemoveLayerClicked(object sender, RoutedEventArgs e)
         {
-            LayerManager.Instance.RemoveSelectedLayer();
+            LayerManager.Instance.RemoveLayer();
             RefreshLayerTree();
         }
 
@@ -174,28 +164,231 @@ namespace LuxEditor.Components
             return null;
         }
 
+        private bool IsOperation(FrameworkElement element)
+        {
+            return element.DataContext is TreeViewNode node &&
+                   _nodeMap.ContainsKey(node) &&
+                   _nodeMap[node] is MaskOperation;
+        }
+
+        private bool IsLayer(FrameworkElement element)
+        {
+            return element.DataContext is TreeViewNode node &&
+                   _nodeMap.ContainsKey(node) &&
+                   _nodeMap[node] is Layer;
+        }
+
+        private void ChoseBrushForOperationFlyout(Layer layer, bool isAdded, FrameworkElement element)
+        {
+            var flyout = new MenuFlyout();
+
+            var brushButton = new MenuFlyoutItem
+            {
+                Text = "Brush",
+            };
+            brushButton.Click += (s, e) =>
+            {
+                LayerManager.Instance.AddOperation(layer.Id, new MaskOperation(BrushType.Brush, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract));
+                RefreshLayerTree();
+                flyout.Hide();
+            };
+            flyout.Items.Add(brushButton);
+            var linearGradientButton = new MenuFlyoutItem
+            {
+                Text = "Linear Gradient",
+            };
+            linearGradientButton.Click += (s, e) =>
+            {
+                LayerManager.Instance.AddOperation(layer.Id, new MaskOperation(BrushType.LinearGradient, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract));
+                RefreshLayerTree();
+                flyout.Hide();
+            };
+            flyout.Items.Add(linearGradientButton);
+            var radialGradientButton = new MenuFlyoutItem
+            {
+                Text = "Radial Gradient",
+            };
+            radialGradientButton.Click += (s, e) =>
+            {
+
+                LayerManager.Instance.AddOperation(layer.Id, new MaskOperation(BrushType.RadialGradient, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract)); RefreshLayerTree();
+                flyout.Hide();
+            };
+            flyout.Items.Add(radialGradientButton);
+            var colorRangeButton = new MenuFlyoutItem
+            {
+                Text = "Color Range",
+            };
+            colorRangeButton.Click += (s, e) =>
+            {
+                LayerManager.Instance.AddOperation(layer.Id, new MaskOperation(BrushType.ColorRange, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract));
+                RefreshLayerTree();
+                flyout.Hide();
+            };
+            flyout.Items.Add(colorRangeButton);
+            flyout.ShowAt(element);
+        }
+
+        private void SelectSubstractOrAddOperationFlyout(Layer layer, FrameworkElement element)
+        {
+            var flyout = new MenuFlyout();
+            var addItem = new MenuFlyoutItem
+            {
+                Text = "Add Operation"
+            };
+            addItem.Click += (s, e) => ChoseBrushForOperationFlyout(layer, true, element);
+            flyout.Items.Add(addItem);
+            var substractItem = new MenuFlyoutItem
+            {
+                Text = "Substract Operation"
+            };
+            substractItem.Click += (s, e) => ChoseBrushForOperationFlyout(layer, false, element);
+            flyout.Items.Add(substractItem);
+            flyout.ShowAt(element);
+        }
+
+        private void OnLayerTreeRightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            Debug.WriteLine("Right-click on layer tree");
+
+            if (sender is not TreeView treeView || e.OriginalSource is not FrameworkElement element)
+                return;
+
+            if (element.DataContext is not TreeViewNode node)
+                return;
+
+
+            var flyout = new MenuFlyout();
+
+
+            if (IsOperation(element))
+            {
+                Debug.WriteLine("Operation Detected");
+                var op = _nodeMap[node] as MaskOperation;
+                if (op == null) return;
+
+                Debug.WriteLine($"Operation: {op.BrushType} ({op.Mode})");
+                var deleteOpItem = new MenuFlyoutItem
+                {
+                    Text = "Delete Operation"
+                };
+                deleteOpItem.Click += (s, args) =>
+                {
+                    LayerManager.Instance.RemoveOperation(op.Id);
+                    RefreshLayerTree();
+                };
+                flyout.Items.Add(deleteOpItem);
+                
+                var setOperationModeItem = new MenuFlyoutItem
+                {
+                    Text = "Set Operation Mode"
+                };
+                setOperationModeItem.Click += (s, args) =>
+                {
+                    var modeFlyout = new MenuFlyout();
+                    foreach (var mode in Enum.GetValues(typeof(BooleanOperationMode)).Cast<BooleanOperationMode>())
+                    {
+                        var modeItem = new MenuFlyoutItem
+                        {
+                            Text = mode.ToString()
+                        };
+                        modeItem.Click += (ss, aa) =>
+                        {
+                            op.Mode = mode;
+                            RefreshLayerTree();
+                        };
+                        modeFlyout.Items.Add(modeItem);
+                    }
+                    modeFlyout.ShowAt(element);
+                };
+                flyout.Items.Add(setOperationModeItem);
+            }
+            else if (IsLayer(element))
+            {
+                Debug.WriteLine("Layer Detected");
+
+                var layer = _nodeMap[node] as Layer;
+                if (layer == null) return;
+
+                Debug.WriteLine($"Layer: {layer.Name} ({layer.Operations.Count} operations)");
+                var renameLayerItem = new MenuFlyoutItem
+                {
+                    Text = "Rename Layer"
+                };
+                renameLayerItem.Click += (s, args) =>
+                {
+                    var inputBox = new TextBox
+                    {
+                        Text = layer.Name,
+                        Width = 200
+                    };
+                    var renameFlyout = new Flyout
+                    {
+                        Content = inputBox,
+                        Placement = FlyoutPlacementMode.Bottom
+                    };
+                    inputBox.KeyDown += (ss, aa) =>
+                    {
+                        if (aa.Key == VirtualKey.Enter)
+                        {
+                            layer.Name = inputBox.Text;
+                            RefreshLayerTree();
+                            renameFlyout.Hide();
+                        }
+                    };
+                    renameFlyout.ShowAt(element);
+                };
+
+                flyout.Items.Add(renameLayerItem);
+
+                var operationFlyout = new MenuFlyoutItem
+                {
+                    Text = "Add Operation"
+                };
+                operationFlyout.Click += (s, args) =>
+                {
+                    SelectSubstractOrAddOperationFlyout(layer, element);
+                };
+                flyout.Items.Add(operationFlyout);
+                
+                var deleteLayer = new MenuFlyoutItem
+                {
+                    Text = "Delete Layer"
+                };
+                deleteLayer.Click += (s, args) =>
+                {
+                    LayerManager.Instance.RemoveLayer(layer.Id);
+                    RefreshLayerTree();
+                };
+                flyout.Items.Add(deleteLayer);
+            }
+            flyout.ShowAt(element);
+        }
+
         private void RefreshLayerTree()
         {
             LayerTreeView.RootNodes.Clear();
             _nodeMap.Clear();
 
-            foreach (var layer in LayerManager.Instance.LayersFiltered)
+            foreach (var layer in LayerManager.Instance.Layers)
             {
                 var layerNode = new TreeViewNode
                 {
                     Content = layer.Name,
                     IsExpanded = true
                 };
-                _nodeMap[layerNode] = layer;
 
                 if (!layer.Operations.Any())
-                    layer.Operations.Add(new MaskOperation(BrushType.Brush));
+                {
+                    LayerManager.Instance.RemoveLayer(layer.Id);
+                }
+                _nodeMap[layerNode] = layer;
 
                 foreach (var op in layer.Operations)
                 {
                     var opNode = new TreeViewNode
                     {
-                        Content = $"{op.BrushType} ({op.Mode})"
+                        Content = $"{op.BrushType} ({op.Mode})",
                     };
                     _nodeMap[opNode] = op;
                     layerNode.Children.Add(opNode);

@@ -8,13 +8,14 @@ namespace LuxEditor.Models
 {
     public class Layer : INotifyPropertyChanged
     {
+        static private uint _nextId = 1;
+        private uint _id;
+        private uint _zIndex;
         private string _name = "Layer";
         private bool _visible = true;
         private bool _invert;
         private double _strength = 100;
-        private Color _overlayColor = Colors.Black;
-        private double _overlayOpacity = 0.3;
-        private BrushType _brushType;
+        private Color _overlayColor = Color.FromArgb(100, 255, 255, 255);
         public ObservableCollection<MaskOperation> Operations { get; } = new ObservableCollection<MaskOperation>();
 
         public string Name
@@ -47,21 +48,26 @@ namespace LuxEditor.Models
             set => SetField(ref _overlayColor, value);
         }
 
-        public double OverlayOpacity
+        public uint Id
         {
-            get => _overlayOpacity;
-            set => SetField(ref _overlayOpacity, value);
+            get => _id;
+            private set => SetField(ref _id, value);
         }
 
-        public BrushType BrushType
+        public uint ZIndex
         {
-            get => _brushType;
-            set => SetField(ref _brushType, value);
+            get => _zIndex;
+            set => SetField(ref _zIndex, value);
         }
 
-        public ObservableCollection<Stroke> Strokes { get; } = new ObservableCollection<Stroke>();
+        public Layer(uint zIndex)
+        {
+            _id = _nextId++;
+            _zIndex = zIndex;
+        }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
+
         protected bool SetField<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
         {
             if (Equals(field, value)) return false;

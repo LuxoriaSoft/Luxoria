@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using LuxEditor.Models;
+using Windows.UI;
 
 namespace LuxEditor.Logic
 {
@@ -13,12 +14,12 @@ namespace LuxEditor.Logic
         private static readonly Lazy<LayerManager> _instance = new(() => new LayerManager());
         public static LayerManager Instance => _instance.Value;
 
+        private uint _nextZIndex = 1;
+
         public ObservableCollection<Layer> Layers { get; } = new ObservableCollection<Layer>();
 
-        public IEnumerable<Layer> LayersFiltered => Layers.Skip(1);
-
-        private Layer _selectedLayer;
-        public Layer SelectedLayer
+        private Layer? _selectedLayer;
+        public Layer? SelectedLayer
         {
             get => _selectedLayer;
             set => SetField(ref _selectedLayer, value);
@@ -26,48 +27,154 @@ namespace LuxEditor.Logic
 
         private LayerManager()
         {
-            var overall = new Layer { Name = "Overall", BrushType = BrushType.Brush };
-            Layers.Add(overall);
-            SelectedLayer = overall;
         }
+
         public void AddLayer(BrushType type)
         {
-            int index = SelectedLayer != null
-                ? Layers.IndexOf(SelectedLayer) + 1
-                : Layers.Count;
-
-            var layer = new Layer
+            var layer = new Layer(_nextZIndex++)
             {
                 Name = $"Layer {Layers.Count}",
-                BrushType = type
+                Visible = true,
+                Invert = false,
+                Strength = 100,
+                OverlayColor = Color.FromArgb(100, 255, 0, 0),
             };
-            
-            layer.Operations.Add(new MaskOperation(BrushType.Brush));
 
-            Layers.Insert(index, layer);
+            layer.Operations.Add(new MaskOperation(type));
+
+            Layers.Add(layer);
             SelectedLayer = layer;
         }
 
-
-        public void RemoveSelectedLayer()
+        public void RenameLayer(uint id, string name)
         {
-            if (SelectedLayer == null) return;
-            int idx = Layers.IndexOf(SelectedLayer);
-            if (idx <= 0) return;
-            Layers.RemoveAt(idx);
-            SelectedLayer = Layers[Math.Max(0, idx - 1)];
+            var layer = Layers.FirstOrDefault(l => l.Id == id);
+            if (layer != null)
+            {
+                layer.Name = name;
+            }
+        }
+
+        public uint? GetSelectedLayerId() => SelectedLayer?.Id ?? null;
+
+        public Layer? GetLayer() => SelectedLayer;
+
+        public Layer? GetLayer(uint id)
+        {
+            return Layers.FirstOrDefault(l => l.Id == id) ?? null;
+        }
+
+        public Layer? GetLayerByOperation(uint operationId)
+        {
+            return Layers.FirstOrDefault(l => l.Operations.Any(op => op.Id == operationId));
+        }
+
+        public void RemoveLayer(uint id)
+        {
+            var layer = GetLayer(id);
+            if (layer != null)
+            {
+                bool shouldSelectPrevious = SelectedLayer != null && layer == SelectedLayer;
+                int idx = (int)(layer.ZIndex - 1);
+                Layers.Remove(layer);
+
+                RefreshZIndices();
+                if (Layers.Count > 0 && shouldSelectPrevious)
+                {
+                    SelectedLayer = Layers[Math.Max(0, Math.Min(idx, Layers.Count - 1))];
+                }
+                else
+                {
+                    SelectedLayer = null;
+                }
+            }
+        }
+
+        public void RemoveLayer()
+        {
+            if (SelectedLayer != null)
+            {
+                RemoveLayer(SelectedLayer.Id);
+            }
+        }
+
+        public ObservableCollection<MaskOperation> GetOperations(uint id)
+        {
+            var layer = GetLayer(id);
+            return layer?.Operations ?? new ObservableCollection<MaskOperation>();
+        }
+
+        public ObservableCollection<MaskOperation> GetSelectedOperations()
+        {
+            return SelectedLayer?.Operations ?? new ObservableCollection<MaskOperation>();
+        }
+
+        public void AddOperation(uint id, MaskOperation maskOperation)
+        {
+            var layer = GetLayer(id);
+            if (layer != null)
+            {
+                layer.Operations.Add(maskOperation);
+            }
+        }
+
+        public void AddOperation(MaskOperation maskOperation)
+        {
+            if (SelectedLayer != null)
+            {
+                SelectedLayer.Operations.Add(maskOperation);
+            }
+        }
+
+        public void RemoveOperation(uint operationId)
+        {
+            var layer = GetLayerByOperation(operationId);
+            if (layer != null)
+            {
+                if (layer.Operations.Count == 1)
+                {
+                    RemoveLayer(layer.Id);
+                    return;
+                }
+                var operation = layer.Operations.FirstOrDefault(op => op.Id == operationId);
+                if (operation != null)
+                {
+                    layer.Operations.Remove(operation);
+                }
+            }
+        }
+
+        public void MoveLayer(uint id, int newIndex)
+        {
+            var layer = GetLayer(id);
+            if (layer == null) return;
+            int oldIndex = Layers.IndexOf(layer);
+            if (oldIndex < 0 || newIndex < 0 || newIndex >= Layers.Count) return;
+            Layers.RemoveAt(oldIndex);
+            Layers.Insert(newIndex, layer);
+            SelectedLayer = layer;
+            RefreshZIndices();
         }
 
         public void MoveLayer(int oldIndex, int newIndex)
         {
-            if (oldIndex <= 0 || oldIndex >= Layers.Count) return;
-            newIndex = Math.Max(1, Math.Min(Layers.Count - 1, newIndex));
+            if (oldIndex < 0 || oldIndex >= Layers.Count || newIndex < 0 || newIndex >= Layers.Count) return;
             var layer = Layers[oldIndex];
             Layers.RemoveAt(oldIndex);
             Layers.Insert(newIndex, layer);
+            SelectedLayer = layer;
+            RefreshZIndices();
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        private void RefreshZIndices()
+        {
+            for (int i = 0; i < Layers.Count; i++)
+            {
+                Layers[i].ZIndex = (uint)(i + 1);
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
         protected bool SetField<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
         {
             if (Equals(field, value)) return false;
