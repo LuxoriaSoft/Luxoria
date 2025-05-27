@@ -1,11 +1,11 @@
-﻿using System.Diagnostics;
-using System.Net;
-using System.Web;
-using Luxoria.SDK.Interfaces;
+﻿using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
 using Luxoria.SDK.Services;
 using Luxoria.SDK.Services.Targets;
 using LuxStudio.COM.Models;
+using System.Diagnostics;
+using System.Net;
+using System.Web;
 
 namespace LuxStudio.COM.Services;
 
@@ -19,6 +19,7 @@ public class AuthService
     private readonly string _section = "LuxCOM/Authentification";
     private readonly string _clientId;
     private readonly string _redirectUri;
+    private readonly string _apiBaseUrl;
     private readonly string _ssoBaseUrl;
     private HttpListener? listener;
 
@@ -28,6 +29,7 @@ public class AuthService
     public AuthService(LuxStudioConfig config)
     {
         _clientId = config?.Sso?.Params?.ClientId ?? throw new NullReferenceException();
+        _apiBaseUrl = config?.ApiUrl ?? throw new NullReferenceException();
         _redirectUri = config?.Sso?.Params?.RedirectUrl ?? throw new NullReferenceException();
         _ssoBaseUrl = config?.Sso?.Url ?? throw new NullReferenceException();
     }
@@ -140,6 +142,62 @@ public class AuthService
         catch (Exception ex)
         {
             _logger.Log($"Error stopping HttpListener: {ex.Message}", _section, LogLevel.Error);
+        }
+    }
+
+    /// <summary>
+    /// Exchanges the authorization code for an access token and refresh token.
+    /// </summary>
+    /// <param name="authorizationCode">The authorization code to exchange.</param>
+    /// <returns>A tuple containing the access token and refresh token.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the token exchange fails or response is invalid.</exception>
+    public async Task<(string AccessToken, string RefreshToken)> ExchangeAuthorizationCode(string authorizationCode)
+    {
+        _logger.Log("Exchanging authorization code for access token...", _section, LogLevel.Info);
+
+        var requestBody = new
+        {
+            clientId = _clientId,
+            code = authorizationCode,
+            grantType = "authorization_code"
+        };
+
+        var requestUri = $"{_apiBaseUrl}/sso/token";
+
+        try
+        {
+            using var httpClient = new HttpClient();
+            var content = new StringContent(
+                System.Text.Json.JsonSerializer.Serialize(requestBody),
+                System.Text.Encoding.UTF8,
+                "application/json");
+
+            var response = await httpClient.PostAsync(requestUri, content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMsg = $"Failed to exchange authorization code: {response.StatusCode}";
+                _logger.Log(errorMsg, _section, LogLevel.Error);
+                throw new InvalidOperationException(errorMsg);
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var tokenResponse = System.Text.Json.JsonSerializer.Deserialize<TokenResponse>(responseContent);
+
+            if (tokenResponse == null || string.IsNullOrWhiteSpace(tokenResponse.AccessToken) || string.IsNullOrWhiteSpace(tokenResponse.RefreshToken))
+            {
+                _logger.Log("Invalid response format from token exchange.", _section, LogLevel.Error);
+                throw new InvalidOperationException("Invalid response format from token exchange.");
+            }
+
+            _logger.Log("Authorization code exchanged successfully.", _section, LogLevel.Info);
+            return (tokenResponse.AccessToken, tokenResponse.RefreshToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.Log($"Exception during token exchange: {ex.Message}", _section, LogLevel.Error);
+            throw;
         }
     }
 }

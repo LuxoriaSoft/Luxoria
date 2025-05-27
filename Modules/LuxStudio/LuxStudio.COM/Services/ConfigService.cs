@@ -17,7 +17,7 @@ public class ConfigService
     /// </summary>
     private readonly ILoggerService _logger = new LoggerService(LogLevel.Info, new DebugLogTarget());
     private readonly string _section = "LuxCOM/Configuration";
-    
+
     /// <summary>
     /// The URL of the Lux Studio configuration endpoint.
     /// </summary>
@@ -64,7 +64,7 @@ public class ConfigService
         {
             throw new InvalidOperationException("Failed to retrieve API URL from the Lux Studio configuration.");
         }
-        
+
         // Fetch the Lux Studio configuration
         _config = FetchConfigAsync().GetAwaiter().GetResult() ?? throw new Exception("Failed to retrieve Lux Studio configuration.");
     }
@@ -129,19 +129,19 @@ public class ConfigService
     /// <returns>LuxStudioConfig model filled with the data fetched from LuxAPI</returns>
     private Task<LuxStudioConfig?> FetchConfigAsync() =>
         LuxStudioConfig.FetchFromUrlAsync(new Uri(new Uri(_luxStudioApiUrl), "/desktop/config").ToString());
-    
+
     /// <summary>
     /// Get the Lux Studio URL
     /// </summary>
     /// <returns>Lux Studio URL as a string</returns>
     public string GetFrontUrl() => _luxStudioUrl;
-    
+
     /// <summary>
     /// Get the Lux Studio API URL
     /// </summary>
     /// <returns>LuxAPI as a string</returns>
     public string GetApiUrl() => _luxStudioApiUrl;
-    
+
     /// <summary>
     /// Get the Lux Studio configuration model.
     /// </summary>

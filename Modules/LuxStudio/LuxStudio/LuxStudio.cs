@@ -1,12 +1,9 @@
 ﻿using Luxoria.GModules;
 using Luxoria.GModules.Interfaces;
 using Luxoria.Modules.Interfaces;
-using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
 using LuxStudio.Components;
-using System.Diagnostics;
-using LuxStudio.COM;
 
 namespace LuxStudio;
 
