@@ -1,4 +1,5 @@
-﻿using LuxStudio.COM.Services;
+﻿using LuxStudio.COM.Auth;
+using LuxStudio.COM.Services;
 using System.Diagnostics;
 
 ConfigService configSvc = new("https://studio.pluto.luxoria.bluepelicansoft.com");
@@ -8,20 +9,44 @@ Console.WriteLine("Lux Studio API URL: " + configSvc.GetApiUrl());
 
 var config = configSvc.GetConfig();
 
-AuthService authSvc = new(config);
+/*
+ * MANUAL AUTHENTICATION FLOW
 
-bool status = await authSvc.StartLoginFlowAsync(300); // 5min timeout
-if (!status)
-{
-    Console.WriteLine("Login flow failed or timed out.");
-    return;
-}
+        AuthService authSvc = new(config);
 
-Debug.WriteLine(authSvc.AuthorizationCode);
+        bool status = await authSvc.StartLoginFlowAsync(300); // 5min timeout
+        if (!status)
+        {
+            Console.WriteLine("Login flow failed or timed out.");
+            return;
+        }
 
-(string AccessToken, string RefreshToken) value = await authSvc.ExchangeAuthorizationCode(authSvc.AuthorizationCode ?? "");
+        Debug.WriteLine(authSvc.AuthorizationCode);
 
-Debug.WriteLine(value.AccessToken);
-Debug.WriteLine(value.RefreshToken);
+        (string AccessToken, string RefreshToken) value = await authSvc.ExchangeAuthorizationCode(authSvc.AuthorizationCode ?? "");
 
-await authSvc.RefreshAccessToken(value.RefreshToken);
+        Debug.WriteLine(value.AccessToken);
+        Debug.WriteLine(value.RefreshToken);
+
+        await authSvc.RefreshAccessToken(value.RefreshToken);
+
+*/
+
+AuthManager authManager = new(config);
+
+Debug.WriteLine("Is Authenticated: " + authManager.IsAuthenticated());
+
+string token = await authManager.GetAccessTokenAsync();
+
+Debug.WriteLine("Is Authenticated: " + authManager.IsAuthenticated());
+Debug.WriteLine("Access Token: " + token);
+
+string token2 = await authManager.GetAccessTokenAsync();
+
+Debug.WriteLine("Is Authenticated: " + authManager.IsAuthenticated());
+Debug.WriteLine("Access Token (second call): " + token2);
+
+string token3 = await authManager.GetAccessTokenAsync();
+
+Debug.WriteLine("Is Authenticated: " + authManager.IsAuthenticated());
+Debug.WriteLine("Access Token (third call): " + token3);

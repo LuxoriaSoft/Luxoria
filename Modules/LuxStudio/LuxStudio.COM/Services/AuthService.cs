@@ -34,6 +34,9 @@ public class AuthService
         _ssoBaseUrl = config?.Sso?.Url ?? throw new NullReferenceException();
     }
 
+    public static int AccessTokenExpirationDelay => 3600; // 1-hour expiration delay
+    public static int RefreshTokenExpirationDelay => 1296000; // 15 days expiration delay
+
     /// <summary>
     /// Builds the authorization URL for the SSO login flow.
     /// </summary>
