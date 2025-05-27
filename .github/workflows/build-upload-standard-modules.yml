@@ -6,6 +6,11 @@ on:
       - main
       - develop
       - release/*
+  pull_request:
+    branches:
+      - main
+      - develop
+      - release/*
 
 jobs:
   build-and-upload:
@@ -32,6 +37,12 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '9.x'
+      
+      # Set up Python 3.12
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
 
       # Set up MSBuild for Windows build environment
       - name: Setup MSBuild.exe
@@ -72,6 +83,14 @@ jobs:
         with:
           name: LuxImport-${{ matrix.platform }}
           path: Modules/LuxImport/LuxImport/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}
+      
+      # Requirements for Luxoria modules
+      - name: Install Luxoria LuxFilter Model requirements
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r Modules/LuxFilter/LuxFilter.Algorithms/Algorithms/ColorVisualAesthetics/CLIPModel/requirements.txt
+          python Modules/LuxFilter/LuxFilter.Algorithms/Algorithms/ColorVisualAesthetics/CLIPModel/onnx_export.py Modules/LuxFilter/LuxFilter.Algorithms/Algorithms/ColorVisualAesthetics/CLIPModel/
+        shell: pwsh
 
       # Build, rename, and upload LuxFilter module
       - name: Build LuxFilter

@@ -34,6 +34,12 @@ jobs:
         shell: powershell
         run: |
           dotnet tool install --global dotnet-coverage
+      
+      # Set up Python 3.12
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
 
       - name: Cache SonarCloud data
         uses: actions/cache@v3
@@ -42,6 +48,14 @@ jobs:
           key: ${{ runner.os }}-sonar-${{ hashFiles('**/*.csproj') }}
           restore-keys: |
             ${{ runner.os }}-sonar-
+      
+      # Requirements for Luxoria modules
+      - name: Install Luxoria LuxFilter Model requirements
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r Modules/LuxFilter/LuxFilter.Algorithms/Algorithms/ColorVisualAesthetics/CLIPModel/requirements.txt
+          python Modules/LuxFilter/LuxFilter.Algorithms/Algorithms/ColorVisualAesthetics/CLIPModel/onnx_export.py Modules/LuxFilter/LuxFilter.Algorithms/Algorithms/ColorVisualAesthetics/CLIPModel/
+        shell: pwsh
 
       - name: Analyze 'Luxoria' on SonarCloud
         env:
