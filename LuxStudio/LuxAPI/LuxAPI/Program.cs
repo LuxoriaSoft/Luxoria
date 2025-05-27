@@ -45,7 +45,7 @@ builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(DB_DEFAULT_CONNECTION));
 
-builder.Services.AddSingleton<MinioService>(); // <-- AJOUT ICI
+builder.Services.AddSingleton<MinioService>();
 
 // Configure JWT Authentication
 builder.Services.AddAuthentication(options =>
