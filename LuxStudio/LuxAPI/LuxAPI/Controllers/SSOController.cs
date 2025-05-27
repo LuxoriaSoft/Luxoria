@@ -108,10 +108,10 @@ namespace LuxAPI.Controllers
                     return BadRequest(new { error = "Invalid request payload or grant type." });
                 }
 
-                var client = _context.Clients.FirstOrDefault(c => c.ClientId == request.ClientId && c.ClientSecret == request.ClientSecret);
+                var client = _context.Clients.FirstOrDefault(c => c.ClientId == request.ClientId);
                 if (client == null)
                 {
-                    return BadRequest(new { error = "Invalid client credentials." });
+                    return BadRequest(new { error = "Invalid client ID." });
                 }
 
                 var authorizationCode = _context.AuthorizationCodes.FirstOrDefault(c => c.Code == request.Code);
