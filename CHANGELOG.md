@@ -1,3 +1,10 @@
+## [1.38.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.38.0...v1.38.1) (2025-05-27)
+
+
+### Bug Fixes
+
+* Correct SSO authorization URL to use frontend URL instead of backend URL ([62cb906](https://github.com/LuxoriaSoft/Luxoria/commit/62cb906163b89a6f6b8165f91fcfa1a6c2381f17))
+
 # [1.38.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.37.2...v1.38.0) (2025-05-26)
 
 
