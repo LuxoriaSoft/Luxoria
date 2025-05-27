@@ -19,11 +19,9 @@ if (!status)
 
 Debug.WriteLine(authSvc.AuthorizationCode);
 
-(string AccessToken, string RefreshToken) value = await authSvc.ExchangeAuthorizationCode(authSvc?.AuthorizationCode ?? "");
+(string AccessToken, string RefreshToken) value = await authSvc.ExchangeAuthorizationCode(authSvc.AuthorizationCode ?? "");
 
 Debug.WriteLine(value.AccessToken);
 Debug.WriteLine(value.RefreshToken);
 
-(string AccessToken, string RefreshToken) token = await authSvc.RefreshAccessToken(value.RefreshToken);
-Console.WriteLine(token.AccessToken);
-Console.WriteLine(token.RefreshToken);
+await authSvc.RefreshAccessToken(value.RefreshToken);
