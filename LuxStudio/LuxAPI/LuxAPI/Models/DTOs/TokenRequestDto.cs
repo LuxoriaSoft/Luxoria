@@ -13,12 +13,6 @@ namespace LuxAPI.Models.DTOs
         public Guid ClientId { get; set; }
 
         /// <summary>
-        /// The secret key of the client application used for authentication.
-        /// This should match the stored client secret in the system.
-        /// </summary>
-        public required string ClientSecret { get; set; }
-
-        /// <summary>
         /// The authorization code received after user authentication.
         /// This code is exchanged for an access token.
         /// </summary>
