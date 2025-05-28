@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: luxapi-container
-          image: luxoria/luxapi:dev
+          image: luxoria/luxapi
           imagePullPolicy: Always
           env:
            - name: FrontEnd__URI
