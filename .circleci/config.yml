@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  kubernetes: circleci/kubernetes@2.0.0
+  
 jobs:
   build-and-push:
     docker:
