@@ -14,8 +14,8 @@ jobs:
       - run:
           name: Generate Image Tag
           command: |
-            TAG=$(date +%Y%m%d).$(git rev-list --count HEAD)
-            echo "Generated tag: $TAG / running for Pipeline No ${CIRCLE_BUILD_NUM}"
+            TAG=$(date +%Y%m%d).${CIRCLE_BUILD_NUM}
+            echo "Generated tag: $TAG"
             echo $TAG > image_tag.txt
 
       - run:
