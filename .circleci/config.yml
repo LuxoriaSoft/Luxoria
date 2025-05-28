@@ -87,6 +87,7 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
+      - kubernetes/install_kubectl
       - attach_workspace:
           at: .
       - run:
