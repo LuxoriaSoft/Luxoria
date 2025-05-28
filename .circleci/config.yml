@@ -107,6 +107,11 @@ jobs:
             TAG=$(cat image_tag.txt)
             sed -i "s|name: luxoria/luxapi.*|name: luxoria/luxapi\n  newTag: $TAG|" LuxStudio/depl/overlays/pluto/kustomization.yaml
             sed -i "s|name: luxoria/luxstudio.*|name: luxoria/luxstudio\n  newTag: $TAG|" LuxStudio/depl/overlays/pluto/kustomization.yaml
+      - run:
+          name: Debug Kustomization
+          command: |
+            echo "Debugging Kustomization"
+            cat LuxStudio/depl/overlays/pluto/kustomization.yaml
       - kubernetes/create_or_update_resource:
           resource_file_path: ./LuxStudio/depl/overlays/pluto
           show_kubectl_command: true
