@@ -86,14 +86,37 @@ jobs:
     docker:
       - image: cimg/base:stable
     steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install kubectl and kustomize
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y kubectl
+            curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+            sudo mv kustomize /usr/local/bin/
+      - run:
+          name: Plan a release
+          command: |
+            TAG=$(cat image_tag.txt)
+            circleci run release plan --target-version=$TAG
       - run:
           name: Deploy to Pluto
-          command: echo "Deploying Docker images tagged 'dev' to Pluto (Dev/Test environment)"
+          command: |
+            TAG=$(cat image_tag.txt)
+            echo "Deploying to Pluto using kustomize overlay..."
+            kubectl apply -k ./LuxStudio/depl/overlays/pluto/
+      - run:
+          name: Update a release
+          command: |
+            circleci run release update --status=SUCCESS
 
   deploy-to-saturn:
     docker:
       - image: cimg/base:stable
     steps:
+      - checkout
       - run:
           name: Deploy to Saturn
           command: echo "Deploying Docker images tagged 'latest' to Saturn (Production environment)"
