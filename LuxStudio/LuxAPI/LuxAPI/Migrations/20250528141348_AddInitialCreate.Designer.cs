@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuxAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250525025206_AddPendingRegistrations")]
-    partial class AddPendingRegistrations
+    [Migration("20250528141348_AddInitialCreate")]
+    partial class AddInitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

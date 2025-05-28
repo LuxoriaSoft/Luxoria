@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LuxAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class AddPendingRegistrations : Migration
+    public partial class AddInitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
