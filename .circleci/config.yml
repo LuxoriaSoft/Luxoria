@@ -86,8 +86,8 @@ jobs:
             docker push luxoria/luxstudio:latest
 
   deploy-to-pluto:
-    executor: kubernetes/default
-    environment: pluto
+    docker:
+      - image: cimg/base:stable
     steps:
       - checkout
       - kubernetes/install_kubectl
