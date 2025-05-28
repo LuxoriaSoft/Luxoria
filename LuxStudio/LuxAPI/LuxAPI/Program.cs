@@ -46,6 +46,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(DB_DEFAULT_CONNECTION));
 
 builder.Services.AddSingleton<MinioService>(); // <-- AJOUT ICI
+builder.Services.AddTransient<EmailService>();
+builder.Services.AddHostedService<CleanupExpiredRegistrations>();
+
 
 // Configure JWT Authentication
 builder.Services.AddAuthentication(options =>
