@@ -90,11 +90,6 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: Install kubectl and kustomize
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y kubectl
-      - run:
           name: Plan a release
           command: |
             TAG=$(cat image_tag.txt)
