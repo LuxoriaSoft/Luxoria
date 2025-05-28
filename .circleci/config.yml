@@ -93,6 +93,8 @@ jobs:
       - kubernetes/install_kubectl
       - attach_workspace:
           at: .
+      - kubernetes/install_kubeconfig:
+          kubeconfig_file_path: KUBECONFIG_DATA
       - run:
           name: Plan a release
           command: |
