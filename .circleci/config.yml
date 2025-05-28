@@ -99,7 +99,7 @@ jobs:
             TAG=$(cat image_tag.txt)
             circleci run release plan --target-version=$TAG --environment-name=pluto --namespace=pluto
       - kubernetes/create_or_update_resource:
-          resource_file_path: ./LuxStudio/depl/overlays/pluto/kustomization.yaml
+          resource_file_path: ./LuxStudio/depl/overlays/pluto
           show_kubectl_command: true
           kustomize: true
       - run:
