@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   kubernetes: circleci/kubernetes@2.0.0
-  
+
 jobs:
   build-and-push:
     docker:
@@ -86,8 +86,8 @@ jobs:
             docker push luxoria/luxstudio:latest
 
   deploy-to-pluto:
-    docker:
-      - image: cimg/base:stable
+    executor: kubernetes/default
+    environment: pluto
     steps:
       - checkout
       - kubernetes/install_kubectl
