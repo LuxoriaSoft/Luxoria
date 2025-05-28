@@ -98,12 +98,11 @@ jobs:
           command: |
             TAG=$(cat image_tag.txt)
             circleci run release plan --target-version=$TAG --environment-name=pluto --namespace=pluto
-      - run:
-          name: Deploy to Pluto
-          command: |
-            TAG=$(cat image_tag.txt)
-            echo "Deploying to Pluto using kustomize overlay..."
-            kubectl apply -k ./LuxStudio/depl/overlays/pluto/
+        
+      - kubernetes/create-or-update-resource:
+           action-type: apply
+           resource-file-path: ./LuxStudio/depl/overlays/pluto/kustomization.yaml
+
       - run:
           name: Update a release
           command: |
