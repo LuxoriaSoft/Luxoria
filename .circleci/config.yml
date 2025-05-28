@@ -93,7 +93,7 @@ jobs:
           name: Plan a release
           command: |
             TAG=$(cat image_tag.txt)
-            circleci run release plan --target-version=$TAG --target-environment=pluto
+            circleci run release plan --target-version=$TAG --environment=pluto
       - run:
           name: Deploy to Pluto
           command: |
@@ -103,7 +103,7 @@ jobs:
       - run:
           name: Update a release
           command: |
-            circleci run release update --status=SUCCESS --target-environment=pluto
+            circleci run release update --status=SUCCESS --environment=pluto
 
   deploy-to-saturn:
     docker:
