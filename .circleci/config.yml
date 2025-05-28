@@ -105,8 +105,8 @@ jobs:
           name: Inject tag for API and Studio images
           command: |
             TAG=$(cat image_tag.txt)
-            sed -i "s|name: luxoria/luxapi.*|name: luxoria/luxapi\n  newTag: $TAG|" LuxStudio/depl/overlays/pluto/kustomization.yaml
-            sed -i "s|name: luxoria/luxstudio.*|name: luxoria/luxstudio\n  newTag: $TAG|" LuxStudio/depl/overlays/pluto/kustomization.yaml
+            sed -i "s|\(name: .*/luxapi\s*\n\)\s*newTag: .*|\1  newTag: ${TAG}|" LuxStudio/depl/overlays/pluto/kustomization.yaml
+            sed -i "s|\(name: .*/luxstudio\s*\n\)\s*newTag: .*|\1  newTag: ${TAG}|" LuxStudio/depl/overlays/pluto/kustomization.yaml
       - run:
           name: Debug Kustomization
           command: |
