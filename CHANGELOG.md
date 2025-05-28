@@ -1,3 +1,41 @@
+# [1.40.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.39.0...v1.40.0) (2025-05-28)
+
+
+### Bug Fixes
+
+* Add debugging step for Kustomization in deploy-to-pluto job ([0d9dc7f](https://github.com/LuxoriaSoft/Luxoria/commit/0d9dc7fd10112d2d562560ac99480e3b87dbda5e))
+* Add kubeconfig installation step in deploy-to-pluto job ([51fcf1f](https://github.com/LuxoriaSoft/Luxoria/commit/51fcf1f9e87d80bca364c813c61f306a908969be))
+* Add kubectl installation step in deploy-to-pluto job ([15ebb74](https://github.com/LuxoriaSoft/Luxoria/commit/15ebb74d8f8445eaf2eafa407e6b006ec344793d))
+* Add Kubernetes orb declaration in config.yml ([fcee5cc](https://github.com/LuxoriaSoft/Luxoria/commit/fcee5cca4c4a945554fa7ded7a3a1c400ddc76d8))
+* Correct kubeconfig parameter name in deploy-to-pluto job ([4cb4ce6](https://github.com/LuxoriaSoft/Luxoria/commit/4cb4ce6270cf267033f7786cbca719c7330eecf6))
+* Correct resource file path and update create_or_update_resource syntax in deploy-to-pluto job ([eb4bd57](https://github.com/LuxoriaSoft/Luxoria/commit/eb4bd5755e8a66f4a7585c6c4264a9dffc80e0a1))
+* Enable kustomize parameter for create_or_update_resource in deploy-to-pluto job ([8515e76](https://github.com/LuxoriaSoft/Luxoria/commit/8515e76138a115100e986336edc91963521598a3))
+* Enhance image tag generation message with pipeline number ([1fccb8f](https://github.com/LuxoriaSoft/Luxoria/commit/1fccb8fbd892ad5b3282a361e0603b51fe43323c))
+* Enhance tag injection for API and Studio images in Kustomization to support multiple patterns ([a1ab9b5](https://github.com/LuxoriaSoft/Luxoria/commit/a1ab9b556f7b02a6efdb0d758416f0aa556bad7a))
+* Inject image tags for API and Studio in deployment configurations ([6495c6e](https://github.com/LuxoriaSoft/Luxoria/commit/6495c6e87b305929fa8797ca0a4fec61e386aba8))
+* Refactor deploy-to-pluto job to use kustomize for resource updates ([9aea55a](https://github.com/LuxoriaSoft/Luxoria/commit/9aea55afd5ec233e41ea40eda53b488080191612))
+* Remove action-type from kubernetes/create_or_update_resource in deploy-to-pluto job ([92a88e2](https://github.com/LuxoriaSoft/Luxoria/commit/92a88e2fb467f0878147850de8c8ced4337882d6))
+* Simplify image tag generation and remove pipeline number from message ([520f573](https://github.com/LuxoriaSoft/Luxoria/commit/520f573f770bcb409ebdb30332e39dc1a074f975))
+* Simplify tag injection command for API and Studio images in Kustomization ([a1d2e77](https://github.com/LuxoriaSoft/Luxoria/commit/a1d2e770920f5f849115b92a52c8b5cf28208fa5))
+* Simplify tag injection for API and Studio images in Kustomization ([3566c85](https://github.com/LuxoriaSoft/Luxoria/commit/3566c85291ad229996be87f713908091a8d2b81f))
+* Update CircleCI commands to use --environment flag ([c70777f](https://github.com/LuxoriaSoft/Luxoria/commit/c70777ff0c465631b0877eeb5a71d48787551277))
+* Update CircleCI commands to use --environment-name and --namespace flags for Pluto ([9b8ca66](https://github.com/LuxoriaSoft/Luxoria/commit/9b8ca668c7caf96512eccbb8959e7619176a05d7))
+* Update deploy-to-pluto job to use Docker executor instead of Kubernetes executor ([2691eb5](https://github.com/LuxoriaSoft/Luxoria/commit/2691eb5ebc8c2c3cf2884a53e6d1bd77f7bdccf2))
+* Update deploy-to-pluto job to use Kubernetes executor and specify environment ([548c10a](https://github.com/LuxoriaSoft/Luxoria/commit/548c10ae3a42e3132dd4016754eea63fb8613b4f))
+* Update image tag injection for API and Studio in Kustomization ([21a3d16](https://github.com/LuxoriaSoft/Luxoria/commit/21a3d1653ed44db1f8cc606cc4497fa2c86df06f))
+* Update image tag injection for API and Studio in Kustomization to use improved regex ([bf1195d](https://github.com/LuxoriaSoft/Luxoria/commit/bf1195d7e4a74d6e5c2fbb301f78cd997a5a152e))
+* Update Ingress name from luxstudio-staging to luxstudio-production ([97fe24c](https://github.com/LuxoriaSoft/Luxoria/commit/97fe24cc84492a567d99214d9aea85b5c77e4be9))
+* Update parameters for create_or_update_resource in deploy-to-pluto job ([91d0408](https://github.com/LuxoriaSoft/Luxoria/commit/91d0408d4c0ee3defaeab330dcb7d09d16799288))
+* Update release status commands in deploy-to-pluto job ([346e414](https://github.com/LuxoriaSoft/Luxoria/commit/346e414ca439f1d1c21e1c88a515cd45d8c1b2a9))
+* Update resource file path for create_or_update_resource in deploy-to-pluto job ([8974dff](https://github.com/LuxoriaSoft/Luxoria/commit/8974dff5faf07d191967ac5134aeca34766a4ede))
+* Update tag injection for API and Studio images to use improved regex pattern ([2913da4](https://github.com/LuxoriaSoft/Luxoria/commit/2913da44757ac382123e941755c5effe85844f66))
+
+
+### Features
+
+* enhance deployment process with kubectl and kustomize integration for Pluto ([9310d16](https://github.com/LuxoriaSoft/Luxoria/commit/9310d1689a80ec52dffb736641f3e42cf782a2a4))
+* Specify target environment ([9314d84](https://github.com/LuxoriaSoft/Luxoria/commit/9314d840fcdd2b15c6f736878f523ac94eceaf7e))
+
 # [1.39.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.38.1...v1.39.0) (2025-05-27)
 
 
