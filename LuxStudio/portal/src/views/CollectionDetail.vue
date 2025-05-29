@@ -74,7 +74,7 @@
             <time class="text-xs opacity-50 ml-2">{{ formatTime(msg.sentAt) }}</time>
           </div>
           <div class="chat-bubble" :class="msg.isMine ? 'bg-blue-600 text-white' : ''">
-            {{ msg.text }}
+            <span v-html="formatMessage(msg.text)"></span>
           </div>
         </div>
       </div>
@@ -136,6 +136,53 @@
         </div>
       </div>
     </div>
+    <!-- Modale de sélection d’images avec # -->
+    <div
+      v-if="imageModalVisible"
+      class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center"
+      @click.self="imageModalVisible = false"
+    >
+      <div class="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative">
+        <h3 class="text-lg font-semibold mb-4">Sélectionner une ou plusieurs images</h3>
+        
+        <input
+          v-model="imageQuery"
+          type="text"
+          placeholder="Rechercher une image..."
+          class="input input-bordered w-full mb-4"
+        />
+
+        <div class="grid grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+          <div
+            v-for="photo in imageSearchResults"
+            :key="photo.id"
+            class="relative border rounded cursor-pointer hover:ring-2 hover:ring-blue-500"
+            :class="{'ring-2 ring-blue-600': selectedImages.includes(photo)}"
+            @click="toggleImageSelection(photo)"
+          >
+            <img :src="photo.filePath" alt="image" class="w-full h-32 object-cover rounded" />
+            <p class="text-xs p-1 truncate">{{ photo.filePath.split('/').pop() }}</p>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-6">
+          <button class="btn" @click="imageModalVisible = false">Annuler</button>
+          <button class="btn btn-primary" @click="confirmImageSelection">Valider</button>
+        </div>
+      </div>
+    </div>
+    <!-- Modale d’image pour le chat -->
+    <div
+      v-if="chatImageModalVisible"
+      class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center"
+      @click.self="chatImageModalVisible = false"
+    >
+      <div class="bg-white p-4 rounded shadow max-w-3xl w-full relative">
+        <button class="absolute top-2 right-2 text-gray-600 text-2xl" @click="chatImageModalVisible = false">✕</button>
+        <div class="text-center mb-4 font-semibold">{{ chatModalImageName }}</div>
+        <img :src="chatModalImageSrc" alt="Image du chat" class="max-h-[80vh] mx-auto rounded shadow" />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -168,25 +215,87 @@ const scrollContainer = ref(null)
 const mentionPopupVisible = ref(false)
 const mentionQuery = ref("")
 const filteredUsers = ref([])
-
 const allowedUsers = computed(() => collection.value?.allowedEmails || [])
+// État pour la recherche d'images avec #
+const imageModalVisible = ref(false)
+const imageQuery = ref("")
+const selectedImages = ref([])
+const imageSearchResults = computed(() => {
+  const query = imageQuery.value.toLowerCase()
+  return collection.value?.photos.filter(photo =>
+    photo.filePath.toLowerCase().includes(query)
+  ) || []
+})
+
+const chatImageModalVisible = ref(false)
+const chatModalImageSrc = ref("")
+const chatModalImageName = ref("")
+
+function openChatImageModal(filename) {
+  chatModalImageName.value = filename
+  chatModalImageSrc.value = `http://localhost:5269/api/collection/image/${filename}`
+  chatImageModalVisible.value = true
+}
+
+
 
 watchEffect(() => {
   const value = chatMessage.value
-  const match = value.match(/@([\w.-]*)$/)
-  if (match && allowedUsers.value.length > 0) {
-    mentionQuery.value = match[1].toLowerCase()
+
+  // @mention
+  const mentionMatch = value.match(/@([\w.-]*)$/)
+  if (mentionMatch && allowedUsers.value.length > 0) {
+    mentionQuery.value = mentionMatch[1].toLowerCase()
     mentionPopupVisible.value = true
     filteredUsers.value = allowedUsers.value
-      .map(e => typeof e === 'string' ? { email: e } : e)
-      .filter(user =>
-        user?.email?.toLowerCase().includes(mentionQuery.value) &&
-        user.email !== userEmail.value 
-      );
+      .filter(email =>
+        typeof email === 'string' &&
+        email.toLowerCase().includes(mentionQuery.value) &&
+        email.toLowerCase() !== userEmail.value.toLowerCase()
+      )
+      .map(email => ({ email }))
   } else {
     mentionPopupVisible.value = false
   }
+
+  // #image
+  const hashtagMatch = value.match(/#([\w.-]*)$/)
+  if (hashtagMatch) {
+    imageQuery.value = hashtagMatch[1].toLowerCase()
+    imageModalVisible.value = true
+  }
 })
+
+function toggleImageSelection(photo) {
+  const index = selectedImages.value.indexOf(photo)
+  if (index > -1) {
+    selectedImages.value.splice(index, 1)
+  } else {
+    selectedImages.value.push(photo)
+  }
+}
+
+function confirmImageSelection() {
+  const fileNames = selectedImages.value.map(p => `#${p.filePath.split("/").pop()}`)
+  chatMessage.value = chatMessage.value.replace(/#([\w.-]*)$/, fileNames.join(" "))
+  imageModalVisible.value = false
+  selectedImages.value = []
+}
+
+function formatMessage(text) {
+  const imageRegex = /#([\w\-.]+\.(jpg|jpeg|png))/gi
+  return text.replace(imageRegex, (_, filename) => {
+    return `<span class="text-blue-500 underline cursor-pointer" onclick="window.__openImageModal && window.__openImageModal('${filename}')">#${filename}</span>`
+  })
+}
+
+onMounted(() => {
+  window.__openImageModal = openChatImageModal
+})
+onUnmounted(() => {
+  delete window.__openImageModal
+})
+
 
 
 function selectMention(email) {
