@@ -4,7 +4,7 @@ resources:
   - configmap-luxdb-init.yaml
   - ingress.yaml
 
-namespace: luxstudio-pluto
+namespace: pluto
 
 patches:
   - path: patch-deployment-luxstudio.yaml

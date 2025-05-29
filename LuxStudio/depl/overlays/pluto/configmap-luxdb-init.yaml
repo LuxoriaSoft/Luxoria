@@ -16,4 +16,4 @@ kind: ConfigMap
 metadata:
   creationTimestamp: null
   name: luxdb-init
-  namespace: luxstudio-pluto
+  namespace: pluto
