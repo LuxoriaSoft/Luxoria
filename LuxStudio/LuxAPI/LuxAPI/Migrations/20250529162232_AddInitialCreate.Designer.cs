@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuxAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250529020603_AddInitialCreate")]
+    [Migration("20250529162232_AddInitialCreate")]
     partial class AddInitialCreate
     {
         /// <inheritdoc />
@@ -333,7 +333,7 @@ namespace LuxAPI.Migrations
             modelBuilder.Entity("LuxAPI.Models.CollectionAccess", b =>
                 {
                     b.HasOne("LuxAPI.Models.Collection", "Collection")
-                        .WithMany("AllowedEmails")
+                        .WithMany("Accesses")
                         .HasForeignKey("CollectionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -394,7 +394,7 @@ namespace LuxAPI.Migrations
 
             modelBuilder.Entity("LuxAPI.Models.Collection", b =>
                 {
-                    b.Navigation("AllowedEmails");
+                    b.Navigation("Accesses");
 
                     b.Navigation("ChatMessages");
 

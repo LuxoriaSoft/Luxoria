@@ -41,11 +41,11 @@ public async Task<IActionResult> GetCollections()
         return Unauthorized("Utilisateur non authentifié.");
 
     var collections = await _context.Collections
-        .Include(c => c.AllowedEmails)
+        .Include(c => c.Accesses)
         .Include(c => c.Photos)
             .ThenInclude(p => p.Comments)
         .Include(c => c.ChatMessages)
-        .Where(c => c.AllowedEmails.Any(a => a.Email == currentUserEmail))
+        .Where(c => c.Accesses.Any(a => a.Email == currentUserEmail))
         .ToListAsync();
 
     var result = collections.Select(c => new
@@ -53,7 +53,7 @@ public async Task<IActionResult> GetCollections()
         c.Id,
         c.Name,
         c.Description,
-        AllowedEmails = c.AllowedEmails.Select(a => a.Email),
+        AllowedEmails = c.Accesses.Select(a => a.Email),
         Photos = c.Photos.Select(p => new {
             p.Id,
             p.FilePath,
@@ -86,7 +86,7 @@ public async Task<IActionResult> GetCollections()
         public async Task<IActionResult> GetCollection(Guid id)
         {
             var collection = await _context.Collections
-                .Include(c => c.AllowedEmails)
+                .Include(c => c.Accesses)
                 .Include(c => c.ChatMessages)
                 .Include(c => c.Photos).ThenInclude(p => p.Comments)
                 .FirstOrDefaultAsync(c => c.Id == id);
@@ -112,7 +112,7 @@ public async Task<IActionResult> GetCollections()
                 collection.Id,
                 collection.Name,
                 collection.Description,
-                AllowedEmails = collection.AllowedEmails.Select(a => a.Email),
+                AllowedEmails = collection.Accesses.Select(a => a.Email),
                 Photos = collection.Photos.Select(p => new {
                     p.Id,
                     p.FilePath,
@@ -146,7 +146,7 @@ public async Task<IActionResult> GetCollections()
             {
                 foreach (var email in dto.AllowedEmails)
                 {
-                    collection.AllowedEmails.Add(new CollectionAccess
+                    collection.Accesses.Add(new CollectionAccess
                     {
                         Email = email,
                         Collection = collection
@@ -163,19 +163,19 @@ public async Task<IActionResult> GetCollections()
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCollection(Guid id, [FromBody] UpdateCollectionDto dto)
         {
-            var collection = await _context.Collections.Include(c => c.AllowedEmails).FirstOrDefaultAsync(c => c.Id == id);
+            var collection = await _context.Collections.Include(c => c.Accesses).FirstOrDefaultAsync(c => c.Id == id);
             if (collection == null)
                 return NotFound("Collection non trouvée.");
 
             collection.Name = dto.Name;
             collection.Description = dto.Description;
 
-            collection.AllowedEmails.Clear();
+            collection.Accesses.Clear();
             if (dto.AllowedEmails != null)
             {
                 foreach (var email in dto.AllowedEmails)
                 {
-                    collection.AllowedEmails.Add(new CollectionAccess
+                    collection.Accesses.Add(new CollectionAccess
                     {
                         Email = email,
                         Collection = collection
@@ -189,45 +189,58 @@ public async Task<IActionResult> GetCollections()
 
         [HttpPatch("{collectionId}/allowedEmails")]
         [Authorize]
-        public async Task<IActionResult> AddAllowedEmail(Guid collectionId, [FromBody] EmailDto dto)
+        public async Task<IActionResult> AddAllowedEmail(
+            Guid collectionId,
+            [FromBody] EmailDto dto,
+            [FromServices] EmailService emailService)
         {
             var currentUserEmail = User?.Identity?.Name;
             if (string.IsNullOrEmpty(currentUserEmail))
                 return Unauthorized("Utilisateur non authentifié.");
 
             var collection = await _context.Collections
-                .Include(c => c.AllowedEmails)
+                .Include(c => c.Accesses)
                 .FirstOrDefaultAsync(c => c.Id == collectionId);
 
             if (collection == null)
                 return NotFound("Collection non trouvée.");
 
-            if (!collection.AllowedEmails.Any(a => a.Email.Equals(currentUserEmail, StringComparison.OrdinalIgnoreCase)))
+            if (!collection.Accesses.Any(a => a.Email.Equals(currentUserEmail, StringComparison.OrdinalIgnoreCase)))
                 return Forbid("Vous n'avez pas accès à cette collection.");
 
             if (!new EmailAddressAttribute().IsValid(dto.Email))
                 return BadRequest("Format d'email invalide.");
 
-            // Vérifie que l'utilisateur existe en base
-            var userExists = await _context.Users.AnyAsync(u => u.Email == dto.Email);
-            if (!userExists)
-                return BadRequest("Aucun utilisateur ne correspond à cet email.");
+            var email = dto.Email.Trim().ToLowerInvariant();
 
-            // Vérifie que l'email n'est pas déjà autorisé
-            if (collection.AllowedEmails.Any(a => a.Email.Equals(dto.Email, StringComparison.OrdinalIgnoreCase)))
-                return BadRequest("Cet utilisateur est déjà autorisé.");
-
-            // Ajoute le nouvel accès
-            collection.AllowedEmails.Add(new CollectionAccess
+            if (collection.Accesses.Any(a => a.Email == email))
             {
-                Email = dto.Email,
+                return Ok(new { message = "Cet utilisateur a déjà accès à la collection." });
+            }
+
+            collection.Accesses.Add(new CollectionAccess
+            {
+                Email = email,
                 CollectionId = collectionId
             });
-
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Utilisateur ajouté avec succès." });
-        }
 
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            var collectionUrl = $"http://localhost:5173/collections/{collectionId}";
+            var registrationUrl = $"http://localhost:5173/register?prefilled=true&email={Uri.EscapeDataString(email)}";
+
+            if (user != null)
+            {
+                await emailService.SendAccessGrantedNotificationAsync(email, collection.Name, collectionUrl, currentUserEmail);
+                return Ok(new { message = "Utilisateur existant ajouté et notifié." });
+            }
+            else
+            {
+                await emailService.SendRegistrationInvitationAsync(email, collection.Name, registrationUrl, currentUserEmail);
+                return Ok(new { message = "Utilisateur inconnu ajouté et invitation envoyée.", redirectUrl = registrationUrl });
+            }
+        }
 
         [Authorize]
         [HttpDelete("photo/{id}")]

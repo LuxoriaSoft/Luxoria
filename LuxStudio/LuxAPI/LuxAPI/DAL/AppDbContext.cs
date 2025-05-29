@@ -123,7 +123,7 @@ namespace LuxAPI.DAL
 
             // A Collection has many AllowedEmails (CollectionAccesses)
             modelBuilder.Entity<Collection>()
-                .HasMany(c => c.AllowedEmails)
+                .HasMany(c => c.Accesses)
                 .WithOne(a => a.Collection)
                 .HasForeignKey(a => a.CollectionId)
                 .OnDelete(DeleteBehavior.Cascade);

@@ -11,7 +11,7 @@
       </div>
       <div class="mb-4">
         <label for="email" class="block mb-2 text-sm font-medium">Email</label>
-        <input type="email" id="email" v-model="email" class="w-full p-2 border border-gray-600 rounded bg-gray-700 text-white" required />
+        <input type="email" id="email" v-model="email" :disabled="isEmailPrefilled" class="w-full p-2 border border-gray-600 rounded bg-gray-700 text-white" required />
       </div>
       <div class="mb-4">
         <label for="password" class="block mb-2 text-sm font-medium">Password</label>
@@ -88,6 +88,7 @@ export default {
       toastMessage: "",
       toastType: "alert-info",
       toastClass: "animate-fadeIn",
+      isEmailPrefilled: false,
     };
   },
   methods: {
@@ -234,6 +235,13 @@ export default {
   beforeUnmount() {
     if (this.avatarPreviewUrl) {
       URL.revokeObjectURL(this.avatarPreviewUrl);
+    }
+  },
+  created() {
+    const query = this.$route.query;
+    if (query.prefilled === "true" && query.email) {
+      this.email = query.email;
+      this.isEmailPrefilled = true;
     }
   },
 };
