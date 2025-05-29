@@ -2,4 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: luxdb
-  namespace: pluto
+spec:
+  template:
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:17.2-alpine3.21
