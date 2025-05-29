@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  kubernetes: circleci/kubernetes@2.0.0
+
 jobs:
   build-and-push:
     docker:
@@ -11,7 +14,7 @@ jobs:
       - run:
           name: Generate Image Tag
           command: |
-            TAG=$(date +%Y%m%d).$(git rev-list --count HEAD)
+            TAG=$(date +%Y%m%d).${CIRCLE_BUILD_NUM}
             echo "Generated tag: $TAG"
             echo $TAG > image_tag.txt
 
@@ -86,14 +89,42 @@ jobs:
     docker:
       - image: cimg/base:stable
     steps:
+      - checkout
+      - kubernetes/install_kubectl
+      - attach_workspace:
+          at: .
+      - kubernetes/install_kubeconfig:
+          kubeconfig: KUBECONFIG_DATA
       - run:
-          name: Deploy to Pluto
-          command: echo "Deploying Docker images tagged 'dev' to Pluto (Dev/Test environment)"
+          name: Plan a release
+          command: |
+            TAG=$(cat image_tag.txt)
+            circleci run release plan --target-version=$TAG --environment-name=pluto --namespace=pluto
+            circleci run release update --status=running
+      - run:
+          name: Inject tag for API and Studio images
+          command: |
+            TAG=$(cat image_tag.txt)
+            sed -i "s|newTag:.*|newTag: \"$TAG\"|" LuxStudio/depl/overlays/pluto/kustomization.yaml
+      - run:
+          name: Debug Kustomization
+          command: |
+            echo "Debugging Kustomization"
+            cat LuxStudio/depl/overlays/pluto/kustomization.yaml
+      - kubernetes/create_or_update_resource:
+          resource_file_path: ./LuxStudio/depl/overlays/pluto
+          show_kubectl_command: true
+          kustomize: true
+      - run:
+          name: Update a release
+          command: |
+            circleci run release update --status=SUCCESS
 
   deploy-to-saturn:
     docker:
       - image: cimg/base:stable
     steps:
+      - checkout
       - run:
           name: Deploy to Saturn
           command: echo "Deploying Docker images tagged 'latest' to Saturn (Production environment)"
