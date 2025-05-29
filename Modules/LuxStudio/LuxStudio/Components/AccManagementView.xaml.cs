@@ -22,9 +22,12 @@ namespace LuxStudio.Components
 
         private async void AccManagementView_Loaded(object sender, RoutedEventArgs e)
         {
-            ShowPanel(LoadingMessagePanel, "Loading Config...");
-            await Task.Delay(1000);
-
+            if (_authMgr != null)
+            {
+                await _authMgr.GetAccessTokenAsync();
+                ShowPanel(UrlInputPanel, "You are already authenticated. You can now access LuxStudio.");
+                return;
+            }
             ShowPanel(UrlInputPanel);
         }
 
@@ -108,7 +111,7 @@ namespace LuxStudio.Components
                 // Add a Start Over button if not already added
                 if (!LoadingMessagePanel.Children.OfType<Button>().Any(b => (string?)b.Content == "Start Over"))
                 {
-                    Button startOverButton = new Button
+                    Button startOverButton = new()
                     {
                         Content = "Start Over",
                         HorizontalAlignment = HorizontalAlignment.Center,

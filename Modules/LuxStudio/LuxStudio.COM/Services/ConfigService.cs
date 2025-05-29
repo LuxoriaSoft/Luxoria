@@ -29,11 +29,6 @@ public class ConfigService
     private string? _luxStudioApiUrl;
 
     /// <summary>
-    /// Lux Studio configuration model.
-    /// </summary>
-    private readonly LuxStudioConfig? _config;
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="ConfigService"/> class.
     /// Sets the Lux Studio URL for configuration retrieval.
     /// The URL must not be null.
