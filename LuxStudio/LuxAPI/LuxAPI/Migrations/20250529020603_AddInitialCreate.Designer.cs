@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuxAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250528141348_AddInitialCreate")]
+    [Migration("20250529020603_AddInitialCreate")]
     partial class AddInitialCreate
     {
         /// <inheritdoc />
