@@ -4,6 +4,7 @@ using Luxoria.Modules.Interfaces;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
 using LuxStudio.COM.Auth;
+using LuxStudio.COM.Models;
 using LuxStudio.Components;
 
 namespace LuxStudio;
@@ -18,6 +19,7 @@ public class LuxStudio : IModule, IModuleUI
     public string Description => "Generic Luxoria LuxStudio Integration Module";
     public string Version => "1.0.0";
 
+    private LuxStudioConfig? _config;
     private AuthManager? _authManager;
 
     /// <summary>

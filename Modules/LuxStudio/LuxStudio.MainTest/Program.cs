@@ -5,9 +5,9 @@ using System.Diagnostics;
 ConfigService configSvc = new("https://studio.pluto.luxoria.bluepelicansoft.com");
 
 Console.WriteLine("Lux Studio URL: " + configSvc.GetFrontUrl());
-Console.WriteLine("Lux Studio API URL: " + configSvc.GetApiUrl());
+Console.WriteLine("Lux Studio API URL: " + await configSvc.GetApiUrlAsync());
 
-var config = configSvc.GetConfig();
+var config = await configSvc.GetConfigAsync();
 
 /*
  * MANUAL AUTHENTICATION FLOW
@@ -32,7 +32,7 @@ var config = configSvc.GetConfig();
 
 */
 
-AuthManager authManager = new(config);
+AuthManager authManager = new(config ?? throw new InvalidOperationException("Configuration cannot be null. Ensure the config service is properly initialized."));
 
 Debug.WriteLine("Is Authenticated: " + authManager.IsAuthenticated());
 

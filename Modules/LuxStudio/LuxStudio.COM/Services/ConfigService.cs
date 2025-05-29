@@ -21,26 +21,23 @@ public class ConfigService
     /// <summary>
     /// The URL of the Lux Studio configuration endpoint.
     /// </summary>
-    private readonly string _luxStudioUrl;
+    private string _luxStudioUrl;
 
     /// <summary>
     /// Lux Studio API URL.
     /// </summary>
-    private readonly string _luxStudioApiUrl;
+    private string? _luxStudioApiUrl;
 
     /// <summary>
     /// Lux Studio configuration model.
     /// </summary>
-    private readonly LuxStudioConfig _config;
+    private readonly LuxStudioConfig? _config;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConfigService"/> class.
     /// Sets the Lux Studio URL for configuration retrieval.
     /// The URL must not be null.
     /// </summary>
-    /// <param name="luxStudioURL">Url to LuxStudio (should include http / https) (e.g https://studio.example.com)</param>
-    /// <exception cref="ArgumentNullException">Throws if LuxStudioURL is null</exception>
-    /// <exception cref="ArgumentException">Throws if the LuxStudioURL do NOT mach an URL format</exception>
     public ConfigService(string luxStudioUrl)
     {
         _luxStudioUrl = luxStudioUrl ?? throw new ArgumentNullException(nameof(luxStudioUrl), "Lux Studio URL cannot be null.");
@@ -50,23 +47,6 @@ public class ConfigService
         {
             throw new ArgumentException("The provided Lux Studio URL is not valid.", nameof(luxStudioUrl));
         }
-
-        // Check if the URL is reachable
-        var reached = IsReachableAsync().GetAwaiter().GetResult();
-        if (!reached)
-        {
-            throw new InvalidOperationException("The provided Lux Studio URL is not reachable. Please check the URL and your network connection.");
-        }
-
-        // Extract the API URL from the configuration file
-        _luxStudioApiUrl = GetApiUrlAsync().GetAwaiter().GetResult();
-        if (string.IsNullOrEmpty(_luxStudioApiUrl))
-        {
-            throw new InvalidOperationException("Failed to retrieve API URL from the Lux Studio configuration.");
-        }
-
-        // Fetch the Lux Studio configuration
-        _config = FetchConfigAsync().GetAwaiter().GetResult() ?? throw new Exception("Failed to retrieve Lux Studio configuration.");
     }
 
     /// <summary>
@@ -98,7 +78,7 @@ public class ConfigService
     /// };
     /// ```
     /// </summary>
-    private async Task<string> GetApiUrlAsync()
+    public async Task<string> GetApiUrlAsync()
     {
         try
         {
@@ -127,8 +107,22 @@ public class ConfigService
     /// Fetch the Lux Studio configuration from the API URL.
     /// </summary>
     /// <returns>LuxStudioConfig model filled with the data fetched from LuxAPI</returns>
-    private Task<LuxStudioConfig?> FetchConfigAsync() =>
-        LuxStudioConfig.FetchFromUrlAsync(new Uri(new Uri(_luxStudioApiUrl), "/desktop/config").ToString());
+    private async Task<LuxStudioConfig> FetchConfigAsync()
+    {
+        bool isReachable = await IsReachableAsync();
+        if (!isReachable)
+        {
+            await _logger.LogAsync("Lux Studio is not reachable. Cannot fetch configuration.", _section, LogLevel.Error);
+            throw new InvalidOperationException("Lux Studio is not reachable. Please check the URL and your network connection.");
+        }
+
+        _luxStudioApiUrl = await GetApiUrlAsync();
+        if (_luxStudioApiUrl == null) throw new InvalidOperationException("API URL could not be retrieved from the Lux Studio configuration.");
+
+        string luxStudioConfigUrl = new Uri(new Uri(_luxStudioApiUrl), "/desktop/config").ToString();
+
+        return await LuxStudioConfig.FetchFromUrlAsync(luxStudioConfigUrl) ?? throw new InvalidOperationException("Failed to fetch Lux Studio configuration. Please check the URL and your network connection.");
+    }
 
     /// <summary>
     /// Get the Lux Studio URL
@@ -137,14 +131,8 @@ public class ConfigService
     public string GetFrontUrl() => _luxStudioUrl;
 
     /// <summary>
-    /// Get the Lux Studio API URL
-    /// </summary>
-    /// <returns>LuxAPI as a string</returns>
-    public string GetApiUrl() => _luxStudioApiUrl;
-
-    /// <summary>
     /// Get the Lux Studio configuration model.
     /// </summary>
     /// <returns>LuxStudioConfig model</returns>
-    public LuxStudioConfig GetConfig() => _config;
+    public async Task<LuxStudioConfig?> GetConfigAsync() => await FetchConfigAsync();
 }

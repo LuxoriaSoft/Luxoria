@@ -9,19 +9,17 @@
     mc:Ignorable="d">
 
     <Grid Padding="20">
-
-        <!-- Loading Panel -->
-        <StackPanel x:Name="LoadingPanel" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+        <!-- Loading message with spinner -->
+        <StackPanel x:Name="LoadingMessagePanel" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
             <ProgressRing IsActive="True" Width="40" Height="40"/>
-            <TextBlock Text="Initializing Authentication Service..." FontSize="16" HorizontalAlignment="Center"/>
+            <TextBlock x:Name="LoadingMessageText" FontSize="16" HorizontalAlignment="Center"/>
         </StackPanel>
 
-        <!-- Input Panel -->
-        <StackPanel x:Name="InputPanel" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
-            <TextBlock Text="LuxStudio Address" FontSize="18" />
-            <TextBox PlaceholderText="Enter address here..." Width="300"/>
-            <Button Content="Connect" Width="100"/>
+        <!-- User input for URL -->
+        <StackPanel x:Name="UrlInputPanel" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+            <TextBlock Text="Enter LuxStudio URL:" FontSize="18"/>
+            <TextBox x:Name="StudioUrlTextBox" PlaceholderText="https://studio.example.com" Width="300"/>
+            <Button Content="Connect" Click="ConnectButton_Click" Width="100"/>
         </StackPanel>
-
     </Grid>
 </Page>
