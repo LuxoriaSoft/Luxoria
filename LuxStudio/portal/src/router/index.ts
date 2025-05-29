@@ -5,6 +5,7 @@ import Dashboard from '../views/Dashboard.vue';
 import LinkAccount from '../views/SSO_Authorize.vue';
 import Collections from '../views/Collections.vue';
 import CollectionDetail from '../views/CollectionDetail.vue';
+import RegisterConfirmation from '../views/RegisterConfirmation.vue';
 
 /**
  * Defines the application routes.
@@ -47,7 +48,13 @@ const routes = [
     name: 'CollectionDetail',
     component: CollectionDetail,
     meta: { requiresAuth: true },
+  },
+  {
+    path: '/register/confirmation',
+    name: 'RegisterConfirmation',
+    component: RegisterConfirmation,
   }
+
 ];
 
 /**

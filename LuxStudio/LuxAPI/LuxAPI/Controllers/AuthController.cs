@@ -226,7 +226,7 @@ namespace LuxAPI.Controllers
             _context.PendingRegistrations.Add(pending);
             await _context.SaveChangesAsync();
 
-            await emailService.SendVerificationCodeAsync(data.Email, data.Username, code);
+            await emailService.SendVerificationCodeAsync(data.Email, data.Username, code, pending.Id);
             _logger.LogInformation("Envoi du mail de code à {Email}", data.Email);
 
             return Ok("Verification code sent to email.");
@@ -303,6 +303,25 @@ namespace LuxAPI.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        /// <summary>
+        /// Retrieve the email of a user by ID. Used for email confirmation flow.
+        /// </summary>
+        [HttpGet("user/{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetUserEmailById(Guid id)
+        {
+            var user = await _context.PendingRegistrations
+                .Where(p => p.Id == id)
+                .Select(p => new { p.Email })
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+                return NotFound("No pending registration found for this ID.");
+
+            return Ok(user); // returns: { "email": "..." }
+        }
+
 
         /// <summary>
         /// Returns information about the currently authenticated user.
