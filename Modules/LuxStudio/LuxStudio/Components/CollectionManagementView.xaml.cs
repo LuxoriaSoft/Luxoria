@@ -1,3 +1,4 @@
+using LuxStudio.COM.Auth;
 using Microsoft.UI.Xaml.Controls;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -10,7 +11,7 @@ namespace LuxStudio.Components
     /// </summary>
     public sealed partial class CollectionManagementView : Page
     {
-        public CollectionManagementView()
+        public CollectionManagementView(ref AuthManager? authMgr)
         {
             InitializeComponent();
         }

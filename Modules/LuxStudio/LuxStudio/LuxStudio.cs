@@ -3,6 +3,7 @@ using Luxoria.GModules.Interfaces;
 using Luxoria.Modules.Interfaces;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
+using LuxStudio.COM.Auth;
 using LuxStudio.Components;
 
 namespace LuxStudio;
@@ -16,6 +17,8 @@ public class LuxStudio : IModule, IModuleUI
     public string Name => "LuxStudio";
     public string Description => "Generic Luxoria LuxStudio Integration Module";
     public string Version => "1.0.0";
+
+    private AuthManager? _authManager;
 
     /// <summary>
     /// The list of menu bar items to be added to the main menu bar.
@@ -38,11 +41,11 @@ public class LuxStudio : IModule, IModuleUI
         List<ISmartButton> smartButtons = [];
         Dictionary<SmartButtonType, Object> accountMgt = new()
         {
-            { SmartButtonType.Modal, new AccManagementView() }
+            { SmartButtonType.Modal, new AccManagementView(ref _authManager) }
         };
         Dictionary<SmartButtonType, Object> collectionMngt = new()
         {
-            { SmartButtonType.Modal, new CollectionManagementView() }
+            { SmartButtonType.Modal, new CollectionManagementView(ref _authManager) }
         };
 
         smartButtons.Add(new SmartButton("Account", "Account Management", accountMgt));

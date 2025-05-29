@@ -1,18 +1,40 @@
+using LuxStudio.COM.Auth;
 using Microsoft.UI.Xaml.Controls;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using Microsoft.UI.Xaml;
+using System.Threading.Tasks;
 
 namespace LuxStudio.Components
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class AccManagementView : Page
     {
-        public AccManagementView()
+        private AuthManager? _authMgr;
+
+        public AccManagementView(ref AuthManager? authMgr)
         {
-            InitializeComponent();
+            this.InitializeComponent();
+            _authMgr = authMgr;
+            Loaded += AccManagementView_Loaded;
+        }
+
+        private async void AccManagementView_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (_authMgr == null)
+            {
+                LoadingPanel.Visibility = Visibility.Visible;
+                InputPanel.Visibility = Visibility.Collapsed;
+
+                // Simulate initialization delay
+                await Task.Delay(2000);
+
+                LoadingPanel.Visibility = Visibility.Collapsed;
+                InputPanel.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                // Proceed with authenticated state, or skip directly
+                InputPanel.Visibility = Visibility.Visible;
+                LoadingPanel.Visibility = Visibility.Collapsed;
+            }
         }
     }
 }
