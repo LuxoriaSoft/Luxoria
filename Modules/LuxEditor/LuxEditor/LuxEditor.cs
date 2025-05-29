@@ -53,7 +53,7 @@ namespace LuxEditor
 
             _photoViewer = new PhotoViewer();
             _cExplorer = new CollectionExplorer();
-            _editor = new Editor();
+            _editor = new Editor(null);
             _infos = new Infos();
 
             _editor.OnEditorImageUpdated += (updatedBitmap) =>

@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+﻿using LuxEditor.Logic;
+using SkiaSharp;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -19,6 +20,8 @@ namespace LuxEditor.Models
 
         private readonly Stack<Dictionary<string, object>> _history = new();
         private readonly Stack<Dictionary<string, object>> _redo = new();
+
+        public readonly LayerManager LayerManager = new LayerManager();
 
         /// <summary>
         /// Creates a new EditableImage instance.

@@ -1,3 +1,4 @@
+using LuxEditor.Models;
 using LuxEditor.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -18,7 +19,14 @@ namespace LuxEditor.Components
         private SKImage? _currentGpu;
         private SKBitmap? _currentCpu;
 
+        private EditableImage? _currentImage;
+
         private readonly SKXamlCanvas _canvas = new();
+        private readonly SKXamlCanvas _overlay = new SKXamlCanvas
+        {
+            IsHitTestVisible = true,
+            Opacity = 0.7
+        };
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PhotoViewer"/> class.
@@ -29,19 +37,40 @@ namespace LuxEditor.Components
 
             _canvas.PaintSurface += OnPaintSurface;
 
+            var stackPanel = new StackPanel();
+
+            stackPanel.Children.Add(_canvas);
+            stackPanel.Children.Add(_overlay);
+
             var viewbox = new Viewbox
             {
-                Child = _canvas,
+                Child = stackPanel,
                 Stretch = Stretch.None,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center
             };
             ScrollViewerImage.Content = viewbox;
 
+
             ImageManager.Instance.OnSelectionChanged += img =>
             {
                 SetImage(img.PreviewBitmap ?? img.EditedBitmap ?? img.OriginalBitmap);
             };
+        }
+
+        private SKMatrix GetCurrentTransform()
+        {
+            return SKMatrix.CreateScaleTranslation(
+                (float)ScrollViewerImage.ZoomFactor,
+                (float)ScrollViewerImage.ZoomFactor,
+                (float)ScrollViewerImage.HorizontalOffset,
+                (float)ScrollViewerImage.VerticalOffset
+            );
+        }
+
+        public void SetEditableImage(EditableImage image)
+        {
+            _currentImage = image;
         }
 
         /// <summary>
@@ -50,6 +79,8 @@ namespace LuxEditor.Components
         /// <param name="bitmap"></param>
         public void SetImage(SKImage image)
         {
+
+
             _currentGpu?.Dispose();
             _currentGpu = image;
             _currentCpu = null;
@@ -57,6 +88,10 @@ namespace LuxEditor.Components
             _canvas.Width = image.Width;
             _canvas.Height = image.Height;
             _canvas.Invalidate();
+
+            _overlay.Width = image.Width;
+            _overlay.Height = image.Height;
+            _overlay.Invalidate();
         }
 
         /// <summary>

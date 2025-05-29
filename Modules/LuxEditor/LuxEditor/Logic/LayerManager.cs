@@ -11,9 +11,6 @@ namespace LuxEditor.Logic
 {
     public class LayerManager : INotifyPropertyChanged
     {
-        private static readonly Lazy<LayerManager> _instance = new(() => new LayerManager());
-        public static LayerManager Instance => _instance.Value;
-
         private uint _nextZIndex = 1;
 
         public ObservableCollection<Layer> Layers { get; } = new ObservableCollection<Layer>();
@@ -25,7 +22,7 @@ namespace LuxEditor.Logic
             set => SetField(ref _selectedLayer, value);
         }
 
-        private LayerManager()
+        public LayerManager()
         {
         }
 

@@ -17,9 +17,12 @@ namespace LuxEditor.Controls
         private readonly StackPanel _itemsHost;
         private readonly Button _addButton;
         private readonly Button _removeButton;
+        private EditableImage _currentImage;
 
-        public LayersPanel()
+        public LayersPanel(EditableImage editableImage)
         {
+            _currentImage = editableImage ?? throw new ArgumentNullException(nameof(editableImage));
+
             var root = new StackPanel
             {
                 Orientation = Orientation.Vertical,
@@ -35,7 +38,7 @@ namespace LuxEditor.Controls
             _addButton = new Button { Content = "+", Width = 24, Height = 24 };
             _removeButton = new Button { Content = "–", Width = 24, Height = 24 };
             _addButton.Click += (s, e) => ShowAddFlyout();
-            _removeButton.Click += (s, e) => LayerManager.Instance.RemoveLayer();
+            _removeButton.Click += (s, e) => _currentImage.LayerManager.RemoveLayer();
             btnLine.Children.Add(_addButton);
             btnLine.Children.Add(_removeButton);
             root.Children.Add(btnLine);
@@ -56,8 +59,8 @@ namespace LuxEditor.Controls
 
             Content = root;
 
-            LayerManager.Instance.Layers.CollectionChanged += (s, e) => RefreshUI();
-            LayerManager.Instance.PropertyChanged += (s, e) =>
+            _currentImage.LayerManager.Layers.CollectionChanged += (s, e) => RefreshUI();
+            _currentImage.LayerManager.PropertyChanged += (s, e) =>
             { if (e.PropertyName == nameof(LayerManager.SelectedLayer)) RefreshUI(); };
 
             RefreshUI();
@@ -69,7 +72,7 @@ namespace LuxEditor.Controls
             foreach (BrushType t in Enum.GetValues(typeof(BrushType)))
             {
                 var it = new MenuFlyoutItem { Text = t.ToString(), Tag = t };
-                it.Click += (s, e) => LayerManager.Instance.AddLayer((BrushType)it.Tag);
+                it.Click += (s, e) => _currentImage.LayerManager.AddLayer((BrushType)it.Tag);
                 fly.Items.Add(it);
             }
             fly.ShowAt(_addButton);
@@ -78,16 +81,16 @@ namespace LuxEditor.Controls
         private void RefreshUI()
         {
             _itemsHost.Children.Clear();
-            _removeButton.IsEnabled = LayerManager.Instance.SelectedLayer != null
-                                   && LayerManager.Instance.Layers.IndexOf(LayerManager.Instance.SelectedLayer) > 0;
+            _removeButton.IsEnabled = _currentImage.LayerManager.SelectedLayer != null
+                                   && _currentImage.LayerManager.Layers.IndexOf(_currentImage.LayerManager.SelectedLayer) > 0;
 
-            for (int i = LayerManager.Instance.Layers.Count - 1; i >= 0; i--)
+            for (int i = _currentImage.LayerManager.Layers.Count - 1; i >= 0; i--)
             {
-                var layer = LayerManager.Instance.Layers[i];
+                var layer = _currentImage.LayerManager.Layers[i];
                 var border = new Border
                 {
                     Padding = new Thickness(6),
-                    Background = layer == LayerManager.Instance.SelectedLayer
+                    Background = layer == _currentImage.LayerManager.SelectedLayer
                                   ? new SolidColorBrush(Color.FromArgb(255, 70, 70, 70))
                                   : new SolidColorBrush(Colors.Transparent),
                     Tag = layer
@@ -102,7 +105,7 @@ namespace LuxEditor.Controls
 
                 border.Tapped += (s, e) =>
                 {
-                    LayerManager.Instance.SelectedLayer = (Layer)border.Tag;
+                    _currentImage.LayerManager.SelectedLayer = (Layer)border.Tag;
                 };
 
                 _itemsHost.Children.Add(border);
