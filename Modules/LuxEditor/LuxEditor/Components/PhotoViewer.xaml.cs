@@ -37,14 +37,14 @@ namespace LuxEditor.Components
 
             _canvas.PaintSurface += OnPaintSurface;
 
-            var stackPanel = new StackPanel();
+            var grid = new Grid();
 
-            stackPanel.Children.Add(_canvas);
-            stackPanel.Children.Add(_overlay);
+            grid.Children.Add(_canvas);
+            grid.Children.Add(_overlay);
 
             var viewbox = new Viewbox
             {
-                Child = stackPanel,
+                Child = grid,
                 Stretch = Stretch.None,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center
@@ -79,8 +79,6 @@ namespace LuxEditor.Components
         /// <param name="bitmap"></param>
         public void SetImage(SKImage image)
         {
-
-
             _currentGpu?.Dispose();
             _currentGpu = image;
             _currentCpu = null;
@@ -107,6 +105,10 @@ namespace LuxEditor.Components
             _canvas.Width = bitmap.Width;
             _canvas.Height = bitmap.Height;
             _canvas.Invalidate();
+
+            _overlay.Width = bitmap.Width;
+            _overlay.Height = bitmap.Height;
+            _overlay.Invalidate();
         }
 
         /// <summary>
