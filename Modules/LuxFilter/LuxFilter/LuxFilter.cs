@@ -56,7 +56,7 @@ public class LuxFilter : IModule, IModuleUI
         _cExplorer.OnImageSelected += (asset) =>
         {
             _viewer?.SetImage(asset.Data.Bitmap);
-            _toolbox?.SetSelectedAsset(ref asset);
+            _toolbox?.SetSelectedAsset(asset);
             _logger.Log($"Image selected: {asset.Id}");
         };
 

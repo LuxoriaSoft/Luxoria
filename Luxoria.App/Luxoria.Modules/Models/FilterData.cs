@@ -67,6 +67,8 @@ public class FilterData
     /// <param name="flag">Using FlagType</param>
     public void SetFlag(FlagType? flag)
     {
+        _scores["Flag_Keep"] = 0;
+        _scores["Flag_Ignore"] = 0;
         _scores["Flag_Keep"] = flag == FlagType.Keep ? 1 : 0;
         _scores["Flag_Ignore"] = flag == FlagType.Ignore ? 1 : 0;
     }

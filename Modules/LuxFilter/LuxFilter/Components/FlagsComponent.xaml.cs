@@ -59,7 +59,7 @@ namespace LuxFilter.Components
             if (_selectedAsset == null) return;
 
             // If toggle is checked, set the flag to Keep and uncheck FIgnore
-            _selectedAsset.FilterData.SetScore("Flag_Keep", FKeep.IsChecked == true ? 1 : 0);
+            _selectedAsset.FilterData.SetFlag(FKeep.IsChecked == true ? FilterData.FlagType.Keep : null);
             if (FKeep.IsChecked == true)
             {
                 FIgnore.IsChecked = false; // Uncheck Ignore if it was checked
@@ -72,7 +72,7 @@ namespace LuxFilter.Components
             if (_selectedAsset == null) return;
 
             // If toggle is checked, set the flag to Ignore and uncheck FKeep
-            _selectedAsset.FilterData.SetScore("Flag_Ignore", FIgnore.IsChecked == true ? 1 : 0);
+            _selectedAsset.FilterData.SetFlag(FIgnore.IsChecked == true ? FilterData.FlagType.Ignore : null);
             if (FIgnore.IsChecked == true)
             {
                 FKeep.IsChecked = false; // Uncheck Keep if it was checked

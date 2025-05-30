@@ -21,6 +21,12 @@
                     <Grid x:Name="FGrid"/>
                 </Expander>
             </StackPanel>
+
+            <StackPanel Orientation="Vertical">
+                <Expander Header="Scores" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="5" IsExpanded="True">
+                    <Grid x:Name="SGrid"/>
+                </Expander>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Page>
