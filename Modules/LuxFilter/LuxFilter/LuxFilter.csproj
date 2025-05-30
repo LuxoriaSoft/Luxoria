@@ -13,7 +13,13 @@
 	<GenerateLibraryLayout>true</GenerateLibraryLayout>
   </PropertyGroup>
 
+  <PropertyGroup>
+	<Nullable>enable</Nullable>
+  </PropertyGroup>
+
   <ItemGroup>
+	<None Remove="Components\CollectionExplorer.xaml" />
+	<None Remove="Components\AssetViewer.xaml" />
     <None Remove="Views\FilterView.xaml" />
     <None Remove="Views\MainFilterView.xaml" />
     <None Remove="Views\StatusView.xaml" />
@@ -43,6 +49,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Page Update="Components\AssetViewer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
     <Page Update="Views\StatusView.xaml">
       <Generator>MSBuild:Compile</Generator>
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -60,6 +72,12 @@
     <Page Update="Views\FilterView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Components\CollectionExplorer.xaml">
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   

@@ -1,3 +1,4 @@
+using LuxFilter.Components;
 using LuxFilter.Services;
 using LuxFilter.Views;
 using Luxoria.GModules;
@@ -38,6 +39,8 @@ public class LuxFilter : IModule, IModuleUI
     }
 
     private MainFilterView _mainFilterView;
+    private CollectionExplorer? _cExplorer;
+    private AssetViewer? _viewer;
 
     /// <summary>
     /// Initializes the module with the provided EventBus and ModuleContext.
@@ -56,11 +59,21 @@ public class LuxFilter : IModule, IModuleUI
         // Initialize the module UI
         _mainFilterView = new MainFilterView(_eventBus, _logger);
 
+        _cExplorer = new CollectionExplorer();
+        _viewer = new AssetViewer();
+
+        _cExplorer.OnImageSelected += (img) =>
+        {
+            _viewer?.SetImage(img.Data.Bitmap);
+            _logger.Log($"Image selected: {img.Id}");
+        };
+
         // Add a menu bar item to the main menu bar.
         List<ISmartButton> smartButtons = [];
         Dictionary<SmartButtonType, Object> page = new()
         {
-            { SmartButtonType.Modal, _mainFilterView }
+            { SmartButtonType.BottomPanel, _cExplorer },
+            { SmartButtonType.MainPanel, _viewer }
         };
 
         smartButtons.Add(new SmartButton("Filter", "Filter", page));
@@ -85,6 +98,8 @@ public class LuxFilter : IModule, IModuleUI
         {
             _logger.Log($"LuxFilter received {e.Assets.Count} assets.");
             _lastImportedCollection = e.Assets;
+
+            _cExplorer?.SetImages(e.Assets);
         });
     }
 

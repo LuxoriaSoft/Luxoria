@@ -20,9 +20,9 @@ public class CLIPAlgo : IFilterAlgorithm, IDisposable
     {
         try
         {
-            _session = new InferenceSession(ExtractEmbeddedResource("LuxFilter.Algorithms.Algorithms.ColorVisualAesthetics.CLIPModel.clip_image_encoder.onnx"));
-            _positiveVec = LoadVector(ExtractEmbeddedResource("LuxFilter.Algorithms.Algorithms.ColorVisualAesthetics.CLIPModel.positive.txt"));
-            _negativeVec = LoadVector(ExtractEmbeddedResource("LuxFilter.Algorithms.Algorithms.ColorVisualAesthetics.CLIPModel.negative.txt"));
+            //_session = new InferenceSession(ExtractEmbeddedResource("LuxFilter.Algorithms.Algorithms.ColorVisualAesthetics.CLIPModel.clip_image_encoder.onnx"));
+            //_positiveVec = LoadVector(ExtractEmbeddedResource("LuxFilter.Algorithms.Algorithms.ColorVisualAesthetics.CLIPModel.positive.txt"));
+            //_negativeVec = LoadVector(ExtractEmbeddedResource("LuxFilter.Algorithms.Algorithms.ColorVisualAesthetics.CLIPModel.negative.txt"));
         }
         catch (Exception ex)
         {
