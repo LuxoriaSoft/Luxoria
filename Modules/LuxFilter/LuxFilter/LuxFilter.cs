@@ -41,6 +41,7 @@ public class LuxFilter : IModule, IModuleUI
     private MainFilterView _mainFilterView;
     private CollectionExplorer? _cExplorer;
     private AssetViewer? _viewer;
+    private ToolBox? _toolbox;
 
     /// <summary>
     /// Initializes the module with the provided EventBus and ModuleContext.
@@ -61,11 +62,13 @@ public class LuxFilter : IModule, IModuleUI
 
         _cExplorer = new CollectionExplorer();
         _viewer = new AssetViewer();
+        _toolbox = new ToolBox();
 
-        _cExplorer.OnImageSelected += (img) =>
+        _cExplorer.OnImageSelected += (asset) =>
         {
-            _viewer?.SetImage(img.Data.Bitmap);
-            _logger.Log($"Image selected: {img.Id}");
+            _viewer?.SetImage(asset.Data.Bitmap);
+            _toolbox?.SetSelectedAsset(ref asset);
+            _logger.Log($"Image selected: {asset.Id}");
         };
 
         // Add a menu bar item to the main menu bar.
@@ -73,7 +76,8 @@ public class LuxFilter : IModule, IModuleUI
         Dictionary<SmartButtonType, Object> page = new()
         {
             { SmartButtonType.BottomPanel, _cExplorer },
-            { SmartButtonType.MainPanel, _viewer }
+            { SmartButtonType.MainPanel, _viewer },
+            { SmartButtonType.RightPanel, _toolbox }
         };
 
         smartButtons.Add(new SmartButton("Filter", "Filter", page));
