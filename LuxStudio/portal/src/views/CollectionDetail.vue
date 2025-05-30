@@ -142,9 +142,9 @@
       class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center"
       @click.self="imageModalVisible = false"
     >
-      <div class="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative">
+      <div class="bg-white rounded-lg shadow-lg max-w-4xl w-full p-6 relative">
         <h3 class="text-lg font-semibold mb-4">Sélectionner une ou plusieurs images</h3>
-        
+
         <input
           v-model="imageQuery"
           type="text"
@@ -156,12 +156,25 @@
           <div
             v-for="photo in imageSearchResults"
             :key="photo.id"
-            class="relative border rounded cursor-pointer hover:ring-2 hover:ring-blue-500"
+            class="relative border rounded p-2 cursor-pointer hover:ring-2 hover:ring-blue-500"
             :class="{'ring-2 ring-blue-600': selectedImages.includes(photo)}"
             @click="toggleImageSelection(photo)"
           >
-            <img :src="photo.filePath" alt="image" class="w-full h-32 object-cover rounded" />
-            <p class="text-xs p-1 truncate">{{ photo.filePath.split('/').pop() }}</p>
+            <img :src="photo.filePath" alt="image" class="w-full h-32 object-cover rounded mb-2" />
+            <p class="text-xs truncate">{{ photo.filePath.split('/').pop() }}</p>
+            <div class="mt-2">
+              <label class="text-xs font-medium">Statut :</label>
+              <select
+                v-model="photo.status"
+                class="select select-sm select-bordered w-full mt-1"
+                @change="updatePhotoStatus(photo)"
+              >
+                <option :value="0">En attente</option>
+                <option :value="1">À modifier</option>
+                <option :value="2">Approuvé</option>
+                <option :value="3">Supprimer</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -237,6 +250,24 @@ function openChatImageModal(filename) {
   chatImageModalVisible.value = true
 }
 
+async function updatePhotoStatus(photo) {
+  try {
+    const token = localStorage.getItem('token')
+    await axios.patch(
+      `http://localhost:5269/api/collection/photo/${photo.id}/status`,
+      { status: photo.status },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+    console.log(`Statut mis à jour pour la photo ${photo.id}`)
+  } catch (err) {
+    console.error('Erreur lors de la mise à jour du statut :', err)
+  }
+}
 
 
 watchEffect(() => {

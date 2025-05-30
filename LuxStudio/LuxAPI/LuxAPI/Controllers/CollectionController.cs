@@ -32,53 +32,55 @@ namespace LuxAPI.Controllers
             _chatHub = chatHub;
         }
 
-[Authorize]
-[HttpGet]
-public async Task<IActionResult> GetCollections()
-{
-    var currentUserEmail = User?.Identity?.Name;
-    if (string.IsNullOrEmpty(currentUserEmail))
-        return Unauthorized("Utilisateur non authentifié.");
-
-    var collections = await _context.Collections
-        .Include(c => c.Accesses)
-        .Include(c => c.Photos)
-            .ThenInclude(p => p.Comments)
-        .Include(c => c.ChatMessages)
-        .Where(c => c.Accesses.Any(a => a.Email == currentUserEmail))
-        .ToListAsync();
-
-    var result = collections.Select(c => new
-    {
-        c.Id,
-        c.Name,
-        c.Description,
-        AllowedEmails = c.Accesses.Select(a => a.Email),
-        Photos = c.Photos.Select(p => new {
-            p.Id,
-            p.FilePath,
-            p.Status,
-            Comments = p.Comments.Select(cm => new {
-                cm.Id,
-                cm.CommentText,
-                cm.CreatedAt
-            })
-        }),
-        ChatMessages = c.ChatMessages.Select(m => new
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetCollections()
         {
-            m.SenderUsername,
-            m.SenderEmail,
-            m.Message,
-            m.SentAt,
-            AvatarFileName = _context.Users
-                .Where(u => u.Email == m.SenderEmail)
-                .Select(u => u.AvatarFileName ?? "default_avatar.jpg")
-                .FirstOrDefault()
-        })
-    });
+            var currentUserEmail = User?.Identity?.Name;
+            if (string.IsNullOrEmpty(currentUserEmail))
+                return Unauthorized("Utilisateur non authentifié.");
 
-    return Ok(result);
-}
+            var collections = await _context.Collections
+                .Include(c => c.Accesses)
+                .Include(c => c.Photos)
+                    .ThenInclude(p => p.Comments)
+                .Include(c => c.ChatMessages)
+                .Where(c => c.Accesses.Any(a => a.Email == currentUserEmail))
+                .ToListAsync();
+
+            var result = collections.Select(c => new
+            {
+                c.Id,
+                c.Name,
+                c.Description,
+                AllowedEmails = c.Accesses.Select(a => a.Email),
+                Photos = c.Photos.Select(p => new
+                {
+                    p.Id,
+                    p.FilePath,
+                    p.Status,
+                    Comments = p.Comments.Select(cm => new
+                    {
+                        cm.Id,
+                        cm.CommentText,
+                        cm.CreatedAt
+                    })
+                }),
+                ChatMessages = c.ChatMessages.Select(m => new
+                {
+                    m.SenderUsername,
+                    m.SenderEmail,
+                    m.Message,
+                    m.SentAt,
+                    AvatarFileName = _context.Users
+                        .Where(u => u.Email == m.SenderEmail)
+                        .Select(u => u.AvatarFileName ?? "default_avatar.jpg")
+                        .FirstOrDefault()
+                })
+            });
+
+            return Ok(result);
+        }
 
 
 
@@ -113,11 +115,13 @@ public async Task<IActionResult> GetCollections()
                 collection.Name,
                 collection.Description,
                 AllowedEmails = collection.Accesses.Select(a => a.Email),
-                Photos = collection.Photos.Select(p => new {
+                Photos = collection.Photos.Select(p => new
+                {
                     p.Id,
                     p.FilePath,
                     p.Status,
-                    Comments = p.Comments.Select(c => new {
+                    Comments = p.Comments.Select(c => new
+                    {
                         c.Id,
                         c.CommentText,
                         c.CreatedAt
@@ -356,6 +360,28 @@ public async Task<IActionResult> GetCollections()
 
             return CreatedAtAction(nameof(GetCollection), new { id = collectionId }, message);
         }
+        
+        [HttpPatch("photo/{photoId}/status")]
+        [Authorize]
+        public async Task<IActionResult> UpdatePhotoStatus(Guid photoId, [FromBody] UpdatePhotoStatusDto dto)
+        {
+            var photo = await _context.Photos.FindAsync(photoId);
+            if (photo == null) return NotFound("Photo introuvable.");
+
+            if (!Enum.IsDefined(typeof(PhotoStatus), dto.Status))
+                return BadRequest("Statut invalide.");
+
+            photo.Status = dto.Status;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Statut de la photo mis à jour." });
+        }
+
+        public class UpdatePhotoStatusDto
+        {
+            public PhotoStatus Status { get; set; }
+        }
+
     }
 
     #region DTOs

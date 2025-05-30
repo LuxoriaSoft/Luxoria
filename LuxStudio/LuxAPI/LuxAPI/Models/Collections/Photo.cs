@@ -5,12 +5,14 @@ using System.Text.Json.Serialization;
 
 namespace LuxAPI.Models
 {
-    public enum PhotoStatus
-    {
-        Pending,
-        ModificationReview,
-        Approved
-    }
+public enum PhotoStatus
+{
+    Pending = 0,
+    ModificationReview = 1,
+    Approved = 2,
+    ToDelete = 3
+}
+
 
     [Table("Photos")]
     public class Photo
