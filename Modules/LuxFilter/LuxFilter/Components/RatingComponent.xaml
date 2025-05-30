@@ -12,12 +12,10 @@
             ValueChanged="RatingControl_ValueChanged"
             Visibility="Collapsed" />
 
-        <!-- TextBlock for no selection -->
-        <TextBlock
-            x:Name="NoSelectionText"
-            Text="No asset selected!"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Visibility="Visible" />
+        <!-- TextBlock + FontIcon for no selection -->
+        <StackPanel x:Name="NoSelectionPanel" Orientation="Horizontal" Visibility="Visible" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <FontIcon Glyph="&#xE8B9;" Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}" />
+            <TextBlock Text="No Asset Selected" Margin="5,0,0,0"/>
+        </StackPanel>
     </Grid>
 </UserControl>

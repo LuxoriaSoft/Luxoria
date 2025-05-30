@@ -1,6 +1,5 @@
 using LuxFilter.Components;
 using LuxFilter.Services;
-using LuxFilter.Views;
 using Luxoria.GModules;
 using Luxoria.GModules.Interfaces;
 using Luxoria.Modules.Interfaces;
@@ -30,15 +29,8 @@ public class LuxFilter : IModule, IModuleUI
     /// </summary>
     public List<ILuxMenuBarItem> Items { get; set; } = [];
 
-    private ICollection<LuxAsset> _lastImportedCollection
-    {
-        set
-        {
-            _mainFilterView?.SetCollection(value);
-        }
-    }
+    private ICollection<LuxAsset> _lastImportedCollection;
 
-    private MainFilterView _mainFilterView;
     private CollectionExplorer? _cExplorer;
     private AssetViewer? _viewer;
     private ToolBox? _toolbox;
@@ -57,9 +49,6 @@ public class LuxFilter : IModule, IModuleUI
         // Attach events
         AttachEventHandlers();
 
-        // Initialize the module UI
-        _mainFilterView = new MainFilterView(_eventBus, _logger);
-
         _cExplorer = new CollectionExplorer();
         _viewer = new AssetViewer();
         _toolbox = new ToolBox();
@@ -69,6 +58,26 @@ public class LuxFilter : IModule, IModuleUI
             _viewer?.SetImage(asset.Data.Bitmap);
             _toolbox?.SetSelectedAsset(ref asset);
             _logger.Log($"Image selected: {asset.Id}");
+        };
+
+        _toolbox.OnRatingChanged += (asset) =>
+        {
+            _logger.Log($"Rating changed for asset {asset.Id}: {asset.FilterData.Rating}");
+            var existingAsset = _lastImportedCollection.FirstOrDefault(a => a.Id == asset.Id);
+            if (existingAsset != null)
+            {
+                existingAsset.FilterData.Rating = asset.FilterData.Rating;
+            }
+        };
+
+        _toolbox.OnFlagUpdated += (asset) =>
+        {
+            _logger.Log($"Flag updated for asset {asset.Id}: ");
+            var existingAsset = _lastImportedCollection.FirstOrDefault(a => a.Id == asset.Id);
+            if (existingAsset != null)
+            {
+                existingAsset.FilterData.SetFlag(asset.FilterData.GetFlag());
+            }
         };
 
         // Add a menu bar item to the main menu bar.

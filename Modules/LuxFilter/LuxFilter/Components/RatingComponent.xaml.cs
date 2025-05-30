@@ -21,27 +21,36 @@ public sealed partial class RatingComponent : UserControl
         if (asset == null)
         {
             _selectedAsset = null;
-            RatingControl.Visibility = Visibility.Collapsed;
-            NoSelectionText.Visibility = Visibility.Visible;
+            DisplayNoSelectionMessage();
             return;
         }
 
         _selectedAsset = asset;
 
         // Show RatingControl and hide text
-        RatingControl.Visibility = Visibility.Visible;
-        NoSelectionText.Visibility = Visibility.Collapsed;
+        HideNoSelectionMessage();
 
         // Set current rating from asset
-        RatingControl.Value = 0; // _selectedAsset.Rating; // Assuming Rating is float/double
+        RatingControl.Value = _selectedAsset.FilterData.Rating;
     }
 
     private void RatingControl_ValueChanged(RatingControl sender, object args)
     {
         if (_selectedAsset == null) return;
 
-        //_selectedAsset.Rating = (float)sender.Value;
-
+        _selectedAsset.FilterData.Rating = sender.Value;
         OnRatingChanged?.Invoke(_selectedAsset);
+    }
+
+    private void DisplayNoSelectionMessage()
+    {
+        RatingControl.Visibility = Visibility.Collapsed;
+        NoSelectionPanel.Visibility = Visibility.Visible;
+    }
+
+    private void HideNoSelectionMessage()
+    {
+        RatingControl.Visibility = Visibility.Visible;
+        NoSelectionPanel.Visibility = Visibility.Collapsed;
     }
 }

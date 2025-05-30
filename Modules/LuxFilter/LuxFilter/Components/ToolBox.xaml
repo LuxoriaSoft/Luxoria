@@ -8,6 +8,19 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid x:Name="MainGrid">
+    <Grid>
+        <StackPanel Orientation="Vertical" Margin="3">
+            <StackPanel Orientation="Vertical">
+                <Expander Header="Rating" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="5" IsExpanded="True">
+                    <Grid x:Name="RGrid"/>
+                </Expander>
+            </StackPanel>
+
+            <StackPanel Orientation="Vertical">
+                <Expander Header="Flags" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="5" IsExpanded="True">
+                    <Grid x:Name="FGrid"/>
+                </Expander>
+            </StackPanel>
+        </StackPanel>
     </Grid>
 </Page>
