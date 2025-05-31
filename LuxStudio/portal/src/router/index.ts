@@ -6,6 +6,7 @@ import LinkAccount from '../views/SSO_Authorize.vue';
 import Collections from '../views/Collections.vue';
 import CollectionDetail from '../views/CollectionDetail.vue';
 import RegisterConfirmation from '../views/RegisterConfirmation.vue';
+import CollectionChat from '../views/CollectionChat.vue';
 
 /**
  * Defines the application routes.
@@ -53,7 +54,13 @@ const routes = [
     path: '/register/confirmation',
     name: 'RegisterConfirmation',
     component: RegisterConfirmation,
+  },
+  {
+    path: '/collections/:id/chat',
+    name: 'CollectionChat',
+    component: CollectionChat,
   }
+
 
 ];
 

@@ -184,6 +184,12 @@
         </div>
       </div>
     </div>
+    <router-link
+      :to="`/collections/${collection?.id}/chat`"
+      class="btn btn-sm btn-outline mt-2"
+    >
+      Accéder au chat dédié
+    </router-link>
     <!-- Modale d’image pour le chat -->
     <div
       v-if="chatImageModalVisible"
@@ -243,6 +249,7 @@ const imageSearchResults = computed(() => {
 const chatImageModalVisible = ref(false)
 const chatModalImageSrc = ref("")
 const chatModalImageName = ref("")
+
 
 function openChatImageModal(filename) {
   chatModalImageName.value = filename
