@@ -3,55 +3,59 @@ using Microsoft.UI.Xaml.Input;
 using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using LuxEditor.Models;
+using LuxEditor.EditorUI.Interfaces;
+using LuxEditor.EditorUI.Controls.ToolControls;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace LuxEditor.Controls.ToolControls
 {
-    public class BrushToolControl : UserControl
+    public partial class BrushToolControl : ATool
     {
-        private readonly SKXamlCanvas _canvas;
-        private readonly MaskOperation _operation;
-        private SKPath? _currentPath;
-
-        public BrushToolControl(MaskOperation operation)
+        private ToolType _toolType = ToolType.Brush;
+        public override ToolType ToolType
         {
-            _operation = operation;
-            _canvas = new SKXamlCanvas();
-            _canvas.PaintSurface += OnPaintSurface;
-            _canvas.PointerPressed += OnPointerPressed;
-            _canvas.PointerMoved += OnPointerMoved;
-            _canvas.PointerReleased += OnPointerReleased;
-            Content = _canvas;
+            get => _toolType;
+            set => _toolType = value;
         }
 
-        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        public override SKXamlCanvas Canvas { get; set; } = new SKXamlCanvas();
+        public override SKPath? CurrentPath { get; set; } = null;
+        public ObservableCollection<Stroke> Strokes { get; } = new ObservableCollection<Stroke>();
+
+        public BrushToolControl() : base() { }
+
+        public override void OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var p = e.GetCurrentPoint(_canvas).Position;
-            _currentPath = new SKPath();
-            _currentPath.MoveTo((float)p.X, (float)p.Y);
+            Debug.WriteLine("Pointer Pressed on Brush Tool");
+            var p = e.GetCurrentPoint(Canvas).Position;
+            CurrentPath = new SKPath();
+            CurrentPath.MoveTo((float)p.X, (float)p.Y);
         }
 
-        private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        public override void OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (_currentPath != null)
+            if (CurrentPath != null)
             {
-                var p = e.GetCurrentPoint(_canvas).Position;
-                _currentPath.LineTo((float)p.X, (float)p.Y);
-                _canvas.Invalidate();
+                var p = e.GetCurrentPoint(Canvas).Position;
+                CurrentPath.LineTo((float)p.X, (float)p.Y);
+                Canvas.Invalidate();
             }
         }
 
-        private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        public override void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (_currentPath != null)
+            if (CurrentPath != null)
             {
-                _operation.Strokes.Add(new Stroke(_currentPath, _operation.Mode));
-                _currentPath = null;
-                _canvas.Invalidate();
+                Strokes.Add(new Stroke(CurrentPath));
+                CurrentPath = null;
+                Canvas.Invalidate();
             }
         }
 
-        private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
+        public override void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
         {
+            Debug.WriteLine("Painting Brush Tool Surface");
             var canvas = e.Surface.Canvas;
             canvas.Clear();
 
@@ -61,11 +65,11 @@ namespace LuxEditor.Controls.ToolControls
                 StrokeWidth = 2,
                 Color = SKColors.White
             };
-            foreach (var st in _operation.Strokes)
+            foreach (var st in Strokes)
                 canvas.DrawPath(st.Path, paint);
 
-            if (_currentPath != null)
-                canvas.DrawPath(_currentPath, paint);
+            if (CurrentPath != null)
+                canvas.DrawPath(CurrentPath, paint);
         }
     }
 }

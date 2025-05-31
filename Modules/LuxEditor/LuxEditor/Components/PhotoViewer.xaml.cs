@@ -8,11 +8,16 @@ using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
 using System.Diagnostics;
+using Windows.UI;
 
 namespace LuxEditor.Components
 {
     public sealed partial class PhotoViewer : Page
     {
+        private SKXamlCanvas _mainCanvas;
+        private SKXamlCanvas _currentOverlay;
+        private Grid _canvasHost;
+
         private bool _isDragging;
         private Windows.Foundation.Point _lastPoint;
 
@@ -21,40 +26,32 @@ namespace LuxEditor.Components
 
         private EditableImage? _currentImage;
 
-        private readonly SKXamlCanvas _canvas = new();
-        private readonly SKXamlCanvas _overlay = new SKXamlCanvas
-        {
-            IsHitTestVisible = true,
-            Opacity = 0.7
-        };
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PhotoViewer"/> class.
-        /// </summary>
         public PhotoViewer()
         {
             InitializeComponent();
 
-            _canvas.PaintSurface += OnPaintSurface;
-
-            var grid = new Grid();
-
-            grid.Children.Add(_canvas);
-            grid.Children.Add(_overlay);
-
-            var viewbox = new Viewbox
+            _mainCanvas = new SKXamlCanvas();
+            _currentOverlay = new SKXamlCanvas
             {
-                Child = grid,
-                Stretch = Stretch.None,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center
+                IsHitTestVisible = false,
+                Opacity = 0,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Background = new SolidColorBrush(Color.FromArgb(150, 255,0,0))
             };
-            ScrollViewerImage.Content = viewbox;
 
+
+            // Utilise le CanvasHost défini en XAML
+            CanvasHost.Children.Add(_mainCanvas);
+            CanvasHost.Children.Add(_currentOverlay);
+
+            _mainCanvas.PaintSurface += OnPaintSurface;
 
             ImageManager.Instance.OnSelectionChanged += img =>
             {
-                SetImage(img.PreviewBitmap ?? img.EditedBitmap ?? img.OriginalBitmap);
+                if (img.PreviewBitmap != null) SetImage(img.PreviewBitmap);
+                else if (img.EditedBitmap != null) SetImage(img.EditedBitmap);
+                else if (img.OriginalBitmap != null) SetImage(img.OriginalBitmap);
             };
         }
 
@@ -68,70 +65,94 @@ namespace LuxEditor.Components
             );
         }
 
+        /// <summary>
+        /// Register the EditableImage and subscribe to its OperationChanged event.
+        /// </summary>
         public void SetEditableImage(EditableImage image)
         {
             _currentImage = image;
+            image.LayerManager.OnOperationChanged += operationSelected;
         }
 
+        public void operationSelected()
+        {
+            if (_currentImage == null || _currentImage.LayerManager == null || _currentImage.LayerManager.SelectedLayer == null || _currentImage.LayerManager.SelectedLayer.SelectedOperation == null) return;
+
+            Debug.WriteLine("Operation Selected: " + _currentImage.LayerManager.SelectedLayer.SelectedOperation.Tool.ToolType);
+
+            var toolCanvas = _currentImage
+                                .LayerManager
+                                .SelectedLayer
+                                .SelectedOperation
+                                .Tool
+                                .Canvas as SKXamlCanvas;
+
+            if (toolCanvas == null) return;
+
+            _currentOverlay.Background = toolCanvas.Background;
+            _currentOverlay.Opacity = 0.7;
+            _currentOverlay.IsHitTestVisible = true;
+            _currentOverlay.Width = _mainCanvas.Width;
+            _currentOverlay.Height = _mainCanvas.Height;
+            _currentOverlay.Invalidate();
+            _mainCanvas.Invalidate();
+        }
+
+
         /// <summary>
-        /// Sets the image to be displayed in the photo viewer.
+        /// Set the SKImage (GPU) to render on the main canvas.
         /// </summary>
-        /// <param name="bitmap"></param>
         public void SetImage(SKImage image)
         {
             _currentGpu?.Dispose();
             _currentGpu = image;
             _currentCpu = null;
 
-            _canvas.Width = image.Width;
-            _canvas.Height = image.Height;
-            _canvas.Invalidate();
+            _mainCanvas.Width = image.Width;
+            _mainCanvas.Height = image.Height;
+            _mainCanvas.Invalidate();
 
-            _overlay.Width = image.Width;
-            _overlay.Height = image.Height;
-            _overlay.Invalidate();
+            _currentOverlay.Width = image.Width;
+            _currentOverlay.Height = image.Height;
+            _currentOverlay.Invalidate();
         }
 
         /// <summary>
-        /// Sets the image to be displayed in the photo viewer.
+        /// Set the SKBitmap (CPU) to render on the main canvas.
         /// </summary>
-        /// <param name="bitmap"></param>
         public void SetImage(SKBitmap bitmap)
         {
             _currentCpu = bitmap;
             _currentGpu?.Dispose();
             _currentGpu = null;
 
-            _canvas.Width = bitmap.Width;
-            _canvas.Height = bitmap.Height;
-            _canvas.Invalidate();
+            _mainCanvas.Width = bitmap.Width;
+            _mainCanvas.Height = bitmap.Height;
+            _mainCanvas.Invalidate();
 
-            _overlay.Width = bitmap.Width;
-            _overlay.Height = bitmap.Height;
-            _overlay.Invalidate();
+            _currentOverlay.Width = bitmap.Width;
+            _currentOverlay.Height = bitmap.Height;
+            _currentOverlay.Invalidate();
         }
 
         /// <summary>
-        /// Handles the PaintSurface event of the SKXamlCanvas.
+        /// PaintSurface event handler for the main SKXamlCanvas.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void OnPaintSurface(object? sender, SKPaintSurfaceEventArgs e)
         {
             var canvas = e.Surface.Canvas;
             canvas.Clear(SKColors.Transparent);
 
             if (_currentGpu != null)
+            {
                 canvas.DrawImage(_currentGpu, 0, 0);
+            }
             else if (_currentCpu != null)
+            {
                 canvas.DrawBitmap(_currentCpu, 0, 0);
+            }
         }
 
-        /// <summary>
-        /// Handles the PointerPressed event of the ScrollViewerImage.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void ScrollViewerImage_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             _isDragging = true;
@@ -139,11 +160,6 @@ namespace LuxEditor.Components
             (sender as UIElement)?.CapturePointer(e.Pointer);
         }
 
-        /// <summary>
-        /// Handles the PointerMoved event of the ScrollViewerImage.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void ScrollViewerImage_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             if (!_isDragging) return;
@@ -161,22 +177,12 @@ namespace LuxEditor.Components
             _lastPoint = currentPoint;
         }
 
-        /// <summary>
-        /// Handles the PointerReleased event of the ScrollViewerImage.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void ScrollViewerImage_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             _isDragging = false;
             (sender as UIElement)?.ReleasePointerCaptures();
         }
 
-        /// <summary>
-        /// Handles the PointerCanceled event of the ScrollViewerImage.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void ScrollViewerImage_PointerCanceled(object sender, PointerRoutedEventArgs e)
         {
             _isDragging = false;

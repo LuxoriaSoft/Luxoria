@@ -17,6 +17,7 @@ namespace LuxEditor.Models
         private double _strength = 100;
         private Color _overlayColor = Color.FromArgb(100, 255, 255, 255);
         public ObservableCollection<MaskOperation> Operations { get; } = new ObservableCollection<MaskOperation>();
+        public MaskOperation? SelectedOperation { get; set; }
 
         public string Name
         {

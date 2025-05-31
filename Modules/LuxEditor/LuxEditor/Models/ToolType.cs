@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace LuxEditor.Models
 {
-    public enum BrushType
+    public enum ToolType
     {
         Brush,
         LinearGradient,
         RadialGradient,
-        ColorRange
+        ColorRange,
+        Unknown
     }
 }

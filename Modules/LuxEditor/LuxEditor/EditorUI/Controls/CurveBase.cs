@@ -20,7 +20,7 @@ namespace LuxEditor.EditorUI.Controls
         {
             _canvas = new SKXamlCanvas();
             _canvas.PaintSurface += OnPaintSurface;
-            MinWidth = 250;
+            Width = 250;
             MinHeight = 250;
         }
 

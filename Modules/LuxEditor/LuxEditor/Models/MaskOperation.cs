@@ -1,25 +1,30 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using LuxEditor.Controls.ToolControls;
+using LuxEditor.EditorUI.Controls.ToolControls;
+using LuxEditor.EditorUI.Interfaces;
 using SkiaSharp;
 using Windows.UI;
 
 namespace LuxEditor.Models
 {
+    public enum BooleanOperationMode
+    {
+        Add,
+        Subtract
+    }
+
     public class MaskOperation : INotifyPropertyChanged
     {
         static private uint _nextId = 1;
 
-        private BrushType _brushType;
         private BooleanOperationMode _mode;
         private uint _id;
+        public ATool Tool;
 
-        public BrushType BrushType
-        {
-            get => _brushType;
-            set => SetField(ref _brushType, value);
-        }
 
         public BooleanOperationMode Mode
         {
@@ -29,13 +34,33 @@ namespace LuxEditor.Models
 
         public uint Id => _id;
 
-        public ObservableCollection<Stroke> Strokes { get; } = new ObservableCollection<Stroke>();
 
-        public MaskOperation(BrushType brushType, BooleanOperationMode mode = BooleanOperationMode.Add)
+        public MaskOperation(ToolType brushType, BooleanOperationMode mode = BooleanOperationMode.Add)
         {
-            _brushType = brushType;
             _mode = mode;
             _id = _nextId++;
+
+            switch (brushType)
+            {
+                case ToolType.Brush:
+                    Tool = new BrushToolControl();
+                    Debug.WriteLine("MaskOperation: Brush tool initialized.");
+                    break;
+                case ToolType.LinearGradient:
+                    Tool = new LinearGradientToolControl();
+                    Debug.WriteLine("MaskOperation: LinearGradient tool initialized.");
+                    break;
+                case ToolType.RadialGradient:
+                    Tool = new RadialGradientToolControl();
+                    Debug.WriteLine("MaskOperation: RadialGradient tool initialized.");
+                    break;
+                case ToolType.ColorRange:
+                    Tool = new ColorRangeToolControl();
+                    Debug.WriteLine("MaskOperation: ColorRange tool initialized.");
+                    break;
+                default:
+                    throw new ArgumentException("Unsupported tool type for MaskOperation");
+            }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

@@ -1,6 +1,7 @@
 using LuxEditor.Controls;
 using LuxEditor.EditorUI;
 using LuxEditor.EditorUI.Controls;
+using LuxEditor.EditorUI.Controls.ToolControls;
 using LuxEditor.EditorUI.Groups;
 using LuxEditor.EditorUI.Interfaces;
 using LuxEditor.EditorUI.Models;
@@ -28,7 +29,7 @@ namespace LuxEditor.Components
 {
     public sealed partial class Editor : Page
     {
-        private EditableImage? currentImage;
+        public EditableImage? CurrentImage;
         private EditorPanelManager? _panelManager;
         private readonly Dictionary<string, EditorCategory> _categories = new();
         private readonly ConcurrentDictionary<string, EditorSlider> _sliderCache = new();
@@ -76,11 +77,11 @@ namespace LuxEditor.Components
             LayerTreeView.RightTapped += OnLayerTreeRightTapped;
             LayerTreeView.SelectionChanged += OnLayerTreeSelectionChanged;
 
-            currentImage = editableImage;
+            CurrentImage = editableImage;
 
-            if (currentImage != null)
+            if (CurrentImage != null)
             {
-                currentImage.LayerManager.Layers.CollectionChanged += (_, __) => RefreshLayerTree();
+                CurrentImage.LayerManager.Layers.CollectionChanged += (_, __) => RefreshLayerTree();
                 RefreshLayerTree();
 
                 OnToolSelectionChanged(this, 0);
@@ -92,14 +93,14 @@ namespace LuxEditor.Components
             OpenBrushSelectionFlyout();
         }
 
-        private void BrushButton_Click(BrushType type)
+        private void BrushButton_Click(ToolType type)
         {
-            if (currentImage == null)
+            if (CurrentImage == null)
             {
                 Debug.WriteLine("No image selected, cannot add layer.");
                 return;
             }
-            currentImage.LayerManager.AddLayer(type);
+            CurrentImage.LayerManager.AddLayer(type);
             RefreshLayerTree();
         }
 
@@ -111,7 +112,7 @@ namespace LuxEditor.Components
             {
                 Text = "Brush",
             };
-            brushButton.Click += (s, e) => { BrushButton_Click(BrushType.Brush); flyout.Hide(); };
+            brushButton.Click += (s, e) => { BrushButton_Click(ToolType.Brush); flyout.Hide(); };
             flyout.Items.Add(brushButton);
 
             var linearGradientButton = new MenuFlyoutItem
@@ -119,7 +120,7 @@ namespace LuxEditor.Components
                 Text = "Linear Gradient",
 
             };
-            linearGradientButton.Click += (s, e) => { BrushButton_Click(BrushType.LinearGradient); flyout.Hide(); };
+            linearGradientButton.Click += (s, e) => { BrushButton_Click(ToolType.LinearGradient); flyout.Hide(); };
             flyout.Items.Add(linearGradientButton);
 
             var radialGradientButton = new MenuFlyoutItem
@@ -127,7 +128,7 @@ namespace LuxEditor.Components
                 Text = "Radial Gradient",
 
             };
-            radialGradientButton.Click += (s, e) => { BrushButton_Click(BrushType.RadialGradient); flyout.Hide(); };
+            radialGradientButton.Click += (s, e) => { BrushButton_Click(ToolType.RadialGradient); flyout.Hide(); };
             flyout.Items.Add(radialGradientButton);
 
             var colorRangeButton = new MenuFlyoutItem
@@ -135,7 +136,7 @@ namespace LuxEditor.Components
                 Text = "Color Range",
 
             };
-            colorRangeButton.Click += (s, e) => { BrushButton_Click(BrushType.ColorRange); flyout.Hide(); };
+            colorRangeButton.Click += (s, e) => { BrushButton_Click(ToolType.ColorRange); flyout.Hide(); };
             flyout.Items.Add(colorRangeButton);
 
             flyout.ShowAt(AddLayerBtn);
@@ -144,12 +145,12 @@ namespace LuxEditor.Components
 
         private void OnRemoveLayerClicked(object sender, RoutedEventArgs e)
         {
-            if (currentImage == null || LayerTreeView.SelectedNodes.Count == 0)
+            if (CurrentImage == null || LayerTreeView.SelectedNodes.Count == 0)
             {
                 Debug.WriteLine("No image or layer selected, cannot remove layer.");
                 return;
             }
-            currentImage.LayerManager.RemoveLayer();
+            CurrentImage.LayerManager.RemoveLayer();
             RefreshLayerTree();
         }
 
@@ -159,6 +160,9 @@ namespace LuxEditor.Components
             OperationDetailsHost.Content = null;
 
             if (e.AddedItems.Count == 0 || e.AddedItems[0] is not TreeViewNode node)
+                return;
+
+            if (_nodeMap[node] is MaskOperation)
                 return;
 
             OperationDetailsHost.Content = new LayersDetailsPanel();
@@ -195,7 +199,7 @@ namespace LuxEditor.Components
 
         private void ChoseBrushForOperationFlyout(Layer layer, bool isAdded, FrameworkElement element)
         {
-            if (currentImage == null)
+            if (CurrentImage == null)
             {
                 Debug.WriteLine("No image selected, cannot add operation.");
                 return;
@@ -208,7 +212,7 @@ namespace LuxEditor.Components
             };
             brushButton.Click += (s, e) =>
             {
-                currentImage.LayerManager.AddOperation(layer.Id, new MaskOperation(BrushType.Brush, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract));
+                CurrentImage.LayerManager.AddOperation(layer.Id, new MaskOperation(ToolType.Brush, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract));
                 RefreshLayerTree();
                 flyout.Hide();
             };
@@ -219,7 +223,7 @@ namespace LuxEditor.Components
             };
             linearGradientButton.Click += (s, e) =>
             {
-                currentImage.LayerManager.AddOperation(layer.Id, new MaskOperation(BrushType.LinearGradient, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract));
+                CurrentImage.LayerManager.AddOperation(layer.Id, new MaskOperation(ToolType.LinearGradient, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract));
                 RefreshLayerTree();
                 flyout.Hide();
             };
@@ -231,7 +235,7 @@ namespace LuxEditor.Components
             radialGradientButton.Click += (s, e) =>
             {
 
-                currentImage.LayerManager.AddOperation(layer.Id, new MaskOperation(BrushType.RadialGradient, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract)); RefreshLayerTree();
+                CurrentImage.LayerManager.AddOperation(layer.Id, new MaskOperation(ToolType.RadialGradient, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract)); RefreshLayerTree();
                 flyout.Hide();
             };
             flyout.Items.Add(radialGradientButton);
@@ -241,7 +245,7 @@ namespace LuxEditor.Components
             };
             colorRangeButton.Click += (s, e) =>
             {
-                currentImage.LayerManager.AddOperation(layer.Id, new MaskOperation(BrushType.ColorRange, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract));
+                CurrentImage.LayerManager.AddOperation(layer.Id, new MaskOperation(ToolType.ColorRange, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract));
                 RefreshLayerTree();
                 flyout.Hide();
             };
@@ -271,7 +275,7 @@ namespace LuxEditor.Components
         {
             Debug.WriteLine("Right-click on layer tree");
 
-            if (currentImage == null)
+            if (CurrentImage == null)
             {
                 Debug.WriteLine("No image selected, cannot show context menu.");
                 return;
@@ -293,14 +297,22 @@ namespace LuxEditor.Components
                 var op = _nodeMap[node] as MaskOperation;
                 if (op == null) return;
 
-                Debug.WriteLine($"Operation: {op.BrushType} ({op.Mode})");
+                var layer = CurrentImage.LayerManager.GetLayerByOperation(op.Id);
+                if (layer == null)
+                {
+                    Debug.WriteLine("Operation is not associated with any layer.");
+                    return;
+                }
+                layer.SelectedOperation = op;
+
+                Debug.WriteLine($"Operation: {op.Tool.ToolType} ({op.Mode})");
                 var deleteOpItem = new MenuFlyoutItem
                 {
                     Text = "Delete Operation"
                 };
                 deleteOpItem.Click += (s, args) =>
                 {
-                    currentImage.LayerManager.RemoveOperation(op.Id);
+                    CurrentImage.LayerManager.RemoveOperation(op.Id);
                     RefreshLayerTree();
                 };
                 flyout.Items.Add(deleteOpItem);
@@ -383,7 +395,7 @@ namespace LuxEditor.Components
                 };
                 deleteLayer.Click += (s, args) =>
                 {
-                    currentImage.LayerManager.RemoveLayer(layer.Id);
+                    CurrentImage.LayerManager.RemoveLayer(layer.Id);
                     RefreshLayerTree();
                 };
                 flyout.Items.Add(deleteLayer);
@@ -393,7 +405,7 @@ namespace LuxEditor.Components
 
         private void RefreshLayerTree()
         {
-            if (currentImage == null)
+            if (CurrentImage == null)
             {
                 Debug.WriteLine("No image selected, cannot refresh layer tree.");
                 return;
@@ -402,7 +414,7 @@ namespace LuxEditor.Components
             LayerTreeView.RootNodes.Clear();
             _nodeMap.Clear();
 
-            foreach (var layer in currentImage.LayerManager.Layers)
+            foreach (var layer in CurrentImage.LayerManager.Layers)
             {
                 var layerNode = new TreeViewNode
                 {
@@ -412,7 +424,7 @@ namespace LuxEditor.Components
 
                 if (!layer.Operations.Any())
                 {
-                    currentImage.LayerManager.RemoveLayer(layer.Id);
+                    CurrentImage.LayerManager.RemoveLayer(layer.Id);
                 }
                 _nodeMap[layerNode] = layer;
 
@@ -420,7 +432,7 @@ namespace LuxEditor.Components
                 {
                     var opNode = new TreeViewNode
                     {
-                        Content = $"{op.BrushType} ({op.Mode})",
+                        Content = $"{op.Tool.ToolType} ({op.Mode})",
                     };
                     _nodeMap[opNode] = op;
                     layerNode.Children.Add(opNode);
@@ -438,7 +450,7 @@ namespace LuxEditor.Components
 
         public void SetEditableImage(EditableImage image)
         {
-            currentImage = image;
+            CurrentImage = image;
             EditorStackPanel.Children.Clear();
             _categories.Clear();
             _sliderCache.Clear();
@@ -490,8 +502,8 @@ namespace LuxEditor.Components
             var toneGroup = new EditorToneCurveGroup();
             toneGroup.CurveChanged += (key, lut) =>
             {
-                if (currentImage == null) return;
-                currentImage.Settings[key] = lut;
+                if (CurrentImage == null) return;
+                CurrentImage.Settings[key] = lut;
                 RequestFilterUpdate();
             };
 
@@ -544,8 +556,8 @@ namespace LuxEditor.Components
             var slider = new EditorSlider(key, min, max, def, decimals, step);
             slider.OnValueChanged = v =>
             {
-                if (currentImage == null) return;
-                currentImage.Settings[key] = v;
+                if (CurrentImage == null) return;
+                CurrentImage.Settings[key] = v;
                 RequestFilterUpdate();
                 UpdateResetButtonsVisibility();
             };
@@ -589,7 +601,7 @@ namespace LuxEditor.Components
             foreach (var sl in cat.GetItems().OfType<EditorSlider>())
             {
                 sl.ResetToDefault();
-                if (currentImage != null) currentImage.Settings[sl.Key] = sl.DefaultValue;
+                if (CurrentImage != null) CurrentImage.Settings[sl.Key] = sl.DefaultValue;
             }
             RequestFilterUpdate();
             UpdateResetButtonsVisibility();
@@ -605,7 +617,7 @@ namespace LuxEditor.Components
             foreach (var sl in _sliderCache.Values)
             {
                 sl.ResetToDefault();
-                if (currentImage != null) currentImage.Settings[sl.Key] = sl.DefaultValue;
+                if (CurrentImage != null) CurrentImage.Settings[sl.Key] = sl.DefaultValue;
             }
             RequestFilterUpdate();
             UpdateResetButtonsVisibility();
@@ -616,8 +628,8 @@ namespace LuxEditor.Components
         /// </summary>
         private void UpdateSliderUI()
         {
-            if (currentImage == null) return;
-            foreach (var (k, v) in currentImage.Settings)
+            if (CurrentImage == null) return;
+            foreach (var (k, v) in CurrentImage.Settings)
                 if (_sliderCache.TryGetValue(k, out var sl)) sl.SetValue((float)v);
             UpdateResetButtonsVisibility();
         }
@@ -627,7 +639,7 @@ namespace LuxEditor.Components
         /// </summary>
         private void UpdateResetButtonsVisibility()
         {
-            if (currentImage == null) return;
+            if (CurrentImage == null) return;
 
             foreach (var cat in _categories.Values)
             {
@@ -668,27 +680,27 @@ namespace LuxEditor.Components
         {
             try
             {
-                if (currentImage == null) return;
+                if (CurrentImage == null) return;
 
-                if (currentImage.PreviewBitmap != null)
+                if (CurrentImage.PreviewBitmap != null)
                 {
                     var prev = await ImageProcessingManager
-                        .ApplyFiltersAsync(currentImage.PreviewBitmap,
-                                           currentImage.Settings, token);
+                        .ApplyFiltersAsync(CurrentImage.PreviewBitmap,
+                                           CurrentImage.Settings, token);
                     token.ThrowIfCancellationRequested();
 
-                    currentImage.EditedPreviewBitmap = prev;
+                    CurrentImage.EditedPreviewBitmap = prev;
                     var up = ImageProcessingManager.Upscale(
-                                prev, currentImage.OriginalBitmap.Height, true);
+                                prev, CurrentImage.OriginalBitmap.Height, true);
                     OnEditorImageUpdated?.Invoke(up);
                 }
 
                 var full = await ImageProcessingManager
-                    .ApplyFiltersAsync(currentImage.OriginalBitmap,
-                                       currentImage.Settings, token);
+                    .ApplyFiltersAsync(CurrentImage.OriginalBitmap,
+                                       CurrentImage.Settings, token);
                 token.ThrowIfCancellationRequested();
 
-                currentImage.EditedBitmap = full;
+                CurrentImage.EditedBitmap = full;
                 OnEditorImageUpdated?.Invoke(SKImage.FromBitmap(full));
             }
             catch (OperationCanceledException)
@@ -724,12 +736,12 @@ namespace LuxEditor.Components
         /// <param name="e"></param>
         private void OnKeyDown(object? sender, KeyRoutedEventArgs e)
         {
-            if (!IsCtrlDown() || currentImage == null) return;
+            if (!IsCtrlDown() || CurrentImage == null) return;
 
             switch (e.Key)
             {
                 case VirtualKey.Z:
-                    if (currentImage.Undo())
+                    if (CurrentImage.Undo())
                     {
                         UpdateSliderUI();
                         RequestFilterUpdate();
@@ -737,7 +749,7 @@ namespace LuxEditor.Components
                     break;
 
                 case VirtualKey.Y:
-                    if (currentImage.Redo())
+                    if (CurrentImage.Redo())
                     {
                         UpdateSliderUI();
                         RequestFilterUpdate();

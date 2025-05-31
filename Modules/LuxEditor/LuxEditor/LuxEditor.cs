@@ -59,6 +59,7 @@ namespace LuxEditor
             _editor.OnEditorImageUpdated += (updatedBitmap) =>
             {
                 _photoViewer?.SetImage(updatedBitmap);
+                _photoViewer.operationSelected();
             };
 
             _cExplorer.OnImageSelected += (img) =>
@@ -71,6 +72,7 @@ namespace LuxEditor
                 _editor?.SetEditableImage(img);
                 _photoViewer?.SetImage(img.PreviewBitmap ?? img.EditedBitmap ?? img.OriginalBitmap);
                 _infos?.DisplayExifData(img.Metadata);
+                _photoViewer?.SetEditableImage(img);
             };
 
             mainPage.Add(SmartButtonType.MainPanel, _photoViewer);

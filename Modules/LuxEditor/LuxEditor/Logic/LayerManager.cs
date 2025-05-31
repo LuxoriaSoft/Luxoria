@@ -22,11 +22,14 @@ namespace LuxEditor.Logic
             set => SetField(ref _selectedLayer, value);
         }
 
+        public Action? OnLayerChanged;
+        public Action? OnOperationChanged;
+
         public LayerManager()
         {
         }
 
-        public void AddLayer(BrushType type)
+        public void AddLayer(ToolType type)
         {
             var layer = new Layer(_nextZIndex++)
             {
@@ -38,9 +41,11 @@ namespace LuxEditor.Logic
             };
 
             layer.Operations.Add(new MaskOperation(type));
-
+            layer.SelectedOperation = layer.Operations[0];
             Layers.Add(layer);
             SelectedLayer = layer;
+            OnLayerChanged?.Invoke();
+            OnOperationChanged?.Invoke();
         }
 
         public void RenameLayer(uint id, string name)
@@ -85,6 +90,8 @@ namespace LuxEditor.Logic
                     SelectedLayer = null;
                 }
             }
+            OnLayerChanged?.Invoke();
+            OnOperationChanged?.Invoke();
         }
 
         public void RemoveLayer()
@@ -112,7 +119,9 @@ namespace LuxEditor.Logic
             if (layer != null)
             {
                 layer.Operations.Add(maskOperation);
+                layer.SelectedOperation = maskOperation;
             }
+            OnOperationChanged?.Invoke();
         }
 
         public void AddOperation(MaskOperation maskOperation)
@@ -120,7 +129,9 @@ namespace LuxEditor.Logic
             if (SelectedLayer != null)
             {
                 SelectedLayer.Operations.Add(maskOperation);
+                SelectedLayer.SelectedOperation = maskOperation;
             }
+            OnOperationChanged?.Invoke();
         }
 
         public void RemoveOperation(uint operationId)
@@ -137,8 +148,10 @@ namespace LuxEditor.Logic
                 if (operation != null)
                 {
                     layer.Operations.Remove(operation);
+                    layer.SelectedOperation = null;
                 }
             }
+            OnOperationChanged?.Invoke();
         }
 
         public void MoveLayer(uint id, int newIndex)
@@ -151,6 +164,8 @@ namespace LuxEditor.Logic
             Layers.Insert(newIndex, layer);
             SelectedLayer = layer;
             RefreshZIndices();
+            OnLayerChanged?.Invoke();
+            OnOperationChanged?.Invoke();
         }
 
         public void MoveLayer(int oldIndex, int newIndex)
@@ -161,6 +176,8 @@ namespace LuxEditor.Logic
             Layers.Insert(newIndex, layer);
             SelectedLayer = layer;
             RefreshZIndices();
+            OnLayerChanged?.Invoke();
+            OnOperationChanged?.Invoke();
         }
 
         private void RefreshZIndices()
