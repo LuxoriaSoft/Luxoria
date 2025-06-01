@@ -112,12 +112,12 @@ export default {
           password: this.password,
         };
 
-        console.log("Payload envoyé:", payload); // debug
+        console.log("Payload envoyé:", payload);
 
-        const res = await fetch("http://localhost:5269/auth/request-verification", {
+        const res = await fetch(`${window.appConfig.API_URL}/auth/request-verification`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload), // ✅ JSON stringifié ici
+          body: JSON.stringify(payload),
         });
 
         if (!res.ok) {
@@ -141,7 +141,7 @@ export default {
 
     async resendCode() {
       try {
-        const res = await fetch("http://localhost:5269/auth/request-verification", {
+        const res = await fetch(`${window.appConfig.API_URL}/auth/request-verification`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
