@@ -1,3 +1,16 @@
+# [1.41.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.40.0...v1.41.0) (2025-06-01)
+
+
+### Features
+
+*  Enhance CollectionDetail view with scrollable gallery and mention system ([6b3fdf3](https://github.com/LuxoriaSoft/Luxoria/commit/6b3fdf34450cff36fe6671d0774bdc0f833b38ea))
+* Add CollectionChat view and integrate chat functionality with image selection and mentions ([358c064](https://github.com/LuxoriaSoft/Luxoria/commit/358c06452a88586c21d5922ddf5703aa47b23067))
+* Add image selection modal and enhance message formatting with hashtags ([4d7d93e](https://github.com/LuxoriaSoft/Luxoria/commit/4d7d93e72607ff9b3a7acb80f470d01a2c93f6c0))
+* Add Pending Registration feature with email verification ([1eca4fa](https://github.com/LuxoriaSoft/Luxoria/commit/1eca4fa74419bac42974600056113a31396db9ab))
+* Implement photo status update functionality and enhance image selection modal ([a9fd896](https://github.com/LuxoriaSoft/Luxoria/commit/a9fd8968216d549e00cb387b2c5614fcf703670a))
+* Implement registration confirmation flow with email verification and new route ([35e17dc](https://github.com/LuxoriaSoft/Luxoria/commit/35e17dc180d523a8d59e4d8fcabf0cfb304b3237))
+* Refactor collection access management and enhance email invitation system ([569da14](https://github.com/LuxoriaSoft/Luxoria/commit/569da141bdec581d9dc84bb4be34af62f6f6c642))
+
 # [1.40.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.39.0...v1.40.0) (2025-05-28)
 
 
