@@ -29,11 +29,12 @@ public class LuxFilter : IModule, IModuleUI
     /// </summary>
     public List<ILuxMenuBarItem> Items { get; set; } = [];
 
-    private ICollection<LuxAsset> _lastImportedCollection;
+    private ICollection<LuxAsset> _lastImportedCollection = [];
 
     private CollectionExplorer? _cExplorer;
     private AssetViewer? _viewer;
     private ToolBox? _toolbox;
+    private FilterToolBox? _filterToolBox;
 
     /// <summary>
     /// Initializes the module with the provided EventBus and ModuleContext.
@@ -52,6 +53,7 @@ public class LuxFilter : IModule, IModuleUI
         _cExplorer = new CollectionExplorer();
         _viewer = new AssetViewer();
         _toolbox = new ToolBox();
+        _filterToolBox = new FilterToolBox(_eventBus, _logger);
 
         _cExplorer.OnImageSelected += (asset) =>
         {
@@ -86,7 +88,8 @@ public class LuxFilter : IModule, IModuleUI
         {
             { SmartButtonType.BottomPanel, _cExplorer },
             { SmartButtonType.MainPanel, _viewer },
-            { SmartButtonType.RightPanel, _toolbox }
+            { SmartButtonType.RightPanel, _toolbox },
+            { SmartButtonType.LeftPanel, _filterToolBox }
         };
 
         smartButtons.Add(new SmartButton("Filter", "Filter", page));
