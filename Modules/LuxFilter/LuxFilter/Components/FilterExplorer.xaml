@@ -23,32 +23,7 @@
 
             <!-- Filter Algorithms -->
             <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <ItemsControl x:Name="FilterList"
-                              ItemsSource="{x:Bind Filters, Mode=OneWay}"
-                              HorizontalAlignment="Stretch">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="models:FilterItem">
-                            <Button
-                                    Click="OnFilterClicked"
-                                    Tag="{x:Bind}"
-                                    HorizontalAlignment="Stretch"
-                                    HorizontalContentAlignment="Stretch">
-                                <Grid ColumnDefinitions="Auto,*"
-                                      VerticalAlignment="Center">
-                                    <FontIcon Grid.Column="0"
-                                              Glyph="&#xE768;"
-                                              Foreground="Green"
-                                              VerticalAlignment="Center" />
-                                    <TextBlock Grid.Column="1"
-                                               Text="{x:Bind Name}"
-                                               VerticalAlignment="Center"
-                                               FontWeight="SemiBold"
-                                               Padding="20,0" />
-                                </Grid>
-                            </Button>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <StackPanel x:Name="FilterListPanel" />
             </ScrollViewer>
         </StackPanel>
     </Grid>

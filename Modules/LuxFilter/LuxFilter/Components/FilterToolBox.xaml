@@ -11,7 +11,7 @@
     <Grid>
         <StackPanel Orientation="Vertical" Margin="3">
             <StackPanel Orientation="Vertical">
-                <Expander Header="Filter Exporer" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="5" IsExpanded="True">
+                <Expander Header="Filter Explorer" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="5" IsExpanded="True">
                     <Grid x:Name="FEGrid"/>
                 </Expander>
             </StackPanel>

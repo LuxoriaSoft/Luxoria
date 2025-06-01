@@ -82,6 +82,16 @@ public class LuxFilter : IModule, IModuleUI
             }
         };
 
+        _filterToolBox.OnScoreUpdated += (score) =>
+        {
+            _logger.Log($"FINAL Score updated for asset {score.Item1}/{score.Item2}: {score.Item3}");
+            var existingAsset = _lastImportedCollection.FirstOrDefault(a => a.Id == score.Item2);
+            if (existingAsset != null)
+            {
+                existingAsset.FilterData.SetScore(score.Item1, score.Item3);
+            }
+        };
+
         // Add a menu bar item to the main menu bar.
         List<ISmartButton> smartButtons = [];
         Dictionary<SmartButtonType, Object> page = new()
@@ -116,6 +126,7 @@ public class LuxFilter : IModule, IModuleUI
             _lastImportedCollection = e.Assets;
 
             _cExplorer?.SetImages(e.Assets);
+            _filterToolBox?.SetImages(e.Assets);
         });
     }
 
