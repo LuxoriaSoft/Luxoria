@@ -3,6 +3,7 @@ using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LuxFilter.Components;
 
@@ -53,7 +54,7 @@ public sealed partial class ScoreViewer : UserControl
             return;
         }
 
-        foreach (var pair in scores)
+        foreach (var pair in scores.OrderBy(i => i.Key))
         {
             ScoresPanel.Children.Add(CreateScoreRow(pair.Key, pair.Value.ToString("F2")));
         }
