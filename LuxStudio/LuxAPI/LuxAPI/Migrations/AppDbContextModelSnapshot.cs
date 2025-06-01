@@ -146,6 +146,39 @@ namespace LuxAPI.Migrations
                     b.ToTable("CollectionAccesses");
                 });
 
+            modelBuilder.Entity("LuxAPI.Models.PendingRegistration", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PendingRegistrations");
+                });
+
             modelBuilder.Entity("LuxAPI.Models.Photo", b =>
                 {
                     b.Property<Guid>("Id")
@@ -297,7 +330,7 @@ namespace LuxAPI.Migrations
             modelBuilder.Entity("LuxAPI.Models.CollectionAccess", b =>
                 {
                     b.HasOne("LuxAPI.Models.Collection", "Collection")
-                        .WithMany("AllowedEmails")
+                        .WithMany("Accesses")
                         .HasForeignKey("CollectionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -358,7 +391,7 @@ namespace LuxAPI.Migrations
 
             modelBuilder.Entity("LuxAPI.Models.Collection", b =>
                 {
-                    b.Navigation("AllowedEmails");
+                    b.Navigation("Accesses");
 
                     b.Navigation("ChatMessages");
 

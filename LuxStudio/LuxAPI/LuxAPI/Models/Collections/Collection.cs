@@ -19,7 +19,7 @@ namespace LuxAPI.Models
         public string Description { get; set; } = string.Empty;
 
         // List of emails authorized to access the collection
-        public ICollection<CollectionAccess> AllowedEmails { get; set; } = new List<CollectionAccess>();
+        public ICollection<CollectionAccess> Accesses { get; set; } = new List<CollectionAccess>();
 
         // General chat messages for the collection
         public ICollection<ChatMessage> ChatMessages { get; set; } = new List<ChatMessage>();
