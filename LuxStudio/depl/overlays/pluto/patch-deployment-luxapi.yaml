@@ -10,5 +10,9 @@ spec:
           image: luxoria/luxapi
           imagePullPolicy: Always
           env:
-           - name: FrontEnd__URI
-             value: https://studio.pluto.luxoria.bluepelicansoft.com
+          - name: URI__FrontEnd
+            value: https://studio.pluto.luxoria.bluepelicansoft.com
+          - name: URI__Backend
+            value: https://api.studio.pluto.luxoria.bluepelicansoft.com
+          
+          

@@ -46,5 +46,5 @@ spec:
               value: SATURN
             - name: PORT
               value: "8080"
-            - name: FrontEnd__URI
+            - name: URI__FrontEnd
               value: http://studio.saturn.luxoria.bluepelicansoft.com
