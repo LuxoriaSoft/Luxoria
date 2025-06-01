@@ -14,5 +14,18 @@ spec:
             value: https://studio.pluto.luxoria.bluepelicansoft.com
           - name: URI__Backend
             value: https://api.studio.pluto.luxoria.bluepelicansoft.com
-          
+          - name: SMTP__Host
+            value: smtp.gmail.com
+          - name: SMTP__Port
+            value: "587"
+          - name: SMTP__User
+            valueFrom:
+              secretKeyRef:
+                name: luxapi-secrets
+                key: smtp-user 
+          - name: SMTP__Password
+            valueFrom:
+              secretKeyRef:
+                name: luxapi-secrets
+                key: smtp-password          
           
