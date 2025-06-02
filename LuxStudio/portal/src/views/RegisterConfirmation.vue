@@ -50,12 +50,12 @@ export default {
     }
 
     try {
-      const resEmail = await fetch(`http://localhost:5269/auth/user/${id}`);
+      const resEmail = await fetch(`${window.appConfig.API_URL}/auth/user/${id}`);
       if (!resEmail.ok) throw new Error("Impossible de récupérer l'e-mail.");
       const data = await resEmail.json();
       this.email = data.email;
 
-      const resVerify = await fetch("http://localhost:5269/auth/verify-code", {
+      const resVerify = await fetch(`${window.appConfig.API_URL}/auth/verify-code`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

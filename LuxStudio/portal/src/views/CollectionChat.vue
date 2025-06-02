@@ -14,7 +14,7 @@
       >
         <div class="chat-image avatar">
           <div class="w-10 rounded-full">
-            <img :src="`http://localhost:5269/auth/avatar/${msg.avatar}`" alt="avatar" />
+            <img :src="`${window.appConfig.API_URL}/auth/avatar/${msg.avatar}`" alt="avatar" />
           </div>
         </div>
         <div class="chat-header">
@@ -154,7 +154,7 @@ const imageSearchResults = computed(() => {
 
 function openChatImageModal(filename) {
   chatModalImageName.value = filename
-  chatModalImageSrc.value = `http://localhost:5269/api/collection/image/${filename}`
+  chatModalImageSrc.value = `${window.appConfig.API_URL}/api/collection/image/${filename}`
   chatImageModalVisible.value = true
 }
 
@@ -203,7 +203,7 @@ async function updatePhotoStatus(photo) {
   try {
     const token = localStorage.getItem('token')
     await axios.patch(
-      `http://localhost:5269/api/collection/photo/${photo.id}/status`,
+      `${window.appConfig.API_URL}/api/collection/photo/${photo.id}/status`,
       { status: photo.status },
       {
         headers: {
@@ -248,7 +248,7 @@ async function sendMessage() {
   const collectionId = route.params.id
 
   try {
-    await axios.post(`http://localhost:5269/api/collection/${collectionId}/chat`, {
+    await axios.post(`${window.appConfig.API_URL}/api/collection/${collectionId}/chat`, {
       senderEmail: userEmail.value,
       senderUsername: username.value,
       message: chatMessage.value.trim(),
@@ -270,13 +270,13 @@ onMounted(async () => {
   const id = route.params.id
 
   try {
-    const whoamiRes = await axios.get('http://localhost:5269/auth/whoami', {
+    const whoamiRes = await axios.get(`${window.appConfig.API_URL}/auth/whoami`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     username.value = whoamiRes.data.username || 'Utilisateur'
     userEmail.value = whoamiRes.data.userEmail || ''
 
-    const response = await axios.get(`http://localhost:5269/api/collection/${id}`, {
+    const response = await axios.get(`${window.appConfig.API_URL}/api/collection/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     collection.value = response.data
@@ -294,7 +294,7 @@ onMounted(async () => {
   }
 
   connection.value = new signalR.HubConnectionBuilder()
-    .withUrl('http://localhost:5269/hubs/chat', {
+    .withUrl(`${window.appConfig.API_URL}/hubs/chat`, {
       accessTokenFactory: () => localStorage.getItem('token')
     })
     .withAutomaticReconnect()
