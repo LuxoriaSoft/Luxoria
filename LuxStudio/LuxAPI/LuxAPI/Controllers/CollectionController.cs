@@ -24,12 +24,16 @@ namespace LuxAPI.Controllers
         private readonly MinioService _minioService;
         private readonly IHubContext<ChatHub> _chatHub;
         private readonly string _bucketName = "photos-bucket";
+        private readonly string _frontEndUrl;
+        private readonly string _backEndUrl;
 
-        public CollectionController(AppDbContext context, MinioService minioService, IHubContext<ChatHub> chatHub)
+        public CollectionController(AppDbContext context, IConfiguration configuration, MinioService minioService, IHubContext<ChatHub> chatHub)
         {
             _context = context;
             _minioService = minioService;
             _chatHub = chatHub;
+            _frontEndUrl = configuration["URI:FrontEnd"] ?? throw new Exception("Frontend URL is not set.");
+            _backEndUrl = configuration["URI:Backend"] ?? throw new Exception("Backend URL is not set.");
         }
 
         [Authorize]
@@ -231,8 +235,8 @@ namespace LuxAPI.Controllers
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
 
-            var collectionUrl = $"http://localhost:5173/collections/{collectionId}";
-            var registrationUrl = $"http://localhost:5173/register?prefilled=true&email={Uri.EscapeDataString(email)}";
+            var collectionUrl = $"${_frontEndUrl}/collections/{collectionId}";
+            var registrationUrl = $"${_frontEndUrl}/register?prefilled=true&email={Uri.EscapeDataString(email)}";
 
             if (user != null)
             {
@@ -316,7 +320,7 @@ namespace LuxAPI.Controllers
                 await _minioService.UploadFileAsync(_bucketName, objectName, stream, file.ContentType);
             }
 
-            var fileUrl = $"http://localhost:5269/api/collection/image/{objectName}";
+            var fileUrl = $"${_backEndUrl}/api/collection/image/{objectName}";
 
             var photo = new Photo
             {
