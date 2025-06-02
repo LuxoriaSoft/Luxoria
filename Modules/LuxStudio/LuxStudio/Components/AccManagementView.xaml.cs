@@ -40,6 +40,13 @@ namespace LuxStudio.Components
                 return;
             }
 
+            if (url.StartsWith("https") == false)
+            {
+                ShowPanel(LoadingMessagePanel, "Enabling Secure connection...");
+                await Task.Delay(200);
+                url = $"https://{url.TrimStart('/')}";
+            }
+
             try
             {
                 // Establish Connection
