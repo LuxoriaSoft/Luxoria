@@ -112,12 +112,12 @@ export default {
           password: this.password,
         };
 
-        console.log("Payload envoyé:", payload); // debug
+        console.log("Payload envoyé:", payload);
 
-        const res = await fetch("http://localhost:5269/auth/request-verification", {
+        const res = await fetch(`${window.appConfig.API_URL}/auth/request-verification`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload), // ✅ JSON stringifié ici
+          body: JSON.stringify(payload),
         });
 
         if (!res.ok) {
@@ -141,7 +141,7 @@ export default {
 
     async resendCode() {
       try {
-        const res = await fetch("http://localhost:5269/auth/request-verification", {
+        const res = await fetch(`${window.appConfig.API_URL}/auth/request-verification`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -171,7 +171,7 @@ export default {
           return;
         }
 
-        const res = await fetch("http://localhost:5269/auth/verify-code", {
+        const res = await fetch(`${window.appConfig.API_URL}/auth/verify-code`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -198,7 +198,7 @@ export default {
           const formData = new FormData();
           formData.append("file", this.avatarFile);
 
-          await fetch("http://localhost:5269/auth/upload-avatar", {
+          await fetch(`${window.appConfig.API_URL}/auth/upload-avatar`, {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },
             body: formData,

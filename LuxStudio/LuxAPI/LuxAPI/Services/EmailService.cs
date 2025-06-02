@@ -8,16 +8,18 @@ namespace LuxAPI.Services
     {
         private readonly IConfiguration _config;
         private readonly ILogger<EmailService> _logger;
+        private readonly string _frontEndUrl;
 
-        public EmailService(IConfiguration config, ILogger<EmailService> logger)
+        public EmailService(IConfiguration config, IConfiguration configuration, ILogger<EmailService> logger)
         {
             _config = config;
             _logger = logger;
+            _frontEndUrl = configuration["URI:FrontEnd"] ?? throw new Exception("Frontend URL is not set.");
         }
 
         public async Task SendVerificationCodeAsync(string toEmail, string toName, string code, Guid pendingId)
         {
-            var confirmationUrl = $"http://localhost:5173/register/confirmation?id={pendingId}&code={code}";
+            var confirmationUrl = $"{_frontEndUrl}/register/confirmation?id={pendingId}&code={code}";
 
             var htmlBody = $@"
         <!DOCTYPE html>
