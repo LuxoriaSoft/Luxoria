@@ -8,6 +8,7 @@ using LuxAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace LuxAPI.Controllers
 {
@@ -198,6 +199,78 @@ namespace LuxAPI.Controllers
             return Ok(new { token }); // Return the JWT token
         }
 
+        [HttpPost("request-verification")]
+        public async Task<IActionResult> RequestVerification([FromBody] UserPendingRegistrationDto data, [FromServices] EmailService emailService)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (_context.Users.Any(u => u.Email == data.Email))
+                return BadRequest("Email already registered.");
+
+            if (_context.PendingRegistrations.Any(p => p.Email == data.Email))
+                _context.PendingRegistrations.RemoveRange(_context.PendingRegistrations.Where(p => p.Email == data.Email));
+
+            var code = new Random().Next(100000, 999999).ToString();
+            var expiresAt = DateTime.UtcNow.AddMinutes(10);
+
+            var pending = new PendingRegistration
+            {
+                Email = data.Email,
+                Username = data.Username,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(data.Password),
+                Code = code,
+                ExpiresAt = expiresAt
+            };
+
+            _context.PendingRegistrations.Add(pending);
+            await _context.SaveChangesAsync();
+
+            await emailService.SendVerificationCodeAsync(data.Email, data.Username, code, pending.Id);
+            _logger.LogInformation("Envoi du mail de code à {Email}", data.Email);
+
+            return Ok("Verification code sent to email.");
+        }
+
+        [HttpPost("verify-code")]
+        public async Task<IActionResult> VerifyCode([FromBody] EmailCodeVerificationDto input)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { message = ModelState });
+
+            var entry = await _context.PendingRegistrations
+                .FirstOrDefaultAsync(p => p.Email == input.Email);
+
+            if (entry == null)
+                return NotFound(new { message = "No verification request found for this email." });
+
+            if (entry.Code != input.Code)
+                return BadRequest(new { message = "Invalid verification code." });
+
+            if (DateTime.UtcNow > entry.ExpiresAt)
+                return BadRequest(new { message = "Verification code expired." });
+
+
+            if (_context.Users.Any(u => u.Email == entry.Email))
+                return BadRequest(new { message = "Email already registered." });
+
+            var user = new User
+            {
+                Username = entry.Username,
+                Email = entry.Email,
+                PasswordHash = entry.PasswordHash,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _context.Users.Add(user);
+            _context.PendingRegistrations.Remove(entry);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Account created successfully." });
+        }
+
+
         /// <summary>
         /// Generates a JWT token for an authenticated user.
         /// </summary>
@@ -230,6 +303,25 @@ namespace LuxAPI.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        /// <summary>
+        /// Retrieve the email of a user by ID. Used for email confirmation flow.
+        /// </summary>
+        [HttpGet("user/{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetUserEmailById(Guid id)
+        {
+            var user = await _context.PendingRegistrations
+                .Where(p => p.Id == id)
+                .Select(p => new { p.Email })
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+                return NotFound("No pending registration found for this ID.");
+
+            return Ok(user); // returns: { "email": "..." }
+        }
+
 
         /// <summary>
         /// Returns information about the currently authenticated user.
