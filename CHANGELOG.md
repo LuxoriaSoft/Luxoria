@@ -1,3 +1,15 @@
+## [1.41.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.41.0...v1.41.1) (2025-06-02)
+
+
+### Bug Fixes
+
+* Add SMTP settings validation and update deployment configuration ([eb2c6b2](https://github.com/LuxoriaSoft/Luxoria/commit/eb2c6b265aecc2ac58e94f0c4e3e81d4c4559179))
+* Refactor URLs in CollectionController and EmailService to use dynamic configuration ([c581150](https://github.com/LuxoriaSoft/Luxoria/commit/c5811504cdff7e2e99187f5880beb325ee25b7f2))
+* Update API endpoint to use dynamic configuration ([b08670c](https://github.com/LuxoriaSoft/Luxoria/commit/b08670c7d4e4287a3dab036f84841eb27959d9b0))
+* Update API URLs to use dynamic configuration from app settings ([fd1743c](https://github.com/LuxoriaSoft/Luxoria/commit/fd1743c82fc3cc6e81ee7b97670b15b1ae895843))
+* Update ingress name from luxstudio-staging to luxstudio-production ([37e1037](https://github.com/LuxoriaSoft/Luxoria/commit/37e1037823783a2c033feb633d43c48dcda83592))
+* Update JWT_SECRET to use dynamic value generation ([fbcbc45](https://github.com/LuxoriaSoft/Luxoria/commit/fbcbc451d5f409408a60cd29cf1582c9f9df57da))
+
 # [1.41.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.40.0...v1.41.0) (2025-06-01)
 
 
