@@ -41,7 +41,6 @@ public partial class BrushToolControl : ATool
     private SKPoint? _lastMousePos;
 
     public float BrushSize { get; set; } = 10;
-    public SKColor BrushColor { get; set; } = SKColors.Black;
 
     private SKBitmap? _cacheBitmap;
     private SKCanvas? _cacheCanvas;
@@ -56,7 +55,9 @@ public partial class BrushToolControl : ATool
 
     private const int OverlayResolutionDivisor = 2;
 
-    public void ResizeCanvas(int width, int height)
+    private bool _alreadyIntialized = false;
+
+    public override void ResizeCanvas(int width, int height)
     {
         int scaledWidth = Math.Max(1, width / OverlayResolutionDivisor);
         int scaledHeight = Math.Max(1, height / OverlayResolutionDivisor);
@@ -68,10 +69,14 @@ public partial class BrushToolControl : ATool
         _displayWidth = width;
         _displayHeight = height;
 
-        _cacheBitmap?.Dispose();
-        _cacheBitmap = new SKBitmap(scaledWidth, scaledHeight, SKColorType.Bgra8888, SKAlphaType.Premul);
-        _cacheCanvas = new SKCanvas(_cacheBitmap);
-        _cacheCanvas.Clear(SKColors.Transparent);
+        if (!_alreadyIntialized)
+        {
+            _cacheBitmap?.Dispose();
+            _cacheBitmap = new SKBitmap(scaledWidth, scaledHeight, SKColorType.Bgra8888, SKAlphaType.Premul);
+            _cacheCanvas = new SKCanvas(_cacheBitmap);
+            _cacheCanvas.Clear(SKColors.Transparent);
+            _alreadyIntialized = true;
+        }
 
         RefreshAction?.Invoke();
     }
@@ -86,7 +91,7 @@ public partial class BrushToolControl : ATool
         if (e.GetCurrentPoint(canvas).Properties.IsLeftButtonPressed)
         {
             _currentStroke = new CustomStroke();
-            _currentStroke.Points.Add(new BrushPoint(Normalize(skPos), BrushSize, BrushColor));
+            _currentStroke.Points.Add(new BrushPoint(Normalize(skPos), BrushSize, Color));
             _lastPoints.Clear();
         }
         else if (e.GetCurrentPoint(canvas).Properties.IsRightButtonPressed)
@@ -114,12 +119,12 @@ public partial class BrushToolControl : ATool
                 foreach (var interp in InterpolatePoints(last, skPos, BrushSize * 0.25f))
                 {
                     var smooth = SmoothPosition(interp);
-                    _currentStroke.Points.Add(new BrushPoint(Normalize(smooth), BrushSize, BrushColor));
+                    _currentStroke.Points.Add(new BrushPoint(Normalize(smooth), BrushSize, Color));
                 }
             }
 
             var finalSmooth = SmoothPosition(skPos);
-            _currentStroke.Points.Add(new BrushPoint(Normalize(finalSmooth), BrushSize, BrushColor));
+            _currentStroke.Points.Add(new BrushPoint(Normalize(finalSmooth), BrushSize, Color));
 
             if (_currentStroke.Points.Count > 30 && _cacheCanvas != null)
             {

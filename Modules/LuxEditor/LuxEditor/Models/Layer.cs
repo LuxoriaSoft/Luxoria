@@ -1,4 +1,5 @@
-﻿using Microsoft.UI;
+﻿using LuxEditor.Controls;
+using Microsoft.UI;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -16,8 +17,9 @@ namespace LuxEditor.Models
         private bool _invert;
         private double _strength = 100;
         private Color _overlayColor = Color.FromArgb(100, 255, 255, 255);
-        public ObservableCollection<MaskOperation> Operations { get; } = new ObservableCollection<MaskOperation>();
+        public ObservableCollection<MaskOperation> Operations { get; }
         public MaskOperation? SelectedOperation { get; set; }
+        public LayersDetailsPanel DetailsPanel { get; set; }
 
         public string Name
         {
@@ -65,6 +67,8 @@ namespace LuxEditor.Models
         {
             _id = _nextId++;
             _zIndex = zIndex;
+            Operations = new ObservableCollection<MaskOperation>();
+            DetailsPanel = new LayersDetailsPanel();
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

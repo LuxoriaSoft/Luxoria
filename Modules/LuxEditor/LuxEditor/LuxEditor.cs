@@ -59,7 +59,7 @@ namespace LuxEditor
             _editor.OnEditorImageUpdated += (updatedBitmap) =>
             {
                 _photoViewer?.SetImage(updatedBitmap);
-                _photoViewer.operationSelected();
+                _photoViewer?.ResetOverlay();
             };
 
             _cExplorer.OnImageSelected += (img) =>

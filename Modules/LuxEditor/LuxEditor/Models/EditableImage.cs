@@ -21,7 +21,7 @@ namespace LuxEditor.Models
         private readonly Stack<Dictionary<string, object>> _history = new();
         private readonly Stack<Dictionary<string, object>> _redo = new();
 
-        public readonly LayerManager LayerManager = new LayerManager();
+        public readonly LayerManager LayerManager = new();
 
         /// <summary>
         /// Creates a new EditableImage instance.

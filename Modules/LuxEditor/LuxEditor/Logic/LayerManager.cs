@@ -19,7 +19,16 @@ namespace LuxEditor.Logic
         public Layer? SelectedLayer
         {
             get => _selectedLayer;
-            set => SetField(ref _selectedLayer, value);
+            set
+            {
+                SetField(ref _selectedLayer, value);
+                OnLayerChanged?.Invoke();
+                if (value != null && value.SelectedOperation == null && value.Operations.Count > 0)
+                {
+                    value.SelectedOperation = value.Operations[0];
+                }
+                OnOperationChanged?.Invoke();
+            }
         }
 
         public Action? OnLayerChanged;
@@ -27,6 +36,13 @@ namespace LuxEditor.Logic
 
         public LayerManager()
         {
+        }
+
+        public MaskOperation CreateMaskOperation(ToolType brushType, BooleanOperationMode mode = BooleanOperationMode.Add)
+        {
+            var op = new MaskOperation(brushType, mode);
+            OnOperationChanged?.Invoke();
+            return op;
         }
 
         public void AddLayer(ToolType type)
@@ -40,7 +56,7 @@ namespace LuxEditor.Logic
                 OverlayColor = Color.FromArgb(100, 255, 0, 0),
             };
 
-            layer.Operations.Add(new MaskOperation(type));
+            layer.Operations.Add(CreateMaskOperation(type));
             layer.SelectedOperation = layer.Operations[0];
             Layers.Add(layer);
             SelectedLayer = layer;

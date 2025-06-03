@@ -162,11 +162,19 @@ namespace LuxEditor.Components
             if (e.AddedItems.Count == 0 || e.AddedItems[0] is not TreeViewNode node)
                 return;
 
-            if (_nodeMap[node] is MaskOperation)
-                return;
-
-            OperationDetailsHost.Content = new LayersDetailsPanel();
-            OperationDetailsHost.Visibility = Visibility.Visible;
+            if (_nodeMap[node] is Layer layer)
+            {
+                OperationDetailsHost.Content = layer.DetailsPanel;
+                OperationDetailsHost.Visibility = Visibility.Visible;
+                CurrentImage.LayerManager.SelectedLayer = layer;
+                CurrentImage.LayerManager.OnLayerChanged?.Invoke();
+            }
+            if (_nodeMap[node] is MaskOperation op)
+            {
+                CurrentImage.LayerManager.SelectedLayer = CurrentImage.LayerManager.GetLayerByOperation(op.Id);
+                CurrentImage.LayerManager.SelectedLayer.SelectedOperation = op;
+                CurrentImage.LayerManager.OnOperationChanged?.Invoke(); 
+            }
         }
 
         private TreeViewNode? FindNodeByLayer(Layer target, IList<TreeViewNode> nodes)
@@ -212,7 +220,7 @@ namespace LuxEditor.Components
             };
             brushButton.Click += (s, e) =>
             {
-                CurrentImage.LayerManager.AddOperation(layer.Id, new MaskOperation(ToolType.Brush, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract));
+                CurrentImage.LayerManager.AddOperation(layer.Id, CurrentImage.LayerManager.CreateMaskOperation(ToolType.Brush, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract));
                 RefreshLayerTree();
                 flyout.Hide();
             };
@@ -223,7 +231,7 @@ namespace LuxEditor.Components
             };
             linearGradientButton.Click += (s, e) =>
             {
-                CurrentImage.LayerManager.AddOperation(layer.Id, new MaskOperation(ToolType.LinearGradient, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract));
+                CurrentImage.LayerManager.AddOperation(layer.Id, CurrentImage.LayerManager.CreateMaskOperation(ToolType.LinearGradient, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract));
                 RefreshLayerTree();
                 flyout.Hide();
             };
@@ -235,7 +243,7 @@ namespace LuxEditor.Components
             radialGradientButton.Click += (s, e) =>
             {
 
-                CurrentImage.LayerManager.AddOperation(layer.Id, new MaskOperation(ToolType.RadialGradient, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract)); RefreshLayerTree();
+                CurrentImage.LayerManager.AddOperation(layer.Id, CurrentImage.LayerManager.CreateMaskOperation(ToolType.RadialGradient, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract)); RefreshLayerTree();
                 flyout.Hide();
             };
             flyout.Items.Add(radialGradientButton);
@@ -245,12 +253,15 @@ namespace LuxEditor.Components
             };
             colorRangeButton.Click += (s, e) =>
             {
-                CurrentImage.LayerManager.AddOperation(layer.Id, new MaskOperation(ToolType.ColorRange, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract));
+                CurrentImage.LayerManager.AddOperation(layer.Id, CurrentImage.LayerManager.CreateMaskOperation(ToolType.ColorRange, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract));
                 RefreshLayerTree();
                 flyout.Hide();
             };
             flyout.Items.Add(colorRangeButton);
             flyout.ShowAt(element);
+
+            CurrentImage.LayerManager.OnOperationChanged?.Invoke();
+            
         }
 
         private void SelectSubstractOrAddOperationFlyout(Layer layer, FrameworkElement element)

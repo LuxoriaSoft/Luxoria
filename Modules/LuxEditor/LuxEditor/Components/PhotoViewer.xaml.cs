@@ -1,4 +1,3 @@
-
 using LuxEditor.EditorUI.Controls.ToolControls;
 using LuxEditor.Models;
 using LuxEditor.Services;
@@ -14,8 +13,8 @@ namespace LuxEditor.Components
 {
     public sealed partial class PhotoViewer : Page
     {
-        private SKXamlCanvas _mainCanvas;
-        public SKXamlCanvas _overlayCanva;
+        private readonly SKXamlCanvas _mainCanvas;
+        public readonly SKXamlCanvas _overlayCanva;
 
         private SKImage? _currentGpu;
         private SKBitmap? _currentCpu;
@@ -24,13 +23,17 @@ namespace LuxEditor.Components
         private bool _isDragging;
         private Windows.Foundation.Point _lastPoint;
 
+        private ATool? _currentTool;
+
+        /// <summary>
+        /// Initializes the viewer and sets up canvas layers.
+        /// </summary>
         public PhotoViewer()
         {
             InitializeComponent();
 
             _mainCanvas = new SKXamlCanvas();
             _overlayCanva = new SKXamlCanvas();
-
             CanvasHost.Children.Add(_mainCanvas);
             CanvasHost.Children.Add(_overlayCanva);
 
@@ -44,120 +47,188 @@ namespace LuxEditor.Components
             };
         }
 
+        private void ClearOverlay()
+        {
+            _overlayCanva.PaintSurface += ClearOverlayPaint;
+            _overlayCanva.Invalidate();
+        }
+
+        private void ClearOverlayPaint(object? sender, SKPaintSurfaceEventArgs e)
+        {
+            var canvas = e.Surface.Canvas;
+            canvas.Clear(SKColors.Transparent);
+
+            _overlayCanva.PaintSurface -= ClearOverlayPaint;
+        }
+
+
+        /// <summary>
+        /// Connects this viewer to the given editable image.
+        /// </summary>
         public void SetEditableImage(EditableImage image)
         {
             _currentImage = image;
-            image.LayerManager.OnOperationChanged += operationSelected;
+            image.LayerManager.OnOperationChanged += OperationSelected;
         }
 
-        public void operationSelected()
+        /// <summary>
+        /// Handles switching to a new operation/tool on the active layer.
+        /// </summary>
+        public void OperationSelected()
         {
+            UnsubscribeCurrentTool();
             var tool = _currentImage?.LayerManager?.SelectedLayer?.SelectedOperation?.Tool;
             if (tool == null) return;
 
-            _overlayCanva.PaintSurface += tool.OnPaintSurface!;
-            _overlayCanva.PointerPressed += tool.OnPointerPressed;
-            _overlayCanva.PointerMoved += tool.OnPointerMoved;
-            _overlayCanva.PointerReleased += tool.OnPointerReleased;
-            tool.RefreshAction += RefreshAction;
+            SubscribeTool(tool);
 
             var bmp = _currentImage?.OriginalBitmap;
-
-                (tool as BrushToolControl)?.ResizeCanvas(bmp.Width, bmp.Height);
-
+            if (bmp != null) tool.ResizeCanvas(bmp.Width, bmp.Height);
         }
 
-        private void RefreshAction()
+        public void ResetOverlay()
         {
-            _overlayCanva?.Invalidate();
+            RefreshAction();
+            UnsubscribeCurrentTool();
+            _currentTool?.ResizeCanvas((int)_mainCanvas.Width, (int)_mainCanvas.Height);
         }
 
+        /// <summary>
+        /// Forces a repaint of the overlay.
+        /// </summary>
+        private void RefreshAction() => _overlayCanva.Invalidate();
+
+        /// <summary>
+        /// Sets a new GPU-backed image.
+        /// </summary>
         public void SetImage(SKImage image)
         {
             _currentGpu?.Dispose();
             _currentGpu = image;
             _currentCpu = null;
 
-            _mainCanvas.Width = image.Width;
-            _mainCanvas.Height = image.Height;
-            _mainCanvas.Invalidate();
-
-            _overlayCanva.Width = image.Width;
-            _overlayCanva.Height = image.Height;
-            _overlayCanva.Invalidate();
-
-            (_currentImage?.LayerManager?.SelectedLayer?.SelectedOperation?.Tool as BrushToolControl)?.ResizeCanvas(image.Width, image.Height);
+            ResizeCanvases(image.Width, image.Height);
         }
 
+        /// <summary>
+        /// Sets a new CPU-backed bitmap.
+        /// </summary>
         public void SetImage(SKBitmap bitmap)
         {
             _currentCpu = bitmap;
             _currentGpu?.Dispose();
             _currentGpu = null;
 
-            _mainCanvas.Width = bitmap.Width;
-            _mainCanvas.Height = bitmap.Height;
-            _mainCanvas.Invalidate();
-
-            _overlayCanva.Width = bitmap.Width;
-            _overlayCanva.Height = bitmap.Height;
-            _overlayCanva.Invalidate();
-
-            (_currentImage?.LayerManager?.SelectedLayer?.SelectedOperation?.Tool as BrushToolControl)?.ResizeCanvas(bitmap.Width, bitmap.Height);
+            ResizeCanvases(bitmap.Width, bitmap.Height);
         }
 
+        /// <summary>
+        /// Repaints the main canvas with the current bitmap/image.
+        /// </summary>
         private void OnPaintSurface(object? sender, SKPaintSurfaceEventArgs e)
         {
             var canvas = e.Surface.Canvas;
             canvas.Clear(SKColors.Transparent);
 
-            if (_currentGpu != null)
-                canvas.DrawImage(_currentGpu, 0, 0);
-            else if (_currentCpu != null)
-                canvas.DrawBitmap(_currentCpu, 0, 0);
+            if (_currentGpu != null) canvas.DrawImage(_currentGpu, 0, 0);
+            else if (_currentCpu != null) canvas.DrawBitmap(_currentCpu, 0, 0);
         }
 
+        /// <summary>
+        /// Handles middle-mouse drag panning.
+        /// </summary>
         private void ScrollViewerImage_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (e.GetCurrentPoint(ScrollViewerImage).Properties.IsMiddleButtonPressed)
+            _isDragging = e.GetCurrentPoint(ScrollViewerImage).Properties.IsMiddleButtonPressed;
+            if (_isDragging)
             {
-                _isDragging = true;
                 _lastPoint = e.GetCurrentPoint(ScrollViewerImage).Position;
                 (sender as UIElement)?.CapturePointer(e.Pointer);
             }
-            else
-            {
-                _isDragging = false;
-            }
         }
 
+        /// <summary>
+        /// Updates scroll position while dragging.
+        /// </summary>
         private void ScrollViewerImage_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             if (!_isDragging) return;
 
-            var currentPoint = e.GetCurrentPoint(ScrollViewerImage).Position;
-            double deltaX = currentPoint.X - _lastPoint.X;
-            double deltaY = currentPoint.Y - _lastPoint.Y;
-
+            var current = e.GetCurrentPoint(ScrollViewerImage).Position;
             ScrollViewerImage.ChangeView(
-                ScrollViewerImage.HorizontalOffset - deltaX,
-                ScrollViewerImage.VerticalOffset - deltaY,
+                ScrollViewerImage.HorizontalOffset - (current.X - _lastPoint.X),
+                ScrollViewerImage.VerticalOffset - (current.Y - _lastPoint.Y),
                 ScrollViewerImage.ZoomFactor,
-                disableAnimation: true);
+                true);
 
-            _lastPoint = currentPoint;
+            _lastPoint = current;
         }
 
+        /// <summary>
+        /// Releases the drag state.
+        /// </summary>
         private void ScrollViewerImage_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             _isDragging = false;
             (sender as UIElement)?.ReleasePointerCaptures();
+            ClearOverlay();
         }
 
+        /// <summary>
+        /// Cancels the drag state.
+        /// </summary>
         private void ScrollViewerImage_PointerCanceled(object sender, PointerRoutedEventArgs e)
         {
             _isDragging = false;
             (sender as UIElement)?.ReleasePointerCaptures();
+        }
+
+        /// <summary>
+        /// Adjusts both canvases to a new size and notifies the active tool.
+        /// </summary>
+        private void ResizeCanvases(int width, int height)
+        {
+            _mainCanvas.Width = width;
+            _mainCanvas.Height = height;
+            _overlayCanva.Width = width;
+            _overlayCanva.Height = height;
+
+            _mainCanvas.Invalidate();
+            RefreshAction();
+
+            _currentTool?.ResizeCanvas(width, height);
+        }
+
+        /// <summary>
+        /// Removes event subscriptions for the current tool.
+        /// </summary>
+        private void UnsubscribeCurrentTool()
+        {
+            if (_currentTool == null) return;
+
+            _overlayCanva.PaintSurface -= _currentTool.OnPaintSurface!;
+            _overlayCanva.PointerPressed -= _currentTool.OnPointerPressed;
+            _overlayCanva.PointerMoved -= _currentTool.OnPointerMoved;
+            _overlayCanva.PointerReleased -= _currentTool.OnPointerReleased;
+            _currentTool.RefreshAction -= RefreshAction;
+            ClearOverlay();
+        }
+
+
+
+        /// <summary>
+        /// Adds event subscriptions for the specified tool.
+        /// </summary>
+        private void SubscribeTool(ATool tool)
+        {
+            _currentTool = tool;
+
+            _overlayCanva.PaintSurface += tool.OnPaintSurface!;
+            _overlayCanva.PointerPressed += tool.OnPointerPressed;
+            _overlayCanva.PointerMoved += tool.OnPointerMoved;
+            _overlayCanva.PointerReleased += tool.OnPointerReleased;
+            tool.RefreshAction += RefreshAction;
+            RefreshAction();
         }
     }
 }
