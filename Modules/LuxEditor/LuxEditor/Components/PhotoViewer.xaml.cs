@@ -82,14 +82,15 @@ namespace LuxEditor.Components
 
             var bmp = _currentImage?.OriginalBitmap;
             if (bmp != null) tool.ResizeCanvas(bmp.Width, bmp.Height);
+            tool.OpsFusionned = GetImageOps();
         }
 
-        public void LayerSelected()
+        private SKImage? GetImageOps()
         {
-            UnsubscribeCurrentTool();
-            ClearOverlay();
-            if (_currentImage?.LayerManager.SelectedLayer == null) return;
             SKImage? resultImage = null;
+            if (_currentImage == null || _currentImage.LayerManager.SelectedLayer == null ||  _currentImage.LayerManager.SelectedLayer.SelectedOperation == null)
+                return null;
+
             foreach (var op in _currentImage.LayerManager.SelectedLayer.Operations)
             {
                 if (op == null) continue;
@@ -124,7 +125,7 @@ namespace LuxEditor.Components
                 {
                     if (resultImage == null)
                     {
-                        resultImage = SKImage.FromBitmap(bm);
+                        continue;
                     }
                     else
                     {
@@ -143,6 +144,16 @@ namespace LuxEditor.Components
                     }
                 }
             }
+            return resultImage;
+        }
+
+        public void LayerSelected()
+        {
+            UnsubscribeCurrentTool();
+            ClearOverlay();
+            if (_currentImage?.LayerManager.SelectedLayer == null) return;
+            
+            var resultImage = GetImageOps();
             _overlayCanva.PaintSurface += (sender, args) =>
             {
                 if (resultImage == null) return;
@@ -163,7 +174,12 @@ namespace LuxEditor.Components
         /// <summary>
         /// Forces a repaint of the overlay.
         /// </summary>
-        private void RefreshAction() => _overlayCanva.Invalidate();
+        private void RefreshAction()
+        {
+            if (_currentTool == null) return;
+
+            _overlayCanva.Invalidate();
+        }
 
         /// <summary>
         /// Sets a new GPU-backed image.

@@ -17,7 +17,9 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
     {
         public abstract ToolType ToolType { get; set; }
         public abstract event Action? RefreshAction;
-        public SKColor Color { get; set; } = new SKColor(0, 0, 0, 255);
+        public SKColor Color { get; set; }
+
+        public SKImage? OpsFusionned;
 
         public ATool()
         {

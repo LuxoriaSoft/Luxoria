@@ -12,13 +12,11 @@ public class BrushPoint
 {
     public SKPoint NormalizedPos { get; set; }
     public float Radius { get; set; }
-    public SKColor Color { get; set; }
 
-    public BrushPoint(SKPoint normPos, float radius, SKColor color)
+    public BrushPoint(SKPoint normPos, float radius)
     {
         NormalizedPos = normPos;
         Radius = radius;
-        Color = color;
     }
 
     public SKPoint ToAbsolute(int width, int height)
@@ -53,14 +51,15 @@ public partial class BrushToolControl : ATool
     private SKPoint? _rightClickStartingPoint;
     private bool _isRightClicking = false;
 
-    private const int OverlayResolutionDivisor = 2;
+    private int _overlayResolutionDivisor = 1;
 
     private bool _alreadyIntialized = false;
 
     public override void ResizeCanvas(int width, int height)
     {
-        int scaledWidth = Math.Max(1, width / OverlayResolutionDivisor);
-        int scaledHeight = Math.Max(1, height / OverlayResolutionDivisor);
+        _overlayResolutionDivisor = Math.Max(Math.Max(width, height) / 1000, 1);
+        int scaledWidth = Math.Max(1, width / _overlayResolutionDivisor);
+        int scaledHeight = Math.Max(1, height / _overlayResolutionDivisor);
 
         if (_canvasWidth == scaledWidth && _canvasHeight == scaledHeight) return;
 
@@ -91,7 +90,7 @@ public partial class BrushToolControl : ATool
         if (e.GetCurrentPoint(canvas).Properties.IsLeftButtonPressed)
         {
             _currentStroke = new CustomStroke();
-            _currentStroke.Points.Add(new BrushPoint(Normalize(skPos), BrushSize, Color));
+            _currentStroke.Points.Add(new BrushPoint(Normalize(skPos), BrushSize));
             _lastPoints.Clear();
         }
         else if (e.GetCurrentPoint(canvas).Properties.IsRightButtonPressed)
@@ -119,19 +118,19 @@ public partial class BrushToolControl : ATool
                 foreach (var interp in InterpolatePoints(last, skPos, BrushSize * 0.25f))
                 {
                     var smooth = SmoothPosition(interp);
-                    _currentStroke.Points.Add(new BrushPoint(Normalize(smooth), BrushSize, Color));
+                    _currentStroke.Points.Add(new BrushPoint(Normalize(smooth), BrushSize));
                 }
             }
 
             var finalSmooth = SmoothPosition(skPos);
-            _currentStroke.Points.Add(new BrushPoint(Normalize(finalSmooth), BrushSize, Color));
+            _currentStroke.Points.Add(new BrushPoint(Normalize(finalSmooth), BrushSize));
 
             if (_currentStroke.Points.Count > 30 && _cacheCanvas != null)
             {
                 foreach (var point in _currentStroke.Points)
                 {
                     var abs = point.ToAbsolute(_canvasWidth, _canvasHeight);
-                    DrawSoftCircle(_cacheCanvas, abs, point.Radius * _canvasWidth / _displayWidth, point.Color);
+                    DrawSoftCircle(_cacheCanvas, abs, point.Radius * _canvasWidth / _displayWidth, Color);
                 }
 
                 _currentStroke.Points.Clear();
@@ -153,7 +152,7 @@ public partial class BrushToolControl : ATool
             foreach (var point in _currentStroke.Points)
             {
                 var abs = point.ToAbsolute(_canvasWidth, _canvasHeight);
-                DrawSoftCircle(_cacheCanvas, abs, point.Radius * _canvasWidth / _displayWidth, point.Color);
+                DrawSoftCircle(_cacheCanvas, abs, point.Radius * _canvasWidth / _displayWidth, Color);
             }
 
             _currentStroke = null;
@@ -168,6 +167,10 @@ public partial class BrushToolControl : ATool
     {
         var canvas = e.Surface.Canvas;
         canvas.Clear(SKColors.Transparent);
+        if (OpsFusionned != null)
+        {
+            canvas.DrawImage(OpsFusionned, 0, 0);
+        }
 
         if (_cacheBitmap != null)
         {
@@ -181,7 +184,7 @@ public partial class BrushToolControl : ATool
             foreach (var point in _currentStroke.Points)
             {
                 var abs = point.ToAbsolute(_displayWidth, _displayHeight);
-                DrawSoftCircle(canvas, abs, point.Radius, point.Color);
+                DrawSoftCircle(canvas, abs, point.Radius, Color);
             }
         }
 
