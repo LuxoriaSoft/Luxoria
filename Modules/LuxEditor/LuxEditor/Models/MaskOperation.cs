@@ -3,7 +3,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using LuxEditor.Controls.ToolControls;
 using LuxEditor.EditorUI.Controls.ToolControls;
 using LuxEditor.EditorUI.Interfaces;
 using SkiaSharp;
@@ -47,15 +46,15 @@ namespace LuxEditor.Models
                     Debug.WriteLine("MaskOperation: Brush tool initialized.");
                     break;
                 case ToolType.LinearGradient:
-                    Tool = new LinearGradientToolControl();
+                    //Tool = new LinearGradientToolControl();
                     Debug.WriteLine("MaskOperation: LinearGradient tool initialized.");
                     break;
                 case ToolType.RadialGradient:
-                    Tool = new RadialGradientToolControl();
+                    //Tool = new RadialGradientToolControl();
                     Debug.WriteLine("MaskOperation: RadialGradient tool initialized.");
                     break;
                 case ToolType.ColorRange:
-                    Tool = new ColorRangeToolControl();
+                    //Tool = new ColorRangeToolControl();
                     Debug.WriteLine("MaskOperation: ColorRange tool initialized.");
                     break;
                 default:

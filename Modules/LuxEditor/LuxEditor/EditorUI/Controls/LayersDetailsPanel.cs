@@ -7,6 +7,7 @@ using Windows.UI;
 using LuxEditor.Models;
 using LuxEditor.EditorUI.Groups;
 using System.Collections.Generic;
+using SkiaSharp;
 
 namespace LuxEditor.Controls
 {
@@ -100,6 +101,10 @@ namespace LuxEditor.Controls
                 OverlayColor = args.NewColor;
                 OnPropertyChanged(nameof(OverlayColor));
                 _colorButton.Background = new SolidColorBrush(OverlayColor);
+                for (int i = 0; i < _operation.Count; i++)
+                {
+                    _operation[i].Tool.Color = new SKColor(OverlayColor.R, OverlayColor.G, OverlayColor.B, OverlayColor.A);
+                }
             };
             _flyoutOpacity = new Slider
             {

@@ -1,49 +1,38 @@
+
+using LuxEditor.EditorUI.Controls.ToolControls;
 using LuxEditor.Models;
 using LuxEditor.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
 using System.Diagnostics;
-using Windows.UI;
 
 namespace LuxEditor.Components
 {
     public sealed partial class PhotoViewer : Page
     {
         private SKXamlCanvas _mainCanvas;
-        private SKXamlCanvas _currentOverlay;
-        private Grid _canvasHost;
-
-        private bool _isDragging;
-        private Windows.Foundation.Point _lastPoint;
+        public SKXamlCanvas _overlayCanva;
 
         private SKImage? _currentGpu;
         private SKBitmap? _currentCpu;
 
         private EditableImage? _currentImage;
+        private bool _isDragging;
+        private Windows.Foundation.Point _lastPoint;
 
         public PhotoViewer()
         {
             InitializeComponent();
 
             _mainCanvas = new SKXamlCanvas();
-            _currentOverlay = new SKXamlCanvas
-            {
-                IsHitTestVisible = false,
-                Opacity = 0,
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
-                Background = new SolidColorBrush(Color.FromArgb(150, 255,0,0))
-            };
+            _overlayCanva = new SKXamlCanvas();
 
-
-            // Utilise le CanvasHost défini en XAML
             CanvasHost.Children.Add(_mainCanvas);
-            CanvasHost.Children.Add(_currentOverlay);
+            CanvasHost.Children.Add(_overlayCanva);
 
             _mainCanvas.PaintSurface += OnPaintSurface;
 
@@ -55,19 +44,6 @@ namespace LuxEditor.Components
             };
         }
 
-        private SKMatrix GetCurrentTransform()
-        {
-            return SKMatrix.CreateScaleTranslation(
-                (float)ScrollViewerImage.ZoomFactor,
-                (float)ScrollViewerImage.ZoomFactor,
-                (float)ScrollViewerImage.HorizontalOffset,
-                (float)ScrollViewerImage.VerticalOffset
-            );
-        }
-
-        /// <summary>
-        /// Register the EditableImage and subscribe to its OperationChanged event.
-        /// </summary>
         public void SetEditableImage(EditableImage image)
         {
             _currentImage = image;
@@ -76,32 +52,26 @@ namespace LuxEditor.Components
 
         public void operationSelected()
         {
-            if (_currentImage == null || _currentImage.LayerManager == null || _currentImage.LayerManager.SelectedLayer == null || _currentImage.LayerManager.SelectedLayer.SelectedOperation == null) return;
+            var tool = _currentImage?.LayerManager?.SelectedLayer?.SelectedOperation?.Tool;
+            if (tool == null) return;
 
-            Debug.WriteLine("Operation Selected: " + _currentImage.LayerManager.SelectedLayer.SelectedOperation.Tool.ToolType);
+            _overlayCanva.PaintSurface += tool.OnPaintSurface!;
+            _overlayCanva.PointerPressed += tool.OnPointerPressed;
+            _overlayCanva.PointerMoved += tool.OnPointerMoved;
+            _overlayCanva.PointerReleased += tool.OnPointerReleased;
+            tool.RefreshAction += RefreshAction;
 
-            var toolCanvas = _currentImage
-                                .LayerManager
-                                .SelectedLayer
-                                .SelectedOperation
-                                .Tool
-                                .Canvas as SKXamlCanvas;
+            var bmp = _currentImage?.OriginalBitmap;
 
-            if (toolCanvas == null) return;
+                (tool as BrushToolControl)?.ResizeCanvas(bmp.Width, bmp.Height);
 
-            _currentOverlay.Background = toolCanvas.Background;
-            _currentOverlay.Opacity = 0.7;
-            _currentOverlay.IsHitTestVisible = true;
-            _currentOverlay.Width = _mainCanvas.Width;
-            _currentOverlay.Height = _mainCanvas.Height;
-            _currentOverlay.Invalidate();
-            _mainCanvas.Invalidate();
         }
 
+        private void RefreshAction()
+        {
+            _overlayCanva?.Invalidate();
+        }
 
-        /// <summary>
-        /// Set the SKImage (GPU) to render on the main canvas.
-        /// </summary>
         public void SetImage(SKImage image)
         {
             _currentGpu?.Dispose();
@@ -112,14 +82,13 @@ namespace LuxEditor.Components
             _mainCanvas.Height = image.Height;
             _mainCanvas.Invalidate();
 
-            _currentOverlay.Width = image.Width;
-            _currentOverlay.Height = image.Height;
-            _currentOverlay.Invalidate();
+            _overlayCanva.Width = image.Width;
+            _overlayCanva.Height = image.Height;
+            _overlayCanva.Invalidate();
+
+            (_currentImage?.LayerManager?.SelectedLayer?.SelectedOperation?.Tool as BrushToolControl)?.ResizeCanvas(image.Width, image.Height);
         }
 
-        /// <summary>
-        /// Set the SKBitmap (CPU) to render on the main canvas.
-        /// </summary>
         public void SetImage(SKBitmap bitmap)
         {
             _currentCpu = bitmap;
@@ -130,34 +99,36 @@ namespace LuxEditor.Components
             _mainCanvas.Height = bitmap.Height;
             _mainCanvas.Invalidate();
 
-            _currentOverlay.Width = bitmap.Width;
-            _currentOverlay.Height = bitmap.Height;
-            _currentOverlay.Invalidate();
+            _overlayCanva.Width = bitmap.Width;
+            _overlayCanva.Height = bitmap.Height;
+            _overlayCanva.Invalidate();
+
+            (_currentImage?.LayerManager?.SelectedLayer?.SelectedOperation?.Tool as BrushToolControl)?.ResizeCanvas(bitmap.Width, bitmap.Height);
         }
 
-        /// <summary>
-        /// PaintSurface event handler for the main SKXamlCanvas.
-        /// </summary>
         private void OnPaintSurface(object? sender, SKPaintSurfaceEventArgs e)
         {
             var canvas = e.Surface.Canvas;
             canvas.Clear(SKColors.Transparent);
 
             if (_currentGpu != null)
-            {
                 canvas.DrawImage(_currentGpu, 0, 0);
-            }
             else if (_currentCpu != null)
-            {
                 canvas.DrawBitmap(_currentCpu, 0, 0);
-            }
         }
 
         private void ScrollViewerImage_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            _isDragging = true;
-            _lastPoint = e.GetCurrentPoint(ScrollViewerImage).Position;
-            (sender as UIElement)?.CapturePointer(e.Pointer);
+            if (e.GetCurrentPoint(ScrollViewerImage).Properties.IsMiddleButtonPressed)
+            {
+                _isDragging = true;
+                _lastPoint = e.GetCurrentPoint(ScrollViewerImage).Position;
+                (sender as UIElement)?.CapturePointer(e.Pointer);
+            }
+            else
+            {
+                _isDragging = false;
+            }
         }
 
         private void ScrollViewerImage_PointerMoved(object sender, PointerRoutedEventArgs e)
