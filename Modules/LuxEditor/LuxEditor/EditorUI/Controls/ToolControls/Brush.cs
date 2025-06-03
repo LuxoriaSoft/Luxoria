@@ -258,4 +258,9 @@ public partial class BrushToolControl : ATool
 
     private SKPoint Normalize(SKPoint absolute)
         => new SKPoint(absolute.X / _displayWidth, absolute.Y / _displayHeight);
+
+    public override SKBitmap? GetResult()
+    {
+        return _cacheBitmap?.Resize(new SKImageInfo(_displayWidth, _displayHeight), SKSamplingOptions.Default);
+    }
 }

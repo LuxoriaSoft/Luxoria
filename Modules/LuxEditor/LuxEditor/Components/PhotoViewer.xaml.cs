@@ -7,7 +7,9 @@ using Microsoft.UI.Xaml.Input;
 using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace LuxEditor.Components
 {
@@ -49,18 +51,13 @@ namespace LuxEditor.Components
 
         private void ClearOverlay()
         {
-            _overlayCanva.PaintSurface += ClearOverlayPaint;
+            _overlayCanva.PaintSurface += (sender, e) =>
+            {
+                var canvas = e.Surface.Canvas;
+                canvas.Clear(SKColors.Transparent);
+            };
             _overlayCanva.Invalidate();
         }
-
-        private void ClearOverlayPaint(object? sender, SKPaintSurfaceEventArgs e)
-        {
-            var canvas = e.Surface.Canvas;
-            canvas.Clear(SKColors.Transparent);
-
-            _overlayCanva.PaintSurface -= ClearOverlayPaint;
-        }
-
 
         /// <summary>
         /// Connects this viewer to the given editable image.
@@ -69,6 +66,7 @@ namespace LuxEditor.Components
         {
             _currentImage = image;
             image.LayerManager.OnOperationChanged += OperationSelected;
+            image.LayerManager.OnLayerChanged += LayerSelected;
         }
 
         /// <summary>
@@ -84,6 +82,75 @@ namespace LuxEditor.Components
 
             var bmp = _currentImage?.OriginalBitmap;
             if (bmp != null) tool.ResizeCanvas(bmp.Width, bmp.Height);
+        }
+
+        public void LayerSelected()
+        {
+            UnsubscribeCurrentTool();
+            ClearOverlay();
+            if (_currentImage?.LayerManager.SelectedLayer == null) return;
+            SKImage? resultImage = null;
+            foreach (var op in _currentImage.LayerManager.SelectedLayer.Operations)
+            {
+                if (op == null) continue;
+                if (op.Tool == null) continue;
+                var bm = op.Tool.GetResult();
+
+                if (bm == null) continue;
+
+                if (op.Mode == BooleanOperationMode.Add)
+                {
+                    if (resultImage == null)
+                    {
+                        resultImage = SKImage.FromBitmap(bm);
+                    }
+                    else
+                    {
+                        using var temp = SKImage.FromBitmap(bm);
+                        using var paint = new SKPaint
+                        {
+                            BlendMode = SKBlendMode.SrcOver
+                        };
+                        using var surface = SKSurface.Create(new SKImageInfo(resultImage.Width, resultImage.Height));
+                        var canvas = surface.Canvas;
+                        canvas.DrawImage(resultImage, 0, 0);
+                        canvas.DrawImage(temp, 0, 0, paint);
+                        canvas.Flush();
+                        resultImage.Dispose();
+                        resultImage = surface.Snapshot();
+                    }
+                }
+                else if (op.Mode == BooleanOperationMode.Subtract)
+                {
+                    if (resultImage == null)
+                    {
+                        resultImage = SKImage.FromBitmap(bm);
+                    }
+                    else
+                    {
+                        using var temp = SKImage.FromBitmap(bm);
+                        using var paint = new SKPaint
+                        {
+                            BlendMode = SKBlendMode.DstOut
+                        };
+                        using var surface = SKSurface.Create(new SKImageInfo(resultImage.Width, resultImage.Height));
+                        var canvas = surface.Canvas;
+                        canvas.DrawImage(resultImage, 0, 0);
+                        canvas.DrawImage(temp, 0, 0, paint);
+                        canvas.Flush();
+                        resultImage.Dispose();
+                        resultImage = surface.Snapshot();
+                    }
+                }
+            }
+            _overlayCanva.PaintSurface += (sender, args) =>
+            {
+                if (resultImage == null) return;
+                var canvas = args.Surface.Canvas;
+                canvas.Clear(SKColors.Transparent);
+                canvas.DrawImage(resultImage, 0, 0);
+            };
+            _overlayCanva.Invalidate();
         }
 
         public void ResetOverlay()
@@ -171,7 +238,6 @@ namespace LuxEditor.Components
         {
             _isDragging = false;
             (sender as UIElement)?.ReleasePointerCaptures();
-            ClearOverlay();
         }
 
         /// <summary>

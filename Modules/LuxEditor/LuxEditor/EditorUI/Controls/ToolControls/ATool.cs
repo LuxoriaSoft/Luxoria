@@ -28,6 +28,7 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
         public abstract void OnPointerPressed(object sender, PointerRoutedEventArgs e);
         public abstract void OnPointerReleased(object sender, PointerRoutedEventArgs e);
         public abstract void ResizeCanvas(int width, int height);
+        public abstract SKBitmap? GetResult();
         public void OnColorChanged(SKColor newColor)
         {
             Color = newColor;
