@@ -12,4 +12,3 @@ public class EditorStyle
     public bool ShowTicks { get; set; } = false;
     public double? TickFrequency { get; set; } = null;
 }
- 

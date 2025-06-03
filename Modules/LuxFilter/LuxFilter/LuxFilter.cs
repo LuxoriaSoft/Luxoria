@@ -9,6 +9,7 @@ using Luxoria.SDK.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace LuxFilter;
 
@@ -30,6 +31,8 @@ public class LuxFilter : IModule, IModuleUI
     public List<ILuxMenuBarItem> Items { get; set; } = [];
 
     private ICollection<LuxAsset> _lastImportedCollection = [];
+    private string _lastImportedCName = string.Empty;
+    private string _lastImportedCPath = string.Empty;
 
     private CollectionExplorer? _cExplorer;
     private AssetViewer? _viewer;
@@ -92,6 +95,14 @@ public class LuxFilter : IModule, IModuleUI
             }
         };
 
+        _filterToolBox.OnSaveClicked += async () =>
+        {
+            _logger.Log("FilterToolBox save clicked, saving collection...");
+
+            await _eventBus.Publish(new CollectionUpdatedEvent(_lastImportedCName, _lastImportedCPath, _lastImportedCollection));
+            _logger.Log("Collection updated event published.");
+        };
+
         // Add a menu bar item to the main menu bar.
         List<ISmartButton> smartButtons = [];
         Dictionary<SmartButtonType, Object> page = new()
@@ -123,6 +134,8 @@ public class LuxFilter : IModule, IModuleUI
         _eventBus.Subscribe<CollectionUpdatedEvent>(e =>
         {
             _logger.Log($"LuxFilter received {e.Assets.Count} assets.");
+            _lastImportedCName = e.CollectionName;
+            _lastImportedCPath = e.CollectionPath;
             _lastImportedCollection = e.Assets;
 
             _cExplorer?.SetImages(e.Assets);

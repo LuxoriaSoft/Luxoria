@@ -1,4 +1,6 @@
-﻿using SkiaSharp;
+﻿using Luxoria.Modules.Models;
+using SkiaSharp;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -6,6 +8,7 @@ namespace LuxEditor.Models
 {
     public class EditableImage
     {
+        public Guid Id { get; init; } = Guid.NewGuid();
         public string FileName { get; }
         public SKBitmap OriginalBitmap { get; }
         public SKBitmap? ThumbnailBitmap { get; set; }
@@ -16,24 +19,21 @@ namespace LuxEditor.Models
         public ReadOnlyDictionary<string, string> Metadata { get; }
 
         public Dictionary<string, object> Settings { get; private set; }
+        public FilterData FilterData { get; private set; }
 
         private readonly Stack<Dictionary<string, object>> _history = new();
         private readonly Stack<Dictionary<string, object>> _redo = new();
 
-        /// <summary>
-        /// Creates a new EditableImage instance.
-        /// </summary>
-        /// <param name="bitmap"></param>
-        /// <param name="metadata"></param>
-        /// <param name="fileName"></param>
-        public EditableImage(SKBitmap bitmap, ReadOnlyDictionary<string, string> metadata, string fileName)
+        public EditableImage(LuxAsset asset)
         {
-            FileName = fileName;
-            OriginalBitmap = bitmap;
-            Metadata = metadata;
+            Id = asset.Id;
+            FileName = asset.MetaData.FileName;
+            FilterData = asset.FilterData ?? new FilterData();
+            OriginalBitmap = asset.Data.Bitmap;
+            Metadata = asset.Data.EXIF;
             Settings = CreateDefaultSettings();
-            EditedBitmap = new SKBitmap(bitmap.Width, bitmap.Height);
-            EditedPreviewBitmap = new SKBitmap(bitmap.Width, bitmap.Height);
+            EditedBitmap = new SKBitmap(OriginalBitmap.Width, OriginalBitmap.Height);
+            EditedPreviewBitmap = new SKBitmap(OriginalBitmap.Width, OriginalBitmap.Height);
         }
 
         /// <summary>

@@ -14,6 +14,9 @@
                 <Expander Header="Filter Explorer" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="5" IsExpanded="True">
                     <Grid x:Name="FEGrid"/>
                 </Expander>
+                <Expander Header="Forward" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="5" IsExpanded="True">
+                    <Grid x:Name="F1Grid"/>
+                </Expander>
             </StackPanel>
         </StackPanel>
     </Grid>

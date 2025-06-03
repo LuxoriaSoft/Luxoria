@@ -8,6 +8,7 @@ using SkiaSharp.Views.Windows;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Windows.Foundation;
 
 namespace LuxEditor.Components
@@ -21,6 +22,7 @@ namespace LuxEditor.Components
         private ScrollViewer _scrollViewer;
         private WrapPanel _imagePanel;
         private Border? _selectedBorder;
+        private MenuFlyout _filterMenuFlyout;
 
         public event Action<EditableImage>? OnImageSelected;
 
@@ -58,18 +60,70 @@ namespace LuxEditor.Components
 
             _scrollViewer.Content = _imagePanel;
             RootGrid.Children.Add(_scrollViewer);
+
+            _filterMenuFlyout = BuildFilterMenuFlyout([]);
+
+            RootGrid.RightTapped += (s, e) =>
+            {
+                _filterMenuFlyout
+                    .ShowAt(_imagePanel, e.GetPosition(_imagePanel));
+            };
+        }
+
+        private static MenuFlyout BuildFilterMenuFlyout(ICollection<string> filterAlgoName)
+        {
+            var menuFlyout = new MenuFlyout();
+
+            var filterBy = new MenuFlyoutSubItem
+            {
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Text = "Filter by...",
+                Icon = new SymbolIcon(Symbol.Filter)
+            };
+
+            foreach (var item in filterAlgoName)
+            {
+                filterBy.Items.Add(new MenuFlyoutItem
+                {
+                    Text = item,
+                    Icon = new SymbolIcon(Symbol.Sort)
+                });
+            }
+
+            menuFlyout.Items.Add(filterBy);
+            menuFlyout.Items.Add(new MenuFlyoutSeparator());
+            menuFlyout.Items.Add(new RadioMenuFlyoutItem
+            {
+                Text = "Hide duplicates",
+                Icon = new SymbolIcon(Symbol.Copy)
+            });
+            menuFlyout.Items.Add(new MenuFlyoutSeparator());
+            menuFlyout.Items.Add(new MenuFlyoutItem
+            {
+                Text = "Show All / Reset",
+                Icon = new SymbolIcon(Symbol.ViewAll)
+            });
+
+            return menuFlyout;
         }
 
         /// <summary>
         /// Replaces the current list of images with a new one and updates the layout.
         /// </summary>
-        public void SetImages(List<EditableImage> images)
+        public void SetImages(IList<EditableImage> images)
         {
             if (images == null || images.Count == 0)
             {
                 Debug.WriteLine("SetImages: No images provided.");
                 return;
             }
+
+            ICollection<string> filterAlgoNames = [];
+            if (images.Count > 0)
+            {
+                filterAlgoNames = images[0].FilterData.GetFilteredAlgorithms();
+            }
+            _filterMenuFlyout = BuildFilterMenuFlyout(filterAlgoNames);
 
             DispatcherQueue.TryEnqueue(() =>
             {
