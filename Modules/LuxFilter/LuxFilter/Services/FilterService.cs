@@ -1,4 +1,8 @@
-﻿using LuxFilter.Algorithms.Interfaces;
+﻿using LuxFilter.Algorithms.ColorVisualAesthetics;
+using LuxFilter.Algorithms.ImageQuality;
+using LuxFilter.Algorithms.Interfaces;
+using LuxFilter.Algorithms.PerceptualMetrics;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
@@ -9,13 +13,15 @@ public class FilterService
     /// <summary>
     /// Static catalog definition
     /// </summary>
-    public static ImmutableDictionary<string, IFilterAlgorithm> Catalog { get; } = ImmutableDictionary.CreateRange(
-        new Dictionary<string, IFilterAlgorithm>
-        {
-            { "Resolution", new Algorithms.ImageQuality.ResolutionAlgo() },
-            { "Sharpness", new Algorithms.ImageQuality.SharpnessAlgo() },
-            { "Brisque", new Algorithms.PerceptualMetrics.BrisqueAlgo() },
-            { "CLIP", new Algorithms.ColorVisualAesthetics.CLIPAlgo() }
-        }
-    );
+    private static readonly Dictionary<string, Lazy<IFilterAlgorithm>> _lazyCatalog = new()
+    {
+        { "Resolution", new Lazy<IFilterAlgorithm>(() => new ResolutionAlgo()) },
+        { "Sharpness", new Lazy<IFilterAlgorithm>(() => new SharpnessAlgo()) },
+        { "Brisque", new Lazy<IFilterAlgorithm>(() => new BrisqueAlgo()) },
+        { "CLIP", new Lazy<IFilterAlgorithm>(() => new CLIPAlgo()) }
+    };
+
+    public static ImmutableDictionary<string, IFilterAlgorithm> Catalog { get; } =
+        _lazyCatalog.ToImmutableDictionary(pair => pair.Key, pair => pair.Value.Value);
+
 }

@@ -10,7 +10,7 @@
   <ItemGroup>
     <None Remove="Algorithms\PerceptualMetrics\brisque_model_live.yml" />
 	<None Remove="Algorithms\PerceptualMetrics\brisque_range_live.yml" />
-	  
+	
 	<None Remove="Algorithms\ColorVisualAesthetics\CLIPModel\clip_image_encoder.onnx" />
 	<None Remove="Algorithms\ColorVisualAesthetics\CLIPModel\negative.txt" />
 	<None Remove="Algorithms\ColorVisualAesthetics\CLIPModel\positive.txt" />

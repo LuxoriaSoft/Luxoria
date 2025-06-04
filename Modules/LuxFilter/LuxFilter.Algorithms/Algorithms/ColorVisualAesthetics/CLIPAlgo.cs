@@ -12,7 +12,8 @@ public class CLIPAlgo : IFilterAlgorithm, IDisposable
     public string Name => "CLIP";
     public string Description => "CLIP AI Model";
 
-    private readonly InferenceSession _session;
+    private readonly Lazy<InferenceSession> _session = new(()
+        => new InferenceSession(ExtractEmbeddedResource("LuxFilter.Algorithms.Algorithms.ColorVisualAesthetics.CLIPModel.clip_image_encoder.onnx")));
     private readonly float[] _positiveVec;
     private readonly float[] _negativeVec;
 
@@ -20,7 +21,6 @@ public class CLIPAlgo : IFilterAlgorithm, IDisposable
     {
         try
         {
-            _session = new InferenceSession(ExtractEmbeddedResource("LuxFilter.Algorithms.Algorithms.ColorVisualAesthetics.CLIPModel.clip_image_encoder.onnx"));
             _positiveVec = LoadVector(ExtractEmbeddedResource("LuxFilter.Algorithms.Algorithms.ColorVisualAesthetics.CLIPModel.positive.txt"));
             _negativeVec = LoadVector(ExtractEmbeddedResource("LuxFilter.Algorithms.Algorithms.ColorVisualAesthetics.CLIPModel.negative.txt"));
         }
@@ -43,7 +43,7 @@ public class CLIPAlgo : IFilterAlgorithm, IDisposable
                 NamedOnnxValue.CreateFromTensor("pixel_values", tensor)
             };
 
-            using var results = _session.Run(inputs);
+            using var results = _session.Value.Run(inputs);
             var output = results.First().AsEnumerable<float>().ToArray();
 
             double posSim = CosineSimilarity(output, _positiveVec);
@@ -58,17 +58,17 @@ public class CLIPAlgo : IFilterAlgorithm, IDisposable
         }
     }
 
-    private string SaveBitmapToTempFile(SKBitmap bitmap)
+    private static string SaveBitmapToTempFile(SKBitmap bitmap)
     {
         string tempFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.png");
 
-        using SKFileWStream fileStream = new SKFileWStream(tempFile);
+        using SKFileWStream fileStream = new(tempFile);
         bitmap.Encode(fileStream, SKEncodedImageFormat.Png, 100);
 
         return tempFile;
     }
 
-    private DenseTensor<float> PreprocessImage(string imagePath)
+    private static DenseTensor<float> PreprocessImage(string imagePath)
     {
         using var bitmap = SKBitmap.Decode(imagePath);
         using var resized = bitmap.Resize(new SKImageInfo(224, 224), SKFilterQuality.Medium);
@@ -93,14 +93,14 @@ public class CLIPAlgo : IFilterAlgorithm, IDisposable
         return new DenseTensor<float>(data, new[] { 1, 3, 224, 224 });
     }
 
-    private float[] LoadVector(string path)
+    private static float[] LoadVector(string path)
     {
         return File.ReadAllLines(path)
                    .Select(float.Parse)
                    .ToArray();
     }
 
-    private double CosineSimilarity(float[] a, float[] b)
+    private static double CosineSimilarity(float[] a, float[] b)
     {
         double dot = 0, normA = 0, normB = 0;
         for (int i = 0; i < a.Length; i++)
@@ -114,7 +114,10 @@ public class CLIPAlgo : IFilterAlgorithm, IDisposable
 
     public void Dispose()
     {
-        _session?.Dispose();
+        if (_session.IsValueCreated)
+        {
+            _session.Value.Dispose();
+        }
     }
 
     /// <summary>
@@ -122,7 +125,7 @@ public class CLIPAlgo : IFilterAlgorithm, IDisposable
     /// </summary>
     /// <param name="resourceName">The resource name</param>
     /// <returns>Path to the extracted file</returns>
-    private string ExtractEmbeddedResource(string resourceName)
+    public static string ExtractEmbeddedResource(string resourceName)
     {
         Assembly assembly = Assembly.GetExecutingAssembly();
         using Stream? stream = assembly.GetManifestResourceStream(resourceName);
