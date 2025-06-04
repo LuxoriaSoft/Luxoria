@@ -286,7 +286,7 @@ namespace LuxAPI.Controllers
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Email, email), // ✅ utilisé comme .Name
+                new Claim(JwtRegisteredClaimNames.Email, email),
                 new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
                 new Claim(JwtRegisteredClaimNames.Sub, username),
                 new Claim(ClaimTypes.Name, username),
