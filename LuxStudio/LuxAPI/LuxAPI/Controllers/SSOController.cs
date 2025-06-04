@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using LuxAPI.DAL;
 using LuxAPI.Models;
 using LuxAPI.Models.DTOs;
 using LuxAPI.Services;
+using LuxAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 
 namespace LuxAPI.Controllers
@@ -22,6 +20,7 @@ namespace LuxAPI.Controllers
         private readonly ILogger<SSOController> _logger;
         private readonly IConfiguration _configuration;
         private readonly AppDbContext _context;
+        private readonly IJwtService _jwtService;
 
         /// <summary>
         /// Initializes the SSOController with logging, database context, and configuration.
@@ -29,11 +28,16 @@ namespace LuxAPI.Controllers
         /// <param name="logger">Logger service for tracking authentication events.</param>
         /// <param name="configuration">Configuration service for retrieving JWT settings.</param>
         /// <param name="context">Database context for managing authentication data.</param>
-        public SSOController(ILogger<SSOController> logger, IConfiguration configuration, AppDbContext context)
+        public SSOController(
+            ILogger<SSOController> logger,
+            IConfiguration configuration,
+            AppDbContext context,
+            IJwtService jwtService)
         {
             _logger = logger;
             _configuration = configuration;
             _context = context;
+            _jwtService = jwtService;
         }
 
         /// <summary>
@@ -129,7 +133,7 @@ namespace LuxAPI.Controllers
                 _context.AuthorizationCodes.Remove(authorizationCode);
                 _context.SaveChanges();
 
-                var accessToken = GenerateJwtToken(user.Id, user.Username, user.Email);
+                var accessToken = _jwtService.GenerateJwtToken(user.Id, user.Username, user.Email);
                 var refreshToken = TokenService.GenerateRefreshToken();
 
                 _context.Tokens.Add(new Token { AccessToken = accessToken, RefreshToken = refreshToken, UserId = user.Id, Expiry = DateTime.UtcNow.AddHours(1) });
@@ -173,7 +177,7 @@ namespace LuxAPI.Controllers
                     return BadRequest(new { error = "User not found." });
                 }
 
-                var newAccessToken = GenerateJwtToken(user.Id, user.Username, user.Email);
+                var newAccessToken = _jwtService.GenerateJwtToken(user.Id, user.Username, user.Email);
                 var newRefreshToken = TokenService.GenerateRefreshToken();
 
                 existingToken.Token = newRefreshToken;
@@ -189,36 +193,6 @@ namespace LuxAPI.Controllers
                 _logger.LogError(ex, "An error occurred while refreshing the token.");
                 return StatusCode(500, new { error = "An error occurred while processing your request." });
             }
-        }
-
-        /// <summary>
-        /// Generates a JWT token for an authenticated user.
-        /// </summary>
-        /// <param name="userId">The unique identifier of the user.</param>
-        /// <returns>A JWT access token as a string.</returns>
-        private string GenerateJwtToken(Guid userId, string username, string email, int expiryHours = 48)
-        {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Email, email),
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                new Claim(JwtRegisteredClaimNames.Sub, username),
-                new Claim(ClaimTypes.Name, username),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
-
-            var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(expiryHours),
-                signingCredentials: credentials
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }
