@@ -1,3 +1,10 @@
+## [1.42.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.42.1...v1.42.2) (2025-06-04)
+
+
+### Bug Fixes
+
+* Generate JWT token the same way as AuthController does ([40f21d8](https://github.com/LuxoriaSoft/Luxoria/commit/40f21d81826048ff128bc5114714892fbe8af741))
+
 ## [1.42.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.42.0...v1.42.1) (2025-06-04)
 
 
