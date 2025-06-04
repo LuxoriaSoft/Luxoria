@@ -1,3 +1,11 @@
+## [1.42.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.42.0...v1.42.1) (2025-06-04)
+
+
+### Bug Fixes
+
+* Improve WhoAmI method (AuthController), returns User model fetched from DB, instead of reading JWT cache info ([2c62808](https://github.com/LuxoriaSoft/Luxoria/commit/2c62808ddf96eaa81c7ffe8eb51a143ce87f6f9d))
+* User retrieval from JWT token (WhoAmI method) ([efcf644](https://github.com/LuxoriaSoft/Luxoria/commit/efcf6443281e8de9a41a44e340ac4a81ce9eb6bf))
+
 # [1.42.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.41.2...v1.42.0) (2025-06-04)
 
 
