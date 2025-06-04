@@ -21,5 +21,17 @@
             <TextBox x:Name="StudioUrlTextBox" PlaceholderText="https://studio.example.com" Width="300"/>
             <Button Content="Connect" Click="ConnectButton_Click" Width="100"/>
         </StackPanel>
+
+        <!-- Main content area -->
+        <StackPanel x:Name="MainContentPanel" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Top" Spacing="20">
+            <TextBlock Text="Account Management" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+
+            <!-- User Info Display -->
+            <StackPanel x:Name="UserInfoPanel" Spacing="10" HorizontalAlignment="Center">
+                <TextBlock x:Name="UIUsernameText" FontSize="18"/>
+                <TextBlock x:Name="UIEmailText" FontSize="16"/>
+            </StackPanel>
+        </StackPanel>
+
     </Grid>
 </Page>

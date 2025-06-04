@@ -76,4 +76,12 @@ public class AuthManager(LuxStudioConfig config)
         return _generatedAt.Value.AddSeconds(AuthService.AccessTokenExpirationDelay) > DateTime.UtcNow
             && _generatedAt.Value.AddSeconds(AuthService.RefreshTokenExpirationDelay) > DateTime.UtcNow;
     }
+
+    /// <summary>
+    /// Returns the current user information
+    /// </summary>
+    /// <returns
+    /// Returns the user information as a UserInfo
+    /// </returns>
+    public async Task<UserInfo> GetUserInfoAsync() => await _authSvc.WhoAmIAsync(await GetAccessTokenAsync());
 }

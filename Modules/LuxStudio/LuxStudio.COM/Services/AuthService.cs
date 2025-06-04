@@ -258,4 +258,60 @@ public class AuthService
             throw;
         }
     }
+
+    /// <summary>
+    /// Retrieves the user information associated with the provided access token.
+    /// </summary>
+    /// <param name="accessToken">Access Token (Bearer)</param>
+    /// <returns>User information as UserInfo</returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public async Task<UserInfo> WhoAmIAsync(string accessToken)
+    {
+        /*
+         * Expected response:
+         * {
+         *   "id": "USERGUID",
+         *   "username": "USERNAME",
+         *   "email": "EMAIL",
+         *   "passwordHash": "ALWAYS EMPTY",
+         *   "avatarFileName": null,
+         *   "createdAt": "2025-06-03T11:59:25.778395Z",
+         *   "updatedAt": "2025-06-03T11:59:25.778395Z"
+         * }
+         */
+        _logger.Log("Fetching user information...", _section, LogLevel.Info);
+
+        var requestUri = $"{_apiBaseUrl}/auth/whoami";
+
+        using var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+
+        try
+        {
+            var response = await httpClient.GetAsync(requestUri);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMsg = $"Failed to fetch user information: {response.StatusCode}";
+                _logger.Log(errorMsg, _section, LogLevel.Error);
+                throw new InvalidOperationException(errorMsg);
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var userInfo = System.Text.Json.JsonSerializer.Deserialize<UserInfo>(
+                responseContent,
+                new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+            return userInfo ?? throw new InvalidOperationException("Invalid response format from user information fetch.");
+        }
+        catch (Exception ex)
+        {
+            _logger.Log($"Exception during fetching user information: {ex.Message}", _section, LogLevel.Error);
+            throw;
+        }
+    }
 }

@@ -50,3 +50,5 @@ string token3 = await authManager.GetAccessTokenAsync();
 
 Debug.WriteLine("Is Authenticated: " + authManager.IsAuthenticated());
 Debug.WriteLine("Access Token (third call): " + token3);
+
+Debug.WriteLine(await authManager.GetUserInfoAsync());
