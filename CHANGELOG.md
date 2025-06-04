@@ -1,3 +1,11 @@
+## [1.42.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.42.2...v1.42.3) (2025-06-04)
+
+
+### Bug Fixes
+
+* Bring docs for IJwtService ([a807a82](https://github.com/LuxoriaSoft/Luxoria/commit/a807a8256ceec479123d46d2852bfa8a3518d794))
+* Create I/JwtService that handles TokenCreation ([11855bd](https://github.com/LuxoriaSoft/Luxoria/commit/11855bd3ca1b8947f3594f3de807bb742016df08))
+
 ## [1.42.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.42.1...v1.42.2) (2025-06-04)
 
 
