@@ -1,3 +1,28 @@
+# [1.42.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.41.2...v1.42.0) (2025-06-04)
+
+
+### Bug Fixes
+
+* Display algorithm's row by algorithm name sorting by A-Z ([db389e0](https://github.com/LuxoriaSoft/Luxoria/commit/db389e09929a8d11742fc4a0a95f429b0b3701e7))
+
+
+### Features
+
+* Add fondation for FilterExplorer on LuxFilter Left-hand toolbox ([cefef42](https://github.com/LuxoriaSoft/Luxoria/commit/cefef42bda20c341063bf7dd87163dfe389df532))
+* Add logical update (filer by algoName & Ordering >=/=<) when filter has been changed ([3db9142](https://github.com/LuxoriaSoft/Luxoria/commit/3db914267d50d01324914d23f02517ac2bd94627))
+* Add ScoreViewer in ToolBox right-hand side panel ([230c15d](https://github.com/LuxoriaSoft/Luxoria/commit/230c15df56684b5546795527d90109a4be9b3cbb))
+* Add ToolBox component which includes RatingComp on the right-hand side panel ([790e727](https://github.com/LuxoriaSoft/Luxoria/commit/790e727791f3f071e10414b72bcffec0645ac464))
+* Implement CollectionExplorer & AssetViewer on LuxFilter (v3) ([546aec5](https://github.com/LuxoriaSoft/Luxoria/commit/546aec58db56f5bdada043928288ca18bed66825))
+* Implement FlagsComponent inside Toolbox Partial View ([74db3b5](https://github.com/LuxoriaSoft/Luxoria/commit/74db3b5f8acfc4bd296e5ac3af3992ac9bec8f42))
+* Integrate sync mechanism (event communication) between LuxFilter & LuxEditor ([dd49cf1](https://github.com/LuxoriaSoft/Luxoria/commit/dd49cf173da766b95d8a5acfa6b9ee1578ce97e8))
+
+## [1.41.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.41.1...v1.41.2) (2025-06-03)
+
+
+### Bug Fixes
+
+* Change ingress certification manager to traefik's internal certmgr ([91970be](https://github.com/LuxoriaSoft/Luxoria/commit/91970be4b927daaa468eda1cc9c336ca44f469d8))
+
 ## [1.41.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.41.0...v1.41.1) (2025-06-02)
 
 

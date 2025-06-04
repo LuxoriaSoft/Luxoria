@@ -13,10 +13,19 @@
 	<GenerateLibraryLayout>true</GenerateLibraryLayout>
   </PropertyGroup>
 
+  <PropertyGroup>
+	<Nullable>enable</Nullable>
+  </PropertyGroup>
+
   <ItemGroup>
-    <None Remove="Views\FilterView.xaml" />
-    <None Remove="Views\MainFilterView.xaml" />
-    <None Remove="Views\StatusView.xaml" />
+	<None Remove="Components\CollectionExplorer.xaml" />
+	<None Remove="Components\AssetViewer.xaml" />
+	<None Remove="Components\FilterExplorer.xaml" />
+	<None Remove="Components\FilterToolBox.xaml" />
+	<None Remove="Components\FlagsComponent.xaml" />
+	<None Remove="Components\RatingComponent.xaml" />
+	<None Remove="Components\ScoreViewer.xaml" />
+	<None Remove="Components\ToolBox.xaml" />
   </ItemGroup>
 	
 	
@@ -39,28 +48,55 @@
 	</ItemGroup>
 
   <ItemGroup>
-	<None Remove="Views\FilterView.xaml"></None>	
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Views\StatusView.xaml">
+    <Page Update="Components\FilterToolBox.xaml">
       <Generator>MSBuild:Compile</Generator>
-	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Views\MainFilterView.xaml">
+    <Page Update="Components\FilterExplorer.xaml">
       <Generator>MSBuild:Compile</Generator>
-	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Page>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Views\FilterView.xaml">
+    <Page Update="Components\ScoreViewer.xaml">
       <Generator>MSBuild:Compile</Generator>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Components\FlagsComponent.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Components\ToolBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Components\RatingComponent.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Components\AssetViewer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Components\CollectionExplorer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Logics\" />
   </ItemGroup>
   
 </Project>

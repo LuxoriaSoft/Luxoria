@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="LuxFilter.Components.RatingComponent"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls">
+
+    <Grid>
+        <!-- RatingControl, initially collapsed -->
+        <controls:RatingControl
+            x:Name="RatingControl"
+            ValueChanged="RatingControl_ValueChanged"
+            Visibility="Collapsed" />
+
+        <!-- TextBlock + FontIcon for no selection -->
+        <StackPanel x:Name="NoSelectionPanel" Orientation="Horizontal" Visibility="Visible" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <FontIcon Glyph="&#xE8B9;" Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}" />
+            <TextBlock Text="No Asset Selected" Margin="5,0,0,0"/>
+        </StackPanel>
+    </Grid>
+</UserControl>
