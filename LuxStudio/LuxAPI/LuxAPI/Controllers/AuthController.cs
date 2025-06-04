@@ -332,10 +332,20 @@ namespace LuxAPI.Controllers
         [Authorize] // Requires a valid JWT token
         public IActionResult WhoAmI()
         {
+            // http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var username = User.FindFirst(ClaimTypes.Name)?.Value;
-            var userEmail = User.FindFirst(ClaimTypes.Email)?.Value; // 👈 ici
-            return Ok(new { userId, username, userEmail });
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User not authenticated.");
+            
+            var user = _context.Users.FirstOrDefault(u => u.Id == Guid.Parse(userId));
+            
+            if (user == null)
+                return Unauthorized("User not found.");
+            
+            // Mask sensitive information
+            user.PasswordHash = string.Empty;
+            
+            return Ok(user);
         }
 
         /// <summary>
