@@ -4,11 +4,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Any;
 using LuxAPI.Hubs;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using LuxAPI.Services;
+using LuxAPI.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +53,7 @@ builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(DB_DEFAULT_CONNECTION));
 
+builder.Services.AddSingleton<IJwtService, JwtService>();
 builder.Services.AddSingleton<MinioService>();
 builder.Services.AddTransient<EmailService>();
 builder.Services.AddHostedService<CleanupExpiredRegistrations>();
