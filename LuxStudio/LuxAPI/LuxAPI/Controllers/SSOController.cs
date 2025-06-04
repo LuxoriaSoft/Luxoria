@@ -129,7 +129,7 @@ namespace LuxAPI.Controllers
                 _context.AuthorizationCodes.Remove(authorizationCode);
                 _context.SaveChanges();
 
-                var accessToken = GenerateJwtToken(user.Id.ToString());
+                var accessToken = GenerateJwtToken(user.Id, user.Username, user.Email);
                 var refreshToken = TokenService.GenerateRefreshToken();
 
                 _context.Tokens.Add(new Token { AccessToken = accessToken, RefreshToken = refreshToken, UserId = user.Id, Expiry = DateTime.UtcNow.AddHours(1) });
@@ -166,8 +166,14 @@ namespace LuxAPI.Controllers
                 {
                     return BadRequest(new { error = "Invalid or expired refresh token." });
                 }
+                
+                var user = _context.Users.FirstOrDefault(u => u.Id == existingToken.UserId);
+                if (user == null)
+                {
+                    return BadRequest(new { error = "User not found." });
+                }
 
-                var newAccessToken = GenerateJwtToken(existingToken.UserId.ToString());
+                var newAccessToken = GenerateJwtToken(user.Id, user.Username, user.Email);
                 var newRefreshToken = TokenService.GenerateRefreshToken();
 
                 existingToken.Token = newRefreshToken;
@@ -190,14 +196,27 @@ namespace LuxAPI.Controllers
         /// </summary>
         /// <param name="userId">The unique identifier of the user.</param>
         /// <returns>A JWT access token as a string.</returns>
-        private string GenerateJwtToken(string userId)
+        private string GenerateJwtToken(Guid userId, string username, string email, int expiryHours = 48)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            var claims = new[] { new Claim(ClaimTypes.NameIdentifier, userId), new Claim("scope", "openid profile email") };
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Email, email),
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(JwtRegisteredClaimNames.Sub, username),
+                new Claim(ClaimTypes.Name, username),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
 
-            var token = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], claims, expires: DateTime.UtcNow.AddHours(1), signingCredentials: credentials);
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(expiryHours),
+                signingCredentials: credentials
+            );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
