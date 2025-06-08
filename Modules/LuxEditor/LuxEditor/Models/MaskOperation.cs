@@ -46,7 +46,7 @@ namespace LuxEditor.Models
                     Debug.WriteLine("MaskOperation: Brush tool initialized.");
                     break;
                 case ToolType.LinearGradient:
-                    //Tool = new LinearGradientToolControl();
+                    Tool = new LinearGradientToolControl();
                     Debug.WriteLine("MaskOperation: LinearGradient tool initialized.");
                     break;
                 case ToolType.RadialGradient:
