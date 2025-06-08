@@ -1,4 +1,6 @@
+using CommunityToolkit.WinUI;
 using LuxEditor.EditorUI.Controls.ToolControls;
+using LuxEditor.Logic;
 using LuxEditor.Models;
 using LuxEditor.Services;
 using Microsoft.UI.Xaml;
@@ -7,16 +9,16 @@ using Microsoft.UI.Xaml.Input;
 using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using static System.Net.Mime.MediaTypeNames;
+using System.ComponentModel;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace LuxEditor.Components
 {
     public sealed partial class PhotoViewer : Page
     {
         private readonly SKXamlCanvas _mainCanvas;
-        public readonly SKXamlCanvas _overlayCanva;
+        private readonly SKXamlCanvas _overlayCanvas;
 
         private SKImage? _currentGpu;
         private SKBitmap? _currentCpu;
@@ -26,18 +28,20 @@ namespace LuxEditor.Components
         private Windows.Foundation.Point _lastPoint;
 
         private ATool? _currentTool;
+        private CancellationTokenSource? _overlayCts;
+        private int _isOverlayRendering;
 
-        /// <summary>
-        /// Initializes the viewer and sets up canvas layers.
-        /// </summary>
+        private Layer? _observedLayer;
+        private EventHandler<SKPaintSurfaceEventArgs>? _overlayClearHandler;
+
         public PhotoViewer()
         {
             InitializeComponent();
 
             _mainCanvas = new SKXamlCanvas();
-            _overlayCanva = new SKXamlCanvas();
+            _overlayCanvas = new SKXamlCanvas();
             CanvasHost.Children.Add(_mainCanvas);
-            CanvasHost.Children.Add(_overlayCanva);
+            CanvasHost.Children.Add(_overlayCanvas);
 
             _mainCanvas.PaintSurface += OnPaintSurface;
 
@@ -51,34 +55,47 @@ namespace LuxEditor.Components
 
         private void ClearOverlay()
         {
-            _overlayCanva.PaintSurface += (sender, e) =>
+            if (_overlayClearHandler != null)
+                _overlayCanvas.PaintSurface -= _overlayClearHandler;
+
+            _overlayClearHandler = (s, e) =>
             {
-                var canvas = e.Surface.Canvas;
-                canvas.Clear(SKColors.Transparent);
+                var c = e.Surface.Canvas;
+                c.Clear(SKColors.Transparent);
             };
-            _overlayCanva.Invalidate();
+            _overlayCanvas.PaintSurface += _overlayClearHandler;
+            _overlayCanvas.Invalidate();
         }
 
-        /// <summary>
-        /// Connects this viewer to the given editable image.
-        /// </summary>
         public void SetEditableImage(EditableImage image)
         {
+            if (_currentImage != null)
+            {
+                _currentImage.LayerManager.OnOperationChanged -= OperationSelected;
+                _currentImage.LayerManager.OnLayerChanged -= LayerSelected;
+            }
+
             _currentImage = image;
             image.LayerManager.OnOperationChanged += OperationSelected;
             image.LayerManager.OnLayerChanged += LayerSelected;
         }
 
-        /// <summary>
-        /// Handles switching to a new operation/tool on the active layer.
-        /// </summary>
         public void OperationSelected()
         {
             UnsubscribeCurrentTool();
-            var tool = _currentImage?.LayerManager?.SelectedLayer?.SelectedOperation?.Tool;
+
+            var layer = _currentImage?.LayerManager?.SelectedLayer;
+            var tool = layer?.SelectedOperation?.Tool;
             if (tool == null) return;
 
             SubscribeTool(tool);
+
+            if (layer != null)
+            {
+                tool.OnColorChanged(layer.OverlayColor.ToSKColor());
+                if (tool is BrushToolControl brush)
+                    brush.ShowExistingStrokes = !layer.HasActiveFilters();
+            }
 
             var bmp = _currentImage?.OriginalBitmap;
             if (bmp != null) tool.ResizeCanvas(bmp.Width, bmp.Height);
@@ -87,139 +104,187 @@ namespace LuxEditor.Components
 
         private SKImage? GetImageOps()
         {
-            SKImage? resultImage = null;
-            if (_currentImage == null || _currentImage.LayerManager.SelectedLayer == null ||  _currentImage.LayerManager.SelectedLayer.SelectedOperation == null)
-                return null;
+            if (_currentImage == null) return null;
+            var layer = _currentImage.LayerManager.SelectedLayer;
+            if (layer == null) return null;
 
-            foreach (var op in _currentImage.LayerManager.SelectedLayer.Operations)
+            SKImage? result = null;
+            foreach (var op in layer.Operations)
             {
-                if (op == null) continue;
-                if (op.Tool == null) continue;
-                var bm = op.Tool.GetResult();
-
+                var bm = op.Tool?.GetResult();
                 if (bm == null) continue;
 
                 if (op.Mode == BooleanOperationMode.Add)
                 {
-                    if (resultImage == null)
-                    {
-                        resultImage = SKImage.FromBitmap(bm);
-                    }
+                    if (result == null) result = SKImage.FromBitmap(bm);
                     else
                     {
                         using var temp = SKImage.FromBitmap(bm);
-                        using var paint = new SKPaint
-                        {
-                            BlendMode = SKBlendMode.SrcOver
-                        };
-                        using var surface = SKSurface.Create(new SKImageInfo(resultImage.Width, resultImage.Height));
+                        using var surface = SKSurface.Create(new SKImageInfo(result.Width, result.Height));
                         var canvas = surface.Canvas;
-                        canvas.DrawImage(resultImage, 0, 0);
+                        canvas.DrawImage(result, 0, 0);
+                        using var paint = new SKPaint { BlendMode = SKBlendMode.SrcOver };
                         canvas.DrawImage(temp, 0, 0, paint);
                         canvas.Flush();
-                        resultImage.Dispose();
-                        resultImage = surface.Snapshot();
+                        result.Dispose();
+                        result = surface.Snapshot();
                     }
                 }
                 else if (op.Mode == BooleanOperationMode.Subtract)
                 {
-                    if (resultImage == null)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        using var temp = SKImage.FromBitmap(bm);
-                        using var paint = new SKPaint
-                        {
-                            BlendMode = SKBlendMode.DstOut
-                        };
-                        using var surface = SKSurface.Create(new SKImageInfo(resultImage.Width, resultImage.Height));
-                        var canvas = surface.Canvas;
-                        canvas.DrawImage(resultImage, 0, 0);
-                        canvas.DrawImage(temp, 0, 0, paint);
-                        canvas.Flush();
-                        resultImage.Dispose();
-                        resultImage = surface.Snapshot();
-                    }
+                    if (result == null) continue;
+                    using var temp = SKImage.FromBitmap(bm);
+                    using var surface = SKSurface.Create(new SKImageInfo(result.Width, result.Height));
+                    var canvas = surface.Canvas;
+                    canvas.DrawImage(result, 0, 0);
+                    using var paint = new SKPaint { BlendMode = SKBlendMode.DstOut };
+                    canvas.DrawImage(temp, 0, 0, paint);
+                    canvas.Flush();
+                    result.Dispose();
+                    result = surface.Snapshot();
                 }
             }
-            return resultImage;
+            return result;
         }
 
+        private void DebouncedOverlayRefresh()
+        {
+            _overlayCts?.Cancel();
+            _overlayCts = new CancellationTokenSource();
+            var token = _overlayCts.Token;
+
+            _ = Task.Run(async () =>
+            {
+                if (Interlocked.CompareExchange(ref _isOverlayRendering, 1, 0) != 0)
+                    return;
+
+                try
+                {
+                    await Task.Delay(150, token);
+                    if (token.IsCancellationRequested) return;
+                    await DispatcherQueue.EnqueueAsync(() => _overlayCanvas.Invalidate());
+                }
+                catch (OperationCanceledException) { }
+                finally
+                {
+                    Interlocked.Exchange(ref _isOverlayRendering, 0);
+                }
+            });
+        }
         public void LayerSelected()
         {
             UnsubscribeCurrentTool();
             ClearOverlay();
-            if (_currentImage?.LayerManager.SelectedLayer == null) return;
-            
-            var resultImage = GetImageOps();
-            _overlayCanva.PaintSurface += (sender, args) =>
+
+            var layer = _currentImage?.LayerManager.SelectedLayer;
+            if (layer == null) return;
+
+            if (_observedLayer != null)
+                _observedLayer.PropertyChanged -= OnLayerPropertyChanged;
+            _observedLayer = layer;
+            _observedLayer.PropertyChanged += OnLayerPropertyChanged;
+
+            if (layer.SelectedOperation?.Tool is BrushToolControl brush)
             {
-                if (resultImage == null) return;
-                var canvas = args.Surface.Canvas;
-                canvas.Clear(SKColors.Transparent);
-                canvas.DrawImage(resultImage, 0, 0);
-            };
-            _overlayCanva.Invalidate();
+                brush.ShowExistingStrokes = !layer.HasActiveFilters();
+                brush.OnColorChanged(layer.OverlayColor.ToSKColor());
+            }
+            DebouncedOverlayRefresh();
+        }
+
+        private void OnLayerPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (sender is not Layer layer) return;
+
+            switch (e.PropertyName)
+            {
+                case nameof(Layer.Filters):
+                    if (layer.SelectedOperation?.Tool is BrushToolControl b)
+                        b.ShowExistingStrokes = !layer.HasActiveFilters();
+                    DebouncedOverlayRefresh();
+                    break;
+
+                case nameof(Layer.OverlayColor):
+                    layer.SelectedOperation?.Tool?.OnColorChanged(layer.OverlayColor.ToSKColor());
+                    DebouncedOverlayRefresh();
+                    break;
+
+                case nameof(Layer.Strength):
+                    DebouncedOverlayRefresh();
+                    break;
+            }
         }
 
         public void ResetOverlay()
         {
             RefreshAction();
-            UnsubscribeCurrentTool();
-            _currentTool?.ResizeCanvas((int)_mainCanvas.Width, (int)_mainCanvas.Height);
+            _currentTool?.ResizeCanvas((int)_mainCanvas.Width,
+                                       (int)_mainCanvas.Height);
         }
 
-        /// <summary>
-        /// Forces a repaint of the overlay.
-        /// </summary>
         private void RefreshAction()
         {
             if (_currentTool == null) return;
-
-            _overlayCanva.Invalidate();
+            _overlayCanvas.Invalidate();
         }
 
-        /// <summary>
-        /// Sets a new GPU-backed image.
-        /// </summary>
         public void SetImage(SKImage image)
         {
             _currentGpu?.Dispose();
             _currentGpu = image;
             _currentCpu = null;
-
             ResizeCanvases(image.Width, image.Height);
         }
 
-        /// <summary>
-        /// Sets a new CPU-backed bitmap.
-        /// </summary>
         public void SetImage(SKBitmap bitmap)
         {
             _currentCpu = bitmap;
             _currentGpu?.Dispose();
             _currentGpu = null;
-
             ResizeCanvases(bitmap.Width, bitmap.Height);
         }
 
-        /// <summary>
-        /// Repaints the main canvas with the current bitmap/image.
-        /// </summary>
         private void OnPaintSurface(object? sender, SKPaintSurfaceEventArgs e)
         {
             var canvas = e.Surface.Canvas;
             canvas.Clear(SKColors.Transparent);
-
             if (_currentGpu != null) canvas.DrawImage(_currentGpu, 0, 0);
             else if (_currentCpu != null) canvas.DrawBitmap(_currentCpu, 0, 0);
         }
 
-        /// <summary>
-        /// Handles middle-mouse drag panning.
-        /// </summary>
+        private void ResizeCanvases(int width, int height)
+        {
+            _mainCanvas.Width = width;
+            _mainCanvas.Height = height;
+            _overlayCanvas.Width = width;
+            _overlayCanvas.Height = height;
+            _mainCanvas.Invalidate();
+            RefreshAction();
+            _currentTool?.ResizeCanvas(width, height);
+        }
+
+        private void UnsubscribeCurrentTool()
+        {
+            if (_currentTool == null) return;
+            _overlayCanvas.PaintSurface -= _currentTool.OnPaintSurface!;
+            _overlayCanvas.PointerPressed -= _currentTool.OnPointerPressed;
+            _overlayCanvas.PointerMoved -= _currentTool.OnPointerMoved;
+            _overlayCanvas.PointerReleased -= _currentTool.OnPointerReleased;
+            _currentTool.RefreshAction -= RefreshAction;
+            ClearOverlay();
+        }
+
+        private void SubscribeTool(ATool tool)
+        {
+            _currentTool = tool;
+            _overlayCanvas.PaintSurface += tool.OnPaintSurface!;
+            _overlayCanvas.PointerPressed += tool.OnPointerPressed;
+            _overlayCanvas.PointerMoved += tool.OnPointerMoved;
+            _overlayCanvas.PointerReleased += tool.OnPointerReleased;
+            tool.RefreshAction += RefreshAction;
+            RefreshAction();
+        }
+
         private void ScrollViewerImage_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             _isDragging = e.GetCurrentPoint(ScrollViewerImage).Properties.IsMiddleButtonPressed;
@@ -230,87 +295,28 @@ namespace LuxEditor.Components
             }
         }
 
-        /// <summary>
-        /// Updates scroll position while dragging.
-        /// </summary>
         private void ScrollViewerImage_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             if (!_isDragging) return;
-
             var current = e.GetCurrentPoint(ScrollViewerImage).Position;
             ScrollViewerImage.ChangeView(
                 ScrollViewerImage.HorizontalOffset - (current.X - _lastPoint.X),
                 ScrollViewerImage.VerticalOffset - (current.Y - _lastPoint.Y),
                 ScrollViewerImage.ZoomFactor,
                 true);
-
             _lastPoint = current;
         }
 
-        /// <summary>
-        /// Releases the drag state.
-        /// </summary>
         private void ScrollViewerImage_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             _isDragging = false;
             (sender as UIElement)?.ReleasePointerCaptures();
         }
 
-        /// <summary>
-        /// Cancels the drag state.
-        /// </summary>
         private void ScrollViewerImage_PointerCanceled(object sender, PointerRoutedEventArgs e)
         {
             _isDragging = false;
             (sender as UIElement)?.ReleasePointerCaptures();
-        }
-
-        /// <summary>
-        /// Adjusts both canvases to a new size and notifies the active tool.
-        /// </summary>
-        private void ResizeCanvases(int width, int height)
-        {
-            _mainCanvas.Width = width;
-            _mainCanvas.Height = height;
-            _overlayCanva.Width = width;
-            _overlayCanva.Height = height;
-
-            _mainCanvas.Invalidate();
-            RefreshAction();
-
-            _currentTool?.ResizeCanvas(width, height);
-        }
-
-        /// <summary>
-        /// Removes event subscriptions for the current tool.
-        /// </summary>
-        private void UnsubscribeCurrentTool()
-        {
-            if (_currentTool == null) return;
-
-            _overlayCanva.PaintSurface -= _currentTool.OnPaintSurface!;
-            _overlayCanva.PointerPressed -= _currentTool.OnPointerPressed;
-            _overlayCanva.PointerMoved -= _currentTool.OnPointerMoved;
-            _overlayCanva.PointerReleased -= _currentTool.OnPointerReleased;
-            _currentTool.RefreshAction -= RefreshAction;
-            ClearOverlay();
-        }
-
-
-
-        /// <summary>
-        /// Adds event subscriptions for the specified tool.
-        /// </summary>
-        private void SubscribeTool(ATool tool)
-        {
-            _currentTool = tool;
-
-            _overlayCanva.PaintSurface += tool.OnPaintSurface!;
-            _overlayCanva.PointerPressed += tool.OnPointerPressed;
-            _overlayCanva.PointerMoved += tool.OnPointerMoved;
-            _overlayCanva.PointerReleased += tool.OnPointerReleased;
-            tool.RefreshAction += RefreshAction;
-            RefreshAction();
         }
     }
 }

@@ -15,9 +15,11 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using SkiaSharp;
+using SkiaSharp.Views.Windows;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -39,7 +41,7 @@ namespace LuxEditor.Components
         public event Action<SKImage>? OnEditorImageUpdated;
 
         private readonly Dictionary<TreeViewNode, object> _nodeMap = new();
-        
+        private readonly List<Layer> _observedLayers = new();
         /// <summary>
         /// Style for the temperature slider.
         /// </summary>
@@ -164,6 +166,7 @@ namespace LuxEditor.Components
 
             if (_nodeMap[node] is Layer layer)
             {
+                layer.DetailsPanel.SetLayer(layer);
                 OperationDetailsHost.Content = layer.DetailsPanel;
                 OperationDetailsHost.Visibility = Visibility.Visible;
                 CurrentImage.LayerManager.SelectedLayer = layer;
@@ -173,9 +176,10 @@ namespace LuxEditor.Components
             {
                 CurrentImage.LayerManager.SelectedLayer = CurrentImage.LayerManager.GetLayerByOperation(op.Id);
                 CurrentImage.LayerManager.SelectedLayer.SelectedOperation = op;
-                CurrentImage.LayerManager.OnOperationChanged?.Invoke(); 
+                CurrentImage.LayerManager.OnOperationChanged?.Invoke();
             }
         }
+
 
         private TreeViewNode? FindNodeByLayer(Layer target, IList<TreeViewNode> nodes)
         {
@@ -462,6 +466,29 @@ namespace LuxEditor.Components
         public void SetEditableImage(EditableImage image)
         {
             CurrentImage = image;
+
+            foreach (var l in _observedLayers) l.PropertyChanged -= OnLayerModified;
+            _observedLayers.Clear();
+            image.LayerManager.OnOperationChanged += RequestFilterUpdate;
+            image.LayerManager.OnLayerChanged += RequestFilterUpdate;
+            foreach (var l in image.LayerManager.Layers)
+            {
+                l.PropertyChanged += OnLayerModified;
+                _observedLayers.Add(l);
+            }
+            image.LayerManager.Layers.CollectionChanged += (_, __) =>
+            {
+                foreach (var lay in _observedLayers)
+                    lay.PropertyChanged -= OnLayerPropertyChanged;
+                _observedLayers.Clear();
+                foreach (var lay in image.LayerManager.Layers)
+                {
+                    lay.PropertyChanged += OnLayerPropertyChanged;
+                    _observedLayers.Add(lay);
+                }
+                RequestFilterUpdate();
+            };
+
             EditorStackPanel.Children.Clear();
             _categories.Clear();
             _sliderCache.Clear();
@@ -470,6 +497,17 @@ namespace LuxEditor.Components
             RequestFilterUpdate();
             UpdateResetButtonsVisibility();
             RefreshLayerTree();
+        }
+
+        private void OnLayerModified(object? s, PropertyChangedEventArgs e) => RequestFilterUpdate();
+
+        private void OnLayerPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Layer.Filters) ||
+                e.PropertyName == nameof(Layer.Strength) ||
+                e.PropertyName == nameof(Layer.Invert) ||
+                e.PropertyName == nameof(Layer.Visible))
+                RequestFilterUpdate();
         }
 
         /// <summary>
@@ -682,51 +720,135 @@ namespace LuxEditor.Components
             _ = RunPipelineAsync(_cts.Token);
         }
 
-        /// <summary>
-        /// Runs the image processing pipeline asynchronously.
-        /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
         private async Task RunPipelineAsync(CancellationToken token)
         {
+            _pendingUpdate = false;
+
             try
             {
                 if (CurrentImage == null) return;
 
-                if (CurrentImage.PreviewBitmap != null)
+                async Task<SKBitmap> RenderAsync(SKBitmap src)
                 {
-                    var prev = await ImageProcessingManager
-                        .ApplyFiltersAsync(CurrentImage.PreviewBitmap,
-                                           CurrentImage.Settings, token);
-                    token.ThrowIfCancellationRequested();
+                    var baseBmp = await ImageProcessingManager.ApplyFiltersAsync(src, CurrentImage!.Settings, token);
 
-                    CurrentImage.EditedPreviewBitmap = prev;
-                    var up = ImageProcessingManager.Upscale(
-                                prev, CurrentImage.OriginalBitmap.Height, true);
-                    OnEditorImageUpdated?.Invoke(up);
+                    using var surf = SKSurface.Create(new SKImageInfo(baseBmp.Width, baseBmp.Height));
+                    var can = surf.Canvas;
+                    can.DrawBitmap(baseBmp, 0, 0);
+
+                    foreach (var layer in CurrentImage.LayerManager.Layers
+                                                           .Where(l => l.Visible)
+                                                           .OrderBy(l => l.ZIndex))
+                    {
+                        using var mask = BuildLayerMask(layer, baseBmp.Width, baseBmp.Height);
+                        if (mask == null) continue;
+
+                        if (layer.HasActiveFilters())
+                        {
+                            using var filtered = await ImageProcessingManager
+                                                        .ApplyFiltersAsync(baseBmp, layer.Filters, token);
+                            DrawMasked(can, filtered, mask, layer);
+                        }
+                        else
+                        {
+                            using var tint = new SKBitmap(baseBmp.Width, baseBmp.Height, true);
+                            tint.Erase(layer.OverlayColor.ToSKColor());
+                            DrawMasked(can, tint, mask, layer);
+                        }
+                    }
+
+                    can.Flush();
+                    var outBmp = new SKBitmap(baseBmp.Width, baseBmp.Height);
+                    surf.ReadPixels(outBmp.Info, outBmp.GetPixels(), outBmp.RowBytes, 0, 0);
+                    return outBmp;
                 }
 
-                var full = await ImageProcessingManager
-                    .ApplyFiltersAsync(CurrentImage.OriginalBitmap,
-                                       CurrentImage.Settings, token);
-                token.ThrowIfCancellationRequested();
+                if (CurrentImage.PreviewBitmap != null)
+                {
+                    var prev = await RenderAsync(CurrentImage.PreviewBitmap);
+                    CurrentImage.EditedPreviewBitmap = prev;
 
+                    var upscaled = ImageProcessingManager.Upscale(
+                                       prev,
+                                       CurrentImage.OriginalBitmap.Height, true);
+                    OnEditorImageUpdated?.Invoke(upscaled);
+                }
+
+                var full = await RenderAsync(CurrentImage.OriginalBitmap);
                 CurrentImage.EditedBitmap = full;
                 OnEditorImageUpdated?.Invoke(SKImage.FromBitmap(full));
             }
             catch (OperationCanceledException)
             {
-                /// Interrupted : normal
             }
             finally
             {
                 Interlocked.Exchange(ref _renderRunning, 0);
 
-                if (Interlocked.Exchange(ref _pendingUpdate, false))
+                if (_pendingUpdate)
+                {
+                    _pendingUpdate = false;
                     RequestFilterUpdate();
+                }
             }
         }
 
+        private static void DrawMasked(SKCanvas c, SKBitmap content, SKBitmap mask, Layer lay)
+        {
+            float k = Math.Clamp((float)lay.Strength / 100f, 0f, 2f);
+
+            using var contSh = SKShader.CreateBitmap(content, SKShaderTileMode.Clamp, SKShaderTileMode.Clamp);
+            using var maskSh = SKShader.CreateBitmap(mask, SKShaderTileMode.Clamp, SKShaderTileMode.Clamp);
+
+            using var compSh = lay.Invert
+                ? SKShader.CreateCompose(contSh, maskSh, SKBlendMode.DstOut)
+                : SKShader.CreateCompose(maskSh, contSh, SKBlendMode.SrcIn);
+
+            void Paint(float alpha)
+            {
+                if (alpha <= 0f) return;
+                using var p = new SKPaint
+                {
+                    Shader = compSh,
+                    Color = SKColors.White.WithAlpha((byte)(alpha * 255))
+                };
+                c.DrawRect(SKRect.Create(mask.Width, mask.Height), p);
+            }
+
+            if (k <= 1f)
+            {
+                Paint(k);
+            }
+            else
+            {
+                Paint(1f);
+                Paint(k - 1f);
+            }
+        }
+
+        private static SKBitmap? BuildLayerMask(Layer lay, int w, int h)
+        {
+            if (lay.Operations.Count == 0) return null;
+            var bmp = new SKBitmap(w, h);
+            using var surf = SKSurface.Create(new SKImageInfo(w, h));
+            var can = surf.Canvas;
+
+            foreach (var op in lay.Operations)
+            {
+                var m = op.Tool?.GetResult();
+                if (m == null) continue;
+                using var p = new SKPaint
+                {
+                    BlendMode = op.Mode == BooleanOperationMode.Add ? SKBlendMode.SrcOver : SKBlendMode.DstOut,
+                    FilterQuality = SKFilterQuality.High
+                };
+                can.DrawBitmap(m, new SKRect(0, 0, w, h), p);
+            }
+
+            can.Flush();
+            surf.ReadPixels(bmp.Info, bmp.GetPixels(), bmp.RowBytes, 0, 0);
+            return bmp;
+        }
 
         /// <summary>
         /// Checks if the Control key is pressed.

@@ -517,5 +517,17 @@ namespace LuxEditor.Logic
             }
             return changed ? SKColorFilter.CreateTable(id.ToArray(), lutR, lutG, lutB) : null;
         }
+
+        /// <summary>
+        /// Applies the filters to the source bitmap and returns a new bitmap synchronously.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="filters"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        public static SKBitmap ApplyFilters(SKBitmap source, Dictionary<string, object> filters, CancellationToken ct = default)
+        {
+            return ApplyFiltersAsync(source, filters, ct).Result;
+        }
     }
 }

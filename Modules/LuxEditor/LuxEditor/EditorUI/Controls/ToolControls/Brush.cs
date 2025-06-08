@@ -1,269 +1,250 @@
-﻿using LuxEditor.Models;
+﻿// File: Brush.cs
+using LuxEditor.Models;
 using Microsoft.UI.Xaml.Input;
 using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
 using System.Collections.Generic;
-using Windows.Foundation;
 
-namespace LuxEditor.EditorUI.Controls.ToolControls;
-
-public class BrushPoint
+namespace LuxEditor.EditorUI.Controls.ToolControls
 {
-    public SKPoint NormalizedPos { get; set; }
-    public float Radius { get; set; }
+    #region helpers ----------------------------------------------------------
 
-    public BrushPoint(SKPoint normPos, float radius)
+    public class BrushPoint
     {
-        NormalizedPos = normPos;
-        Radius = radius;
+        public SKPoint NormalizedPos { get; set; }
+        public float Radius { get; set; }
+        public BrushPoint(SKPoint normPos, float radius)
+        {
+            NormalizedPos = normPos;
+            Radius = radius;
+        }
+        public SKPoint ToAbs(int w, int h) => new(NormalizedPos.X * w, NormalizedPos.Y * h);
     }
 
-    public SKPoint ToAbsolute(int width, int height)
-        => new SKPoint(NormalizedPos.X * width, NormalizedPos.Y * height);
-}
-
-
-public class CustomStroke
-{
-    public List<BrushPoint> Points { get; set; } = new();
-}
-public partial class BrushToolControl : ATool
-{
-    private ToolType _toolType = ToolType.Brush;
-    public override ToolType ToolType { get => _toolType; set => _toolType = value; }
-    public override event Action? RefreshAction;
-
-    private CustomStroke? _currentStroke;
-    private readonly Queue<SKPoint> _lastPoints = new();
-    private SKPoint? _lastMousePos;
-
-    public float BrushSize { get; set; } = 10;
-
-    private SKBitmap? _cacheBitmap;
-    private SKCanvas? _cacheCanvas;
-    private int _canvasWidth = 0;
-    private int _canvasHeight = 0;
-
-    private int _displayWidth = 0;
-    private int _displayHeight = 0;
-
-    private SKPoint? _rightClickStartingPoint;
-    private bool _isRightClicking = false;
-
-    private int _overlayResolutionDivisor = 1;
-
-    private bool _alreadyIntialized = false;
-
-    public override void ResizeCanvas(int width, int height)
+    public class CustomStroke
     {
-        _overlayResolutionDivisor = Math.Max(Math.Max(width, height) / 1000, 1);
-        int scaledWidth = Math.Max(1, width / _overlayResolutionDivisor);
-        int scaledHeight = Math.Max(1, height / _overlayResolutionDivisor);
-
-        if (_canvasWidth == scaledWidth && _canvasHeight == scaledHeight) return;
-
-        _canvasWidth = scaledWidth;
-        _canvasHeight = scaledHeight;
-        _displayWidth = width;
-        _displayHeight = height;
-
-        if (!_alreadyIntialized)
-        {
-            _cacheBitmap?.Dispose();
-            _cacheBitmap = new SKBitmap(scaledWidth, scaledHeight, SKColorType.Bgra8888, SKAlphaType.Premul);
-            _cacheCanvas = new SKCanvas(_cacheBitmap);
-            _cacheCanvas.Clear(SKColors.Transparent);
-            _alreadyIntialized = true;
-        }
-
-        RefreshAction?.Invoke();
+        public readonly List<BrushPoint> Points = new();
     }
 
-    public override void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+    #endregion
+
+    public partial class BrushToolControl : ATool
     {
-        var canvas = sender as SKXamlCanvas;
-        var pos = e.GetCurrentPoint(canvas).Position;
-        var skPos = new SKPoint((float)pos.X, (float)pos.Y);
-        _lastMousePos = skPos;
+        public bool ShowExistingStrokes { get; set; } = true;
+        public float BrushSize { get; set; } = 10f;
 
-        if (e.GetCurrentPoint(canvas).Properties.IsLeftButtonPressed)
+        private CustomStroke? _current;
+        private readonly Queue<SKPoint> _last = new();
+        private SKPoint? _lastMouse;
+
+        private SKBitmap? _maskBmp;
+        private SKCanvas? _maskCanv;
+        private int _maskW, _maskH, _dispW, _dispH;
+
+        private SKPoint? _rightStart;
+        private bool _isRight;
+
+        public override ToolType ToolType { get; set; } = ToolType.Brush;
+        public override event Action? RefreshAction;
+
+        public override void ResizeCanvas(int w, int h)
         {
-            _currentStroke = new CustomStroke();
-            _currentStroke.Points.Add(new BrushPoint(Normalize(skPos), BrushSize));
-            _lastPoints.Clear();
-        }
-        else if (e.GetCurrentPoint(canvas).Properties.IsRightButtonPressed)
-        {
-            if (!_isRightClicking)
-                _rightClickStartingPoint = skPos;
-            _isRightClicking = true;
-        }
+            int div = Math.Max(Math.Max(w, h) / 1000, 1);
+            int sw = Math.Max(1, w / div);
+            int sh = Math.Max(1, h / div);
 
-        RefreshAction?.Invoke();
-    }
+            if (sw == _maskW && sh == _maskH) return;
 
-    public override void OnPointerMoved(object sender, PointerRoutedEventArgs e)
-    {
-        var canvas = sender as SKXamlCanvas;
-        var pos = e.GetCurrentPoint(canvas).Position;
-        var skPos = new SKPoint((float)pos.X, (float)pos.Y);
-        _lastMousePos = skPos;
+            _maskW = sw; _maskH = sh;
+            _dispW = w; _dispH = h;
 
-        if (_currentStroke != null && e.GetCurrentPoint(canvas).Properties.IsLeftButtonPressed)
-        {
-            if (_currentStroke.Points.Count > 0)
+            var old = _maskBmp;
+
+            _maskBmp = new SKBitmap(sw, sh, SKColorType.Bgra8888, SKAlphaType.Premul);
+            _maskCanv = new SKCanvas(_maskBmp);
+            _maskCanv.Clear(SKColors.Transparent);
+
+            if (old != null)
             {
-                var last = _currentStroke.Points[^1].ToAbsolute(_displayWidth, _displayHeight);
-                foreach (var interp in InterpolatePoints(last, skPos, BrushSize * 0.25f))
+                using var p = new SKPaint { FilterQuality = SKFilterQuality.High };
+                _maskCanv.DrawBitmap(old, new SKRect(0, 0, sw, sh), p);
+                old.Dispose();
+            }
+
+            RefreshAction?.Invoke();
+        }
+
+        public override void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var cvs = (SKXamlCanvas)sender;
+            var pos = e.GetCurrentPoint(cvs).Position;
+            var sk = new SKPoint((float)pos.X, (float)pos.Y);
+            _lastMouse = sk;
+
+            if (e.GetCurrentPoint(cvs).Properties.IsLeftButtonPressed)
+            {
+                _current = new CustomStroke();
+                _current.Points.Add(new BrushPoint(Norm(sk), BrushSize));
+                _last.Clear();
+            }
+            else if (e.GetCurrentPoint(cvs).Properties.IsRightButtonPressed)
+            {
+                _rightStart = sk;
+                _isRight = true;
+            }
+            RefreshAction?.Invoke();
+        }
+
+        public override void OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            var cvs = (SKXamlCanvas)sender;
+            var pos = e.GetCurrentPoint(cvs).Position;
+            var sk = new SKPoint((float)pos.X, (float)pos.Y);
+            _lastMouse = sk;
+
+            if (_current != null && e.GetCurrentPoint(cvs).Properties.IsLeftButtonPressed)
+            {
+                if (_current.Points.Count > 0)
                 {
-                    var smooth = SmoothPosition(interp);
-                    _currentStroke.Points.Add(new BrushPoint(Normalize(smooth), BrushSize));
+                    var last = _current.Points[^1].ToAbs(_dispW, _dispH);
+                    foreach (var p in Interp(last, sk, BrushSize * .25f))
+                        _current.Points.Add(new BrushPoint(Norm(Smooth(p)), BrushSize));
+                }
+                _current.Points.Add(new BrushPoint(Norm(Smooth(sk)), BrushSize));
+
+                if (_current.Points.Count > 30 && _maskCanv != null)
+                {
+                    foreach (var pt in _current.Points)
+                        DrawSoftCircle(_maskCanv,
+                                       pt.ToAbs(_maskW, _maskH),
+                                       pt.Radius * _maskW / _dispW,
+                                       SKColors.White);
+                    _current.Points.Clear();
                 }
             }
-
-            var finalSmooth = SmoothPosition(skPos);
-            _currentStroke.Points.Add(new BrushPoint(Normalize(finalSmooth), BrushSize));
-
-            if (_currentStroke.Points.Count > 30 && _cacheCanvas != null)
+            else if (_isRight && _rightStart.HasValue)
             {
-                foreach (var point in _currentStroke.Points)
+                float delta = (float)(pos.X - _rightStart.Value.X);
+                BrushSize = Math.Max(1, delta);
+            }
+
+            RefreshAction?.Invoke();
+        }
+
+        public override void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (_current != null && _maskCanv != null)
+            {
+                foreach (var pt in _current.Points)
+                    DrawSoftCircle(_maskCanv,
+                                   pt.ToAbs(_maskW, _maskH),
+                                   pt.Radius * _maskW / _dispW,
+                                   SKColors.White);
+                _current = null;
+            }
+            _isRight = false;
+            _rightStart = null;
+            RefreshAction?.Invoke();
+        }
+
+        public override void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
+        {
+            var can = e.Surface.Canvas;
+            can.Clear(SKColors.Transparent);
+
+            if (OpsFusionned != null)
+                can.DrawImage(OpsFusionned, 0, 0);
+
+            if (ShowExistingStrokes && _maskBmp != null)
+            {
+                using var p = new SKPaint
                 {
-                    var abs = point.ToAbsolute(_canvasWidth, _canvasHeight);
-                    DrawSoftCircle(_cacheCanvas, abs, point.Radius * _canvasWidth / _displayWidth, Color);
-                }
-
-                _currentStroke.Points.Clear();
-            }
-        }
-        else if (_rightClickStartingPoint != null)
-        {
-            float deltaX = (float)(pos.X - _rightClickStartingPoint.Value.X);
-            BrushSize = Math.Max(1, deltaX);
-        }
-
-        RefreshAction?.Invoke();
-    }
-
-    public override void OnPointerReleased(object sender, PointerRoutedEventArgs e)
-    {
-        if (_currentStroke != null && _cacheCanvas != null)
-        {
-            foreach (var point in _currentStroke.Points)
-            {
-                var abs = point.ToAbsolute(_canvasWidth, _canvasHeight);
-                DrawSoftCircle(_cacheCanvas, abs, point.Radius * _canvasWidth / _displayWidth, Color);
+                    ColorFilter = SKColorFilter.CreateBlendMode(Color, SKBlendMode.SrcIn)
+                };
+                can.DrawBitmap(_maskBmp,
+                               new SKRect(0, 0, _maskW, _maskH),
+                               new SKRect(0, 0, _dispW, _dispH),
+                               p);
             }
 
-            _currentStroke = null;
-        }
-        _isRightClicking = false;
-
-        _rightClickStartingPoint = null;
-        RefreshAction?.Invoke();
-    }
-
-    public override void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
-    {
-        var canvas = e.Surface.Canvas;
-        canvas.Clear(SKColors.Transparent);
-        if (OpsFusionned != null)
-        {
-            canvas.DrawImage(OpsFusionned, 0, 0);
-        }
-
-        if (_cacheBitmap != null)
-        {
-            var src = new SKRect(0, 0, _canvasWidth, _canvasHeight);
-            var dest = new SKRect(0, 0, _displayWidth, _displayHeight);
-            canvas.DrawBitmap(_cacheBitmap, src, dest);
-        }
-
-        if (_currentStroke != null)
-        {
-            foreach (var point in _currentStroke.Points)
+            if (_current != null)
             {
-                var abs = point.ToAbsolute(_displayWidth, _displayHeight);
-                DrawSoftCircle(canvas, abs, point.Radius, Color);
+                foreach (var pt in _current.Points)
+                    DrawSoftCircle(can,
+                                   pt.ToAbs(_dispW, _dispH),
+                                   pt.Radius,
+                                   Color);
+            }
+
+            if (_lastMouse.HasValue)
+            {
+                var pv = _isRight && _rightStart.HasValue ? _rightStart.Value
+                                                          : _lastMouse.Value;
+                DrawPreview(can, pv);
             }
         }
 
-        if (_lastMousePos != null)
+        private void DrawSoftCircle(SKCanvas c, SKPoint center, float r, SKColor col)
         {
-            if (_isRightClicking && _rightClickStartingPoint != null)
+            byte a = col.Alpha;
+            using var p = new SKPaint
             {
-                DrawBrushPreview(canvas, _rightClickStartingPoint.Value);
-            } else
+                IsAntialias = true,
+                Shader = SKShader.CreateRadialGradient(
+                    center, r,
+                    new[] { col.WithAlpha(a),
+                            col.WithAlpha((byte)(a * .4f)),
+                            col.WithAlpha(0) },
+                    new[] { 0f, .5f, 1f },
+                    SKShaderTileMode.Clamp)
+            };
+            c.DrawCircle(center, r, p);
+        }
+
+        private void DrawPreview(SKCanvas c, SKPoint pos)
+        {
+            using var p = new SKPaint
             {
-                DrawBrushPreview(canvas, _lastMousePos.Value);
-            }
-        }
-    }
-
-    private void DrawSoftCircle(SKCanvas canvas, SKPoint center, float radius, SKColor color)
-    {
-        using var paint = new SKPaint
-        {
-            IsAntialias = true,
-            Shader = SKShader.CreateRadialGradient(
-                center,
-                radius,
-                new[] { color.WithAlpha(255), color.WithAlpha(100), color.WithAlpha(0) },
-                new[] { 0f, 0.5f, 1f },
-                SKShaderTileMode.Clamp)
-        };
-
-        canvas.DrawCircle(center, radius, paint);
-    }
-
-    private void DrawBrushPreview(SKCanvas canvas, SKPoint pos)
-    {
-        using var previewPaint = new SKPaint
-        {
-            Style = SKPaintStyle.Stroke,
-            StrokeWidth = _isRightClicking ? 2 : 1,
-            Color = SKColors.White.WithAlpha(180),
-            IsAntialias = true
-        };
-
-        canvas.DrawCircle(pos, BrushSize, previewPaint);
-    }
-
-    private IEnumerable<SKPoint> InterpolatePoints(SKPoint from, SKPoint to, float spacing)
-    {
-        float dx = to.X - from.X;
-        float dy = to.Y - from.Y;
-        float distance = MathF.Sqrt(dx * dx + dy * dy);
-        int steps = (int)(distance / spacing);
-
-        for (int i = 1; i <= steps; i++)
-        {
-            float t = i / (float)steps;
-            yield return new SKPoint(from.X + t * dx, from.Y + t * dy);
-        }
-    }
-
-    private SKPoint SmoothPosition(SKPoint current)
-    {
-        _lastPoints.Enqueue(current);
-        while (_lastPoints.Count > 4)
-            _lastPoints.Dequeue();
-
-        float sumX = 0, sumY = 0;
-        foreach (var p in _lastPoints)
-        {
-            sumX += p.X;
-            sumY += p.Y;
+                Style = SKPaintStyle.Stroke,
+                StrokeWidth = _isRight ? 2 : 1,
+                Color = SKColors.White.WithAlpha(180),
+                IsAntialias = true
+            };
+            c.DrawCircle(pos, BrushSize, p);
         }
 
-        return new SKPoint(sumX / _lastPoints.Count, sumY / _lastPoints.Count);
-    }
+        private IEnumerable<SKPoint> Interp(SKPoint a, SKPoint b, float step)
+        {
+            float dx = b.X - a.X, dy = b.Y - a.Y;
+            int n = (int)(MathF.Sqrt(dx * dx + dy * dy) / step);
+            for (int i = 1; i <= n; i++)
+                yield return new SKPoint(a.X + dx * i / n, a.Y + dy * i / n);
+        }
 
-    private SKPoint Normalize(SKPoint absolute)
-        => new SKPoint(absolute.X / _displayWidth, absolute.Y / _displayHeight);
+        private SKPoint Smooth(SKPoint cur)
+        {
+            _last.Enqueue(cur);
+            while (_last.Count > 4) _last.Dequeue();
+            float sx = 0, sy = 0;
+            foreach (var p in _last) { sx += p.X; sy += p.Y; }
+            return new SKPoint(sx / _last.Count, sy / _last.Count);
+        }
 
-    public override SKBitmap? GetResult()
-    {
-        return _cacheBitmap?.Resize(new SKImageInfo(_displayWidth, _displayHeight), SKSamplingOptions.Default);
+        private SKPoint Norm(SKPoint abs) => new(abs.X / _dispW, abs.Y / _dispH);
+
+        public override SKBitmap? GetResult()
+        {
+            if (_maskBmp == null) return null;
+
+            if (_maskBmp.Width == _dispW && _maskBmp.Height == _dispH)
+                return _maskBmp;
+
+            return _maskBmp.Resize(
+                new SKImageInfo(_dispW, _dispH),
+                new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None));
+        }
+
+
     }
 }
