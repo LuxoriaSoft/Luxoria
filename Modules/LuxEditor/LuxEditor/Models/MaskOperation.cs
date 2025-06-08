@@ -50,7 +50,7 @@ namespace LuxEditor.Models
                     Debug.WriteLine("MaskOperation: LinearGradient tool initialized.");
                     break;
                 case ToolType.RadialGradient:
-                    //Tool = new RadialGradientToolControl();
+                    Tool = new RadialGradientToolControl();
                     Debug.WriteLine("MaskOperation: RadialGradient tool initialized.");
                     break;
                 case ToolType.ColorRange:
