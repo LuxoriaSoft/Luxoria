@@ -21,6 +21,11 @@ public class LuxAsset
     public required LuxCfg MetaData { get; init; }
 
     /// <summary>
+    /// Contains the filter data for the asset.
+    /// </summary>
+    public FilterData FilterData { get; init; } = new();
+
+    /// <summary>
     /// Contains the data of the asset.
     /// </summary>
     public required ImageData Data { get; init; }

@@ -1,13 +1,12 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using LuxAPI.DAL;
 using LuxAPI.Models;
 using LuxAPI.Models.DTOs;
 using LuxAPI.Services;
+using LuxAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace LuxAPI.Controllers
 {
@@ -23,6 +22,7 @@ namespace LuxAPI.Controllers
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly MinioService _minioService;
+        private readonly IJwtService _jwtService;
 
         /// <summary>
         /// Initializes the authentication controller with logging, database context, and configuration.
@@ -35,12 +35,14 @@ namespace LuxAPI.Controllers
             ILogger<AuthController> logger,
             AppDbContext context,
             IConfiguration configuration,
-            MinioService minioService)
+            MinioService minioService,
+            IJwtService jwtService)
         {
             _logger = logger;
             _context = context;
             _configuration = configuration;
             _minioService = minioService;
+            _jwtService = jwtService;
         }
 
         /// <summary>
@@ -192,44 +194,101 @@ namespace LuxAPI.Controllers
             }
 
             // Generate a JWT token for the authenticated user
-            var token = GenerateJwtToken(user.Id, user.Username, user.Email);
+            var token = _jwtService.GenerateJwtToken(user.Id, user.Username, user.Email);
 
             _logger.LogInformation("User logged in successfully: {Username}", login.Username);
             return Ok(new { token }); // Return the JWT token
         }
 
-        /// <summary>
-        /// Generates a JWT token for an authenticated user.
-        /// </summary>
-        /// <param name="userId">The unique identifier of the user.</param>
-        /// <param name="username">The username of the authenticated user.</param>
-        /// <param name="email">The email of the authenticated user.</param>
-        /// <param name="expiryHours">The expiration time in hours (default is 48 hours).</param>
-        /// <returns>A JWT token as a string.</returns>
-        private string GenerateJwtToken(Guid userId, string username, string email, int expiryHours = 48)
+        [HttpPost("request-verification")]
+        public async Task<IActionResult> RequestVerification([FromBody] UserPendingRegistrationDto data, [FromServices] EmailService emailService)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var claims = new[]
+            if (_context.Users.Any(u => u.Email == data.Email))
+                return BadRequest("Email already registered.");
+
+            if (_context.PendingRegistrations.Any(p => p.Email == data.Email))
+                _context.PendingRegistrations.RemoveRange(_context.PendingRegistrations.Where(p => p.Email == data.Email));
+
+            var code = new Random().Next(100000, 999999).ToString();
+            var expiresAt = DateTime.UtcNow.AddMinutes(10);
+
+            var pending = new PendingRegistration
             {
-                new Claim(JwtRegisteredClaimNames.Email, email), // ✅ utilisé comme .Name
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                new Claim(JwtRegisteredClaimNames.Sub, username),
-                new Claim(ClaimTypes.Name, username),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                Email = data.Email,
+                Username = data.Username,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(data.Password),
+                Code = code,
+                ExpiresAt = expiresAt
             };
 
-            var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(expiryHours),
-                signingCredentials: credentials
-            );
+            _context.PendingRegistrations.Add(pending);
+            await _context.SaveChangesAsync();
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            await emailService.SendVerificationCodeAsync(data.Email, data.Username, code, pending.Id);
+            _logger.LogInformation("Envoi du mail de code à {Email}", data.Email);
+
+            return Ok("Verification code sent to email.");
         }
+
+        [HttpPost("verify-code")]
+        public async Task<IActionResult> VerifyCode([FromBody] EmailCodeVerificationDto input)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { message = ModelState });
+
+            var entry = await _context.PendingRegistrations
+                .FirstOrDefaultAsync(p => p.Email == input.Email);
+
+            if (entry == null)
+                return NotFound(new { message = "No verification request found for this email." });
+
+            if (entry.Code != input.Code)
+                return BadRequest(new { message = "Invalid verification code." });
+
+            if (DateTime.UtcNow > entry.ExpiresAt)
+                return BadRequest(new { message = "Verification code expired." });
+
+
+            if (_context.Users.Any(u => u.Email == entry.Email))
+                return BadRequest(new { message = "Email already registered." });
+
+            var user = new User
+            {
+                Username = entry.Username,
+                Email = entry.Email,
+                PasswordHash = entry.PasswordHash,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _context.Users.Add(user);
+            _context.PendingRegistrations.Remove(entry);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Account created successfully." });
+        }
+
+        /// <summary>
+        /// Retrieve the email of a user by ID. Used for email confirmation flow.
+        /// </summary>
+        [HttpGet("user/{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetUserEmailById(Guid id)
+        {
+            var user = await _context.PendingRegistrations
+                .Where(p => p.Id == id)
+                .Select(p => new { p.Email })
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+                return NotFound("No pending registration found for this ID.");
+
+            return Ok(user); // returns: { "email": "..." }
+        }
+
 
         /// <summary>
         /// Returns information about the currently authenticated user.
@@ -240,10 +299,20 @@ namespace LuxAPI.Controllers
         [Authorize] // Requires a valid JWT token
         public IActionResult WhoAmI()
         {
+            // http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var username = User.FindFirst(ClaimTypes.Name)?.Value;
-            var userEmail = User.FindFirst(ClaimTypes.Email)?.Value; // 👈 ici
-            return Ok(new { userId, username, userEmail });
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User not authenticated.");
+            
+            var user = _context.Users.FirstOrDefault(u => u.Id == Guid.Parse(userId));
+            
+            if (user == null)
+                return Unauthorized("User not found.");
+            
+            // Mask sensitive information
+            user.PasswordHash = string.Empty;
+            
+            return Ok(user);
         }
 
         /// <summary>

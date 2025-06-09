@@ -2,7 +2,6 @@
 using LuxEditor.EditorUI.Groups;
 using LuxEditor.EditorUI.Interfaces;
 using Microsoft.UI.Xaml.Controls;
-using System;
 using System.Collections.Generic;
 
 namespace LuxEditor.EditorUI

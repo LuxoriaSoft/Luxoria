@@ -1,3 +1,111 @@
+## [1.45.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.45.0...v1.45.1) (2025-06-09)
+
+
+### Bug Fixes
+
+* Wait the building of Luxoria App & Modules before releasing artifacts ([a7d4948](https://github.com/LuxoriaSoft/Luxoria/commit/a7d4948e6ee5f2f9d0f05c9e2a0763e8258e22b8))
+
+# [1.45.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.44.1...v1.45.0) (2025-06-09)
+
+
+### Features
+
+* Add steps to list and zip downloaded artifacts before uploading to GitHub Release ([4417de2](https://github.com/LuxoriaSoft/Luxoria/commit/4417de297d0402a8b77d5a33db2ca14cc0618f9b))
+
+## [1.44.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.44.0...v1.44.1) (2025-06-09)
+
+
+### Bug Fixes
+
+* Rename job identifiers ([42d2e2e](https://github.com/LuxoriaSoft/Luxoria/commit/42d2e2e17cdb2b1151e1b5e93e36ddad9d6170eb))
+
+# [1.44.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.43.0...v1.44.0) (2025-06-09)
+
+
+### Features
+
+* Add workflow_call trigger to build-upload workflows and enhance artifact release process ([78eb71e](https://github.com/LuxoriaSoft/Luxoria/commit/78eb71e2d5e058ca954bd55e10c57087867c1d70))
+
+# [1.43.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.42.3...v1.43.0) (2025-06-09)
+
+
+### Features
+
+* Add GitHub Actions workflow to attach artifacts to release ([bb482f2](https://github.com/LuxoriaSoft/Luxoria/commit/bb482f2fe3dd31468b7cead24915685ae3776c12))
+
+## [1.42.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.42.2...v1.42.3) (2025-06-04)
+
+
+### Bug Fixes
+
+* Bring docs for IJwtService ([a807a82](https://github.com/LuxoriaSoft/Luxoria/commit/a807a8256ceec479123d46d2852bfa8a3518d794))
+* Create I/JwtService that handles TokenCreation ([11855bd](https://github.com/LuxoriaSoft/Luxoria/commit/11855bd3ca1b8947f3594f3de807bb742016df08))
+
+## [1.42.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.42.1...v1.42.2) (2025-06-04)
+
+
+### Bug Fixes
+
+* Generate JWT token the same way as AuthController does ([40f21d8](https://github.com/LuxoriaSoft/Luxoria/commit/40f21d81826048ff128bc5114714892fbe8af741))
+
+## [1.42.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.42.0...v1.42.1) (2025-06-04)
+
+
+### Bug Fixes
+
+* Improve WhoAmI method (AuthController), returns User model fetched from DB, instead of reading JWT cache info ([2c62808](https://github.com/LuxoriaSoft/Luxoria/commit/2c62808ddf96eaa81c7ffe8eb51a143ce87f6f9d))
+* User retrieval from JWT token (WhoAmI method) ([efcf644](https://github.com/LuxoriaSoft/Luxoria/commit/efcf6443281e8de9a41a44e340ac4a81ce9eb6bf))
+
+# [1.42.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.41.2...v1.42.0) (2025-06-04)
+
+
+### Bug Fixes
+
+* Display algorithm's row by algorithm name sorting by A-Z ([db389e0](https://github.com/LuxoriaSoft/Luxoria/commit/db389e09929a8d11742fc4a0a95f429b0b3701e7))
+
+
+### Features
+
+* Add fondation for FilterExplorer on LuxFilter Left-hand toolbox ([cefef42](https://github.com/LuxoriaSoft/Luxoria/commit/cefef42bda20c341063bf7dd87163dfe389df532))
+* Add logical update (filer by algoName & Ordering >=/=<) when filter has been changed ([3db9142](https://github.com/LuxoriaSoft/Luxoria/commit/3db914267d50d01324914d23f02517ac2bd94627))
+* Add ScoreViewer in ToolBox right-hand side panel ([230c15d](https://github.com/LuxoriaSoft/Luxoria/commit/230c15df56684b5546795527d90109a4be9b3cbb))
+* Add ToolBox component which includes RatingComp on the right-hand side panel ([790e727](https://github.com/LuxoriaSoft/Luxoria/commit/790e727791f3f071e10414b72bcffec0645ac464))
+* Implement CollectionExplorer & AssetViewer on LuxFilter (v3) ([546aec5](https://github.com/LuxoriaSoft/Luxoria/commit/546aec58db56f5bdada043928288ca18bed66825))
+* Implement FlagsComponent inside Toolbox Partial View ([74db3b5](https://github.com/LuxoriaSoft/Luxoria/commit/74db3b5f8acfc4bd296e5ac3af3992ac9bec8f42))
+* Integrate sync mechanism (event communication) between LuxFilter & LuxEditor ([dd49cf1](https://github.com/LuxoriaSoft/Luxoria/commit/dd49cf173da766b95d8a5acfa6b9ee1578ce97e8))
+
+## [1.41.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.41.1...v1.41.2) (2025-06-03)
+
+
+### Bug Fixes
+
+* Change ingress certification manager to traefik's internal certmgr ([91970be](https://github.com/LuxoriaSoft/Luxoria/commit/91970be4b927daaa468eda1cc9c336ca44f469d8))
+
+## [1.41.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.41.0...v1.41.1) (2025-06-02)
+
+
+### Bug Fixes
+
+* Add SMTP settings validation and update deployment configuration ([eb2c6b2](https://github.com/LuxoriaSoft/Luxoria/commit/eb2c6b265aecc2ac58e94f0c4e3e81d4c4559179))
+* Refactor URLs in CollectionController and EmailService to use dynamic configuration ([c581150](https://github.com/LuxoriaSoft/Luxoria/commit/c5811504cdff7e2e99187f5880beb325ee25b7f2))
+* Update API endpoint to use dynamic configuration ([b08670c](https://github.com/LuxoriaSoft/Luxoria/commit/b08670c7d4e4287a3dab036f84841eb27959d9b0))
+* Update API URLs to use dynamic configuration from app settings ([fd1743c](https://github.com/LuxoriaSoft/Luxoria/commit/fd1743c82fc3cc6e81ee7b97670b15b1ae895843))
+* Update ingress name from luxstudio-staging to luxstudio-production ([37e1037](https://github.com/LuxoriaSoft/Luxoria/commit/37e1037823783a2c033feb633d43c48dcda83592))
+* Update JWT_SECRET to use dynamic value generation ([fbcbc45](https://github.com/LuxoriaSoft/Luxoria/commit/fbcbc451d5f409408a60cd29cf1582c9f9df57da))
+
+# [1.41.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.40.0...v1.41.0) (2025-06-01)
+
+
+### Features
+
+*  Enhance CollectionDetail view with scrollable gallery and mention system ([6b3fdf3](https://github.com/LuxoriaSoft/Luxoria/commit/6b3fdf34450cff36fe6671d0774bdc0f833b38ea))
+* Add CollectionChat view and integrate chat functionality with image selection and mentions ([358c064](https://github.com/LuxoriaSoft/Luxoria/commit/358c06452a88586c21d5922ddf5703aa47b23067))
+* Add image selection modal and enhance message formatting with hashtags ([4d7d93e](https://github.com/LuxoriaSoft/Luxoria/commit/4d7d93e72607ff9b3a7acb80f470d01a2c93f6c0))
+* Add Pending Registration feature with email verification ([1eca4fa](https://github.com/LuxoriaSoft/Luxoria/commit/1eca4fa74419bac42974600056113a31396db9ab))
+* Implement photo status update functionality and enhance image selection modal ([a9fd896](https://github.com/LuxoriaSoft/Luxoria/commit/a9fd8968216d549e00cb387b2c5614fcf703670a))
+* Implement registration confirmation flow with email verification and new route ([35e17dc](https://github.com/LuxoriaSoft/Luxoria/commit/35e17dc180d523a8d59e4d8fcabf0cfb304b3237))
+* Refactor collection access management and enhance email invitation system ([569da14](https://github.com/LuxoriaSoft/Luxoria/commit/569da141bdec581d9dc84bb4be34af62f6f6c642))
+
 # [1.40.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.39.0...v1.40.0) (2025-05-28)
 
 

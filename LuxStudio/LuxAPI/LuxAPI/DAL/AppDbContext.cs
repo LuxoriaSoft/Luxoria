@@ -20,7 +20,7 @@ namespace LuxAPI.DAL
         public DbSet<Photo> Photos { get; set; }
         public DbSet<PhotoComment> PhotoComments { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
-
+        public DbSet<PendingRegistration> PendingRegistrations { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -123,7 +123,7 @@ namespace LuxAPI.DAL
 
             // A Collection has many AllowedEmails (CollectionAccesses)
             modelBuilder.Entity<Collection>()
-                .HasMany(c => c.AllowedEmails)
+                .HasMany(c => c.Accesses)
                 .WithOne(a => a.Collection)
                 .HasForeignKey(a => a.CollectionId)
                 .OnDelete(DeleteBehavior.Cascade);

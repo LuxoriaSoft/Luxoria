@@ -1,0 +1,45 @@
+name: Attach Artifacts to Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  exec-desktop-build:
+    uses: ./.github/workflows/build-upload-lda.yml
+  
+  exec-modules-build:
+    uses: ./.github/workflows/build-upload-standard-modules.yml
+
+  upload-artifacts-to-release:
+    needs: [exec-desktop-build, exec-modules-build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+      
+      - name: List downloaded artifacts
+        run: ls ./artifacts
+      
+      - name: Create ZIP files for each artifact
+        run: |
+          for dir in ./artifacts/*; do
+            if [ -d "$dir" ]; then
+              zip -r "${dir}.zip" "$dir"
+            fi
+          done
+
+      - name: Upload all artifacts to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          name: ${{ github.event.release.tag_name }}
+          files: ./artifacts/*.zip
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -11,6 +11,7 @@ on:
       - main
       - develop
       - release/*
+  workflow_call:
 
 jobs:
   build-and-upload:

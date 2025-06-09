@@ -8,187 +8,296 @@ using SkiaSharp.Views.Windows;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Windows.Foundation;
 
-namespace LuxEditor.Components
+namespace LuxEditor.Components;
+
+public sealed partial class CollectionExplorer : Page
 {
+    private List<EditableImage> _images = [];
+    private ScrollViewer _scrollViewer = new();
+    private WrapPanel _imagePanel = new();
+    private Border? _selectedBorder = new();
+    private MenuFlyout _filterMenuFlyout = new();
+    private (string Algorithm, bool Ascending) _filterBy = ("", false);
+
+    public event Action<EditableImage>? OnImageSelected;
+
     /// <summary>
-    /// Displays a scrollable panel of preview images.
+    /// Constructor for the CollectionExplorer component
     /// </summary>
-    public sealed partial class CollectionExplorer : Page
+    public CollectionExplorer()
     {
-        private List<EditableImage> _images = new();
-        private ScrollViewer _scrollViewer;
-        private WrapPanel _imagePanel;
-        private Border? _selectedBorder;
+        InitializeComponent();
+        BuildUI();
+        SizeChanged += (s, e) => AdjustImageSizes(e.NewSize);
+    }
 
-        public event Action<EditableImage>? OnImageSelected;
-
-        /// <summary>
-        /// Initializes the CollectionExplorer page and builds the UI.
-        /// </summary>
-        public CollectionExplorer()
+    /// <summary>
+    /// Builds the initial UI components for the CollectionExplorer
+    /// </summary>
+    private void BuildUI()
+    {
+        _scrollViewer = new ScrollViewer
         {
-            InitializeComponent();
-            BuildUI();
-            SizeChanged += (s, e) => AdjustImageSizes(e.NewSize);
-        }
+            HorizontalScrollMode = ScrollMode.Enabled,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollMode = ScrollMode.Disabled,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
+            Padding = new Thickness(10)
+        };
 
-        /// <summary>
-        /// Builds the scrollable layout to hold preview thumbnails.
-        /// </summary>
-        private void BuildUI()
+        _imagePanel = new WrapPanel
         {
-            _scrollViewer = new ScrollViewer
-            {
-                HorizontalScrollMode = ScrollMode.Enabled,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-                VerticalScrollMode = ScrollMode.Disabled,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
-                Padding = new Thickness(10)
-            };
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            HorizontalSpacing = 5
+        };
 
-            _imagePanel = new WrapPanel
-            {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
-                HorizontalSpacing = 5
-            };
+        _scrollViewer.Content = _imagePanel;
+        RootGrid.Children.Add(_scrollViewer);
 
-            _scrollViewer.Content = _imagePanel;
-            RootGrid.Children.Add(_scrollViewer);
-        }
+        _filterMenuFlyout = BuildFilterMenuFlyout([]);
 
-        /// <summary>
-        /// Replaces the current list of images with a new one and updates the layout.
-        /// </summary>
-        public void SetImages(List<EditableImage> images)
+        RootGrid.RightTapped += (s, e) =>
         {
-            if (images == null || images.Count == 0)
-            {
-                Debug.WriteLine("SetImages: No images provided.");
-                return;
-            }
+            _filterMenuFlyout.ShowAt(_imagePanel, e.GetPosition(_imagePanel));
+        };
+    }
 
-            DispatcherQueue.TryEnqueue(() =>
-            {
-                _images.Clear();
-                _imagePanel.Children.Clear();
-
-                foreach (var image in images)
+    /// <summary>
+    /// Function handled when a filter menu item is clicked.
+    /// </summary>
+    private void OnFilterMenuItemClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuFlyoutItem item)
+        {
+            Symbol newSymbol = item.Icon is SymbolIcon icon
+                ? icon.Symbol switch
                 {
-                    _images.Add(image);
-                    int index = _images.Count - 1;
-
-                    var preview = image.ThumbnailBitmap ?? image.PreviewBitmap ?? image.OriginalBitmap;
-
-                    var border = new Border
-                    {
-                        Margin = new Thickness(3),
-                        CornerRadius = new CornerRadius(5),
-                        BorderThickness = new Thickness(2),
-                        BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0)),
-                        Background = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0))
-                    };
-
-                    var canvas = new SKXamlCanvas
-                    {
-                        IgnorePixelScaling = true
-                    };
-
-                    canvas.PaintSurface += (sender, e) => OnPaintSurface(sender, e, index);
-                    border.Child = canvas;
-
-                    border.PointerEntered += (s, e) => OnHover(border, true);
-                    border.PointerExited += (s, e) => OnHover(border, false);
-                    border.Tapped += (s, e) => OnImageTapped(border, index);
-
-                    _imagePanel.Children.Add(border);
+                    Symbol.Sort => Symbol.Up,
+                    Symbol.Up => Symbol.Download,
+                    Symbol.Download => Symbol.Up,
+                    _ => Symbol.Up
                 }
+                : Symbol.Up;
 
-                AdjustImageSizes(new Size(ActualWidth, ActualHeight));
-            });
-        }
+            bool ascending = newSymbol == Symbol.Up;
 
-        /// <summary>
-        /// Adjusts thumbnail sizes dynamically based on control size.
-        /// </summary>
-        private void AdjustImageSizes(Size newSize)
-        {
-            if (_imagePanel.Children.Count == 0) return;
+            _filterBy = (item.Text, ascending);
+            Debug.WriteLine($"Filter by: {_filterBy.Algorithm}, Ordered: {ascending}");
 
-            double availableHeight = newSize.Height * 0.8;
+            item.Icon = new SymbolIcon(newSymbol);
 
-            foreach (var child in _imagePanel.Children)
+            if (item.Parent is MenuFlyoutSubItem subItem)
             {
-                if (child is Border border && border.Child is SKXamlCanvas canvas)
+                foreach (var sibling in subItem.Items.OfType<MenuFlyoutItem>())
                 {
-                    int index = _imagePanel.Children.IndexOf(border);
-                    if (index < _images.Count)
-                    {
-                        var bitmap = _images[index].ThumbnailBitmap ?? _images[index].PreviewBitmap ?? _images[index].OriginalBitmap;
-                        double scale = availableHeight / bitmap.Height;
-                        double width = bitmap.Width * scale;
-
-                        border.Width = width;
-                        border.Height = availableHeight;
-                        canvas.Width = width;
-                        canvas.Height = availableHeight;
-                        canvas.Invalidate();
-                    }
+                    if (sibling != item)
+                        sibling.Icon = new SymbolIcon(Symbol.Sort);
                 }
             }
+
+            SetImages(new List<EditableImage>(_images));
+        }
+    }
+
+    /// <summary>
+    /// Returns the Symbol icon based on _filterBy state for the given algorithm name
+    /// </summary>
+    private SymbolIcon GetSymbolForFilterItem(string algoName)
+    {
+        if (_filterBy.Algorithm == algoName)
+        {
+            return new SymbolIcon(_filterBy.Ascending ? Symbol.Up : Symbol.Download);
+        }
+        return new SymbolIcon(Symbol.Sort);
+    }
+
+    /// <summary>
+    /// Build the MenuFlyout for filtering images based on available algorithms
+    /// </summary>
+    private MenuFlyout BuildFilterMenuFlyout(ICollection<string> filterAlgoNames)
+    {
+        var menuFlyout = new MenuFlyout();
+
+        var filterBy = new MenuFlyoutSubItem
+        {
+            Text = "Filter by...",
+            Icon = new SymbolIcon(Symbol.Filter)
+        };
+
+        foreach (var algo in filterAlgoNames)
+        {
+            var menuItem = new MenuFlyoutItem
+            {
+                Text = algo,
+                Icon = GetSymbolForFilterItem(algo)
+            };
+            menuItem.Click += OnFilterMenuItemClick;
+            filterBy.Items.Add(menuItem);
         }
 
-        /// <summary>
-        /// Draws the bitmap preview into the canvas.
-        /// </summary>
-        private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e, int index)
+        menuFlyout.Items.Add(filterBy);
+        menuFlyout.Items.Add(new MenuFlyoutSeparator());
+        menuFlyout.Items.Add(new RadioMenuFlyoutItem
         {
-            SKCanvas canvas = e.Surface.Canvas;
-            canvas.Clear(SKColors.Transparent);
+            Text = "Hide duplicates",
+            Icon = new SymbolIcon(Symbol.Copy)
+        });
+        menuFlyout.Items.Add(new MenuFlyoutSeparator());
+        menuFlyout.Items.Add(new MenuFlyoutItem
+        {
+            Text = "Show All / Reset",
+            Icon = new SymbolIcon(Symbol.ViewAll)
+        });
 
-            if (index >= 0 && index < _images.Count)
+        return menuFlyout;
+    }
+
+    /// <summary>
+    /// Sets the images to be displayed in the CollectionExplorer
+    /// </summary>
+    public void SetImages(IList<EditableImage> images)
+    {
+        if (images == null || images.Count == 0)
+        {
+            Debug.WriteLine("SetImages: No images provided.");
+            return;
+        }
+
+        var filterAlgoNames = images[0].FilterData.GetFilteredAlgorithms();
+        _filterMenuFlyout = BuildFilterMenuFlyout(filterAlgoNames);
+
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            _images.Clear();
+            _imagePanel.Children.Clear();
+
+            if (!string.IsNullOrEmpty(_filterBy.Algorithm))
             {
-                var bitmap = _images[index].ThumbnailBitmap ?? _images[index].PreviewBitmap ?? _images[index].OriginalBitmap;
-                float scale = Math.Min((float)e.Info.Width / bitmap.Width, (float)e.Info.Height / bitmap.Height);
-                float offsetX = (e.Info.Width - bitmap.Width * scale) / 2;
-                float offsetY = (e.Info.Height - bitmap.Height * scale) / 2;
+                images = images
+                    .Where(img => img.FilterData.GetScores().ContainsKey(_filterBy.Algorithm))
+                    .ToList();
 
-                canvas.Translate(offsetX, offsetY);
-                canvas.Scale(scale);
-                canvas.DrawBitmap(bitmap, 0, 0);
+                images = _filterBy.Ascending
+                    ? images.OrderBy(img => img.FilterData.GetScores()[_filterBy.Algorithm]).ToList()
+                    : images.OrderByDescending(img => img.FilterData.GetScores()[_filterBy.Algorithm]).ToList();
+            }
+
+            _images = images.ToList();
+
+            for (int i = 0; i < _images.Count; i++)
+            {
+                var image = _images[i];
+                var bitmap = image.ThumbnailBitmap ?? image.PreviewBitmap ?? image.OriginalBitmap;
+
+                var border = new Border
+                {
+                    Margin = new Thickness(3),
+                    CornerRadius = new CornerRadius(5),
+                    BorderThickness = new Thickness(2),
+                    BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0)),
+                    Background = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0))
+                };
+
+                var canvas = new SKXamlCanvas { IgnorePixelScaling = true };
+
+                int indexCopy = i;
+
+                canvas.PaintSurface += (s, e) => OnPaintSurface(s, e, indexCopy);
+                border.Child = canvas;
+
+                border.PointerEntered += (s, e) => OnHover(border, true);
+                border.PointerExited += (s, e) => OnHover(border, false);
+                border.Tapped += (s, e) => OnImageTapped(border, indexCopy);
+
+                _imagePanel.Children.Add(border);
+            }
+
+            AdjustImageSizes(new Size(ActualWidth, ActualHeight));
+        });
+    }
+
+    /// <summary>
+    /// Adjusts the sizes of the images in the panel based on the new size of the CollectionExplorer
+    /// </summary>
+    private void AdjustImageSizes(Size newSize)
+    {
+        if (_imagePanel.Children.Count == 0) return;
+
+        double availableHeight = newSize.Height * 0.8;
+
+        foreach (var child in _imagePanel.Children)
+        {
+            if (child is Border border && border.Child is SKXamlCanvas canvas)
+            {
+                int index = _imagePanel.Children.IndexOf(border);
+                if (index < _images.Count)
+                {
+                    var bitmap = _images[index].ThumbnailBitmap ?? _images[index].PreviewBitmap ?? _images[index].OriginalBitmap;
+                    double scale = availableHeight / bitmap.Height;
+                    double width = bitmap.Width * scale;
+
+                    border.Width = width;
+                    border.Height = availableHeight;
+                    canvas.Width = width;
+                    canvas.Height = availableHeight;
+                    canvas.Invalidate();
+                }
             }
         }
+    }
 
-        /// <summary>
-        /// Highlights a thumbnail when hovered.
-        /// </summary>
-        private void OnHover(Border border, bool isHovered)
+    /// <summary>
+    /// Handles the paint surface event to render an image onto the provided canvas.
+    /// </summary>
+    private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e, int index)
+    {
+        SKCanvas canvas = e.Surface.Canvas;
+        canvas.Clear(SKColors.Transparent);
+
+        if (index >= 0 && index < _images.Count)
         {
-            if (border != _selectedBorder)
-            {
-                border.BorderBrush = new SolidColorBrush(isHovered
-                    ? Windows.UI.Color.FromArgb(255, 200, 200, 200)
-                    : Windows.UI.Color.FromArgb(0, 0, 0, 0));
-            }
-        }
+            var bitmap = _images[index].ThumbnailBitmap ?? _images[index].PreviewBitmap ?? _images[index].OriginalBitmap;
+            float scale = Math.Min((float)e.Info.Width / bitmap.Width, (float)e.Info.Height / bitmap.Height);
+            float offsetX = (e.Info.Width - bitmap.Width * scale) / 2;
+            float offsetY = (e.Info.Height - bitmap.Height * scale) / 2;
 
-        /// <summary>
-        /// Triggers when a user selects a thumbnail.
-        /// </summary>
-        private void OnImageTapped(Border border, int index)
+            canvas.Translate(offsetX, offsetY);
+            canvas.Scale(scale);
+            canvas.DrawBitmap(bitmap, 0, 0);
+        }
+    }
+
+    /// <summary>
+    /// Function to handle hover events on the image borders
+    /// </summary>
+    private void OnHover(Border border, bool isHovered)
+    {
+        if (border != _selectedBorder)
         {
-            if (index >= _images.Count) return;
-
-            if (_selectedBorder != null)
-                _selectedBorder.BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0));
-
-            _selectedBorder = border;
-            _selectedBorder.BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 3, 169, 244));
-
-            OnImageSelected?.Invoke(_images[index]);
+            border.BorderBrush = new SolidColorBrush(isHovered
+                ? Windows.UI.Color.FromArgb(255, 200, 200, 200)
+                : Windows.UI.Color.FromArgb(0, 0, 0, 0));
         }
+    }
+
+    /// <summary>
+    /// Handles the tap event on an image border to select the image
+    /// </summary>
+    private void OnImageTapped(Border border, int index)
+    {
+        if (index >= _images.Count) return;
+
+        if (_selectedBorder != null)
+            _selectedBorder.BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0));
+
+        _selectedBorder = border;
+        _selectedBorder.BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 3, 169, 244));
+
+        OnImageSelected?.Invoke(_images[index]);
     }
 }
