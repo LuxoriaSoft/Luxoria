@@ -1,0 +1,31 @@
+name: Attach Artifacts to Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  attach-artifacts:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Display downloaded artifacts
+        run: ls -R ./artifacts
+
+    #   - name: Upload all artifacts to GitHub Release
+    #     uses: softprops/action-gh-release@v1
+    #     with:
+    #       name: Luxoria Release ${{ github.event.release.tag_name }}
+    #       tag_name: ${{ github.event.release.tag_name }}
+    #       files: ./artifacts/**/*
+
+    #     env:
+    #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
