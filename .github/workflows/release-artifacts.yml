@@ -5,14 +5,14 @@ on:
     types: [published]
 
 jobs:
-  call-desktop-build:
+  exec-desktop-build:
     uses: ./.github/workflows/build-upload-lda.yml
   
-  call-modules-build:
+  exec-modules-build:
     uses: ./.github/workflows/build-upload-standard-modules.yml
 
-  attach-artifacts:
-    needs: [call-desktop-build, call-modules-build]
+  upload-artifacts-to-release:
+    needs: [exec-desktop-build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -27,8 +27,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.event.release.tag_name }}
-          name: Luxoria Release ${{ github.event.release.tag_name }}
-          files: ./artifacts/**/*
+          name: ${{ github.event.release.tag_name }}
+          files: ./artifacts/*.zip
 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
