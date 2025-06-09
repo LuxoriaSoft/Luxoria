@@ -5,9 +5,15 @@ on:
     types: [published]
 
 jobs:
-  attach-artifacts:
-    runs-on: ubuntu-latest
+  call-desktop-build:
+    uses: ./.github/workflows/build-upload-lda.yml
+  
+  call-modules-build:
+    uses: ./.github/workflows/build-upload-standard-modules.yml
 
+  attach-artifacts:
+    needs: [call-desktop-build, call-modules-build]
+    runs-on: ubuntu-latest
     permissions:
       contents: write
 
@@ -17,15 +23,12 @@ jobs:
         with:
           path: ./artifacts
 
-      - name: Display downloaded artifacts
-        run: ls -R ./artifacts
+      - name: Upload all artifacts to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          name: Luxoria Release ${{ github.event.release.tag_name }}
+          files: ./artifacts/**/*
 
-    #   - name: Upload all artifacts to GitHub Release
-    #     uses: softprops/action-gh-release@v1
-    #     with:
-    #       name: Luxoria Release ${{ github.event.release.tag_name }}
-    #       tag_name: ${{ github.event.release.tag_name }}
-    #       files: ./artifacts/**/*
-
-    #     env:
-    #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
