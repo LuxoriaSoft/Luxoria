@@ -12,7 +12,7 @@ jobs:
     uses: ./.github/workflows/build-upload-standard-modules.yml
 
   upload-artifacts-to-release:
-    needs: [exec-desktop-build]
+    needs: [exec-desktop-build, exec-modules-build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
