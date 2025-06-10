@@ -6,7 +6,7 @@ authors = [
     {name = "The Luxoria Project",email = "contact@luxoria.bluepelicansoft.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 dependencies = [
     "gitpython (>=3.1.44,<4.0.0)"
 ]
