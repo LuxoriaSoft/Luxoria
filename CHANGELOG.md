@@ -1,3 +1,10 @@
+## [1.46.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.2...v1.46.3) (2025-06-10)
+
+
+### Bug Fixes
+
+* Checkout code before executing script ([2ed7239](https://github.com/LuxoriaSoft/Luxoria/commit/2ed7239ead9b95b578cc1ae82abee78d74762357))
+
 ## [1.46.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.1...v1.46.2) (2025-06-10)
 
 
