@@ -1,3 +1,10 @@
+## [1.46.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.1...v1.46.2) (2025-06-10)
+
+
+### Bug Fixes
+
+* Update working directory ([b423a99](https://github.com/LuxoriaSoft/Luxoria/commit/b423a99eca50a6f484354fbb95ce41196f5d8aee))
+
 ## [1.46.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.0...v1.46.1) (2025-06-10)
 
 
