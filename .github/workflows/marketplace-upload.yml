@@ -1,4 +1,4 @@
-name: Attach Artifacts to Release
+name: Upload to Luxoria Marketplace
 
 on:
   release:
@@ -16,11 +16,11 @@ jobs:
 
       - name: Install Marketplace Manager Dependencies
         run: poetry install
-        working-directory: ./tools/luxmktplacemgr
+        working-directory: tools/luxmktplacemgr
 
       - name: Upload to Marketplace
         run: poetry run upload-base https://github.com/luxoriasoft/luxoria.git https://github.com/luxoriasoft/marketplace.git ${{ github.event.release.tag_name }}
-        working-directory: ./tools/luxmktplacemgr
+        working-directory: tools/luxmktplacemgr
 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
