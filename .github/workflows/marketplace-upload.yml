@@ -11,6 +11,9 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout codebase
+        uses: actions/checkout@v4
+        
       - name: Install Poetry
         uses: snok/install-poetry@v1
 
