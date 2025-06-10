@@ -1,3 +1,10 @@
+## [1.46.4](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.3...v1.46.4) (2025-06-10)
+
+
+### Bug Fixes
+
+* Change python version from >=3.13 to >=3.11 for marketplacemgr ([936ab23](https://github.com/LuxoriaSoft/Luxoria/commit/936ab231a93684571b4cdfe00afb5180956a6734))
+
 ## [1.46.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.2...v1.46.3) (2025-06-10)
 
 
