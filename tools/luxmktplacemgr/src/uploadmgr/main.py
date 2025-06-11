@@ -7,20 +7,28 @@ from git import Repo
 ### ERROR CODES
 ERR_RET_CODE = "Args should be : [REPO URL FROM] [REPO URL TO] [BRANCH NAME]"
 ERR_REP_NOT_GITHUB = "Repo should be hosted on Github (https://github.com/)"
+ERR_REP_GH_NOT_FOUND = "GITHUB_TOKEN environment variable not set"
 
 ### INTERNAL FUNCTIONS
 def is_github(repo_url: str) -> bool:
     """Verifies if the URL is hosted on github"""
     return repo_url.startswith("https://github.com") and repo_url.endswith(".git")
 
-def clone_repo(url, branch, path) -> Repo:
+def clone_repo(url: str, branch: str, path: str) -> Repo:
     """Clones repository using URL & specific branch"""
     print("Cloning repository [{} @ {}] at : ".format(url, branch), path)
     repo = Repo.clone_from(url, path, branch=branch)
     print("OK!")
     return repo
 
-def upload_dirs(repo_src: str, repo_dst: str, branch_src: str, branch_dst: str):
+def inject_token(url: str, token: str) -> str:
+    """Injects a GitHub Personal Access Token into a GitHub HTTPS URL"""
+    if not url.startswith("https://github.com"):
+        raise ValueError("URL must start with 'https://github.com'")
+    return url.replace("https://", f"https://{token}@")
+
+
+def upload_dirs(repo_src: str, repo_dst: str, branch_src: str, branch_dst: str, repo_token: str):
     """Uploads the dirs from src to dst (target)"""
     folders = ["Luxoria.App", "Modules"]
 
@@ -37,7 +45,7 @@ def upload_dirs(repo_src: str, repo_dst: str, branch_src: str, branch_dst: str):
     src_repo = clone_repo(repo_src, branch_src, src_repo_path)
 
     dest_repo_path = os.path.join(transfer_dir, "dest")
-    dest_repo = clone_repo(repo_dst, "main", dest_repo_path)
+    dest_repo = clone_repo(inject_token(repo_dst, repo_token), "main", dest_repo_path)
 
     print("Creating new branch...")
     head = dest_repo.create_head(branch_dst)
@@ -72,9 +80,15 @@ def main(args=sys.argv):
     if len(args[1:]) != 3:
         exit(ERR_RET_CODE)
     
+    # Retreive token from env var
+    GH_TOKEN = os.getenv("GITHUB_TOKEN")
+
+    if GH_TOKEN == None or len(GH_TOKEN) == 0:
+        exit(ERR_REP_GH_NOT_FOUND)
+
     repo_from, repo_to, branch_name = args[1], args[2], args[3]
     # Start uploading
-    upload_dirs(repo_src=repo_from, branch_src="main", repo_dst=repo_to, branch_dst=branch_name)
+    upload_dirs(repo_src=repo_from, branch_src="main", repo_dst=repo_to, branch_dst=branch_name, repo_token=GH_TOKEN)
 
 if __name__ == '__main__':
     main()
