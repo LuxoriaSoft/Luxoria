@@ -21,3 +21,4 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 marketplacemgr = 'luxmktplacemgr.main:main'
 upload-base = 'uploadmgr.main:main'
+build = 'buildmgr.main:main'
