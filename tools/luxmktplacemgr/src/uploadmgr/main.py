@@ -4,6 +4,34 @@ import shutil
 import tempfile
 from git import Repo
 
+"""
+
+.____                             .__        
+|    |    __ _____  ______________|__|____   
+|    |   |  |  \  \/  /  _ \_  __ \  \__  \  
+|    |___|  |  />    <  <_> )  | \/  |/ __ \_
+|_______ \____//__/\_ \____/|__|  |__(____  /
+        \/           \/                   \/ 
+
+Marketplace Controller
+Upload Manager
+v0.1.0
+
+Requirements :
+Python >= 3.11
+Poetry Manager
+
+Configuration : 
+Needs Environment variable : GITHUB_TOKEN (Token has RW on the target repository)
+
+Usage : 
+> poetry install
+> poetry run upload-base https://github.com/ORG_USER/REPO_SRC.git https://github.com/ORG_USER/REPO_TGT.git BRANCH_TBCREATED
+
+Released under Apache 2.0
+The Luxoria Project
+"""
+
 ### ERROR CODES
 ERR_RET_CODE = "Args should be : [REPO URL FROM] [REPO URL TO] [BRANCH NAME]"
 ERR_REP_NOT_GITHUB = "Repo should be hosted on Github (https://github.com/)"
