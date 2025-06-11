@@ -18,14 +18,11 @@ jobs:
         uses: snok/install-poetry@v1
 
       - name: Install Marketplace Manager Dependencies
-        run: |
-          cd tools/luxmktplacemgr
-          poetry install
+        run: poetry install
+        working-directory: ./tools/luxmktplacemgr
 
       - name: Upload to Marketplace
-        run: |
-          cd tools/luxmktplacemgr
-          poetry run upload-base https://github.com/luxoriasoft/luxoria.git https://github.com/luxoriasoft/marketplace.git ${{ github.event.release.tag_name }}
-
+        run: poetry run upload-base https://github.com/luxoriasoft/luxoria.git https://github.com/luxoriasoft/marketplace.git ${{ github.event.release.tag_name }}
+        working-directory: ./tools/luxmktplacemgr
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_MARKETPLACE }}
