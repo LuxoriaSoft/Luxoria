@@ -1,0 +1,28 @@
+name: Upload to Luxoria Marketplace
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  upload-to-marketplace:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout codebase
+        uses: actions/checkout@v4
+        
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+
+      - name: Install Marketplace Manager Dependencies
+        run: poetry install
+        working-directory: ./tools/luxmktplacemgr
+
+      - name: Upload to Marketplace
+        run: poetry run upload-base https://github.com/luxoriasoft/luxoria.git https://github.com/luxoriasoft/marketplace.git ${{ github.event.release.tag_name }}
+        working-directory: ./tools/luxmktplacemgr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_MARKETPLACE }}
