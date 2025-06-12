@@ -39,12 +39,12 @@ spec:
             - name: ConnectionStrings__DefaultConnection
               value: Host=luxdb;Database=luxoria;Username=postgres;Password=password
             - name: JWT_SECRET
-              value: your_jwt_secret
+              value: "{{ randAlphaNum 32 }}"
             - name: JWT_EXPIRATION
               value: "3600"
             - name: ENVIRONMENT
               value: SATURN
             - name: PORT
               value: "8080"
-            - name: FrontEnd__URI
+            - name: URI__FrontEnd
               value: http://studio.saturn.luxoria.bluepelicansoft.com

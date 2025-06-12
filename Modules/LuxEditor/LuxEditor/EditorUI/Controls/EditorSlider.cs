@@ -155,7 +155,7 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
     {
         if (style.ShowTicks)
         {
-            _slider.TickPlacement = TickPlacement.Outside;  
+            _slider.TickPlacement = TickPlacement.Outside;
             _slider.StepFrequency = style.TickFrequency ?? _slider.StepFrequency;
             _slider.TickFrequency = style.TickFrequency ?? _slider.TickFrequency;
         }
@@ -181,7 +181,7 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
                     new GradientStop { Color = style.GradientStart.Value, Offset = 0 },
                     new GradientStop { Color = style.GradientEnd.Value, Offset = 1 }
                 }
-            };  
+            };
         }
     }
 

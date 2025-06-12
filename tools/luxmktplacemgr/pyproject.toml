@@ -1,0 +1,24 @@
+[project]
+name = "luxmktplacemgr"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "The Luxoria Project",email = "contact@luxoria.bluepelicansoft.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "gitpython (>=3.1.44,<4.0.0)"
+]
+
+[tool.poetry]
+packages = [{include = "luxmktplacemgr", from = "src"}]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+marketplacemgr = 'luxmktplacemgr.main:main'
+upload-base = 'uploadmgr.main:main'
+build = 'buildmgr.main:main'

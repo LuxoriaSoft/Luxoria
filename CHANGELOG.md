@@ -1,3 +1,227 @@
+# [1.47.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.5...v1.47.0) (2025-06-11)
+
+
+### Features
+
+* Add fondation of LuxMarketplace manager/BuildSystem segment ([0249769](https://github.com/LuxoriaSoft/Luxoria/commit/024976913e6fd158b561f97aca43672efdaa0dad))
+
+## [1.46.5](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.4...v1.46.5) (2025-06-11)
+
+
+### Bug Fixes
+
+* Inject GH_TOKEN as secret using Github secrets ([6655f1c](https://github.com/LuxoriaSoft/Luxoria/commit/6655f1ce3487f3c058c68a9574ca7ed55dccfa72))
+
+## [1.46.4](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.3...v1.46.4) (2025-06-10)
+
+
+### Bug Fixes
+
+* Change python version from >=3.13 to >=3.11 for marketplacemgr ([936ab23](https://github.com/LuxoriaSoft/Luxoria/commit/936ab231a93684571b4cdfe00afb5180956a6734))
+
+## [1.46.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.2...v1.46.3) (2025-06-10)
+
+
+### Bug Fixes
+
+* Checkout code before executing script ([2ed7239](https://github.com/LuxoriaSoft/Luxoria/commit/2ed7239ead9b95b578cc1ae82abee78d74762357))
+
+## [1.46.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.1...v1.46.2) (2025-06-10)
+
+
+### Bug Fixes
+
+* Update working directory ([b423a99](https://github.com/LuxoriaSoft/Luxoria/commit/b423a99eca50a6f484354fbb95ce41196f5d8aee))
+
+## [1.46.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.0...v1.46.1) (2025-06-10)
+
+
+### Bug Fixes
+
+* Update workflow name ([3998861](https://github.com/LuxoriaSoft/Luxoria/commit/399886133f1d3d0a1532069fa5fc995c11d2de4e))
+
+# [1.46.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.45.1...v1.46.0) (2025-06-10)
+
+
+### Features
+
+* Add GitHub Actions workflow to attach artifacts to marketplace ([004c427](https://github.com/LuxoriaSoft/Luxoria/commit/004c427d1ec6a397c38caa76bb7a8a43504dc26f))
+* Add uploadmgr script which aims to publish a branch on target (that contains Luxoria.App & Modules folders) ([664e6de](https://github.com/LuxoriaSoft/Luxoria/commit/664e6de26107a5f3dfe6f2cd7899d4a17741dc77))
+
+## [1.45.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.45.0...v1.45.1) (2025-06-09)
+
+
+### Bug Fixes
+
+* Wait the building of Luxoria App & Modules before releasing artifacts ([a7d4948](https://github.com/LuxoriaSoft/Luxoria/commit/a7d4948e6ee5f2f9d0f05c9e2a0763e8258e22b8))
+
+# [1.45.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.44.1...v1.45.0) (2025-06-09)
+
+
+### Features
+
+* Add steps to list and zip downloaded artifacts before uploading to GitHub Release ([4417de2](https://github.com/LuxoriaSoft/Luxoria/commit/4417de297d0402a8b77d5a33db2ca14cc0618f9b))
+
+## [1.44.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.44.0...v1.44.1) (2025-06-09)
+
+
+### Bug Fixes
+
+* Rename job identifiers ([42d2e2e](https://github.com/LuxoriaSoft/Luxoria/commit/42d2e2e17cdb2b1151e1b5e93e36ddad9d6170eb))
+
+# [1.44.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.43.0...v1.44.0) (2025-06-09)
+
+
+### Features
+
+* Add workflow_call trigger to build-upload workflows and enhance artifact release process ([78eb71e](https://github.com/LuxoriaSoft/Luxoria/commit/78eb71e2d5e058ca954bd55e10c57087867c1d70))
+
+# [1.43.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.42.3...v1.43.0) (2025-06-09)
+
+
+### Features
+
+* Add GitHub Actions workflow to attach artifacts to release ([bb482f2](https://github.com/LuxoriaSoft/Luxoria/commit/bb482f2fe3dd31468b7cead24915685ae3776c12))
+
+## [1.42.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.42.2...v1.42.3) (2025-06-04)
+
+
+### Bug Fixes
+
+* Bring docs for IJwtService ([a807a82](https://github.com/LuxoriaSoft/Luxoria/commit/a807a8256ceec479123d46d2852bfa8a3518d794))
+* Create I/JwtService that handles TokenCreation ([11855bd](https://github.com/LuxoriaSoft/Luxoria/commit/11855bd3ca1b8947f3594f3de807bb742016df08))
+
+## [1.42.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.42.1...v1.42.2) (2025-06-04)
+
+
+### Bug Fixes
+
+* Generate JWT token the same way as AuthController does ([40f21d8](https://github.com/LuxoriaSoft/Luxoria/commit/40f21d81826048ff128bc5114714892fbe8af741))
+
+## [1.42.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.42.0...v1.42.1) (2025-06-04)
+
+
+### Bug Fixes
+
+* Improve WhoAmI method (AuthController), returns User model fetched from DB, instead of reading JWT cache info ([2c62808](https://github.com/LuxoriaSoft/Luxoria/commit/2c62808ddf96eaa81c7ffe8eb51a143ce87f6f9d))
+* User retrieval from JWT token (WhoAmI method) ([efcf644](https://github.com/LuxoriaSoft/Luxoria/commit/efcf6443281e8de9a41a44e340ac4a81ce9eb6bf))
+
+# [1.42.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.41.2...v1.42.0) (2025-06-04)
+
+
+### Bug Fixes
+
+* Display algorithm's row by algorithm name sorting by A-Z ([db389e0](https://github.com/LuxoriaSoft/Luxoria/commit/db389e09929a8d11742fc4a0a95f429b0b3701e7))
+
+
+### Features
+
+* Add fondation for FilterExplorer on LuxFilter Left-hand toolbox ([cefef42](https://github.com/LuxoriaSoft/Luxoria/commit/cefef42bda20c341063bf7dd87163dfe389df532))
+* Add logical update (filer by algoName & Ordering >=/=<) when filter has been changed ([3db9142](https://github.com/LuxoriaSoft/Luxoria/commit/3db914267d50d01324914d23f02517ac2bd94627))
+* Add ScoreViewer in ToolBox right-hand side panel ([230c15d](https://github.com/LuxoriaSoft/Luxoria/commit/230c15df56684b5546795527d90109a4be9b3cbb))
+* Add ToolBox component which includes RatingComp on the right-hand side panel ([790e727](https://github.com/LuxoriaSoft/Luxoria/commit/790e727791f3f071e10414b72bcffec0645ac464))
+* Implement CollectionExplorer & AssetViewer on LuxFilter (v3) ([546aec5](https://github.com/LuxoriaSoft/Luxoria/commit/546aec58db56f5bdada043928288ca18bed66825))
+* Implement FlagsComponent inside Toolbox Partial View ([74db3b5](https://github.com/LuxoriaSoft/Luxoria/commit/74db3b5f8acfc4bd296e5ac3af3992ac9bec8f42))
+* Integrate sync mechanism (event communication) between LuxFilter & LuxEditor ([dd49cf1](https://github.com/LuxoriaSoft/Luxoria/commit/dd49cf173da766b95d8a5acfa6b9ee1578ce97e8))
+
+## [1.41.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.41.1...v1.41.2) (2025-06-03)
+
+
+### Bug Fixes
+
+* Change ingress certification manager to traefik's internal certmgr ([91970be](https://github.com/LuxoriaSoft/Luxoria/commit/91970be4b927daaa468eda1cc9c336ca44f469d8))
+
+## [1.41.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.41.0...v1.41.1) (2025-06-02)
+
+
+### Bug Fixes
+
+* Add SMTP settings validation and update deployment configuration ([eb2c6b2](https://github.com/LuxoriaSoft/Luxoria/commit/eb2c6b265aecc2ac58e94f0c4e3e81d4c4559179))
+* Refactor URLs in CollectionController and EmailService to use dynamic configuration ([c581150](https://github.com/LuxoriaSoft/Luxoria/commit/c5811504cdff7e2e99187f5880beb325ee25b7f2))
+* Update API endpoint to use dynamic configuration ([b08670c](https://github.com/LuxoriaSoft/Luxoria/commit/b08670c7d4e4287a3dab036f84841eb27959d9b0))
+* Update API URLs to use dynamic configuration from app settings ([fd1743c](https://github.com/LuxoriaSoft/Luxoria/commit/fd1743c82fc3cc6e81ee7b97670b15b1ae895843))
+* Update ingress name from luxstudio-staging to luxstudio-production ([37e1037](https://github.com/LuxoriaSoft/Luxoria/commit/37e1037823783a2c033feb633d43c48dcda83592))
+* Update JWT_SECRET to use dynamic value generation ([fbcbc45](https://github.com/LuxoriaSoft/Luxoria/commit/fbcbc451d5f409408a60cd29cf1582c9f9df57da))
+
+# [1.41.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.40.0...v1.41.0) (2025-06-01)
+
+
+### Features
+
+*  Enhance CollectionDetail view with scrollable gallery and mention system ([6b3fdf3](https://github.com/LuxoriaSoft/Luxoria/commit/6b3fdf34450cff36fe6671d0774bdc0f833b38ea))
+* Add CollectionChat view and integrate chat functionality with image selection and mentions ([358c064](https://github.com/LuxoriaSoft/Luxoria/commit/358c06452a88586c21d5922ddf5703aa47b23067))
+* Add image selection modal and enhance message formatting with hashtags ([4d7d93e](https://github.com/LuxoriaSoft/Luxoria/commit/4d7d93e72607ff9b3a7acb80f470d01a2c93f6c0))
+* Add Pending Registration feature with email verification ([1eca4fa](https://github.com/LuxoriaSoft/Luxoria/commit/1eca4fa74419bac42974600056113a31396db9ab))
+* Implement photo status update functionality and enhance image selection modal ([a9fd896](https://github.com/LuxoriaSoft/Luxoria/commit/a9fd8968216d549e00cb387b2c5614fcf703670a))
+* Implement registration confirmation flow with email verification and new route ([35e17dc](https://github.com/LuxoriaSoft/Luxoria/commit/35e17dc180d523a8d59e4d8fcabf0cfb304b3237))
+* Refactor collection access management and enhance email invitation system ([569da14](https://github.com/LuxoriaSoft/Luxoria/commit/569da141bdec581d9dc84bb4be34af62f6f6c642))
+
+# [1.40.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.39.0...v1.40.0) (2025-05-28)
+
+
+### Bug Fixes
+
+* Add debugging step for Kustomization in deploy-to-pluto job ([0d9dc7f](https://github.com/LuxoriaSoft/Luxoria/commit/0d9dc7fd10112d2d562560ac99480e3b87dbda5e))
+* Add kubeconfig installation step in deploy-to-pluto job ([51fcf1f](https://github.com/LuxoriaSoft/Luxoria/commit/51fcf1f9e87d80bca364c813c61f306a908969be))
+* Add kubectl installation step in deploy-to-pluto job ([15ebb74](https://github.com/LuxoriaSoft/Luxoria/commit/15ebb74d8f8445eaf2eafa407e6b006ec344793d))
+* Add Kubernetes orb declaration in config.yml ([fcee5cc](https://github.com/LuxoriaSoft/Luxoria/commit/fcee5cca4c4a945554fa7ded7a3a1c400ddc76d8))
+* Correct kubeconfig parameter name in deploy-to-pluto job ([4cb4ce6](https://github.com/LuxoriaSoft/Luxoria/commit/4cb4ce6270cf267033f7786cbca719c7330eecf6))
+* Correct resource file path and update create_or_update_resource syntax in deploy-to-pluto job ([eb4bd57](https://github.com/LuxoriaSoft/Luxoria/commit/eb4bd5755e8a66f4a7585c6c4264a9dffc80e0a1))
+* Enable kustomize parameter for create_or_update_resource in deploy-to-pluto job ([8515e76](https://github.com/LuxoriaSoft/Luxoria/commit/8515e76138a115100e986336edc91963521598a3))
+* Enhance image tag generation message with pipeline number ([1fccb8f](https://github.com/LuxoriaSoft/Luxoria/commit/1fccb8fbd892ad5b3282a361e0603b51fe43323c))
+* Enhance tag injection for API and Studio images in Kustomization to support multiple patterns ([a1ab9b5](https://github.com/LuxoriaSoft/Luxoria/commit/a1ab9b556f7b02a6efdb0d758416f0aa556bad7a))
+* Inject image tags for API and Studio in deployment configurations ([6495c6e](https://github.com/LuxoriaSoft/Luxoria/commit/6495c6e87b305929fa8797ca0a4fec61e386aba8))
+* Refactor deploy-to-pluto job to use kustomize for resource updates ([9aea55a](https://github.com/LuxoriaSoft/Luxoria/commit/9aea55afd5ec233e41ea40eda53b488080191612))
+* Remove action-type from kubernetes/create_or_update_resource in deploy-to-pluto job ([92a88e2](https://github.com/LuxoriaSoft/Luxoria/commit/92a88e2fb467f0878147850de8c8ced4337882d6))
+* Simplify image tag generation and remove pipeline number from message ([520f573](https://github.com/LuxoriaSoft/Luxoria/commit/520f573f770bcb409ebdb30332e39dc1a074f975))
+* Simplify tag injection command for API and Studio images in Kustomization ([a1d2e77](https://github.com/LuxoriaSoft/Luxoria/commit/a1d2e770920f5f849115b92a52c8b5cf28208fa5))
+* Simplify tag injection for API and Studio images in Kustomization ([3566c85](https://github.com/LuxoriaSoft/Luxoria/commit/3566c85291ad229996be87f713908091a8d2b81f))
+* Update CircleCI commands to use --environment flag ([c70777f](https://github.com/LuxoriaSoft/Luxoria/commit/c70777ff0c465631b0877eeb5a71d48787551277))
+* Update CircleCI commands to use --environment-name and --namespace flags for Pluto ([9b8ca66](https://github.com/LuxoriaSoft/Luxoria/commit/9b8ca668c7caf96512eccbb8959e7619176a05d7))
+* Update deploy-to-pluto job to use Docker executor instead of Kubernetes executor ([2691eb5](https://github.com/LuxoriaSoft/Luxoria/commit/2691eb5ebc8c2c3cf2884a53e6d1bd77f7bdccf2))
+* Update deploy-to-pluto job to use Kubernetes executor and specify environment ([548c10a](https://github.com/LuxoriaSoft/Luxoria/commit/548c10ae3a42e3132dd4016754eea63fb8613b4f))
+* Update image tag injection for API and Studio in Kustomization ([21a3d16](https://github.com/LuxoriaSoft/Luxoria/commit/21a3d1653ed44db1f8cc606cc4497fa2c86df06f))
+* Update image tag injection for API and Studio in Kustomization to use improved regex ([bf1195d](https://github.com/LuxoriaSoft/Luxoria/commit/bf1195d7e4a74d6e5c2fbb301f78cd997a5a152e))
+* Update Ingress name from luxstudio-staging to luxstudio-production ([97fe24c](https://github.com/LuxoriaSoft/Luxoria/commit/97fe24cc84492a567d99214d9aea85b5c77e4be9))
+* Update parameters for create_or_update_resource in deploy-to-pluto job ([91d0408](https://github.com/LuxoriaSoft/Luxoria/commit/91d0408d4c0ee3defaeab330dcb7d09d16799288))
+* Update release status commands in deploy-to-pluto job ([346e414](https://github.com/LuxoriaSoft/Luxoria/commit/346e414ca439f1d1c21e1c88a515cd45d8c1b2a9))
+* Update resource file path for create_or_update_resource in deploy-to-pluto job ([8974dff](https://github.com/LuxoriaSoft/Luxoria/commit/8974dff5faf07d191967ac5134aeca34766a4ede))
+* Update tag injection for API and Studio images to use improved regex pattern ([2913da4](https://github.com/LuxoriaSoft/Luxoria/commit/2913da44757ac382123e941755c5effe85844f66))
+
+
+### Features
+
+* enhance deployment process with kubectl and kustomize integration for Pluto ([9310d16](https://github.com/LuxoriaSoft/Luxoria/commit/9310d1689a80ec52dffb736641f3e42cf782a2a4))
+* Specify target environment ([9314d84](https://github.com/LuxoriaSoft/Luxoria/commit/9314d840fcdd2b15c6f736878f523ac94eceaf7e))
+
+# [1.39.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.38.1...v1.39.0) (2025-05-27)
+
+
+### Bug Fixes
+
+* Add timeout mechanism to kill the authentification process if callback has not been received after 120s ([25f507b](https://github.com/LuxoriaSoft/Luxoria/commit/25f507b0a087ad4b365d9f7607de7f03b047a598))
+
+
+### Features
+
+* Add fondation of LuxStudio Integration Module ([60e78ba](https://github.com/LuxoriaSoft/Luxoria/commit/60e78ba04669c79cef42336323a1823fa6fbaea9))
+* Add fondation of LuxStudio.COM Module (contains AuthService.cs) ([c7c0dae](https://github.com/LuxoriaSoft/Luxoria/commit/c7c0dae967c9b7d61396e8b172435538d4323e84))
+* Add LuxStudioConfig model and integrate configuration fetching in ConfigService ([0c7bca0](https://github.com/LuxoriaSoft/Luxoria/commit/0c7bca07cc6c12b6142e81ca23fdb9ac155733fc))
+* Add Minio service configuration to docker-compose and register MinioService in Program.cs ([97fe659](https://github.com/LuxoriaSoft/Luxoria/commit/97fe659fcaf0175ed06d30696cfa32548d764041))
+* Add StopLoginFlow method which allows to terminate the listener process waiting for authentification over web browser ([6e15024](https://github.com/LuxoriaSoft/Luxoria/commit/6e15024cbaae2333eaaefba3287b773605509707))
+* Enhance SSO login flow with additional logging for better traceability ([a6217f0](https://github.com/LuxoriaSoft/Luxoria/commit/a6217f035d1b086b743faa5c900215a05c23daa4))
+* Implement ConfigService for managing configuration settings and URL validation ([f777d7d](https://github.com/LuxoriaSoft/Luxoria/commit/f777d7d7c3f8607c60bdcd89441f62b72616f0b1))
+* Implement SSOService for handling Single Sign-On logic and authorization flow ([9d3369b](https://github.com/LuxoriaSoft/Luxoria/commit/9d3369b2782bf957487dd5f373d0145dbce729ab))
+* Update AuthService with logging and restructure project file ([898203d](https://github.com/LuxoriaSoft/Luxoria/commit/898203dbfff7ac270c0ab1e4ce01aab92bfe64a9))
+* Update docker-compose and AuthService for external URLs and configuration integration ([d1ce664](https://github.com/LuxoriaSoft/Luxoria/commit/d1ce6642f1b4f94fec358ceedf771cdf7799e2be))
+
+## [1.38.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.38.0...v1.38.1) (2025-05-27)
+
+
+### Bug Fixes
+
+* Correct SSO authorization URL to use frontend URL instead of backend URL ([62cb906](https://github.com/LuxoriaSoft/Luxoria/commit/62cb906163b89a6f6b8165f91fcfa1a6c2381f17))
+
 # [1.38.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.37.2...v1.38.0) (2025-05-26)
 
 

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="LuxFilter.Components.FilterExplorer"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:LuxFilter.Components"
+    xmlns:models="using:LuxFilter.Models"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid>
+        <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <!-- Loading Message -->
+            <StackPanel x:Name="LoadingMsg"
+                        Visibility="Visible"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Margin="3">
+                <ProgressRing IsActive="True" Width="40" Height="40" />
+                <TextBlock Text="Loading..." FontWeight="SemiBold" />
+            </StackPanel>
+
+            <!-- Filter Algorithms -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="FilterListPanel" />
+            </ScrollViewer>
+        </StackPanel>
+    </Grid>
+</UserControl>

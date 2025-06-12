@@ -2,7 +2,12 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup />
   <ItemGroup>
-    <Page Update="Views\StatusView.xaml">
+    <Page Update="Components\CollectionManagementView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Components\AccManagementView.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

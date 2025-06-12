@@ -9,3 +9,9 @@ namespace: luxstudio-pluto
 patches:
   - path: patch-deployment-luxstudio.yaml
   - path: patch-deployment-luxapi.yaml
+
+images:
+  - name: luxoria/luxapi
+    newTag: dev
+  - name: luxoria/luxstudio
+    newTag: dev

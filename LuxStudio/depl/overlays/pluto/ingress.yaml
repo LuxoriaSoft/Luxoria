@@ -5,7 +5,7 @@ metadata:
   namespace: luxstudio-pluto
   annotations:
     kubernetes.io/ingress.class: traefik
-    cert-manager.io/cluster-issuer: letsencrypt-production
+    traefik.ingress.kubernetes.io/router.tls.certresolver: cloudflare
 spec:
   rules:
     - host: bucket.pluto.luxoria.bluepelicansoft.com
@@ -54,4 +54,3 @@ spec:
         - console.bucket.pluto.luxoria.bluepelicansoft.com
         - studio.pluto.luxoria.bluepelicansoft.com
         - api.studio.pluto.luxoria.bluepelicansoft.com
-      secretName: luxstudio-pluto-luxoria

@@ -21,7 +21,7 @@ public interface IPipelineService
     /// <summary>
     /// Compute scores for a collection of BitmapWithSize objects
     /// </summary>
-    Task<ICollection<(Guid, Dictionary<string, double>)>> Compute(IEnumerable<(Guid, ImageData)> bitmaps);
+    Task<Dictionary<Guid, Dictionary<string, double>>> Compute(IEnumerable<(Guid, ImageData)> bitmaps);
 
     /// <summary>
     /// Event handler when the pipeline has finished computing scores

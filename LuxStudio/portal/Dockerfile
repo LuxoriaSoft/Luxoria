@@ -14,6 +14,8 @@ RUN npm install
 # Copy the rest of the application source code
 COPY . .
 
+COPY public ./public
+
 # Build the application (e.g., Vue, React, etc.)
 RUN npm run build
 
@@ -23,6 +25,7 @@ FROM nginx:1.27.4-alpine3.21
 
 # Copy built static files from the previous build stage to Nginx's default public directory
 COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/public /usr/share/nginx/html/public
 
 # Copy custom Docker entrypoint script
 COPY docker-entrypoint.sh /

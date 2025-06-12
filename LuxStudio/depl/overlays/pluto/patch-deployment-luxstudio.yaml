@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: luxstudio-container
-          image: luxoria/luxstudio:dev
+          image: luxoria/luxstudio
           imagePullPolicy: Always
           env:
             - name: API_URL

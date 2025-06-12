@@ -8,11 +8,8 @@ using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
-using Microsoft.UI.Xaml.Controls;
-using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace LuxEditor
 {
@@ -26,7 +23,7 @@ namespace LuxEditor
         public string Description => "Editor module for luxoria.";
         public string Version => "1.5.2";
 
-        public List<ILuxMenuBarItem> Items { get; set; } = new();
+        public List<ILuxMenuBarItem> Items { get; set; } = [];
 
         private CollectionExplorer? _cExplorer;
         private PhotoViewer? _photoViewer;
@@ -99,18 +96,14 @@ namespace LuxEditor
 
             foreach (var asset in body.Assets)
             {
-                var imageData = asset.Data;
-                var exif = imageData.EXIF;
-                var bitmap = imageData.Bitmap;
-
-                var editable = new EditableImage(bitmap, exif, asset.MetaData.FileName ?? asset.MetaData.Id.ToString())
-                {
-                    ThumbnailBitmap = ImageProcessingManager.GeneratePreview(bitmap, 200),
-                    PreviewBitmap = ImageProcessingManager.GeneratePreview(bitmap, 500),
-                    MediumBitmap = ImageProcessingManager.GenerateMediumResolution(bitmap)
-                };
-
-                editableImages.Add(editable);
+                editableImages.Add(
+                    new(asset)
+                    {
+                        ThumbnailBitmap = ImageProcessingManager.GeneratePreview(asset.Data.Bitmap, 200),
+                        PreviewBitmap = ImageProcessingManager.GeneratePreview(asset.Data.Bitmap, 500),
+                        MediumBitmap = ImageProcessingManager.GenerateMediumResolution(asset.Data.Bitmap)
+                    }
+                );
             }
 
             ImageManager.Instance.LoadImages(editableImages);
