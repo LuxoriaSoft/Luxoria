@@ -302,9 +302,7 @@ namespace LuxEditor.Components
             if (element.DataContext is not TreeViewNode node)
                 return;
 
-
             var flyout = new MenuFlyout();
-
 
             if (IsOperation(element))
             {
@@ -348,6 +346,7 @@ namespace LuxEditor.Components
                         modeItem.Click += (ss, aa) =>
                         {
                             op.Mode = mode;
+                            op.Tool.booleanOperationMode = mode;
                             RefreshLayerTree();
                         };
                         modeFlyout.Items.Add(modeItem);
@@ -748,12 +747,6 @@ namespace LuxEditor.Components
                             using var filtered = await ImageProcessingManager
                                                         .ApplyFiltersAsync(baseBmp, layer.Filters, token);
                             DrawMasked(can, filtered, mask, layer);
-                        }
-                        else
-                        {
-                            using var tint = new SKBitmap(baseBmp.Width, baseBmp.Height, true);
-                            tint.Erase(layer.OverlayColor.ToSKColor());
-                            DrawMasked(can, tint, mask, layer);
                         }
                     }
 

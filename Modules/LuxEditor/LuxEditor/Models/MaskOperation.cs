@@ -42,15 +42,15 @@ namespace LuxEditor.Models
             switch (brushType)
             {
                 case ToolType.Brush:
-                    Tool = new BrushToolControl();
+                    Tool = new BrushToolControl(mode);
                     Debug.WriteLine("MaskOperation: Brush tool initialized.");
                     break;
                 case ToolType.LinearGradient:
-                    Tool = new LinearGradientToolControl();
+                    Tool = new LinearGradientToolControl(mode);
                     Debug.WriteLine("MaskOperation: LinearGradient tool initialized.");
                     break;
                 case ToolType.RadialGradient:
-                    Tool = new RadialGradientToolControl();
+                    Tool = new RadialGradientToolControl(mode);
                     Debug.WriteLine("MaskOperation: RadialGradient tool initialized.");
                     break;
                 case ToolType.ColorRange:

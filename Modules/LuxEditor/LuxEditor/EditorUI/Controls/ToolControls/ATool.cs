@@ -16,13 +16,18 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
     public abstract class ATool : UserControl, ITool
     {
         public abstract ToolType ToolType { get; set; }
-        public abstract event Action? RefreshAction;
+        public abstract event Action RefreshAction;
+        public abstract event Action RefreshOperation;
+        public abstract event Action? RefreshOverlayTemp;
+
         public SKColor Color { get; set; }
+        public BooleanOperationMode booleanOperationMode { get; set; }
 
         public SKImage? OpsFusionned;
 
-        public ATool()
+        public ATool(BooleanOperationMode bMode)
         {
+            this.booleanOperationMode = bMode;
         }
 
         public abstract void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e);

@@ -15,8 +15,15 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
         private SKBitmap? _maskBmp;
         private SKCanvas? _maskCanv;
         private int _maskW, _maskH, _dispW, _dispH;
+
+        public LinearGradientToolControl(BooleanOperationMode bMode) : base(bMode)
+        {
+        }
+
         public override ToolType ToolType { get; set; } = ToolType.LinearGradient;
         public override event Action? RefreshAction;
+        public override event Action RefreshOperation;
+        public override event Action? RefreshOverlayTemp;
 
         public override void ResizeCanvas(int w, int h)
         {

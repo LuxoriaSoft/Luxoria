@@ -62,6 +62,12 @@ namespace LuxEditor.Logic
             SelectedLayer = layer;
             OnLayerChanged?.Invoke();
             OnOperationChanged?.Invoke();
+            layer.PropertyChanged += Layer_PropertyChanged;
+        }
+
+        private void Layer_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            OnLayerChanged?.Invoke();
         }
 
         public void RenameLayer(uint id, string name)
