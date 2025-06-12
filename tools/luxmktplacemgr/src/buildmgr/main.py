@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import subprocess
 
 """
 Marketplace Controller
@@ -56,9 +57,15 @@ class BuildSystem:
         
         cmd_tbe = f"{DOTNET_EXECUTOR} publish {self.file_data["build"]["csproj"]} -c {self.file_data["build"]["config"]} -r {self.file_data["build"]["runtimes"][self.arch]}"
         self.log(f"Executing: {cmd_tbe} in [{self.dir}]")
-
-        os.system(f"cd {self.dir} && {cmd_tbe}")
         
+        try:
+            cmd_output = subprocess.check_output(f"cd {self.dir} && {cmd_tbe}", shell=True, text=True)
+            self.log(f"Saving log as {self.file_data["name"]}.log...")
+            f = open(f"{self.file_data["name"]}.log", "w+")
+            f.write(cmd_output)
+            f.close()
+        except subprocess.CalledProcessError as e:
+            self.log(f"err: executing command: {e}")
 
 class ModuleBuilder:
     def __init__(self, dir, arch):
