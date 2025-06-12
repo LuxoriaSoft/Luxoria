@@ -20,9 +20,7 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
 
     public partial class BrushToolControl : ATool
     {
-        public bool ShowExistingStrokes { get; set; } = true;
         public float BrushSize { get; set; } = 10f;
-        public bool LayerHasFilters { get; set; } = false;
 
         private class CustomStroke { public readonly List<BrushPoint> Points = new(); }
 

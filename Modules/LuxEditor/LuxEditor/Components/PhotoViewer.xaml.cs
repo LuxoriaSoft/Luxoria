@@ -145,13 +145,6 @@ namespace LuxEditor.Components
             if (layer != null)
             {
                 tool.OnColorChanged(layer.OverlayColor.ToSKColor());
-
-                if (tool is BrushToolControl brush)
-                {
-                    bool hasFilters = layer.HasActiveFilters();
-                    brush.LayerHasFilters = hasFilters;
-                    brush.ShowExistingStrokes = !hasFilters;
-                }
             }
 
             var bmp = _currentImage?.OriginalBitmap;
@@ -178,13 +171,7 @@ namespace LuxEditor.Components
             _observedLayer = layer;
             _observedLayer.PropertyChanged += OnLayerPropertyChanged;
 
-            if (layer.SelectedOperation?.Tool is BrushToolControl brush)
-            {
-                bool hasFilters = layer.HasActiveFilters();
-                brush.LayerHasFilters = hasFilters;
-                brush.ShowExistingStrokes = !hasFilters;
-                brush.OnColorChanged(layer.OverlayColor.ToSKColor());
-            }
+            layer.SelectedOperation?.Tool.OnColorChanged(layer.OverlayColor.ToSKColor());
             RefreshAction();
             _isOperationSelected = false;
         }
@@ -196,11 +183,7 @@ namespace LuxEditor.Components
             switch (e.PropertyName)
             {
                 case nameof(Layer.Filters):
-                    if (layer.SelectedOperation?.Tool is BrushToolControl b)
-                    {
-                        b.ShowExistingStrokes = !layer.HasActiveFilters();
-                        RefreshAction();
-                    }
+                    RefreshAction();
                     break;
 
                 case nameof(Layer.OverlayColor):
