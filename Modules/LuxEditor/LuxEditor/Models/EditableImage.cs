@@ -1,4 +1,5 @@
-﻿using Luxoria.Modules.Models;
+﻿using LuxEditor.Logic;
+using Luxoria.Modules.Models;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace LuxEditor.Models
 
         public Dictionary<string, object> Settings { get; private set; }
         public FilterData FilterData { get; private set; }
+        public readonly LayerManager LayerManager = new();
 
         private readonly Stack<Dictionary<string, object>> _history = new();
         private readonly Stack<Dictionary<string, object>> _redo = new();
