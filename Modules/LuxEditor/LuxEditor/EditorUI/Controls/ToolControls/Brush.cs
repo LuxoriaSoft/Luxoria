@@ -89,7 +89,6 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
             }
             RefreshAction?.Invoke();
             RefreshOverlayTemp?.Invoke();
-
         }
 
         public override void OnPointerMoved(object sender, PointerRoutedEventArgs e)
@@ -142,7 +141,6 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
             RefreshOverlayTemp?.Invoke();
         }
 
-
         public override void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
         {
             var can = e.Surface.Canvas;
@@ -153,7 +151,6 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
                 DrawPreview(can, pv);
             }
         }
-
 
         private void DrawSoftCircle(SKCanvas c, SKPoint center, float r, bool subtract)
         {

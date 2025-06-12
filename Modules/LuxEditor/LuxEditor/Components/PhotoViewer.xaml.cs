@@ -37,6 +37,7 @@ namespace LuxEditor.Components
 
         private Action? _overlayTempHandler;
         private Action? _operationRefreshHandler;
+        bool _isOperationSelected = false;
 
         public PhotoViewer()
         {
@@ -161,6 +162,7 @@ namespace LuxEditor.Components
             UpdateOverlayCache();
 
             RefreshAction();
+            _isOperationSelected = true;
         }
 
         public void LayerSelected()
@@ -168,6 +170,7 @@ namespace LuxEditor.Components
             UnsubscribeCurrentTool();
 
             var layer = _currentImage?.LayerManager.SelectedLayer;
+
             if (layer == null) return;
 
             if (_observedLayer != null)
@@ -183,6 +186,7 @@ namespace LuxEditor.Components
                 brush.OnColorChanged(layer.OverlayColor.ToSKColor());
             }
             RefreshAction();
+            _isOperationSelected = false;
         }
 
         private void OnLayerPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -303,9 +307,6 @@ namespace LuxEditor.Components
             _overlayCanvas.Invalidate();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
         private void UpdateOverlayCache()
         {
             if (_currentTool == null || _currentImage == null)
@@ -330,20 +331,6 @@ namespace LuxEditor.Components
                 c.DrawImage(_currentTool.OpsFusionned, new SKRect(0, 0, w, h));
             }
 
-            if (preview != null)
-            {
-                using var opPaint = new SKPaint
-                {
-                    BlendMode = _currentTool.booleanOperationMode == BooleanOperationMode.Add
-                                ? SKBlendMode.SrcOver
-                                : SKBlendMode.DstOut
-                };
-                c.DrawBitmap(preview,
-                             new SKRect(0, 0, preview.Width, preview.Height),
-                             new SKRect(0, 0, w, h),
-                             opPaint);
-            }
-
             c.Flush();
 
             _cachedOverlay?.Dispose();
@@ -355,7 +342,7 @@ namespace LuxEditor.Components
             var canvas = e.Surface.Canvas;
             canvas.Clear(SKColors.Transparent);
 
-            if (_currentImage == null || _currentImage.LayerManager.SelectedLayer == null || _currentImage.LayerManager.SelectedLayer.HasActiveFilters())
+            if (_currentImage == null || _currentImage.LayerManager.SelectedLayer == null || (_currentImage.LayerManager.SelectedLayer.HasActiveFilters() && !_isOperationSelected) )
                 return;
 
             int w = e.Info.Width, h = e.Info.Height;
