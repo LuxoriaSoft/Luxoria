@@ -19,7 +19,7 @@ spec:
             - server
             - /data
             - --console-address
-            - ":9001"
+            - "https://console.bucket.pluto.luxoria.bluepelicansoft.com"
           env:
             - name: MINIO_ROOT_USER
               valueFrom:
