@@ -1,3 +1,73 @@
+# [1.48.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.47.0...v1.48.0) (2025-06-12)
+
+
+### Bug Fixes
+
+* Comments norm ([aba0ac8](https://github.com/LuxoriaSoft/Luxoria/commit/aba0ac806b3be3d8230e465b2a683b6bd6992f7e))
+* Comments norm ([2ed4d5e](https://github.com/LuxoriaSoft/Luxoria/commit/2ed4d5e7355b34a5642d7ffdfb400604e0ff20e2))
+* Double overlay drawing + update overlay color instantly on color changed ([2978110](https://github.com/LuxoriaSoft/Luxoria/commit/29781101b5b15dc9d9a6acdbd1a9b4a3cd58daa4))
+* Linear and Gradial radient with the new system ([c082dcb](https://github.com/LuxoriaSoft/Luxoria/commit/c082dcbd25c138836cd669357d6a0672bfe2957f))
+* Linear gradient, 2 line instead of 3 ([4a4a669](https://github.com/LuxoriaSoft/Luxoria/commit/4a4a6691c0057c2ccfcd8413d43566d36892e2f7))
+* Loading curve with default parameters ([480587b](https://github.com/LuxoriaSoft/Luxoria/commit/480587bc1033a86522107ebf60066a8901c02b3c))
+* Loading curve with default parameters ([a529607](https://github.com/LuxoriaSoft/Luxoria/commit/a529607582c326e75261640ece492ee433bec373))
+* Overlay superposition ([6158e00](https://github.com/LuxoriaSoft/Luxoria/commit/6158e00802be64d75e81a86a21ed8d163f5cc126))
+* Useless draw who make the current operation always visible even if there is a substract operation over it ([290dc08](https://github.com/LuxoriaSoft/Luxoria/commit/290dc089ad48d45ea524a196e5bcecc9fb352fcd))
+
+
+### Features
+
+* integration LuxEditor v2 to develop branche ([a30898a](https://github.com/LuxoriaSoft/Luxoria/commit/a30898a01d5736df03e299295057f0cc34887c30))
+
+# [1.47.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.5...v1.47.0) (2025-06-11)
+
+
+### Features
+
+* Add fondation of LuxMarketplace manager/BuildSystem segment ([0249769](https://github.com/LuxoriaSoft/Luxoria/commit/024976913e6fd158b561f97aca43672efdaa0dad))
+
+## [1.46.5](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.4...v1.46.5) (2025-06-11)
+
+
+### Bug Fixes
+
+* Inject GH_TOKEN as secret using Github secrets ([6655f1c](https://github.com/LuxoriaSoft/Luxoria/commit/6655f1ce3487f3c058c68a9574ca7ed55dccfa72))
+
+## [1.46.4](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.3...v1.46.4) (2025-06-10)
+
+
+### Bug Fixes
+
+* Change python version from >=3.13 to >=3.11 for marketplacemgr ([936ab23](https://github.com/LuxoriaSoft/Luxoria/commit/936ab231a93684571b4cdfe00afb5180956a6734))
+
+## [1.46.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.2...v1.46.3) (2025-06-10)
+
+
+### Bug Fixes
+
+* Checkout code before executing script ([2ed7239](https://github.com/LuxoriaSoft/Luxoria/commit/2ed7239ead9b95b578cc1ae82abee78d74762357))
+
+## [1.46.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.1...v1.46.2) (2025-06-10)
+
+
+### Bug Fixes
+
+* Update working directory ([b423a99](https://github.com/LuxoriaSoft/Luxoria/commit/b423a99eca50a6f484354fbb95ce41196f5d8aee))
+
+## [1.46.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.0...v1.46.1) (2025-06-10)
+
+
+### Bug Fixes
+
+* Update workflow name ([3998861](https://github.com/LuxoriaSoft/Luxoria/commit/399886133f1d3d0a1532069fa5fc995c11d2de4e))
+
+# [1.46.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.45.1...v1.46.0) (2025-06-10)
+
+
+### Features
+
+* Add GitHub Actions workflow to attach artifacts to marketplace ([004c427](https://github.com/LuxoriaSoft/Luxoria/commit/004c427d1ec6a397c38caa76bb7a8a43504dc26f))
+* Add uploadmgr script which aims to publish a branch on target (that contains Luxoria.App & Modules folders) ([664e6de](https://github.com/LuxoriaSoft/Luxoria/commit/664e6de26107a5f3dfe6f2cd7899d4a17741dc77))
+
 ## [1.45.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.45.0...v1.45.1) (2025-06-09)
 
 

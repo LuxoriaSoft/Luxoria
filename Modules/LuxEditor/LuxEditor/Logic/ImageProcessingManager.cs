@@ -31,6 +31,9 @@ namespace LuxEditor.Logic
             var vib = CreateVibranceFilter(filters);
             if (vib != null) cf = SKColorFilter.CreateCompose(vib, cf);
 
+            var tone = CreateToneCurveFilter(filters);
+            if (tone != null) cf = SKColorFilter.CreateCompose(tone, cf);
+
             return cf;
         }
 
@@ -479,5 +482,52 @@ namespace LuxEditor.Logic
         public static Task<SKBitmap> ApplyFiltersAsync(
             SKBitmap source, Dictionary<string, object> filters)
             => ApplyFiltersAsync(source, filters, CancellationToken.None);
+
+        /// <summary>
+        /// Creates a tone curve filter based on the provided parameters.
+        /// </summary>
+        /// <param name="f"></param>
+        /// <returns></returns>
+        private static SKColorFilter? CreateToneCurveFilter(Dictionary<string, object> f)
+        {
+            Span<byte> id = stackalloc byte[256];
+            for (int i = 0; i < 256; i++) id[i] = (byte)i;
+
+            byte[] p = f.TryGetValue("ToneCurve_Parametric", out var o1) ? (byte[])o1 : id.ToArray();
+            byte[] pt = f.TryGetValue("ToneCurve_Point", out var o2) ? (byte[])o2 : id.ToArray();
+            byte[] rCh = f.TryGetValue("ToneCurve_Red", out var o3) ? (byte[])o3 : id.ToArray();
+            byte[] gCh = f.TryGetValue("ToneCurve_Green", out var o4) ? (byte[])o4 : id.ToArray();
+            byte[] bCh = f.TryGetValue("ToneCurve_Blue", out var o5) ? (byte[])o5 : id.ToArray();
+
+            var lutR = new byte[256];
+            var lutG = new byte[256];
+            var lutB = new byte[256];
+
+            bool changed = false;
+            for (int i = 0; i < 256; i++)
+            {
+                int v = i;
+                v = p[v];
+                v = pt[v];
+                lutR[i] = rCh[v];
+                lutG[i] = gCh[v];
+                lutB[i] = bCh[v];
+
+                changed |= lutR[i] != i || lutG[i] != i || lutB[i] != i;
+            }
+            return changed ? SKColorFilter.CreateTable(id.ToArray(), lutR, lutG, lutB) : null;
+        }
+
+        /// <summary>
+        /// Applies the filters to the source bitmap and returns a new bitmap synchronously.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="filters"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        public static SKBitmap ApplyFilters(SKBitmap source, Dictionary<string, object> filters, CancellationToken ct = default)
+        {
+            return ApplyFiltersAsync(source, filters, ct).Result;
+        }
     }
 }

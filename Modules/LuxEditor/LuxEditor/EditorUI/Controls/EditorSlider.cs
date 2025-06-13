@@ -9,9 +9,6 @@ using System;
 
 namespace LuxEditor.EditorUI.Controls;
 
-/// <summary>
-/// Represents a slider control used in the editor for numerical adjustments.
-/// </summary>
 public class EditorSlider : IEditorGroupItem, IEditorStylable
 {
     private readonly Slider _slider;
