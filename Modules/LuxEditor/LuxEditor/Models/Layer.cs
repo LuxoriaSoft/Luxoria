@@ -13,7 +13,6 @@ namespace LuxEditor.Models
     {
         static private uint _nextId = 1;
         private uint _id;
-        private uint _zIndex;
         private string _name = "Layer";
         private bool _visible = true;
         private bool _invert;
@@ -78,20 +77,13 @@ namespace LuxEditor.Models
             private set => SetField(ref _id, value);
         }
 
-        public uint ZIndex
-        {
-            get => _zIndex;
-            set => SetField(ref _zIndex, value);
-        }
-
         /// <summary>
         /// Creates a new layer with the specified z-index.
         /// </summary>
         /// <param name="zIndex"></param>
-        public Layer(uint zIndex)
+        public Layer()
         {
             _id = _nextId++;
-            _zIndex = zIndex;
             Operations = new ObservableCollection<MaskOperation>();
             DetailsPanel = new LayersDetailsPanel();
         }

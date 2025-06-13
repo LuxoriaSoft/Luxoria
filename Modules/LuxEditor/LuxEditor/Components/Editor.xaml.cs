@@ -78,6 +78,8 @@ namespace LuxEditor.Components
             RemoveLayerBtn.Click += OnRemoveLayerClicked;
             LayerTreeView.RightTapped += OnLayerTreeRightTapped;
             LayerTreeView.SelectionChanged += OnLayerTreeSelectionChanged;
+            LayerTreeView.CanDragItems = false;
+            LayerTreeView.CanReorderItems = false;
 
             CurrentImage = editableImage;
 
@@ -729,15 +731,17 @@ namespace LuxEditor.Components
 
                 async Task<SKBitmap> RenderAsync(SKBitmap src)
                 {
-                    var baseBmp = await ImageProcessingManager.ApplyFiltersAsync(src, CurrentImage!.Settings, token);
+                    var baseBmp = await ImageProcessingManager
+                                         .ApplyFiltersAsync(src, CurrentImage!.Settings, token);
 
                     using var surf = SKSurface.Create(new SKImageInfo(baseBmp.Width, baseBmp.Height));
                     var can = surf.Canvas;
                     can.DrawBitmap(baseBmp, 0, 0);
 
-                    foreach (var layer in CurrentImage.LayerManager.Layers
-                                                           .Where(l => l.Visible)
-                                                           .OrderBy(l => l.ZIndex))
+                    var result = new SKBitmap(baseBmp.Width, baseBmp.Height);
+                    surf.ReadPixels(result.Info, result.GetPixels(), result.RowBytes, 0, 0);
+
+                    foreach (var layer in CurrentImage.LayerManager.Layers.Where(l => l.Visible))
                     {
                         using var mask = BuildLayerMask(layer, baseBmp.Width, baseBmp.Height);
                         if (mask == null) continue;
@@ -745,16 +749,18 @@ namespace LuxEditor.Components
                         if (layer.HasActiveFilters())
                         {
                             using var filtered = await ImageProcessingManager
-                                                        .ApplyFiltersAsync(baseBmp, layer.Filters, token);
+                                                       .ApplyFiltersAsync(result, layer.Filters, token);
                             DrawMasked(can, filtered, mask, layer);
                         }
+                        can.Flush();
+                        surf.ReadPixels(result.Info, result.GetPixels(), result.RowBytes, 0, 0);
                     }
 
-                    can.Flush();
                     var outBmp = new SKBitmap(baseBmp.Width, baseBmp.Height);
                     surf.ReadPixels(outBmp.Info, outBmp.GetPixels(), outBmp.RowBytes, 0, 0);
                     return outBmp;
                 }
+
 
                 if (CurrentImage.PreviewBitmap != null)
                 {
