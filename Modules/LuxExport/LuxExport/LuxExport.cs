@@ -7,11 +7,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Luxoria.GModules;
 using Luxoria.GModules.Interfaces;
+using Luxoria.Modules;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using SkiaSharp;
 
@@ -71,16 +74,41 @@ namespace LuxExport
 
             Dictionary<SmartButtonType, Object> mainPage = new Dictionary<SmartButtonType, Object>();
 
-            _export = new Export();
-            _export._eventBus = eventBus;
+            _export = new Export(_eventBus);
+            mainPage.Add(SmartButtonType.Window, _export);
 
-            mainPage.Add(SmartButtonType.Modal, _export);
+            var smrtBtn = new SmartButton("Export", "Export module", mainPage);
+            _export.CloseWindow += () =>
+            {
+                smrtBtn.OnClose.Invoke();
+            };
 
-            smartButtons.Add(new SmartButton("Export", "Export module", mainPage));
+            smartButtons.Add(smrtBtn);
 
             Items.Add(new LuxMenuBarItem("LuxExport", false, new Guid(), smartButtons));
 
-            _eventBus.Subscribe<CollectionUpdatedEvent>(OnCollectionUpdated);
+            _eventBus.Subscribe<ExportRequestEvent>((e) =>
+            {
+                OnCollectionUpdated(e.Assets);
+                Export specificExport = new Export(_eventBus);
+
+                specificExport?.SetBitmaps(e.Assets
+                    .Select(x => new KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>(x.Data.Bitmap, x.Data.EXIF))
+                    .ToList());
+
+                Window window = new Window() { Content = specificExport };
+
+                specificExport.CloseWindow += () =>
+                {
+                    window.Close();
+                };
+
+                window.AppWindow.Resize(new (800, 650));
+
+                window?.Activate();
+            });
+
+            _eventBus.Subscribe<CollectionUpdatedEvent>((e) => { OnCollectionUpdated(e.Assets); });
 
             _logger?.Log($"{Name} initialized", "Mods/LuxExport", LogLevel.Info);
         }
@@ -99,7 +127,6 @@ namespace LuxExport
         /// </summary>
         public void Shutdown()
         {
-            _eventBus?.Unsubscribe<CollectionUpdatedEvent>(OnCollectionUpdated);
 
             _logger?.Log($"{Name} shut down", "Mods/LuxExport", LogLevel.Info);
         }
@@ -107,19 +134,16 @@ namespace LuxExport
         /// <summary>
         /// Handles the CollectionUpdatedEvent, which occurs when the collection of assets is updated.
         /// </summary>
-        public void OnCollectionUpdated(CollectionUpdatedEvent body)
+        public void OnCollectionUpdated(ICollection<LuxAsset> assets)
         {
-            _logger?.Log($"Collection updated: {body.CollectionName}");
-            _logger?.Log($"Collection path: {body.CollectionPath}");
-
-            for (int i = 0; i < body.Assets.Count; i++)
+            for (int i = 0; i < assets.Count; i++)
             {
-                ImageData imageData = body.Assets.ElementAt(i).Data;
-                _logger?.Log($"Asset {i}: {body.Assets.ElementAt(i).MetaData.Id}");
+                ImageData imageData = assets.ElementAt(i).Data;
+                _logger?.Log($"Asset {i}: {assets.ElementAt(i).MetaData.Id}");
                 _logger?.Log($"Asset info {i}: {imageData.Height}x{imageData.Width}, pixels: {imageData.Height * imageData.Width}");
             }
 
-            List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> lst = body.Assets
+            List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> lst = assets
                 .Select(x => new KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>(x.Data.Bitmap, x.Data.EXIF))
                 .ToList();
 

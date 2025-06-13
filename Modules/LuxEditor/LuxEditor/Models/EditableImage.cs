@@ -4,6 +4,7 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace LuxEditor.Models
 {
@@ -26,6 +27,9 @@ namespace LuxEditor.Models
         private readonly Stack<Dictionary<string, object>> _history = new();
         private readonly Stack<Dictionary<string, object>> _redo = new();
 
+        private readonly LuxCfg _luxCfg;
+        private readonly FileExtension _fileExtension;
+
         public EditableImage(LuxAsset asset)
         {
             Id = asset.Id;
@@ -34,9 +38,13 @@ namespace LuxEditor.Models
             OriginalBitmap = asset.Data.Bitmap;
             Metadata = asset.Data.EXIF;
             Settings = CreateDefaultSettings();
-            EditedBitmap = new SKBitmap(OriginalBitmap.Width, OriginalBitmap.Height);
+            EditedBitmap = OriginalBitmap.Copy();
             EditedPreviewBitmap = new SKBitmap(OriginalBitmap.Width, OriginalBitmap.Height);
+            _luxCfg = asset.MetaData;
+            _fileExtension = asset.MetaData.Extension;
         }
+
+        public LuxAsset ToLuxAsset() => new() { MetaData = _luxCfg, FilterData = FilterData, Data = new ImageData(EditedBitmap, _fileExtension, Metadata.ToDictionary()) };
 
         /// <summary>
         /// Saves the current state of the settings to the history stack.

@@ -5,11 +5,13 @@ using LuxEditor.Services;
 using Luxoria.GModules;
 using Luxoria.GModules.Interfaces;
 using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Models;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LuxEditor
 {
@@ -64,6 +66,18 @@ namespace LuxEditor
                 ImageManager.Instance.SelectImage(img);
             };
 
+            _cExplorer.ExportRequestedEvent += () =>
+            {
+                ICollection<LuxAsset> images = ImageManager.Instance.OpenedImages.Select(img => img.ToLuxAsset()).ToList();
+
+                _eventBus?.Publish(
+                    new ExportRequestEvent
+                    {
+                        Assets = images,
+                    }
+                );
+            };
+
             ImageManager.Instance.OnSelectionChanged += (img) =>
             {
                 _editor?.SetEditableImage(img);
@@ -81,6 +95,12 @@ namespace LuxEditor
             Items.Add(new LuxMenuBarItem("LuxEditor", false, Guid.NewGuid(), smartButtons));
 
             _eventBus.Subscribe<CollectionUpdatedEvent>(OnCollectionUpdated);
+            _eventBus?.Subscribe<RequestLatestCollection>(e =>
+            {
+                e.OnHandleReceived?.Invoke(
+                    ImageManager.Instance.OpenedImages.Select(img => img.ToLuxAsset()).ToList()
+                );
+            });
 
             _logger?.Log($"{Name} initialized", "LuxEditor", LogLevel.Info);
         }
@@ -107,7 +127,7 @@ namespace LuxEditor
             }
 
             ImageManager.Instance.LoadImages(editableImages);
-            _cExplorer?.SetImages(editableImages);
+            _cExplorer?.SetImages(editableImages);            
         }
 
         /// <summary>

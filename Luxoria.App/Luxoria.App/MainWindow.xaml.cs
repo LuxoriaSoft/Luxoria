@@ -201,7 +201,12 @@ namespace Luxoria.App
                     switch (key)
                     {
                         case SmartButtonType.Window:
-                            new Window { Content = valuePage }.Activate();
+                            var window = new Window { Content = valuePage };
+                            smartButton.OnClose += () =>
+                            {
+                                window.Close();
+                            };
+                            window.Activate();
                             break;
                         case SmartButtonType.LeftPanel:
                             LeftPanelContent.Content = valuePage;

@@ -18,22 +18,25 @@ using Luxoria.Modules.Models.Events;
 using Windows.Storage.Pickers;
 using Luxoria.Modules.Interfaces;
 using Windows.System;
+using Luxoria.Modules.Models;
+using System.Linq;
 
 namespace LuxExport
 {
     /// <summary>
     /// The dialog responsible for handling export functionality, including file selection, format settings, and export location.
     /// </summary>
-    public sealed partial class Export : ContentDialog
+    public sealed partial class Export : Page
     {
         private List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> _bitmaps = new();
         private ExportViewModel viewModel;
-        public IEventBus? _eventBus;
+        private readonly IEventBus _eventBus;
+        public event Action? CloseWindow;
 
         /// <summary>
         /// Initializes the export dialog and loads the necessary presets for file naming.
         /// </summary>
-        public Export()
+        public Export(IEventBus eventBus)
         {
             this.InitializeComponent();
             viewModel = new ExportViewModel();
@@ -41,6 +44,8 @@ namespace LuxExport
             viewModel.LoadPresets(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\..\\..\\..\\..\\..\\assets\\Presets\\FileNamingPresets.json");
 
             RefreshPresetsMenu();
+
+            _eventBus = eventBus;
         }
 
         /// <summary>
@@ -185,7 +190,7 @@ namespace LuxExport
         /// <summary>
         /// Handles the export button click, initiating the export process.
         /// </summary>
-        private void ExportButton_Click(object sender, object e)
+        private async void ExportButton_Click(object sender, object e)
         {
             if (_bitmaps.Count == 0)
             {
@@ -193,7 +198,11 @@ namespace LuxExport
                 return;
             }
 
-            this.Hide();
+            var tcs = new TaskCompletionSource<ICollection<LuxAsset>>();
+            await _eventBus.Publish(new RequestLatestCollection(handle => tcs.SetResult(handle)));
+            SetBitmaps(tcs.Task.GetAwaiter().GetResult().Select(x => new KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>(x.Data.Bitmap, x.Data.EXIF)).ToList());
+
+            CloseWindow?.Invoke();
 
             DispatcherQueue.TryEnqueue(() =>
             {
@@ -261,7 +270,7 @@ namespace LuxExport
         /// </summary>
         private void CancelButton_Click(object sender, object e)
         {
-            Hide();
+            CloseWindow?.Invoke();
         }
     }
 }
