@@ -85,11 +85,26 @@ class BuildSystem:
         framework = self.file_data["build"]["targetFramework"]
         config = self.file_data["build"]["config"]
         platform = self.platform
-        pdir = os.path.join(self.dir, self.file_data["build"]["bin"], config, framework, platform, "publish")
+        root_path = os.path.join(self.dir, self.file_data["build"]["bin"], config, framework, platform)
+
+        gdir = os.path.join(root_path, self.file_data["build"]["dll"].replace(".dll", ""))
+        pdir = os.path.join(root_path, "publish")
         
         self.log(f"Renaming DLL in {pdir}")
         os.rename(os.path.join(pdir, self.file_data["build"]["dll"]), self.file_data["build"]["dll"].replace(".dll", ".Lux.dll"))
-        shutil.copytree(pdir, os.path.join(output, f"{self.file_data["name"]}.{self.arch}"))
+
+        out_dir = os.path.join(output, f"{self.file_data["name"]}.{self.arch}")
+
+        self.log(f"Creating folder {out_dir}")
+        os.mkdir(out_dir)
+        print(os.listdir(pdir))
+
+        pdir_tgt = os.path.join(out_dir, f"{self.file_data["name"]}.luxmod")
+        self.log(f"Copying dir (1/2) {pdir} to {pdir_tgt}")
+        shutil.copytree(pdir, pdir_tgt)
+        gdir_tgt = os.path.join(out_dir, self.file_data["build"]["dll"].replace(".dll", ""))
+        self.log(f"Copying dir (2/2) {gdir} to {gdir_tgt}")
+        shutil.copytree(gdir, gdir_tgt)
 
 class ModuleBuilder:
     def __init__(self, dir, arch, platform, output_dir):
