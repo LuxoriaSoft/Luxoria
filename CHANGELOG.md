@@ -1,3 +1,10 @@
+## [1.48.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.48.0...v1.48.1) (2025-06-13)
+
+
+### Bug Fixes
+
+* Remove Z-Index, and remove possibility to move masks ([359e163](https://github.com/LuxoriaSoft/Luxoria/commit/359e1638b4ee43f479bd0f4efb384e6307ad855e))
+
 # [1.48.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.47.0...v1.48.0) (2025-06-12)
 
 
