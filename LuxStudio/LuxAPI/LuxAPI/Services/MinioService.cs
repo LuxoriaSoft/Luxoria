@@ -1,6 +1,5 @@
 using Minio;
 using Minio.DataModel.Args;
-using Microsoft.Extensions.Configuration;
 
 namespace LuxAPI.Services
 {
@@ -13,6 +12,7 @@ namespace LuxAPI.Services
             _client = new MinioClient()
                 .WithEndpoint(config["Minio:Endpoint"])
                 .WithCredentials(config["Minio:AccessKey"], config["Minio:SecretKey"])
+                .WithSSL()
                 .Build();
         }
 
