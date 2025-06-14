@@ -81,8 +81,6 @@ namespace LuxEditor.Components
             LayerTreeView.CanDragItems = false;
             LayerTreeView.CanReorderItems = false;
 
-            //this.KeyDown += OnKeyDown;
-
             CurrentImage = editableImage;
 
             if (CurrentImage != null)

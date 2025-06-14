@@ -28,8 +28,10 @@ namespace LuxEditor.Models
         public FilterData FilterData { get; private set; }
         public readonly LayerManager LayerManager;
 
-        private readonly Stack<EditableImageSnapshot> _history = new();
-        private readonly Stack<EditableImageSnapshot> _redo = new();
+        private readonly List<EditableImageSnapshot> _snapshots = new();
+        private int _cursor = -1;
+        private const int MaxSnapshots = 100;
+
 
         public record EditableImageSnapshot
         {
@@ -58,7 +60,7 @@ namespace LuxEditor.Models
             _luxCfg = asset.MetaData;
             _fileExtension = asset.MetaData.Extension;
             LayerManager = new(this);
-            _history.Push(CaptureSnapshot()); 
+            SaveState();
         }
 
         public LuxAsset ToLuxAsset() => new() { MetaData = _luxCfg, FilterData = FilterData, Data = new ImageData(EditedBitmap, _fileExtension, Metadata.ToDictionary()) };
@@ -81,46 +83,56 @@ namespace LuxEditor.Models
             };
         }
 
-
-
+        public void ClearHistory()
+        {
+            _snapshots.Clear();
+            _cursor = -1;
+            SaveState();
+        }
 
         public void SaveState()
         {
-            Debug.WriteLine($"Saving state for {FileName} - History count: {_history.Count}, Redo count: {_redo.Count}");
             var snap = CaptureSnapshot();
-            if (_history.Count > 0 && Compare.AreSnapshotsEqual(_history.Peek(), snap))
+
+            if (_cursor >= 0 && Compare.AreSnapshotsEqual(_snapshots[_cursor], snap))
             {
                 Debug.WriteLine("No changes detected, skipping save.");
                 return;
             }
-            _history.Push(snap);
-            _redo.Clear();
+
+            if (_cursor < _snapshots.Count - 1)
+                _snapshots.RemoveRange(_cursor + 1, _snapshots.Count - (_cursor + 1));
+
+            if (_snapshots.Count == MaxSnapshots)
+            {
+                _snapshots.RemoveAt(0);
+                _cursor--;
+            }
+
+            _snapshots.Add(snap);
+            _cursor++;
+            Debug.WriteLine($"Saved snapshot {_cursor + 1}/{_snapshots.Count}");
         }
 
         public bool Undo()
         {
-            Debug.WriteLine($"Undoing state for {FileName} - History count: {_history.Count}, Redo count: {_redo.Count}");
-            if (_history.Count == 0)
+            if (_cursor <= 0)
                 return false;
 
-            var snapshot = CaptureSnapshot();
-            _redo.Push(snapshot);
-
-            var previous = _history.Pop();
-            RestoreSnapshot(previous);
+            _cursor--;
+            RestoreSnapshot(_snapshots[_cursor]);
+            Debug.WriteLine($"Undo -> {_cursor}/{_snapshots.Count}");
             return true;
         }
 
         public bool Redo()
         {
-            Debug.WriteLine($"Redoing state for {FileName} - History count: {_history.Count}, Redo count: {_redo.Count}");
-            if (_redo.Count == 0)
+            if (_cursor >= _snapshots.Count - 1)
                 return false;
 
-            _history.Push(CaptureSnapshot());
-
-            var next = _redo.Pop();
-            RestoreSnapshot(next);
+            _cursor++;
+            RestoreSnapshot(_snapshots[_cursor]);
+            Debug.WriteLine($"Redo -> {_cursor}/{_snapshots.Count}");
             return true;
         }
 

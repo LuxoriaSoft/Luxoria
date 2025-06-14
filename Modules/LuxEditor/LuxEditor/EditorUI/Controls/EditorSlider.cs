@@ -23,6 +23,10 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
 
     public Action<float>? OnValueChanged;
 
+    private DispatcherTimer _debounceTimer;
+    private float _lastValue;
+
+
     /// <summary>
     /// Creates a new slider control for the editor UI.
     /// </summary>
@@ -67,7 +71,13 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
         _valueBox.LostFocus += ValueBoxEdited;
         _valueBox.KeyDown += ValueBoxEnterKey;
         _slider.DoubleTapped += (s, e) => ResetToDefault();
-        _slider.ManipulationCompleted += SliderReleased;
+
+        _debounceTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(200)
+        };
+        _debounceTimer.Tick += DebounceElapsed;
+
 
         var grid = new Grid();
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -96,6 +106,14 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
         };
     }
 
+    private void DebounceElapsed(object? sender, object e)
+    {
+        _debounceTimer.Stop();
+
+        Debug.WriteLine("Slider debounce ended, saving state.");
+        ImageManager.Instance.SelectedImage?.SaveState();
+    }
+
     /// <summary>
     /// Handles the slider value change event.
     /// </summary>
@@ -105,7 +123,11 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
     {
         float newValue = (float)e.NewValue;
         _valueBox.Text = newValue.ToString($"F{_decimalPlaces}");
+        _lastValue = newValue;
         OnValueChanged?.Invoke(newValue);
+
+        _debounceTimer.Stop();
+        _debounceTimer.Start();
     }
 
     private void SliderReleased(object sender, RoutedEventArgs e)
