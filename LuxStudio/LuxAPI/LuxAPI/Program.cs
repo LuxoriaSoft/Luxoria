@@ -114,10 +114,10 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins([FRONT_URI, "http://localhost:5173"]) // Allow Frontend URL
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials(); // Allow credentials
+        policy.WithOrigins(FRONT_URI) // Allow Frontend URL
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials(); // Allow credentials
     });
 });
 

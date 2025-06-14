@@ -413,7 +413,6 @@ onMounted(async () => {
 
     const res = await axios.get(`${API_URL}/api/collection/${id}`, { headers: { Authorization: `Bearer ${token}` } })
     collection.value = res.data
-    console.log(collection.value.chatMessages)
     messages.value = collection.value.chatMessages.map(m => ({
       sender: m.senderUsername,
       senderEmail: m.senderEmail,
