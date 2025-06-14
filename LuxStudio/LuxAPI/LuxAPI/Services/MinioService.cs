@@ -13,7 +13,6 @@ namespace LuxAPI.Services
             _client = new MinioClient()
                 .WithEndpoint(config["Minio:Endpoint"])
                 .WithCredentials(config["Minio:AccessKey"], config["Minio:SecretKey"])
-                .WithSSL()
                 .Build();
 
             // Buckets initialisation process
