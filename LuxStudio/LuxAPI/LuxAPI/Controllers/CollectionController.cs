@@ -98,7 +98,7 @@ namespace LuxAPI.Controllers
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (collection == null)
-                return NotFound("Collection non trouvée.");
+                return NotFound("Collection not found");
 
             // Manuellement mapper les messages avec les avatars
             var chatMessagesWithAvatars = collection.ChatMessages.Select(m => new
@@ -138,11 +138,11 @@ namespace LuxAPI.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateCollection([FromBody] CreateCollectionDto dto)
         {
             if (dto == null)
-                return BadRequest("Données invalides.");
+                return BadRequest("Invalid DTO Please refer to CreateCollectionDto");
 
             var collection = new Collection
             {
@@ -303,15 +303,15 @@ namespace LuxAPI.Controllers
         {
             var collection = await _context.Collections.FindAsync(collectionId);
             if (collection == null)
-                return NotFound("Collection non trouvée.");
+                return NotFound("Collection not found");
 
             if (file == null || file.Length == 0)
-                return BadRequest("Aucun fichier sélectionné.");
+                return BadRequest("No file has been uploaded");
 
             var permittedExtensions = new[] { ".png", ".jpg", ".jpeg" };
             var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (!permittedExtensions.Contains(ext))
-                return BadRequest("Type de fichier non supporté.");
+                return BadRequest("File extension not supported");
 
             var objectName = $"{Guid.NewGuid()}{ext}";
 
@@ -320,7 +320,7 @@ namespace LuxAPI.Controllers
                 await _minioService.UploadFileAsync(_bucketName, objectName, stream, file.ContentType);
             }
 
-            var fileUrl = $"${_backEndUrl}/api/collection/image/{objectName}";
+            var fileUrl = $"{_backEndUrl}/api/collection/image/{objectName}";
 
             var photo = new Photo
             {
@@ -340,7 +340,7 @@ namespace LuxAPI.Controllers
         {
             var collection = await _context.Collections.FindAsync(collectionId);
             if (collection == null)
-                return NotFound("Collection non trouvée.");
+                return NotFound("Collection not found");
 
             // Récupère l'utilisateur pour son avatar
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.SenderEmail);
@@ -370,15 +370,15 @@ namespace LuxAPI.Controllers
         public async Task<IActionResult> UpdatePhotoStatus(Guid photoId, [FromBody] UpdatePhotoStatusDto dto)
         {
             var photo = await _context.Photos.FindAsync(photoId);
-            if (photo == null) return NotFound("Photo introuvable.");
+            if (photo == null) return NotFound("Asset not found");
 
             if (!Enum.IsDefined(typeof(PhotoStatus), dto.Status))
-                return BadRequest("Statut invalide.");
+                return BadRequest("Invalid status");
 
             photo.Status = dto.Status;
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Statut de la photo mis à jour." });
+            return Ok(new { message = "Status has been updated" });
         }
 
         public class UpdatePhotoStatusDto
