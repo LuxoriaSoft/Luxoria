@@ -138,11 +138,11 @@ namespace LuxAPI.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateCollection([FromBody] CreateCollectionDto dto)
         {
             if (dto == null)
-                return BadRequest("Données invalides.");
+                return BadRequest("Invalid DTO Please refer to CreateCollectionDto");
 
             var collection = new Collection
             {
