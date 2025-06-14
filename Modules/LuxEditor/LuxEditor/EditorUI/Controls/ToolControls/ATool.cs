@@ -40,5 +40,6 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
         {
             Color = newColor;
         }
+        public abstract ATool Clone();
     }
 }

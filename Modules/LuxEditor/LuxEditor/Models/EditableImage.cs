@@ -1,10 +1,14 @@
 ﻿using LuxEditor.Logic;
+using LuxEditor.Utils;
 using Luxoria.Modules.Models;
+using Models;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
+using Windows.UI;
 
 namespace LuxEditor.Models
 {
@@ -22,10 +26,21 @@ namespace LuxEditor.Models
 
         public Dictionary<string, object> Settings { get; private set; }
         public FilterData FilterData { get; private set; }
-        public readonly LayerManager LayerManager = new();
+        public readonly LayerManager LayerManager;
 
-        private readonly Stack<Dictionary<string, object>> _history = new();
-        private readonly Stack<Dictionary<string, object>> _redo = new();
+        private readonly Stack<EditableImageSnapshot> _history = new();
+        private readonly Stack<EditableImageSnapshot> _redo = new();
+
+        public record EditableImageSnapshot
+        {
+            public required string FileName;
+            public required SKBitmap EditedBitmap;
+            public required SKBitmap OriginalBitmap;
+            public required Dictionary<string, object> Settings;
+            public required FilterData FilterData;
+            public required ReadOnlyDictionary<string, string> Metadata;
+            public required LayerManager LayerManager;
+        }
 
         private readonly LuxCfg _luxCfg;
         private readonly FileExtension _fileExtension;
@@ -42,6 +57,8 @@ namespace LuxEditor.Models
             EditedPreviewBitmap = new SKBitmap(OriginalBitmap.Width, OriginalBitmap.Height);
             _luxCfg = asset.MetaData;
             _fileExtension = asset.MetaData.Extension;
+            LayerManager = new(this);
+            _history.Push(CaptureSnapshot()); 
         }
 
         public LuxAsset ToLuxAsset() => new() { MetaData = _luxCfg, FilterData = FilterData, Data = new ImageData(EditedBitmap, _fileExtension, Metadata.ToDictionary()) };
@@ -49,34 +66,71 @@ namespace LuxEditor.Models
         /// <summary>
         /// Saves the current state of the settings to the history stack.
         /// </summary>
+        /// 
+        private EditableImageSnapshot CaptureSnapshot()
+        {
+            return new EditableImageSnapshot
+            {
+                FileName = FileName,
+                OriginalBitmap = OriginalBitmap.Copy(),
+                EditedBitmap = EditedBitmap.Copy(),
+                Metadata = Metadata,
+                FilterData = FilterDataClone(FilterData),
+                Settings = CloneSettings(Settings),
+                LayerManager = LayerManager.Clone()
+            };
+        }
+
+
+
+
         public void SaveState()
         {
-            _history.Push(CloneSettings(Settings));
+            Debug.WriteLine($"Saving state for {FileName} - History count: {_history.Count}, Redo count: {_redo.Count}");
+            var snap = CaptureSnapshot();
+            if (_history.Count > 0 && Compare.AreSnapshotsEqual(_history.Peek(), snap))
+            {
+                Debug.WriteLine("No changes detected, skipping save.");
+                return;
+            }
+            _history.Push(snap);
             _redo.Clear();
         }
 
-        /// <summary>
-        /// Restores the settings to the last saved state.
-        /// </summary>
-        /// <returns></returns>
         public bool Undo()
         {
-            if (_history.Count == 0) return false;
-            _redo.Push(Settings);
-            Settings = _history.Pop();
+            Debug.WriteLine($"Undoing state for {FileName} - History count: {_history.Count}, Redo count: {_redo.Count}");
+            if (_history.Count == 0)
+                return false;
+
+            var snapshot = CaptureSnapshot();
+            _redo.Push(snapshot);
+
+            var previous = _history.Pop();
+            RestoreSnapshot(previous);
             return true;
         }
 
-        /// <summary>
-        /// Restores the settings to the next state in the redo stack.
-        /// </summary>
-        /// <returns></returns>
         public bool Redo()
         {
-            if (_redo.Count == 0) return false;
-            _history.Push(Settings);
-            Settings = _redo.Pop();
+            Debug.WriteLine($"Redoing state for {FileName} - History count: {_history.Count}, Redo count: {_redo.Count}");
+            if (_redo.Count == 0)
+                return false;
+
+            _history.Push(CaptureSnapshot());
+
+            var next = _redo.Pop();
+            RestoreSnapshot(next);
             return true;
+        }
+
+        private void RestoreSnapshot(EditableImageSnapshot s)
+        {
+            EditedBitmap.Dispose();
+            EditedBitmap = s.EditedBitmap.Copy();
+            FilterData = FilterDataClone(s.FilterData);
+            Settings = CloneSettings(s.Settings);
+            LayerManager.RestoreFrom(s.LayerManager);
         }
 
         /// <summary>
@@ -118,6 +172,18 @@ namespace LuxEditor.Models
                     copy[kv.Key] = kv.Value;
             }
             return copy;
+        }
+
+        public static FilterData FilterDataClone(FilterData original)
+        {
+            var clone = new FilterData();
+
+            foreach (var kv in original.GetScores())
+                clone.SetScore(kv.Key, kv.Value);
+
+            clone.SetFlag(original.GetFlag());
+
+            return clone;
         }
     }
 }

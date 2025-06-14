@@ -196,5 +196,30 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
             if (_maskBmp.Width == _dispW && _maskBmp.Height == _dispH) return _maskBmp;
             return _maskBmp.Resize(new SKImageInfo(_dispW, _dispH), new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None));
         }
+
+        public override ATool Clone()
+        {
+            var clone = new LinearGradientToolControl(booleanOperationMode)
+            {
+                ToolType = ToolType,
+                Color = this.Color,
+                ShowExistingMask = this.ShowExistingMask
+            };
+
+            clone._dispW = _dispW;
+            clone._dispH = _dispH;
+            clone.ResizeCanvas(_dispW, _dispH);
+
+            if (_gradient != null)
+            {
+                clone._gradient = new LinearGradient(_gradient.A, _gradient.B);
+                clone._selected = _selected;
+                clone.RecomputeMask();
+            }
+
+            return clone;
+        }
+
+
     }
 }

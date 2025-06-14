@@ -81,6 +81,8 @@ namespace LuxEditor.Components
             LayerTreeView.CanDragItems = false;
             LayerTreeView.CanReorderItems = false;
 
+            //this.KeyDown += OnKeyDown;
+
             CurrentImage = editableImage;
 
             if (CurrentImage != null)
@@ -849,46 +851,27 @@ namespace LuxEditor.Components
             return bmp;
         }
 
-        /// <summary>
-        /// Checks if the Control key is pressed.
-        /// </summary>
-        /// <returns></returns>
-        private static bool IsCtrlDown()
+        private void Undo_Invoked(KeyboardAccelerator sender,
+                                  KeyboardAcceleratorInvokedEventArgs e)
         {
-            var win = Microsoft.UI.Xaml.Window.Current;
-            return win != null &&
-                   win.CoreWindow.GetKeyState(VirtualKey.Control)
-                      .HasFlag(CoreVirtualKeyStates.Down);
+            if (CurrentImage?.Undo() == true) AfterHistoryJump();
+            e.Handled = true;
         }
 
-        /// <summary>
-        /// Handles the key down event for undo and redo operations.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnKeyDown(object? sender, KeyRoutedEventArgs e)
+        private void Redo_Invoked(KeyboardAccelerator sender,
+                                  KeyboardAcceleratorInvokedEventArgs e)
         {
-            if (!IsCtrlDown() || CurrentImage == null) return;
-
-            switch (e.Key)
-            {
-                case VirtualKey.Z:
-                    if (CurrentImage.Undo())
-                    {
-                        UpdateSliderUI();
-                        RequestFilterUpdate();
-                    }
-                    break;
-
-                case VirtualKey.Y:
-                    if (CurrentImage.Redo())
-                    {
-                        UpdateSliderUI();
-                        RequestFilterUpdate();
-                    }
-                    break;
-            }
+            if (CurrentImage?.Redo() == true) AfterHistoryJump();
+            e.Handled = true;
         }
+
+        private void AfterHistoryJump()
+        {
+            UpdateSliderUI();
+            RefreshLayerTree();
+            RequestFilterUpdate();
+        }
+
     }
 
     internal static class Ext

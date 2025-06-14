@@ -189,5 +189,28 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
                 return _maskBmp;
             return _maskBmp.Resize(new SKImageInfo(_dispW, _dispH), new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None));
         }
+
+        public override ATool Clone()
+        {
+            var clone = new BrushToolControl(booleanOperationMode)
+            {
+                ToolType = ToolType,
+                Color = this.Color,
+                BrushSize = this.BrushSize
+            };
+
+            if (_maskBmp != null)
+            {
+                clone._dispW = _dispW;
+                clone._dispH = _dispH;
+                clone.ResizeCanvas(_dispW, _dispH);
+
+                using var paint = new SKPaint { FilterQuality = SKFilterQuality.High };
+                clone._maskCanv?.DrawBitmap(_maskBmp, new SKRect(0, 0, _maskW, _maskH), paint);
+            }
+
+            return clone;
+        }
+
     }
 }
