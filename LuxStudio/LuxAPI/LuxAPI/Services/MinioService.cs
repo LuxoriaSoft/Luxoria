@@ -22,14 +22,14 @@ namespace LuxAPI.Services
             
             foreach (var bucket in requiredBuckets)
             {
-                Debug.WriteLine($"Checking bucket [{bucket}] : status=");
+                Console.WriteLine($"Checking bucket [{bucket}] : status=");
                 if (!_client.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucket)).Result)
                 {
                     // Create the bucket
                     _client.MakeBucketAsync(new MakeBucketArgs().WithBucket(bucket)).Wait();
-                    Debug.WriteLine("Created!");
+                    Console.WriteLine("Created!");
                 }
-                Debug.WriteLine("Already exists!");
+                Console.WriteLine("Already exists!");
             }
         }
 
