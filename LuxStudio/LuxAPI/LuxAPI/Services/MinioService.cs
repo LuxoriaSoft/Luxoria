@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Minio;
 using Minio.DataModel.Args;
 
@@ -14,6 +15,22 @@ namespace LuxAPI.Services
                 .WithCredentials(config["Minio:AccessKey"], config["Minio:SecretKey"])
                 .WithSSL()
                 .Build();
+
+            // Buckets initialisation process
+            // Create these buckets if they do not exist
+            List<string> requiredBuckets = ["user-files", "photos-bucket"];
+            
+            foreach (var bucket in requiredBuckets)
+            {
+                Debug.WriteLine($"Checking bucket [{bucket}] : status=");
+                if (!_client.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucket)).Result)
+                {
+                    // Create the bucket
+                    _client.MakeBucketAsync(new MakeBucketArgs().WithBucket(bucket)).Wait();
+                    Debug.WriteLine("Created!");
+                }
+                Debug.WriteLine("Already exists!");
+            }
         }
 
         public async Task UploadFileAsync(string bucketName, string objectPath, Stream data, string contentType)
