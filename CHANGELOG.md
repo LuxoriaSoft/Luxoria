@@ -1,3 +1,47 @@
+## [1.49.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.49.0...v1.49.1) (2025-06-15)
+
+
+### Bug Fixes
+
+* Add brochure field to luxmod.json ([08efc54](https://github.com/LuxoriaSoft/Luxoria/commit/08efc54eed74d74816a25fdc629465583d58f158))
+
+# [1.49.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.48.1...v1.49.0) (2025-06-14)
+
+
+### Bug Fixes
+
+* Add bucket initialisation process before launching app ([a6a5ad0](https://github.com/LuxoriaSoft/Luxoria/commit/a6a5ad0371d5117038e7739b073cb68f04ea46e5))
+* Add debug URL in allowed origins (CORS) ([34404ea](https://github.com/LuxoriaSoft/Luxoria/commit/34404eaaf00812cf69ebc92dd024d7eb917b540f))
+* Add luxapi script to create its secrets ([f70eb1e](https://github.com/LuxoriaSoft/Luxoria/commit/f70eb1e7fbc5198f79baa770c40a4c9999a284af))
+* Add random username and passwd as admin user for MinIO bucket ([77dead1](https://github.com/LuxoriaSoft/Luxoria/commit/77dead15b5b5342d42a2b28766112e97359292cd))
+* Add secret vars from minio service on LuxAPI ([7c234c9](https://github.com/LuxoriaSoft/Luxoria/commit/7c234c920cfac1be131c55e926b17aabf3f9167e))
+* Change from debug message to Console message ([a90d118](https://github.com/LuxoriaSoft/Luxoria/commit/a90d118addf50acd049f372efd7d375ba2404907))
+* Correct MinIO console address and environment variable values ([ae9ac50](https://github.com/LuxoriaSoft/Luxoria/commit/ae9ac50c130a81ec2b91099449f2d2e1a3ffadfa))
+* Delete dev-only console.log & debug origin (cors) ([69131e1](https://github.com/LuxoriaSoft/Luxoria/commit/69131e1edd511737074e8be91b38fe5e7f6aeba1))
+* Enable SSL for bucket connection ([21903b3](https://github.com/LuxoriaSoft/Luxoria/commit/21903b3e50a10426aae520973a7399bc518a5f27))
+* Rename method in BuildManager part ([798648e](https://github.com/LuxoriaSoft/Luxoria/commit/798648e22eb13e28aa418bdc6c8431ac0ff53f96))
+* Set the final path for published module directory set as "ModuleName.luxmod" ([8cda6ad](https://github.com/LuxoriaSoft/Luxoria/commit/8cda6adf9b5f9269903905af37a2eb2623c4021b))
+* Specify namespace for luxoria/minio secret ([c091a3b](https://github.com/LuxoriaSoft/Luxoria/commit/c091a3ba6251c04f50676de7dfb60e835a719bde))
+* Translate error & return values and fix the asset link for retreival ([26b03f0](https://github.com/LuxoriaSoft/Luxoria/commit/26b03f0474f0d7c6af9c8abb9f1287a202c5813e))
+* Translate pages in English and fix API triggering ([4eb9b6d](https://github.com/LuxoriaSoft/Luxoria/commit/4eb9b6d0d86a0e77bc88b3cfd8bf7ff93507ef9c))
+* Update error message for invalid CreateCollectionDto ([1b8f81f](https://github.com/LuxoriaSoft/Luxoria/commit/1b8f81fe53b6a497e8fbc45c1c74e9ceb86c5964))
+* Update MinIO console address and browser redirect URL ([d5f5795](https://github.com/LuxoriaSoft/Luxoria/commit/d5f5795ccbd1fddcf8d5ebb169bae30f5535742b))
+* Update MinIO console address to use HTTPS ([dd77511](https://github.com/LuxoriaSoft/Luxoria/commit/dd775119be96ddf50e5cce114bf56ce0791aacf7))
+* Update MinIO console address to use local path ([2a19d82](https://github.com/LuxoriaSoft/Luxoria/commit/2a19d82f7109037954e93058c701d23a162c42b0))
+* Update MinIO endpoint to use internal service address ([2a2ddc9](https://github.com/LuxoriaSoft/Luxoria/commit/2a2ddc906359db93a8ebeb84cba7e81086e61ece))
+
+
+### Features
+
+* add MinIO password generation script and configure environment variables in deployment ([633a6cf](https://github.com/LuxoriaSoft/Luxoria/commit/633a6cf03ded3aac57bf3d9476c3f556ec144cf8))
+
+## [1.48.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.48.0...v1.48.1) (2025-06-13)
+
+
+### Bug Fixes
+
+* Remove Z-Index, and remove possibility to move masks ([359e163](https://github.com/LuxoriaSoft/Luxoria/commit/359e1638b4ee43f479bd0f4efb384e6307ad855e))
+
 # [1.48.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.47.0...v1.48.0) (2025-06-12)
 
 

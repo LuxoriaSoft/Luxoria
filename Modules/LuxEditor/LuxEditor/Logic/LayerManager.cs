@@ -11,7 +11,6 @@ namespace LuxEditor.Logic
 {
     public class LayerManager : INotifyPropertyChanged
     {
-        private uint _nextZIndex = 1;
 
         public ObservableCollection<Layer> Layers { get; } = new ObservableCollection<Layer>();
 
@@ -47,7 +46,7 @@ namespace LuxEditor.Logic
 
         public void AddLayer(ToolType type)
         {
-            var layer = new Layer(_nextZIndex++)
+            var layer = new Layer()
             {
                 Name = $"Layer {Layers.Count}",
                 Visible = true,
@@ -58,7 +57,9 @@ namespace LuxEditor.Logic
 
             layer.Operations.Add(CreateMaskOperation(type));
             layer.SelectedOperation = layer.Operations[0];
-            Layers.Add(layer);
+
+            Layers.Insert(0, layer);
+
             SelectedLayer = layer;
             OnLayerChanged?.Invoke();
             OnOperationChanged?.Invoke();
@@ -99,10 +100,9 @@ namespace LuxEditor.Logic
             if (layer != null)
             {
                 bool shouldSelectPrevious = SelectedLayer != null && layer == SelectedLayer;
-                int idx = (int)(layer.ZIndex - 1);
+                int idx = Layers.IndexOf(layer);
                 Layers.Remove(layer);
 
-                RefreshZIndices();
                 if (Layers.Count > 0 && shouldSelectPrevious)
                 {
                     SelectedLayer = Layers[Math.Max(0, Math.Min(idx, Layers.Count - 1))];
@@ -185,7 +185,6 @@ namespace LuxEditor.Logic
             Layers.RemoveAt(oldIndex);
             Layers.Insert(newIndex, layer);
             SelectedLayer = layer;
-            RefreshZIndices();
             OnLayerChanged?.Invoke();
             OnOperationChanged?.Invoke();
         }
@@ -197,18 +196,17 @@ namespace LuxEditor.Logic
             Layers.RemoveAt(oldIndex);
             Layers.Insert(newIndex, layer);
             SelectedLayer = layer;
-            RefreshZIndices();
             OnLayerChanged?.Invoke();
             OnOperationChanged?.Invoke();
         }
 
-        private void RefreshZIndices()
-        {
-            for (int i = 0; i < Layers.Count; i++)
-            {
-                Layers[i].ZIndex = (uint)(i + 1);
-            }
-        }
+        //private void RefreshZIndices()
+        //{
+        //    for (int i = 0; i < Layers.Count; i++)
+        //    {
+        //        Layers[i].ZIndex = (uint)(i + 1);
+        //    }
+        //}
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected bool SetField<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
