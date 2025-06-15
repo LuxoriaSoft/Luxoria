@@ -23,6 +23,7 @@
         "Base",
         "Fondation"
     ],
+    "brochure": "README.md",
     "build": {
         "config": "Release",
         "csproj": "LuxImport\\LuxImport.csproj",
