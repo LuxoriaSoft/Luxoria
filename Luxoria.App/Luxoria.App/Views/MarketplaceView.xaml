@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="Luxoria.App.Views.MarketplaceView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
+    Title="MarketplaceView">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid>
+        <controls:NavigationView
+        x:Name="NavView"
+        PaneDisplayMode="LeftCompact"
+        IsPaneOpen="True"
+        OpenPaneLength="256"
+        CompactPaneLength="48"
+        Header="Marketplace"
+        ItemInvoked="NavView_ItemInvoked">
+
+            <!-- dynamically populated in code‐behind -->
+            <controls:NavigationView.MenuItems/>
+
+            <controls:NavigationView.Content>
+                <StackPanel Margin="16" Spacing="12">
+                    <toolkit:MarkdownTextBlock
+              x:Name="MdViewer"
+              TextWrapping="WrapWholeWords"
+              FontSize="14"/>
+                    <Button
+              x:Name="InstallButton"
+              Content="Install"
+              HorizontalAlignment="Right"
+              Click="InstallButton_Click"
+              IsEnabled="False"/>
+                </StackPanel>
+            </controls:NavigationView.Content>
+        </controls:NavigationView>
+    </Grid>
+</Window>

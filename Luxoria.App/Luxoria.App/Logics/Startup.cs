@@ -1,5 +1,7 @@
 using Luxoria.App.Interfaces;
 using Luxoria.App.Services;
+using Luxoria.Core.Interfaces;
+using Luxoria.Core.Services;
 using Luxoria.Modules;
 using Luxoria.Modules.Interfaces;
 using Luxoria.SDK.Interfaces;
@@ -39,6 +41,11 @@ namespace Luxoria.App.Logics
             logger.Log("Registering Event Bus...", LOG_SECTION, LogLevel.Info);
             services.AddSingleton<IEventBus, EventBus>();
             logger.Log("Event Bus registered successfully !", LOG_SECTION, LogLevel.Info);
+
+            // Register Marketplace Service
+            logger.Log("Registering Marketplace Service...", LOG_SECTION, LogLevel.Info);
+            services.AddSingleton<IMarketplaceService, MarketplaceService>();
+            logger.Log("Marketplace Service registered successfully !", LOG_SECTION, LogLevel.Info);
 
             // Register Module Loader
             logger.Log("Registering Module Loader...", LOG_SECTION, LogLevel.Info);
