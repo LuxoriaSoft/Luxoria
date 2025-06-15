@@ -1,4 +1,5 @@
-﻿using LuxEditor.Logic;
+﻿using LuxEditor.EditorUI.Controls;
+using LuxEditor.Logic;
 using LuxEditor.Utils;
 using Luxoria.Modules.Models;
 using Models;
@@ -37,7 +38,6 @@ namespace LuxEditor.Models
         {
             public required string FileName;
             public required SKBitmap EditedBitmap;
-            public required SKBitmap OriginalBitmap;
             public required Dictionary<string, object> Settings;
             public required FilterData FilterData;
             public required ReadOnlyDictionary<string, string> Metadata;
@@ -71,15 +71,15 @@ namespace LuxEditor.Models
         /// 
         private EditableImageSnapshot CaptureSnapshot()
         {
+            Debug.WriteLine("Capture Snapshot settings: " + PrintSettings(Settings));
             return new EditableImageSnapshot
             {
                 FileName = FileName,
-                OriginalBitmap = OriginalBitmap.Copy(),
                 EditedBitmap = EditedBitmap.Copy(),
                 Metadata = Metadata,
                 FilterData = FilterDataClone(FilterData),
                 Settings = CloneSettings(Settings),
-                LayerManager = LayerManager.Clone()
+                LayerManager = LayerManager.Clone(),
             };
         }
 
@@ -122,6 +122,7 @@ namespace LuxEditor.Models
             _cursor--;
             RestoreSnapshot(_snapshots[_cursor]);
             Debug.WriteLine($"Undo -> {_cursor}/{_snapshots.Count}");
+            Debug.WriteLine(" |-> Settings: " + PrintSettings(Settings));
             return true;
         }
 
@@ -133,6 +134,7 @@ namespace LuxEditor.Models
             _cursor++;
             RestoreSnapshot(_snapshots[_cursor]);
             Debug.WriteLine($"Redo -> {_cursor}/{_snapshots.Count}");
+            Debug.WriteLine(" |-> Settings: " + PrintSettings(Settings));
             return true;
         }
 
@@ -196,6 +198,45 @@ namespace LuxEditor.Models
             clone.SetFlag(original.GetFlag());
 
             return clone;
+        }
+
+        private static string PrintSettings(Dictionary<string, object> settings)
+        {
+            string result = string.Empty;
+
+            foreach (var elt in settings)
+            {
+                if (elt.Value is List<float> list)
+                {
+                    result += $"{elt.Key}: [{string.Join(", ", list)}]\n";
+                }
+                else if (elt.Value is List<Dictionary<string, int>> list2)
+                {
+                    result += $"{elt.Key}: [\n";
+                    foreach (var dict in list2)
+                    {
+                        result += "  {\n";
+                        foreach (var kv in dict)
+                        {
+                            result += $"    {kv.Key}: {kv.Value},\n";
+                        }
+                        result += "  },\n";
+                    }
+                }
+                else if (elt.Value is Byte[] list3)
+                {
+                    result += $"{elt.Key}: [{string.Join(", ", list3.Select(b => b.ToString()))}]\n";
+                }
+                else if (elt.Value is SKBitmap bitmap)
+                {
+                    result += $"{elt.Key}: Bitmap ({bitmap.Width}x{bitmap.Height})\n";
+                }
+                else
+                {
+                    result += $"{elt.Key}: {elt.Value}\n";
+                }
+            }
+            return result.TrimEnd('\n', ' ');
         }
     }
 }

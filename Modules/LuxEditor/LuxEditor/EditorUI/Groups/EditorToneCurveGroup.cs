@@ -4,12 +4,16 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using SkiaSharp;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace LuxEditor.EditorUI.Groups
 {
     public sealed class EditorToneCurveGroup : UserControl, IEditorGroupItem
     {
         private readonly ContentPresenter _presenter;
+        private CurveBase[]? _curves;
+
         public event Action<string, byte[]>? CurveChanged;
 
         /// <summary>
@@ -25,7 +29,7 @@ namespace LuxEditor.EditorUI.Groups
             root.Children.Add(selector);
             root.Children.Add(_presenter);
 
-            var curves = new CurveBase[]
+            _curves = new CurveBase[]
             {
                 new ParametricCurve(),
 
@@ -36,15 +40,27 @@ namespace LuxEditor.EditorUI.Groups
                 new ColorChannelCurve("ToneCurve_Blue",  new SKColor(66, 140, 255))
             };
 
-            foreach (var c in curves)
+            foreach (var c in _curves)
                 c.CurveChanged += () => CurveChanged?.Invoke(c.SettingKey, c.GetLut());
 
-            selector.SelectionChanged += i => _presenter.Content = curves[i];
-            _presenter.Content = curves[0];
+            selector.SelectionChanged += i => _presenter.Content = _curves[i];
+            _presenter.Content = _curves[0];
 
             Content = root;
         }
 
         public UIElement GetElement() => this;
+
+        public void RefreshCurves(Dictionary<string, object> settings)
+        {
+            Debug.WriteLine("Refreshing tone curves...");
+            if (_curves == null)
+                return;
+            for (int i = 0; i < _curves.Length; i++)
+            {
+                var curve = _curves[i];
+                curve.RefreshCurve(settings);
+            }
+        }
     }
 }

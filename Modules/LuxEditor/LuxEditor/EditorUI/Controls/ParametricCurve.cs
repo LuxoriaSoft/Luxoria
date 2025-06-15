@@ -1,4 +1,5 @@
 ﻿using LuxEditor.EditorUI.Controls;
+using LuxEditor.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -6,6 +7,10 @@ using Microsoft.UI.Xaml.Media;
 using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace LuxEditor.EditorUI.Controls
 {
@@ -27,6 +32,7 @@ namespace LuxEditor.EditorUI.Controls
         private DateTime _lastTap;
 
         public override string SettingKey => "ToneCurve_Parametric";
+
 
         /// <summary>
         /// Initialises the UI and draws the first curve.
@@ -129,6 +135,7 @@ namespace LuxEditor.EditorUI.Controls
         {
             _dragging = false;
             _canvas.ReleasePointerCaptures();
+            ImageManager.Instance.SelectedImage?.SaveState();
         }
 
         /// <summary>
@@ -170,6 +177,11 @@ namespace LuxEditor.EditorUI.Controls
         /// </summary>
         private void UpdateCurve()
         {
+            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Shadow_Value"] = _shadow;
+            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Dark_Value"] = _dark;
+            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Light_Value"] = _light;
+            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_High_Value"] = _high;
+
             BuildLut(_lut,
                      _shadow.GetValue(),
                      _dark.GetValue(),
@@ -347,6 +359,19 @@ namespace LuxEditor.EditorUI.Controls
             var copy = new byte[256];
             Array.Copy(_lut, copy, 256);
             return copy;
+        }
+
+        public override void RefreshCurve(Dictionary<string, object> settings)
+        {
+            settings.TryGetValue(SettingKey, out var lutValue);
+            settings.TryGetValue(SettingKey + "_Control_Points", out var controlPoints);
+            if (lutValue != null)
+            {
+                if (lutValue is byte[] lut)
+                    Array.Copy(lut, _lut, 256);
+                _canvas.Invalidate();
+            }
+            _canvas.Invalidate();
         }
     }
 }

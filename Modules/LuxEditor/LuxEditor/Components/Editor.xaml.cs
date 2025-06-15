@@ -42,6 +42,8 @@ namespace LuxEditor.Components
 
         private readonly Dictionary<TreeViewNode, object> _nodeMap = new();
         private readonly List<Layer> _observedLayers = new();
+
+        private EditorToneCurveGroup _toneGroup;
         /// <summary>
         /// Style for the temperature slider.
         /// </summary>
@@ -549,8 +551,8 @@ namespace LuxEditor.Components
 
             _panelManager!.AddCategory(root);
 
-            var toneGroup = new EditorToneCurveGroup();
-            toneGroup.CurveChanged += (key, lut) =>
+            _toneGroup = new EditorToneCurveGroup();
+            _toneGroup.CurveChanged += (key, lut) =>
             {
                 if (CurrentImage == null) return;
                 CurrentImage.Settings[key] = lut;
@@ -558,7 +560,7 @@ namespace LuxEditor.Components
             };
 
             var toneExpander = new EditorGroupExpander("Tone Curve");
-            toneExpander.AddControl(toneGroup);
+            toneExpander.AddControl(_toneGroup);
             _panelManager.AddCategory(toneExpander);
         }
 
@@ -868,6 +870,7 @@ namespace LuxEditor.Components
             UpdateSliderUI();
             RefreshLayerTree();
             RequestFilterUpdate();
+            _toneGroup.RefreshCurves(CurrentImage.Settings);
         }
 
     }
