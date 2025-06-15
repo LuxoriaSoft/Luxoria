@@ -33,18 +33,25 @@
                         IsEnabled="False"
                         SelectionChanged="ModulesListView_SelectionChanged"/>
 
-                    <StackPanel Grid.Column="1" Spacing="12">
-                        <toolkit:MarkdownTextBlock
-                            x:Name="MdViewer"
-                            TextWrapping="WrapWholeWords"
-                            FontSize="14"/>
+                    <Grid Grid.Column="1" RowDefinitions="*,Auto" RowSpacing="12">
+                        <ScrollViewer
+                            Grid.Row="0"
+                            VerticalScrollBarVisibility="Auto"
+                            HorizontalScrollBarVisibility="Disabled">
+                            <toolkit:MarkdownTextBlock
+                                x:Name="MdViewer"
+                                TextWrapping="WrapWholeWords"
+                                FontSize="14"/>
+                        </ScrollViewer>
+
                         <Button
+                            Grid.Row="1"
                             x:Name="InstallButton"
                             Content="Install"
                             HorizontalAlignment="Right"
                             Click="InstallButton_Click"
                             IsEnabled="False"/>
-                    </StackPanel>
+                    </Grid>
 
                 </Grid>
             </controls:NavigationView.Content>

@@ -1,9 +1,7 @@
 ﻿using Luxoria.Core.Interfaces;
 using Luxoria.Core.Models;
 using Luxoria.SDK.Interfaces;
-using Luxoria.SDK.Models;
 using Octokit;
-using System.Diagnostics;
 
 namespace Luxoria.Core.Services;
 
@@ -12,7 +10,7 @@ public class MarketplaceService(ILoggerService logger, string owner = "luxoriaso
     private readonly string _owner = owner;
     private readonly string _repository = repository;
     private readonly ILoggerService _logger = logger;
-    private readonly GitHubClient _client = new (new ProductHeaderValue("Luxoria.Core"));
+    private readonly GitHubClient _client = new(new ProductHeaderValue("Luxoria.Core"));
 
     public async Task<ICollection<LuxRelease>> GetReleases()
     {

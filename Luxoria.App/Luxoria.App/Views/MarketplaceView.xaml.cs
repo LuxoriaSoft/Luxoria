@@ -1,12 +1,14 @@
 ﻿using CommunityToolkit.WinUI.UI.Controls;
 using Luxoria.Core.Interfaces;
 using Luxoria.Core.Models;
+using Luxoria.Core.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -112,8 +114,15 @@ namespace Luxoria.App.Views
 
             try
             {
-                //var response = await _httpClient.PostAsync(_selectedModule.InstallEndpoint, null);
+                string arch = ModuleInstaller.GetShortArch();
+                InstallButton.Content = $"Installing...";
+
+                var downloadUrl = _selectedModule.AttachedModulesByArch.Where(x => x.Name.EndsWith($"{arch}.zip"))
+                    .Select(x => x.DownloadUrl)
+                    .First();
+                Debug.WriteLine($"Downloading module from: {downloadUrl}");
                 //response.EnsureSuccessStatusCode();
+                await ModuleInstaller.InstallFromUrlAsync(downloadUrl);
 
                 InstallButton.Content = "Installed";
                 InstallButton.IsEnabled = false;
