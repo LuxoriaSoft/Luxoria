@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
-    Title="MarketplaceView">
+    Title="Marketplace">
 
     <Window.SystemBackdrop>
         <MicaBackdrop />
@@ -13,30 +13,40 @@
 
     <Grid>
         <controls:NavigationView
-        x:Name="NavView"
-        PaneDisplayMode="LeftCompact"
-        IsPaneOpen="True"
-        OpenPaneLength="256"
-        CompactPaneLength="48"
-        Header="Marketplace"
-        ItemInvoked="NavView_ItemInvoked">
+            x:Name="NavView"
+            PaneDisplayMode="LeftCompact"
+            IsPaneOpen="True"
+            OpenPaneLength="256"
+            CompactPaneLength="48"
+            Header="Marketplace"
+            ItemInvoked="NavView_ItemInvoked">
 
-            <!-- dynamically populated in code‐behind -->
             <controls:NavigationView.MenuItems/>
 
             <controls:NavigationView.Content>
-                <StackPanel Margin="16" Spacing="12">
-                    <toolkit:MarkdownTextBlock
-              x:Name="MdViewer"
-              TextWrapping="WrapWholeWords"
-              FontSize="14"/>
-                    <Button
-              x:Name="InstallButton"
-              Content="Install"
-              HorizontalAlignment="Right"
-              Click="InstallButton_Click"
-              IsEnabled="False"/>
-                </StackPanel>
+                <Grid Margin="16" ColumnDefinitions="200, *" ColumnSpacing="12">
+
+                    <ListView
+                        x:Name="ModulesListView"
+                        Grid.Column="0"
+                        DisplayMemberPath="Name"
+                        IsEnabled="False"
+                        SelectionChanged="ModulesListView_SelectionChanged"/>
+
+                    <StackPanel Grid.Column="1" Spacing="12">
+                        <toolkit:MarkdownTextBlock
+                            x:Name="MdViewer"
+                            TextWrapping="WrapWholeWords"
+                            FontSize="14"/>
+                        <Button
+                            x:Name="InstallButton"
+                            Content="Install"
+                            HorizontalAlignment="Right"
+                            Click="InstallButton_Click"
+                            IsEnabled="False"/>
+                    </StackPanel>
+
+                </Grid>
             </controls:NavigationView.Content>
         </controls:NavigationView>
     </Grid>

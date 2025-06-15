@@ -3,6 +3,7 @@ using Luxoria.Core.Models;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
 using Octokit;
+using System.Diagnostics;
 
 namespace Luxoria.Core.Services;
 
@@ -29,6 +30,28 @@ public class MarketplaceService(ILoggerService logger, string owner = "luxoriaso
         IReadOnlyList<ReleaseAsset> assets = githubRelease.Assets;
         _logger.Log($"Found {assets.Count} assets for release ID {releaseId}.");
 
-        return [.. assets.Select(x => new LuxRelease.LuxMod(x))];
+        ICollection<(string Name, string DownloadUrl)> keys = assets
+            .Where(x => x.Name.EndsWith(".readme.md"))
+            .Select(x => (x.Name.Replace(".readme.md", ""), x.BrowserDownloadUrl))
+            .ToList();
+
+        _logger.Log($"Found {keys.Count} modules with README files.");
+
+        List<LuxRelease.LuxMod> modules = [];
+
+        foreach ((string Name, string DownloadUrl) key in keys)
+        {
+            var attachedModules = assets
+                .Where(x => x.Name.StartsWith(key.Name) && !x.Name.EndsWith(".readme.md"))
+                .Select(x => new LuxRelease.LuxMod(
+                    Name: x.Name,
+                    DownloadCount: x.DownloadCount,
+                    DownloadUrl: x.BrowserDownloadUrl,
+                    AttachedModulesByArch: new List<LuxRelease.LuxMod>()))
+                .ToList();
+            modules.Add(new(key.Name, 0, key.DownloadUrl, attachedModules));
+        }
+
+        return modules;
     }
 }
