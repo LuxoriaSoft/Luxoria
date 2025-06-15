@@ -1,3 +1,10 @@
+## [1.49.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.49.0...v1.49.1) (2025-06-15)
+
+
+### Bug Fixes
+
+* Add brochure field to luxmod.json ([08efc54](https://github.com/LuxoriaSoft/Luxoria/commit/08efc54eed74d74816a25fdc629465583d58f158))
+
 # [1.49.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.48.1...v1.49.0) (2025-06-14)
 
 
