@@ -71,7 +71,7 @@ namespace LuxEditor.Models
         /// 
         private EditableImageSnapshot CaptureSnapshot()
         {
-            Debug.WriteLine("Capture Snapshot settings: " + PrintSettings(Settings));
+            //Debug.WriteLine("Capture Snapshot settings: " + PrintSettings(Settings));
             return new EditableImageSnapshot
             {
                 FileName = FileName,
@@ -122,7 +122,7 @@ namespace LuxEditor.Models
             _cursor--;
             RestoreSnapshot(_snapshots[_cursor]);
             Debug.WriteLine($"Undo -> {_cursor}/{_snapshots.Count}");
-            Debug.WriteLine(" |-> Settings: " + PrintSettings(Settings));
+            //Debug.WriteLine(" |-> Settings: " + PrintSettings(Settings));
             return true;
         }
 
@@ -134,7 +134,7 @@ namespace LuxEditor.Models
             _cursor++;
             RestoreSnapshot(_snapshots[_cursor]);
             Debug.WriteLine($"Redo -> {_cursor}/{_snapshots.Count}");
-            Debug.WriteLine(" |-> Settings: " + PrintSettings(Settings));
+            //Debug.WriteLine(" |-> Settings: " + PrintSettings(Settings));
             return true;
         }
 

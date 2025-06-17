@@ -65,6 +65,8 @@ namespace LuxEditor.EditorUI.Controls
             Height = double.NaN;
 
             UpdateCurve();
+
+            ImageManager.Instance.SelectedImage?.SaveState();
         }
 
         /// <summary>
@@ -72,9 +74,14 @@ namespace LuxEditor.EditorUI.Controls
         /// </summary>
         private EditorSlider CreateSlider(string label, int region, Panel host)
         {
-            var slider = new EditorSlider(label, -100, 100, 0, 0, 1f)
+            var slider = new EditorSlider(label, -100, 100, 0, 0, 1f, false)
             {
-                OnValueChanged = _ => UpdateCurve()
+                OnValueChanged = _ => UpdateCurve(),
+                RequestSaveState = () =>
+                {
+                    Debug.WriteLine("Requesting save state for " + label);
+                    ImageManager.Instance.SelectedImage?.SaveState();
+                }
             };
 
             var element = slider.GetElement();
@@ -177,10 +184,10 @@ namespace LuxEditor.EditorUI.Controls
         /// </summary>
         private void UpdateCurve()
         {
-            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Shadow_Value"] = _shadow;
-            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Dark_Value"] = _dark;
-            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Light_Value"] = _light;
-            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_High_Value"] = _high;
+            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Shadow_Value"] = _shadow.GetValue();
+            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Dark_Value"] = _dark.GetValue();
+            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Light_Value"] = _light.GetValue();
+            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_High_Value"] = _high.GetValue();
 
             BuildLut(_lut,
                      _shadow.GetValue(),
@@ -363,15 +370,25 @@ namespace LuxEditor.EditorUI.Controls
 
         public override void RefreshCurve(Dictionary<string, object> settings)
         {
-            settings.TryGetValue(SettingKey, out var lutValue);
-            settings.TryGetValue(SettingKey + "_Control_Points", out var controlPoints);
-            if (lutValue != null)
+            if (settings.TryGetValue(SettingKey + "_Shadow_Value", out var sObj) && sObj is float sVal)
+                _shadow.SetValue((float)sVal);
+            if (settings.TryGetValue(SettingKey + "_Dark_Value", out var dObj) && dObj is float dVal)
+                _dark.SetValue((float)dVal);
+            if (settings.TryGetValue(SettingKey + "_Light_Value", out var lObj) && lObj is float lVal)
+                _light.SetValue((float)lVal);
+            if (settings.TryGetValue(SettingKey + "_High_Value", out var hObj) && hObj is float hVal)
+                _high.SetValue((float)hVal);
+
+            if (settings.TryGetValue(SettingKey + "_Thresholds", out var tObj)
+                && tObj is List<float> thr && thr.Count == 3)
             {
-                if (lutValue is byte[] lut)
-                    Array.Copy(lut, _lut, 256);
-                _canvas.Invalidate();
+                _bar.T1 = thr[0];
+                _bar.T2 = thr[1];
+                _bar.T3 = thr[2];
             }
-            _canvas.Invalidate();
+
+            UpdateCurve();
         }
+
     }
 }

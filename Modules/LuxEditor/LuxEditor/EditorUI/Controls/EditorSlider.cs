@@ -22,9 +22,12 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
     public float DefaultValue { get; }
 
     public Action<float>? OnValueChanged;
+    public Action RequestSaveState;
 
     private DispatcherTimer _debounceTimer;
     private float _lastValue;
+    private bool _saveStateOnChange;
+
 
 
     /// <summary>
@@ -36,11 +39,13 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
     /// <param name="defaultValue"></param>
     /// <param name="decimalPlaces"></param>
     /// <param name="stepFrequency"></param>
-    public EditorSlider(string key, float min, float max, float defaultValue, int decimalPlaces = 0, float stepFrequency = 1f)
+    public EditorSlider(string key, float min, float max, float defaultValue, int decimalPlaces = 0, float stepFrequency = 1f, bool saveStateOnChange = true)
     {
         Key = key;
         DefaultValue = defaultValue;
         _decimalPlaces = decimalPlaces;
+
+        _saveStateOnChange = saveStateOnChange;
 
         _slider = new Slider
         {
@@ -110,8 +115,14 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
     {
         _debounceTimer.Stop();
 
-        Debug.WriteLine("Slider debounce ended, saving state.");
-        ImageManager.Instance.SelectedImage?.SaveState();
+        if (!_saveStateOnChange)
+        {
+            RequestSaveState.Invoke();
+        }
+        else
+        {
+            ImageManager.Instance.SelectedImage?.SaveState();
+        }
     }
 
     /// <summary>
@@ -128,12 +139,6 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
 
         _debounceTimer.Stop();
         _debounceTimer.Start();
-    }
-
-    private void SliderReleased(object sender, RoutedEventArgs e)
-    {
-        Debug.WriteLine("Slider released, saving state.");
-        ImageManager.Instance.SelectedImage.SaveState();
     }
 
     /// <summary>

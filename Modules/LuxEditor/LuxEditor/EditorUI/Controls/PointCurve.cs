@@ -21,19 +21,22 @@ namespace LuxEditor.EditorUI.Controls
 
         private readonly byte[] _lut = new byte[256];
 
-        public override string SettingKey => "ToneCurve_Point";
+        private readonly string _key;
+        public override string SettingKey => _key;
 
-        public PointCurve() : this(
+
+        public PointCurve() : this("ToneCurve_Point",
             new SKColor(255, 255, 255, 50),
             new SKColor(0, 0, 0, 50))
         { }
 
-        public PointCurve(SKColor gradStart, SKColor gradEnd)
+        public PointCurve(string key, SKColor gradStart, SKColor gradEnd)
         {
+            _key = key;
             _grad0 = gradStart;
             _grad1 = gradEnd;
 
-            if (ImageManager.Instance.SelectedImage.Settings.TryGetValue(SettingKey + "_Control_Points", out var points))
+            if (ImageManager.Instance.SelectedImage.Settings.TryGetValue(_key + "_Control_Points", out var points))
             {
                 Debug.WriteLine("Loading control points from settings.");
                 ControlPoints.Clear();
@@ -45,7 +48,7 @@ namespace LuxEditor.EditorUI.Controls
             {
                 Debug.WriteLine("No control points found in settings, using default.");
                 ControlPoints.AddRange(new[] { new SKPoint(0, 0), new SKPoint(1, 1) });
-                ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Control_Points"] = ControlPoints.ConvertAll(p => new Dictionary<string, double>
+                ImageManager.Instance.SelectedImage.Settings[_key + "_Control_Points"] = ControlPoints.ConvertAll(p => new Dictionary<string, double>
                 {
                     { "X", p.X },
                     { "Y", p.Y }
@@ -355,9 +358,9 @@ namespace LuxEditor.EditorUI.Controls
                 {
                     ControlPoints.Add(new SKPoint((float)p["X"], (float)p["Y"]));
                 }
-                NotifyCurveChanged();
             }
             _canvas.Invalidate();
+            BuildLut();
         }
     }
 }
