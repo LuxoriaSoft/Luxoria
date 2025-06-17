@@ -142,12 +142,11 @@ namespace Luxoria.App.Views
                 string arch = ModuleInstaller.GetShortArch();
                 InstallButton.Content = $"Installing...";
 
-                var downloadUrl = _selectedModule.AttachedModulesByArch.Where(x => x.Name.EndsWith($"{arch}.zip"))
-                    .Select(x => x.DownloadUrl)
+                (string Name, string Url) selectedModuleToBeInstalled = _selectedModule.AttachedModulesByArch.Where(x => x.Name.EndsWith($"{arch}.zip"))
+                    .Select(x => (x.Name.Replace($".{arch}.zip", ""), x.DownloadUrl))
                     .First();
-                Debug.WriteLine($"Downloading module from: {downloadUrl}");
-                //response.EnsureSuccessStatusCode();
-                await ModuleInstaller.InstallFromUrlAsync(downloadUrl);
+                Debug.WriteLine($"Downloading module from: {selectedModuleToBeInstalled.Url}");
+                await ModuleInstaller.InstallFromUrlAsync(selectedModuleToBeInstalled.Name, selectedModuleToBeInstalled.Url);
 
                 InstallButton.Content = "Installed";
                 InstallButton.IsEnabled = false;
