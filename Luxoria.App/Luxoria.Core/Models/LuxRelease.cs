@@ -1,16 +1,16 @@
-﻿using Octokit;
+﻿using Newtonsoft.Json;
+using Octokit;
 
 namespace Luxoria.Core.Models;
 
 public record LuxRelease
 {
-    public long Id { get; private set; }
+    public long Id { get; init; }
     public string Name { get; init; }
-    public string Body { get; private set; }
-    public DateTimeOffset CreatedAt { get; private set; }
-
-    public DateTimeOffset? PublishedAt { get; private set; }
-    public Author Author { get; private set; }
+    public string Body { get; init; }
+    public DateTimeOffset CreatedAt { get; init; }
+    public DateTimeOffset? PublishedAt { get; init; }
+    public Author Author { get; init; }
 
     public record LuxMod(string Name, int DownloadCount, string DownloadUrl, ICollection<LuxMod> AttachedModulesByArch)
     {
@@ -21,6 +21,17 @@ public record LuxRelease
         public string DownloadUrl { get; set; } = DownloadUrl;
 
         public ICollection<LuxMod> AttachedModules = AttachedModulesByArch;
+    }
+
+    [JsonConstructor]
+    public LuxRelease(long id, string name, string body, DateTimeOffset createdAt, DateTimeOffset? publishedAt, Author author)
+    {
+        Id = id;
+        Name = name;
+        Body = body;
+        CreatedAt = createdAt;
+        PublishedAt = publishedAt;
+        Author = author;
     }
 
     public LuxRelease(Release release)

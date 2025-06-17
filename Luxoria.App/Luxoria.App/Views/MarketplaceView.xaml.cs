@@ -2,10 +2,12 @@
 using Luxoria.Core.Interfaces;
 using Luxoria.Core.Models;
 using Luxoria.Core.Services;
+using Luxoria.Modules.Interfaces;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -17,19 +19,20 @@ namespace Luxoria.App.Views
     public sealed partial class MarketplaceView : Window
     {
         private readonly IMarketplaceService _mktSvc;
+        private readonly IStorageAPI _cacheSvc;
         private readonly HttpClient _httpClient = new();
 
         // All releases loaded from service
-        private IEnumerable<LuxRelease> _allReleases;
+        private ICollection<LuxRelease> _allReleases;
 
         // Currently selected module
         private LuxRelease.LuxMod _selectedModule;
-        private Dictionary<string, string> _caches = [];
 
-        public MarketplaceView(IMarketplaceService marketplaceSvc)
+        public MarketplaceView(IMarketplaceService marketplaceSvc, IStorageAPI cacheSvc)
         {
             this.InitializeComponent();
             _mktSvc = marketplaceSvc;
+            _cacheSvc = cacheSvc;
             _ = LoadMarketplaceAsync();
         }
 
@@ -37,7 +40,18 @@ namespace Luxoria.App.Views
         {
             try
             {
-                _allReleases = await _mktSvc.GetReleases();
+                if (_cacheSvc.Contains("releases"))
+                {
+                    Debug.WriteLine("Loading releases from cache");
+                    _allReleases = _cacheSvc.Get<ICollection<LuxRelease>>("releases");
+                    Debug.WriteLine($"Loaded {_allReleases} releases from cache");
+
+                } else
+                {
+                    Debug.WriteLine("Loading releases from service");
+                    _allReleases = await _mktSvc.GetReleases();
+                    _cacheSvc.Save("releases", DateTime.Now.AddHours(6), _allReleases);
+                }
 
                 foreach (var release in _allReleases)
                 {
@@ -69,7 +83,18 @@ namespace Luxoria.App.Views
             if (args.InvokedItemContainer.Tag is LuxRelease release)
             {
                 Debug.WriteLine($"Selected release: [{release.Id}] / {release.Name}");
-                var modules = await _mktSvc.GetRelease(release.Id);
+                ICollection<LuxRelease.LuxMod> modules;
+                if (_cacheSvc.Contains(release.Id.ToString()))
+                {
+                    Debug.WriteLine("Fetching release from cache...");
+                    modules = _cacheSvc.Get<ICollection<LuxRelease.LuxMod>>(release.Id.ToString());
+                }
+                else
+                {
+                    Debug.WriteLine("Fetching release from distant...");
+                    modules = await _mktSvc.GetRelease(release.Id);
+                    _cacheSvc.Save(release.Id.ToString(), DateTime.Now.AddHours(24), modules);
+                }
                 ModulesListView.ItemsSource = modules;
                 ModulesListView.IsEnabled = true;
             }
@@ -84,13 +109,13 @@ namespace Luxoria.App.Views
 
                 try
                 {
-                    if (_caches.ContainsKey(module.DownloadUrl)) 
+                    if (_cacheSvc.Contains(module.DownloadUrl)) 
                     {
-                        MdViewer.Text = _caches[module.DownloadUrl];
+                        MdViewer.Text = _cacheSvc.Get<string>(module.DownloadUrl);
                         return;
                     }
                     string md = await _httpClient.GetStringAsync(module.DownloadUrl);
-                    _caches[module.DownloadUrl] = md;
+                    _cacheSvc.Save(module.DownloadUrl, DateTime.Now.AddHours(24), md);
                     MdViewer.Text = md;
                 }
                 catch (Exception ex)

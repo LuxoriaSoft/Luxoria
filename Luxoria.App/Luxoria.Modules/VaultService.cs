@@ -1,263 +1,325 @@
 ﻿using Luxoria.Modules.Interfaces;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
+using Newtonsoft.Json;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
 
-namespace Luxoria.Modules;
-
-/// <summary>
-/// Vault System
-/// Used to manage vaults and their contents
-/// A Vault can be allocated to a module, which can then store and retrieve items from it
-/// </summary>
-public class VaultService : IVaultService, IStorageAPI
+namespace Luxoria.Modules
 {
     /// <summary>
-    /// Section Name
+    /// Vault System
+    /// Used to manage vaults and their contents
+    /// A Vault can be allocated to a module, which can then store and retrieve items from it
     /// </summary>
-    private const string _sectionName = "Luxoria.Modules/Vaults";
-
-    /// <summary>
-    /// Path to the Luxoria AppData directory
-    /// </summary>
-    private readonly string _luxoriaDir;
-
-    /// <summary
-    /// Path to the vaults directory
-    /// </summary>
-    private readonly string _vaultsDir;
-
-    /// <summary>
-    /// Path to the manifest file for the vault system
-    /// </summary>
-    private readonly string _manifestFilePath;
-
-    /// <summary>
-    /// Dictionnary to store vaults by their unique identifier
-    /// </summary>
-    private readonly Dictionary<string, Guid> _vaults = [];
-
-    /// <summary>
-    /// Selected Vault
-    /// </summary>
-    public Guid Vault { get; private set; } = Guid.Empty;
-
-
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    public VaultService(ILoggerService _logger)
+    public class VaultService : IVaultService, IStorageAPI
     {
-        _logger.Log("Initializing Vault System...", _sectionName, LogLevel.Info);
-        // AppData path for Luxoria
-        _luxoriaDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Luxoria");
-        // If the directory does not exist, create it
-        if (!Directory.Exists(_luxoriaDir))
+        private const string SectionName = "Luxoria.Modules/Vaults";
+        private readonly string _luxoriaDir;
+        private readonly string _vaultsDir;
+        private readonly string _manifestFilePath;
+        private readonly ILoggerService _logger;
+
+        private readonly Dictionary<string, Guid> _vaults = new();
+
+        public Guid Vault { get; private set; } = Guid.Empty;
+
+        /// <summary>
+        /// Condtructor for the VaultService
+        /// </summary>
+        /// <param name="logger"></param>
+        public VaultService(ILoggerService logger)
         {
-            _logger.Log($"Creating Luxoria directory at {_luxoriaDir}", _sectionName, LogLevel.Info);
+            logger.Log("Initializing Vault System...", SectionName, LogLevel.Info);
+
+            _luxoriaDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Luxoria");
             Directory.CreateDirectory(_luxoriaDir);
-        }
 
-        // Vaults path ./_luxoriaDir/IntlSys/Vaults
-        _vaultsDir = Path.Combine(_luxoriaDir, "IntlSys", "Vaults");
-        // If the directory does not exist, create it
-        if (!Directory.Exists(_vaultsDir))
-        {
-            _logger.Log($"Creating Vaults directory at {_vaultsDir}", _sectionName, LogLevel.Info);
+            _vaultsDir = Path.Combine(_luxoriaDir, "IntlSys", "Vaults");
             Directory.CreateDirectory(_vaultsDir);
+
+            _manifestFilePath = Path.Combine(_vaultsDir, "manifest.json");
+            if (!File.Exists(_manifestFilePath))
+            {
+                logger.Log($"Creating manifest at {_manifestFilePath}", SectionName, LogLevel.Info);
+                SaveVaultsToManifest();
+            }
+
+            LoadVaultsFromManifest();
+            logger.Log("Vault System initialized successfully.", SectionName, LogLevel.Info);
+            _logger = logger;
         }
 
-        _manifestFilePath = Path.Combine(_vaultsDir, "manifest.json");
-        // If the manifest file does not exist, create it by serializing the _vaults dictionary to JSON
-        if (!File.Exists(_manifestFilePath))
+        /// <summary>
+        /// Saves the vaults to the manifest file when the service is disposed
+        /// </summary>
+        ~VaultService()
         {
-            _logger.Log($"Creating manifest file at {_manifestFilePath}", _sectionName, LogLevel.Info);
             SaveVaultsToManifest();
         }
 
-        // Load existing vaults from the manifest file
-        LoadVaultsFromManifest();
-
-
-        _logger.Log("Vault System initialized successfully.", _sectionName, LogLevel.Info);
-    }
-
-    /// <summary>
-    /// When the VaultService is released, save the vaults to the manifest file
-    /// </summary>
-    ~VaultService()
-    {
-        // Save the vaults to the manifest file
-        SaveVaultsToManifest();
-    }
-
-    /// <summary>
-    /// Saves the current vaults to the manifest file
-    /// </summary>
-    private void SaveVaultsToManifest()
-    {
-        // Serialize the _vaults dictionary to JSON and save it to the manifest file
-        var json = System.Text.Json.JsonSerializer.Serialize(_vaults);
-        File.WriteAllText(_manifestFilePath, json);
-    }
-
-    /// <summary>
-    /// Load vaults from the manifest file
-    /// </summary>
-    private void LoadVaultsFromManifest()
-    {
-        if (File.Exists(_manifestFilePath))
+        /// <summary>
+        /// Saves vaults to the manifest file
+        /// </summary>
+        private void SaveVaultsToManifest()
         {
+            var json = JsonConvert.SerializeObject(_vaults);
+            File.WriteAllText(_manifestFilePath, json);
+        }
+
+        /// <summary>
+        /// Loads vaults from the manifest file
+        /// </summary>
+        private void LoadVaultsFromManifest()
+        {
+            if (!File.Exists(_manifestFilePath)) return;
+
             var json = File.ReadAllText(_manifestFilePath);
-            _vaults.Clear();
-            var loadedVaults = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, Guid>>(json);
-            if (loadedVaults != null)
-            {
-                foreach (var vault in loadedVaults)
-                {
-                    _vaults[vault.Key] = vault.Value;
-                }
-            }
-        }
-    }
+            var loaded = JsonConvert.DeserializeObject<Dictionary<string, Guid>>(json);
 
-    // ONLY ACCESSIBLE THROUGH THE IVAULTSERVICE INTERFACE
-    /// <summary>
-    /// Get a vault by using its name
-    /// </summary>
-    public IStorageAPI GetVault(string vaultName)
-    {
-        if (string.IsNullOrWhiteSpace(vaultName))
-        {
-            throw new ArgumentException("Vault name cannot be null or empty.", nameof(vaultName));
+            _vaults.Clear();
+            if (loaded != null)
+                foreach (var kv in loaded)
+                    _vaults[kv.Key] = kv.Value;
         }
-        // Check if the vault exists
-        if (_vaults.TryGetValue(vaultName, out Guid vaultId))
+
+        /// <summary>
+        /// Gets the vault interface as StorageAPI by its name
+        /// </summary>
+        /// <param name="vaultName">Vault Name</param>
+        /// <returns>API used to manage the vault</returns>
+        /// <exception cref="ArgumentException">If vault cannot be found</exception>
+        public IStorageAPI GetVault(string vaultName)
         {
-            // Check if a folder for the vault exists, if not create it
-            var vaultPath = Path.Combine(_vaultsDir, vaultId.ToString());
-            if (!Directory.Exists(vaultPath))
+            if (string.IsNullOrWhiteSpace(vaultName))
+                throw new ArgumentException("Vault name cannot be null or empty.", nameof(vaultName));
+
+            if (!_vaults.TryGetValue(vaultName, out var vaultId))
             {
-                Directory.CreateDirectory(vaultPath);
+                vaultId = Guid.NewGuid();
+                _vaults[vaultName] = vaultId;
+                SaveVaultsToManifest();
             }
+
             Vault = vaultId;
+            Directory.CreateDirectory(Path.Combine(_vaultsDir, Vault.ToString()));
             return this;
         }
-        // If the vault does not exist, create a new one
-        var newVaultId = Guid.NewGuid();
-        var newVaultPath = Path.Combine(_vaultsDir, newVaultId.ToString());
-        if (!Directory.Exists(newVaultPath))
+
+        /// <summary>
+        /// Gets all vaults in a read-only collection
+        /// </summary>
+        /// <returns>Returns a collection which contains every vault</returns>
+        public ICollection<(string, Guid)> GetVaults() =>
+            new ReadOnlyCollection<(string, Guid)>(
+                _vaults.Select(kv => (kv.Key, kv.Value)).ToList()
+            );
+
+        /// <summary>
+        /// Deletes a vault by its name
+        /// </summary>
+        /// <param name="vaultName">Vault name</param>
+        /// <exception cref="ArgumentException">If vault name is null or empty</exception>
+        /// <exception cref="KeyNotFoundException">If vault cannot be found</exception>
+        public void DeleteVault(string vaultName)
         {
-            Directory.CreateDirectory(newVaultPath);
-        }
-        _vaults[vaultName] = newVaultId;
+            if (string.IsNullOrWhiteSpace(vaultName))
+                throw new ArgumentException("Vault name cannot be null or empty.", nameof(vaultName));
 
-        Vault = newVaultId;
+            if (!_vaults.TryGetValue(vaultName, out var vaultId))
+                throw new KeyNotFoundException($"Vault '{vaultName}' does not exist.");
 
-        SaveVaultsToManifest();
-        return this;
-    }
-
-    /// <summary>
-    /// Get all vaults
-    /// </summary>
-    /// <returns>A read-only collection of vault names</returns>
-    public ICollection<(string, Guid)> GetVaults() =>
-        new ReadOnlyCollection<(string, Guid)>(_vaults.Select(v => (v.Key, v.Value)).ToList());
-
-    /// <summary>
-    /// Delete a vault by its name
-    /// </summary>
-    public void DeleteVault(string vaultName)
-    {
-        if (string.IsNullOrWhiteSpace(vaultName))
-        {
-            throw new ArgumentException("Vault name cannot be null or empty.", nameof(vaultName));
-        }
-        // Check if the vault exists
-        if (_vaults.Remove(vaultName))
-        {
-            // If the vault exists, delete its directory
-            var vaultPath = Path.Combine(_vaultsDir, _vaults[vaultName].ToString());
-            if (Directory.Exists(vaultPath))
-            {
-                Directory.Delete(vaultPath, true);
-            }
+            _vaults.Remove(vaultName);
             SaveVaultsToManifest();
-        }
-        else
-        {
-            throw new KeyNotFoundException($"Vault '{vaultName}' does not exist.");
-        }
-    }
 
-    // ONLY ACCESSIBLE THROUGH THE ISTORAGEAPI INTERFACE
+            var path = Path.Combine(_vaultsDir, vaultId.ToString());
+            if (Directory.Exists(path))
+                Directory.Delete(path, recursive: true);
+        }
 
-    /// <summary>
-    /// Save an object to the current vault using a key
-    /// </summary>
-    /// <param name="key">Key under which the object will be stored</param>
-    /// <param name="value">Value (object) to be stored/updated</param>
-    /// <exception cref="ArgumentException">If one of the params is null</exception>
-    /// <exception cref="InvalidOperationException">If a vault has NOT been selected</exception>
-    public void Save(string key, object value)
-    {
-        if (string.IsNullOrWhiteSpace(key))
+        /// <summary>
+        /// Standarizes the input by removing unwanted characters
+        /// </summary>
+        /// <param name="input">Input to be standarised</param>
+        /// <returns>Returns the standarised input</returns>
+        public static string StandarizeInput(string input)
         {
-            throw new ArgumentException("Key cannot be null or empty.", nameof(key));
+            Regex r = new("(?:[^a-z0-9 ]|(?<=['\"])s)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+            return r.Replace(input, String.Empty);
         }
-        if (Vault == Guid.Empty)
-        {
-            throw new InvalidOperationException("No vault is currently selected.");
-        }
-        var vaultPath = Path.Combine(_vaultsDir, Vault.ToString(), key);
-        File.WriteAllText(vaultPath, value.ToString() ?? string.Empty);
-    }
 
-    /// <summary>
-    /// Retrieve an object from the current vault using a key
-    /// </summary>
-    /// <param name="key">Key used to retreived the object</param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException">The key is null or empty</exception>
-    /// <exception cref="InvalidOperationException">If a vault has NOT been selected</exception>
-    /// <exception cref="FileNotFoundException">If key is NOT attached to an object</exception>
-    public object Get(string key)
-    {
-        if (string.IsNullOrWhiteSpace(key))
-        {
-            throw new ArgumentException("Key cannot be null or empty.", nameof(key));
-        }
-        if (Vault == Guid.Empty)
-        {
-            throw new InvalidOperationException("No vault is currently selected.");
-        }
-        var vaultPath = Path.Combine(_vaultsDir, Vault.ToString(), key);
-        if (File.Exists(vaultPath))
-        {
-            return File.ReadAllText(vaultPath);
-        }
-        throw new FileNotFoundException($"Key '{key}' not found in the current vault.");
-    }
+        /// <summary>
+        /// Saves the content to the current vault using a key
+        /// </summary>
+        /// <param name="key">Saves as the key name</param>
+        /// <param name="value">Value to be saved</param>
+        public void Save(string key, object value)
+            => SaveInternal(StandarizeInput(key), null, value);
 
-    /// <summary>
-    /// Retrieve all objects in the current vault
-    /// </summary>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException">If the vault has NOT been selected</exception>
-    /// <exception cref="DirectoryNotFoundException">If the vault does NOT exist</exception>
-    public ICollection<Guid> GetObjects()
-    {
-        if (Vault == Guid.Empty)
+        /// <summary>
+        /// Saves the content to the current vault using a key with an expiration date
+        /// </summary>
+        /// <param name="key">Saves as the key name</param>
+        /// <param name="goodUntil">Expiration data from retreival</param>
+        /// <param name="value">Value to be saved</param>
+        public void Save(string key, DateTime goodUntil, object value)
+            => SaveInternal(StandarizeInput(key), goodUntil, value);
+
+        /// <summary>
+        /// Internal method to save the content to the current vault using a key
+        /// </summary>
+        private void SaveInternal<T>(string key, DateTime? goodUntil, T value)
         {
-            throw new InvalidOperationException("No vault is currently selected.");
+            if (string.IsNullOrWhiteSpace(key))
+                throw new ArgumentException("Key cannot be null or empty.", nameof(key));
+            if (Vault == Guid.Empty)
+                throw new InvalidOperationException("No vault is currently selected.");
+
+            _logger.Log($"Saving key=[{key}]", SectionName);
+
+            var folder = Path.Combine(_vaultsDir, Vault.ToString());
+            Directory.CreateDirectory(folder);
+
+            var dataPath = Path.Combine(folder, key);
+            var payload = value is string s ? s : JsonConvert.SerializeObject(value);
+            File.WriteAllText(dataPath, payload);
+
+            if (goodUntil.HasValue)
+            {
+                var ttlPath = Path.Combine(folder, $"{key}_cache.txt");
+                File.WriteAllText(ttlPath, goodUntil.Value.ToString("o"));
+            }
         }
-        var vaultPath = Path.Combine(_vaultsDir, Vault.ToString());
-        if (!Directory.Exists(vaultPath))
+
+        /// <summary>
+        /// Checks whether the artifact exists in the current vault
+        /// </summary>
+        /// <param name="key">Artifact key</param>
+        /// <returns>Returns where it exists</returns>
+        public bool Contains(string key)
         {
-            throw new DirectoryNotFoundException($"Vault '{Vault}' does not exist.");
+            if (string.IsNullOrWhiteSpace(key))
+                throw new ArgumentException("Key cannot be null or empty.", nameof(key));
+            if (Vault == Guid.Empty)
+                throw new InvalidOperationException("No vault is currently selected.");
+
+            key = StandarizeInput(key);
+            _logger.Log($"Contains key=[{key}]", SectionName);
+            var folder = Path.Combine(_vaultsDir, Vault.ToString());
+            var ttlPath = Path.Combine(folder, $"{key}_cache.txt");
+            var dataPath = Path.Combine(folder, key);
+
+            if (File.Exists(ttlPath))
+            {
+                if (DateTime.TryParse(File.ReadAllText(ttlPath), out var expire)
+                    && expire >= DateTime.UtcNow)
+                {
+                    return true;
+                }
+                File.Delete(ttlPath);
+                return false;
+            }
+
+            return File.Exists(dataPath);
         }
-        string[] files = Directory.GetFiles(vaultPath);
-        return [.. files.Select(file => new Guid(Path.GetFileNameWithoutExtension(file)))];
+
+        /// <summary>
+        /// Gets the content from the current vault using a key
+        /// </summary>
+        public T Get<T>(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+                throw new ArgumentException("Key cannot be null or empty.", nameof(key));
+            if (Vault == Guid.Empty)
+                throw new InvalidOperationException("No vault is currently selected.");
+
+            key = StandarizeInput(key);
+            _logger.Log($"Retreiving key=[{key}]", SectionName);
+            var folder = Path.Combine(_vaultsDir, Vault.ToString());
+            var ttlPath = Path.Combine(folder, $"{key}_cache.txt");
+            var dataPath = Path.Combine(folder, key);
+
+            if (File.Exists(ttlPath) && File.Exists(dataPath))
+            {
+                if (DateTime.TryParse(File.ReadAllText(ttlPath), out var expire)
+                    && expire >= DateTime.UtcNow)
+                {
+                    return ConvertTo<T>(File.ReadAllText(dataPath));
+                }
+                File.Delete(ttlPath);
+            }
+
+            if (File.Exists(dataPath))
+            {
+                return ConvertTo<T>(File.ReadAllText(dataPath));
+            }
+
+            throw new FileNotFoundException($"Key '{key}' not found in the current vault.");
+        }
+
+        /// <summary>
+        /// Internal method to convert the content described as string to a specific object
+        /// </summary>
+        private static T ConvertTo<T>(string text)
+        {
+            if (text is null)
+                throw new ArgumentNullException(nameof(text));
+
+            if (typeof(T) == typeof(string))
+                return (T)(object)text!;
+
+            var targetType = typeof(T);
+
+            if (targetType.IsValueType || targetType.IsEnum)
+            {
+                try
+                {
+                    return (T)Convert.ChangeType(text, targetType, System.Globalization.CultureInfo.InvariantCulture)!;
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException(
+                        $"Failed to convert '{text}' to {targetType.Name}.", ex);
+                }
+            }
+
+            try
+            {
+                var obj = JsonConvert.DeserializeObject<T>(text);
+                if (obj is null)
+                    throw new JsonSerializationException(
+                        $"JsonConvert returned null when deserializing to {targetType.FullName}.");
+
+                return obj;
+            }
+            catch (JsonException ex)
+            {
+                throw new InvalidOperationException(
+                    $"Error deserializing payload to {targetType.FullName}: {ex.Message}\nPayload: {text}",
+                    ex);
+            }
+        }
+
+        /// <summary>
+        /// Gets all objects in the current vault
+        /// </summary>
+        public ICollection<Guid> GetObjects()
+        {
+            if (Vault == Guid.Empty)
+                throw new InvalidOperationException("No vault is currently selected.");
+
+            var folder = Path.Combine(_vaultsDir, Vault.ToString());
+            if (!Directory.Exists(folder))
+                throw new DirectoryNotFoundException($"Vault '{Vault}' does not exist.");
+
+            return Directory.GetFiles(folder)
+                .Select(Path.GetFileName)
+                .Where(name => !name.EndsWith("_cache.txt", StringComparison.OrdinalIgnoreCase))
+                .Select(Guid.Parse)
+                .ToList();
+        }
     }
 }
