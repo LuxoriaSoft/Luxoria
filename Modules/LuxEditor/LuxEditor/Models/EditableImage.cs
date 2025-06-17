@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using Windows.UI;
 
 namespace LuxEditor.Models
@@ -33,6 +34,7 @@ namespace LuxEditor.Models
         private int _cursor = -1;
         private const int MaxSnapshots = 100;
 
+        private DateTime _lastUndoRedoTime = DateTime.MinValue;
 
         public record EditableImageSnapshot
         {
@@ -59,7 +61,7 @@ namespace LuxEditor.Models
             EditedPreviewBitmap = new SKBitmap(OriginalBitmap.Width, OriginalBitmap.Height);
             _luxCfg = asset.MetaData;
             _fileExtension = asset.MetaData.Extension;
-            LayerManager = new(this);
+            LayerManager = new(this); Debug.WriteLine("[15]");
             SaveState();
         }
 
@@ -86,19 +88,19 @@ namespace LuxEditor.Models
         public void ClearHistory()
         {
             _snapshots.Clear();
-            _cursor = -1;
+            _cursor = -1; Debug.WriteLine("[16]");
             SaveState();
         }
 
-        public void SaveState()
+        public void SaveState(bool isSensible = false)
         {
+            if (isSensible && (DateTime.UtcNow - _lastUndoRedoTime) < TimeSpan.FromMilliseconds(500))
+                return;
+
             var snap = CaptureSnapshot();
 
             if (_cursor >= 0 && Compare.AreSnapshotsEqual(_snapshots[_cursor], snap))
-            {
-                Debug.WriteLine("No changes detected, skipping save.");
                 return;
-            }
 
             if (_cursor < _snapshots.Count - 1)
                 _snapshots.RemoveRange(_cursor + 1, _snapshots.Count - (_cursor + 1));
@@ -121,8 +123,8 @@ namespace LuxEditor.Models
 
             _cursor--;
             RestoreSnapshot(_snapshots[_cursor]);
+            _lastUndoRedoTime = DateTime.UtcNow;
             Debug.WriteLine($"Undo -> {_cursor}/{_snapshots.Count}");
-            //Debug.WriteLine(" |-> Settings: " + PrintSettings(Settings));
             return true;
         }
 
@@ -133,8 +135,8 @@ namespace LuxEditor.Models
 
             _cursor++;
             RestoreSnapshot(_snapshots[_cursor]);
+            _lastUndoRedoTime = DateTime.UtcNow;
             Debug.WriteLine($"Redo -> {_cursor}/{_snapshots.Count}");
-            //Debug.WriteLine(" |-> Settings: " + PrintSettings(Settings));
             return true;
         }
 

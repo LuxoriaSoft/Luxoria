@@ -28,8 +28,6 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
     private float _lastValue;
     private bool _saveStateOnChange;
 
-
-
     /// <summary>
     /// Creates a new slider control for the editor UI.
     /// </summary>
@@ -56,8 +54,7 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
             TickFrequency = stepFrequency,
             HorizontalAlignment = HorizontalAlignment.Stretch,
             Margin = new Thickness(0, 0, 5, 0),
-            Tag = key
-        };
+            Tag = key        };
 
         _valueBox = new TextBox
         {
@@ -121,7 +118,7 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
         }
         else
         {
-            ImageManager.Instance.SelectedImage?.SaveState();
+            ImageManager.Instance.SelectedImage?.SaveState(true);
         }
     }
 

@@ -562,6 +562,7 @@ namespace LuxEditor.Components
             var toneExpander = new EditorGroupExpander("Tone Curve");
             toneExpander.AddControl(_toneGroup);
             _panelManager.AddCategory(toneExpander);
+            CurrentImage.SaveState();
         }
 
         /// <summary>

@@ -65,8 +65,6 @@ namespace LuxEditor.EditorUI.Controls
             Height = double.NaN;
 
             UpdateCurve();
-
-            ImageManager.Instance.SelectedImage?.SaveState();
         }
 
         /// <summary>
@@ -80,7 +78,8 @@ namespace LuxEditor.EditorUI.Controls
                 RequestSaveState = () =>
                 {
                     Debug.WriteLine("Requesting save state for " + label);
-                    ImageManager.Instance.SelectedImage?.SaveState();
+                    
+                    ImageManager.Instance.SelectedImage?.SaveState(true);
                 }
             };
 
@@ -141,7 +140,7 @@ namespace LuxEditor.EditorUI.Controls
         private void GridUp(object sender, PointerRoutedEventArgs e)
         {
             _dragging = false;
-            _canvas.ReleasePointerCaptures();
+            _canvas.ReleasePointerCaptures();   
             ImageManager.Instance.SelectedImage?.SaveState();
         }
 

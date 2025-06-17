@@ -38,7 +38,6 @@ namespace LuxEditor.EditorUI.Controls
 
             if (ImageManager.Instance.SelectedImage.Settings.TryGetValue(_key + "_Control_Points", out var points))
             {
-                Debug.WriteLine("Loading control points from settings.");
                 ControlPoints.Clear();
                 foreach (var p in (List<Dictionary<string, double>>)points)
                 {
@@ -46,7 +45,6 @@ namespace LuxEditor.EditorUI.Controls
                 }
             } else
             {
-                Debug.WriteLine("No control points found in settings, using default.");
                 ControlPoints.AddRange(new[] { new SKPoint(0, 0), new SKPoint(1, 1) });
                 ImageManager.Instance.SelectedImage.Settings[_key + "_Control_Points"] = ControlPoints.ConvertAll(p => new Dictionary<string, double>
                 {
@@ -60,9 +58,7 @@ namespace LuxEditor.EditorUI.Controls
             _canvas.PointerReleased += Up;
 
             BuildLut();
-            Content = _canvas;
-            ImageManager.Instance.SelectedImage.SaveState();
-        }
+            Content = _canvas;         }
 
         public void SetGradient(SKColor a, SKColor b)
         { _grad0 = a; _grad1 = b; _canvas.Invalidate(); }
