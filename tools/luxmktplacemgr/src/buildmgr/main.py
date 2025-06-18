@@ -80,7 +80,7 @@ class BuildSystem:
             return 1
         return 0
     
-    def prepare_export(self, output):
+    def prepare_export(self, output: str):
         """Renames dll from Name.dll to Name.Lux.dll & Moves bin folder to target folder (output)"""
         framework = self.file_data["build"]["targetFramework"]
         config = self.file_data["build"]["config"]
@@ -90,8 +90,10 @@ class BuildSystem:
         gdir = os.path.join(root_path, self.file_data["build"]["dll"].replace(".dll", ""))
         pdir = os.path.join(root_path, "publish")
         
-        self.log(f"Renaming DLL in {pdir}")
-        os.rename(os.path.join(pdir, self.file_data["build"]["dll"]), self.file_data["build"]["dll"].replace(".dll", ".Lux.dll"))
+        odll_name = self.file_data["build"]["dll"]
+        ndll_name = self.file_data["build"]["dll"].replace(".dll", ".Lux.dll")
+        self.log(f"Renaming DLL in {pdir} from: '{odll_name}' to '{ndll_name}'")
+        os.rename(os.path.join(pdir, odll_name), os.path.join(pdir, ndll_name))
 
         out_dir = os.path.join(output, f"{self.file_data["name"]}.{self.arch}")
 
@@ -105,6 +107,15 @@ class BuildSystem:
         gdir_tgt = os.path.join(out_dir, self.file_data["build"]["dll"].replace(".dll", ""))
         self.log(f"Copying dir (2/2) {gdir} to {gdir_tgt}")
         shutil.copytree(gdir, gdir_tgt)
+    
+    def copy_brochure(self, output: str):
+        """Copies brochure and moves it to out directory"""
+        brochure_path = os.path.join(self.dir, self.file_data["brochure"])
+        out_dir = os.path.join(output, f"{self.file_data["name"]}.{self.arch}")
+        final_dest = os.path.join(out_dir, f"{self.file_data["name"]}.readme.md")
+
+        self.log(f"Copying brochure {brochure_path} to {final_dest}")
+        shutil.copyfile(brochure_path, final_dest)
 
 class ModuleBuilder:
     def __init__(self, dir, arch, platform, output_dir):
@@ -127,6 +138,7 @@ class ModuleBuilder:
                 module_builder = BuildSystem(path, self.arch, self.platform)
                 if module_builder.build() == 0:
                     module_builder.prepare_export(self.output_dir)
+                    module_builder.copy_brochure(self.output_dir)
             else:
                 print("[ ]Skipping [{}] \t => \t err: {} is missing.".format(module_dir, LUXMOD_FILENAME))
 

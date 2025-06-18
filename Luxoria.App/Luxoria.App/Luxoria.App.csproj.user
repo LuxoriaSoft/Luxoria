@@ -11,16 +11,13 @@
     <None Update="App.xaml">
       <SubType>Designer</SubType>
     </None>
+    <Page Update="Views\MarketplaceView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="MainWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Views\ModuleManagerWindow.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Views\ImportationControl.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Views\OpenCollectionControl.xaml">
+    <Page Update="Views\ModuleManagerView.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Components\MainMenuBarComponent.xaml">
@@ -29,8 +26,5 @@
     <None Update="Package.appxmanifest">
       <SubType>Designer</SubType>
     </None>
-    <Page Update="SplashScreen.xaml">
-      <SubType>Designer</SubType>
-    </Page>
   </ItemGroup>
 </Project>
