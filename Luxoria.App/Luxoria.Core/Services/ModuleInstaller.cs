@@ -5,8 +5,17 @@ using System.Runtime.InteropServices;
 
 namespace Luxoria.Core.Services;
 
+/// <summary>
+/// Module Installer Helper
+/// Ables to fetch an artifact from an URL and, or install a module from zip
+/// </summary>
 public class ModuleInstaller
 {
+    /// <summary>
+    /// Gets the short architecture name based on the runtime information
+    /// </summary>
+    /// <returns>Returns the architecture such as x64, x86, arm64</returns>
+    /// <exception cref="PlatformNotSupportedException"></exception>
     public static string GetShortArch() => RuntimeInformation.ProcessArchitecture switch
     {
         Architecture.X64 => "x64",
@@ -15,7 +24,13 @@ public class ModuleInstaller
         _ => throw new PlatformNotSupportedException("Unsupported architecture")
     };
 
-    public static async Task InstallFromZip(string moduleName, string zipFilePath)
+    /// <summary>
+    /// Installs a module from zip file
+    /// </summary>
+    /// <param name="moduleName">Module name to be installed, if comes from marketplace LuxMODULENAME</param>
+    /// <param name="zipFilePath">Path to the zip file</param>
+    /// <exception cref="FileNotFoundException">If zip does not exist</exception>
+    public static void InstallFromZip(string moduleName, string zipFilePath)
     {
         string appDir = Path.Combine(AppContext.BaseDirectory);
         string moduleDir = Path.Combine(appDir, "modules");
@@ -60,6 +75,12 @@ public class ModuleInstaller
         }
     }
 
+    /// <summary>
+    /// Downloads a module from an URL and proceeds to install it
+    /// </summary>
+    /// <param name="moduleName">Module name</param>
+    /// <param name="url">Url to fetch the zip</param>
+    /// <exception cref="FileNotFoundException">If fetch failed, throws the error due to missing artifact</exception>
     public static async Task InstallFromUrlAsync(string moduleName, string url)
     {
         using (var tmp = new TempDirectory())
@@ -79,9 +100,8 @@ public class ModuleInstaller
                     
                     if (File.Exists(fileName))
                     {
-                        // Extract the module here if needed
                         Debug.WriteLine($"Module downloaded successfully: {fileName}");
-                        await InstallFromZip(moduleName, fileName);
+                        InstallFromZip(moduleName, fileName);
                     }
                     else
                     {
