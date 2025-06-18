@@ -4,6 +4,9 @@ using System.IO;
 
 namespace Luxoria.GModules.Helpers;
 
+/// <summary>
+/// Window Helper for AppWindow
+/// </summary>
 public class WindowHelper
 {
     /// <summary>

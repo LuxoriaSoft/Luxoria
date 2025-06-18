@@ -5,13 +5,35 @@ using Octokit;
 
 namespace Luxoria.Core.Services;
 
+/// <summary>
+/// Marketplace Service
+/// </summary>
+/// <param name="logger">ILoggerService retreived from Services</param>
+/// <param name="owner">Github Organisation/User (default LuxoriaSoft), check it out at : https://github.com/LuxoriaSoft</param>
+/// <param name="repository">Github repository (default marketplace), have a look at : https://github.com/LuxoriaSoft/marketplace</param>
 public class MarketplaceService(ILoggerService logger, string owner = "luxoriasoft", string repository = "marketplace") : IMarketplaceService
 {
+    /// <summary>
+    /// Repository owner, default is "luxoriasoft"
+    /// </summary>
     private readonly string _owner = owner;
+    /// <summary>
+    /// Repository name, default is "marketplace"
+    /// </summary>
     private readonly string _repository = repository;
+    /// <summary>
+    /// Logger service to log messages
+    /// </summary>
     private readonly ILoggerService _logger = logger;
+    /// <summary>
+    /// Github client used to fetch releases and assets
+    /// </summary>
     private readonly GitHubClient _client = new(new ProductHeaderValue("Luxoria.Core"));
 
+    /// <summary>
+    /// Gets releases from marketplace repository
+    /// </summary>
+    /// <returns>Returns an collection of releases [v1.1, v1.2, etc.]</returns>
     public async Task<ICollection<LuxRelease>> GetReleases()
     {
         _logger.Log($"Fetching releases from {_owner}/{_repository}...");
@@ -21,6 +43,11 @@ public class MarketplaceService(ILoggerService logger, string owner = "luxoriaso
         return [.. releases.Select(x => new LuxRelease(x))];
     }
 
+    /// <summary>
+    /// Gets a specific release by ID
+    /// </summary>
+    /// <param name="releaseId">Github release Id (defined as long)</param>
+    /// <returns>Returns a collection of artifacts</returns>
     public async Task<ICollection<LuxRelease.LuxMod>> GetRelease(long releaseId)
     {
         _logger.Log($"Fetching assets for release ID {releaseId} from {_owner}/{_repository}...");
