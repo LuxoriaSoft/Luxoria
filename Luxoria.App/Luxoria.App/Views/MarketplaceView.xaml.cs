@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.WinUI.UI.Controls;
-using Luxoria.Core.Interfaces;
+﻿using Luxoria.Core.Interfaces;
 using Luxoria.Core.Models;
 using Luxoria.Core.Services;
 using Luxoria.Modules.Interfaces;
@@ -7,9 +6,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -45,8 +42,8 @@ namespace Luxoria.App.Views
                     Debug.WriteLine("Loading releases from cache");
                     _allReleases = _cacheSvc.Get<ICollection<LuxRelease>>("releases");
                     Debug.WriteLine($"Loaded {_allReleases} releases from cache");
-
-                } else
+                }
+                else
                 {
                     Debug.WriteLine("Loading releases from service");
                     _allReleases = await _mktSvc.GetReleases();
@@ -79,6 +76,8 @@ namespace Luxoria.App.Views
             ModulesListView.IsEnabled = false;
             MdViewer.Text = "";
             InstallButton.IsEnabled = false;
+            InstallButton.Content = "Install";
+            DownloadCount.Text = String.Empty;
 
             if (args.InvokedItemContainer.Tag is LuxRelease release)
             {
@@ -106,10 +105,11 @@ namespace Luxoria.App.Views
             {
                 _selectedModule = module;
                 InstallButton.IsEnabled = true;
+                DownloadCount.Text = $"Downloads: {module.AttachedModulesDownloadCount}";
 
                 try
                 {
-                    if (_cacheSvc.Contains(module.DownloadUrl)) 
+                    if (_cacheSvc.Contains(module.DownloadUrl))
                     {
                         MdViewer.Text = _cacheSvc.Get<string>(module.DownloadUrl);
                         return;

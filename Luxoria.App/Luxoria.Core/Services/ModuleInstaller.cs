@@ -58,7 +58,7 @@ public class ModuleInstaller
                     FileSystem.CopyDirectory(mPath, Path.Combine(moduleDir, $"{moduleName}.mkplinstd"), true);
 
                     if (isGPathPresent) FileSystem.CopyDirectory(gPath, Path.Combine(appDir, moduleName), true);
-                    
+
 
                     Debug.WriteLine("Module extracted successfully.");
                 }
@@ -97,7 +97,7 @@ public class ModuleInstaller
                     {
                         await response.Content.CopyToAsync(fs);
                     }
-                    
+
                     if (File.Exists(fileName))
                     {
                         Debug.WriteLine($"Module downloaded successfully: {fileName}");

@@ -1,10 +1,8 @@
 using Luxoria.App.Views;
 using Luxoria.Core.Interfaces;
-using Luxoria.Core.Services;
 using Luxoria.GModules.Helpers;
 using Luxoria.Modules.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
@@ -37,7 +35,7 @@ namespace Luxoria.App.Components
 
         private void Marketplace_Click(object sender, RoutedEventArgs e)
         {
-            IMarketplaceService mkplaceSvc = (Application.Current as App )?.GetHost().Services.GetRequiredService<IMarketplaceService>();
+            IMarketplaceService mkplaceSvc = (Application.Current as App)?.GetHost().Services.GetRequiredService<IMarketplaceService>();
             IStorageAPI cacheSvc = (Application.Current as App)?.GetHost().Services.GetRequiredService<IVaultService>().GetVault(VAULT_NAME);
             Window window = new MarketplaceView(mkplaceSvc, cacheSvc);
             window.Activate();

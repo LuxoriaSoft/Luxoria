@@ -44,13 +44,20 @@
                                 FontSize="14"/>
                         </ScrollViewer>
 
-                        <Button
-                            Grid.Row="1"
-                            x:Name="InstallButton"
-                            Content="Install"
-                            HorizontalAlignment="Right"
-                            Click="InstallButton_Click"
-                            IsEnabled="False"/>
+                        <StackPanel
+                        Grid.Row="1"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="8">
+                            <TextBlock
+                                x:Name="DownloadCount"
+                                VerticalAlignment="Center"/>
+                            <Button
+                                x:Name="InstallButton"
+                                Content="Install"
+                                Click="InstallButton_Click"
+                                IsEnabled="False"/>
+                            </StackPanel>
                     </Grid>
 
                 </Grid>

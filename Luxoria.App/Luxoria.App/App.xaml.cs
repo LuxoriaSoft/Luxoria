@@ -1,6 +1,5 @@
 ﻿using Luxoria.App.Interfaces;
 using Luxoria.App.Logics;
-using Luxoria.Core.Interfaces;
 using Luxoria.Modules;
 using Luxoria.Modules.Interfaces;
 using Luxoria.SDK.Interfaces;

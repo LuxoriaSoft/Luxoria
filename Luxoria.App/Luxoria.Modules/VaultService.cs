@@ -3,7 +3,6 @@ using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace Luxoria.Modules
