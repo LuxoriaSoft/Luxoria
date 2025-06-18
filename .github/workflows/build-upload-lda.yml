@@ -21,6 +21,7 @@ jobs:
     strategy:
       matrix:
         configuration: [Release]
+        framework: ["net9.0-windows10.0.26100.0"]
         platform: [x64, x86, arm64]
 
     env:
@@ -61,4 +62,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Luxoria.App.${{ matrix.platform }}
-          path: ./Luxoria.App/Luxoria.App/bin/${{ matrix.platform }}/${{ matrix.configuration }}/**/win-*/
+          path: ./Luxoria.App/Luxoria.App/bin/${{ matrix.platform }}/${{ matrix.configuration }}/${{ matrix.framework }}/win-${{ matrix.platform }}/
