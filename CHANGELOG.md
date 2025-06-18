@@ -1,3 +1,12 @@
+## [1.50.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.0...v1.50.1) (2025-06-18)
+
+
+### Bug Fixes
+
+* Clean up trigger branches list only [main, dev, release/*] ([c24343f](https://github.com/LuxoriaSoft/Luxoria/commit/c24343f88d7fce674539177c5b10ce895a161a56))
+* Complete the upload artifact path using github workflow's matrix ([9d1fe1c](https://github.com/LuxoriaSoft/Luxoria/commit/9d1fe1cd1c4c50858ba0514e70498040167d3073))
+* Path now includes matrix.configuration fetches from matrix instead of global env ([6a07311](https://github.com/LuxoriaSoft/Luxoria/commit/6a07311544febe45bbf3e3beb296830ae7b9abd9))
+
 # [1.50.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.49.1...v1.50.0) (2025-06-18)
 
 
