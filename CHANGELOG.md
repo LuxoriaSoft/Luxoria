@@ -1,3 +1,20 @@
+# [1.50.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.49.1...v1.50.0) (2025-06-18)
+
+
+### Bug Fixes
+
+* Copy the brochure MD inside the "ModuleName.ARCH" folder ([9d70c9a](https://github.com/LuxoriaSoft/Luxoria/commit/9d70c9a38a93077b8bd41a746b1731d5589f3e30))
+
+
+### Features
+
+* Add fondation of ModuleInstaller Helper ([4c205c9](https://github.com/LuxoriaSoft/Luxoria/commit/4c205c920c9c63a4b1410fead711bf967d189b86))
+* Add fondation on Marketplace View on LDA ([be8bb5e](https://github.com/LuxoriaSoft/Luxoria/commit/be8bb5eab07e2c09ae586ac029b186d1b7b5d394))
+* Add LuxExport's luxmod.json + LuxEditor's luxmod.json files ([eb7c565](https://github.com/LuxoriaSoft/Luxoria/commit/eb7c5652b0aaf6e503f2b05be5f41e0f534af740))
+* Add necessary methods inside ModuleInstaller ([3ad9391](https://github.com/LuxoriaSoft/Luxoria/commit/3ad9391078f0ff1b3bcf3fb9cdb1f809755c6f7c))
+* Add the cache system into VaultService & StorageAPI ([6ab56d8](https://github.com/LuxoriaSoft/Luxoria/commit/6ab56d87f39d0167d8a657a3a5e38b337b672647))
+* View Module README + Caching backups ([a9e3aa4](https://github.com/LuxoriaSoft/Luxoria/commit/a9e3aa4dafbfe4a6b953fd32253e7435c6f9789f))
+
 ## [1.49.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.49.0...v1.49.1) (2025-06-15)
 
 
