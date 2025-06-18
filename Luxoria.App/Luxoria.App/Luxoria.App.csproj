@@ -31,11 +31,16 @@ https://docs.luxoria.bluepelicansoft.com</Description>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\**" />
+    <EmbeddedResource Remove="Models\**" />
+    <None Remove="Models\**" />
+    <Page Remove="Models\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Components\MainMenuBarComponent.xaml" />
     <None Remove="SplashScreen.xaml" />
-    <None Remove="Views\ImportationControl.xaml" />
-    <None Remove="Views\ModuleManagerWindow.xaml" />
-    <None Remove="Views\OpenCollectionControl.xaml" />
+    <None Remove="Views\MarketplaceView.xaml" />
   </ItemGroup>
 
 
@@ -52,6 +57,7 @@ https://docs.luxoria.bluepelicansoft.com</Description>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.1.240916" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" Version="8.1.240916" />
+    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
@@ -77,17 +83,7 @@ https://docs.luxoria.bluepelicansoft.com</Description>
     <ProjectReference Include="..\Luxoria.SDK\Luxoria.SDK.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Views\ModuleManagerWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Views\ImportationControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Views\OpenCollectionControl.xaml">
+    <Page Update="Views\ModuleManagerView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
@@ -100,9 +96,6 @@ https://docs.luxoria.bluepelicansoft.com</Description>
     <Page Update="Components\MainMenuBarComponent.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\LICENSE.md">
@@ -120,6 +113,9 @@ https://docs.luxoria.bluepelicansoft.com</Description>
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+    <Page Update="Views\MarketplaceView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <!--
@@ -130,4 +126,7 @@ https://docs.luxoria.bluepelicansoft.com</Description>
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
+  <ItemGroup>
+    <PRIResource Remove="Models\**" />
+  </ItemGroup>
 </Project>

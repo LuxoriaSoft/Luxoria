@@ -32,6 +32,7 @@ namespace Luxoria.App
 
         private readonly IModuleService _moduleService;
         public IModuleService ModuleService => _moduleService;
+        public IHost GetHost() => _host;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -108,6 +109,9 @@ namespace Luxoria.App
             // Finalize module initialization and update the splash screen
             await UpdateSplashScreenAsync(splashScreen, "Initializing modules...");
             _moduleService.InitializeModules(new ModuleContext());
+
+            await _logger.LogAsync("All modules loaded successfully.", LOG_SECTION, LogLevel.Info);
+            await UpdateSplashScreenAsync(splashScreen, "Launching...");
         }
 
         /// <summary>

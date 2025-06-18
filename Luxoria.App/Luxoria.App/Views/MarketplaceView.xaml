@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="Luxoria.App.Views.MarketplaceView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
+    Title="Marketplace">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid>
+        <controls:NavigationView
+            x:Name="NavView"
+            PaneDisplayMode="LeftCompact"
+            IsPaneOpen="True"
+            OpenPaneLength="256"
+            CompactPaneLength="48"
+            Header="Marketplace"
+            ItemInvoked="NavView_ItemInvoked">
+
+            <controls:NavigationView.MenuItems/>
+
+            <controls:NavigationView.Content>
+                <Grid Margin="16" ColumnDefinitions="200, *" ColumnSpacing="12">
+
+                    <ListView
+                        x:Name="ModulesListView"
+                        Grid.Column="0"
+                        DisplayMemberPath="Name"
+                        IsEnabled="False"
+                        SelectionChanged="ModulesListView_SelectionChanged"/>
+
+                    <Grid Grid.Column="1" RowDefinitions="*,Auto" RowSpacing="12">
+                        <ScrollViewer
+                            Grid.Row="0"
+                            VerticalScrollBarVisibility="Auto"
+                            HorizontalScrollBarVisibility="Disabled">
+                            <toolkit:MarkdownTextBlock
+                                x:Name="MdViewer"
+                                TextWrapping="WrapWholeWords"
+                                FontSize="14"/>
+                        </ScrollViewer>
+
+                        <StackPanel
+                        Grid.Row="1"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="8">
+                            <TextBlock
+                                x:Name="DownloadCount"
+                                VerticalAlignment="Center"/>
+                            <Button
+                                x:Name="InstallButton"
+                                Content="Install"
+                                Click="InstallButton_Click"
+                                IsEnabled="False"/>
+                            </StackPanel>
+                    </Grid>
+
+                </Grid>
+            </controls:NavigationView.Content>
+        </controls:NavigationView>
+    </Grid>
+</Window>
