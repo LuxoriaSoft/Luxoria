@@ -6,6 +6,7 @@ on:
       - main
       - develop
       - release/*
+      - fix/ci/*
   pull_request:
     branches:
       - main
@@ -60,4 +61,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Luxoria.App.${{ matrix.platform }}
-          path: ./Luxoria.App/Luxoria.App/bin/
+          path: ./Luxoria.App/Luxoria.App/bin/${{ matrix.platform }}/$env:Configuration/**/win-*/
