@@ -1,0 +1,39 @@
+{
+    "luxmodversion": 1,
+    "name": "LuxEditor",
+    "description": "Generic LuxEditor Importation Module",
+    "author": "The Luxoria Team",
+    "email": "contact@luxoria.blupelicansoft.com",
+    "license": "Apache-2.0",
+    "url": "https://docs.luxoria.bluepelicansoft.com/modules/luxeditor",
+    "repository": "https://github.com/luxoriasoft/luxoria",
+    "compatibility": {
+        "mininumVersion": ">=1.0.0",
+        "maximumVersion": "<=99999.0.0"
+    },
+    "dependencies": {
+        "LuxCore": ">=2.0.0"
+    },
+    "keywords": [
+        "Lux",
+        "Standard Editor Module",
+        "StdMod",
+        "Standard",
+        "Base",
+        "Fondation",
+        "Edition"
+    ],
+    "brochure": "README.md",
+    "build": {
+        "config": "Release",
+        "csproj": "LuxEditor\\LuxEditor.csproj",
+        "dll": "LuxEditor.dll",
+        "bin": "LuxEditor\\bin",
+        "runtimes": {
+            "x64": "win-x64",
+            "x86": "win-x86",
+            "arm64": "win-arm64"
+        },
+        "targetFramework": "net9.0-windows10.0.26100.0"
+    }
+}
