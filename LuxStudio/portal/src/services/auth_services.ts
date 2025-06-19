@@ -50,7 +50,7 @@ export class AuthService {
    */
   async login(username: string, password: string, captchaToken: string): Promise<string> {
     try {
-      const response = await axios.post(`${this.apiUrl}/Auth/login`, {
+      const response = await axios.post(`${this.apiUrl}/api/Auth/login`, {
         username,
         password,
         captchaToken,

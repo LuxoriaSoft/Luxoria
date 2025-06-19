@@ -15,7 +15,7 @@ namespace LuxAPI.Controllers
     /// Provides JWT token-based authentication.
     /// </summary>
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly ILogger<AuthController> _logger;
@@ -179,7 +179,10 @@ namespace LuxAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user = _context.Users.FirstOrDefault(u => u.Username == login.Username);
+            //var user = _context.Users.FirstOrDefault(u => u.Username == login.Username);
+            var user = _context.Users.FirstOrDefault(u =>
+                u.Username == login.Username || u.Email == login.Username);
+
             if (user == null)
             {
                 _logger.LogWarning("User not found: {Username}", login.Username);

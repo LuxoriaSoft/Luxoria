@@ -112,12 +112,15 @@ builder.Services.AddSignalR();
 // Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(FRONT_URI) // Allow Frontend URL
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials(); // Allow credentials
+        policy.WithOrigins(
+            "http://localhost:3000",
+            "http://localhost:5173"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
     });
 });
 
@@ -190,7 +193,7 @@ if (app.Environment.IsDevelopment())
 //app.UseHttpsRedirection();
 
 // Enable CORS
-app.UseCors();
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
