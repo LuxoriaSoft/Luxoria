@@ -35,7 +35,6 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
         private SKPoint? _rightStart;
         private bool _isRight;
         private bool _subtract;
-        private bool _dirty;
         public override event Action? RefreshOverlayTemp;
 
         public BrushToolControl(BooleanOperationMode bMode) : base(bMode)
@@ -63,7 +62,6 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
                 _maskCanv.DrawBitmap(old, new SKRect(0, 0, sw, sh), p);
                 old.Dispose();
             }
-            _dirty = false;
             RefreshAction?.Invoke();
         }
 
@@ -110,7 +108,6 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
                     foreach (var pt in _current.Points)
                         DrawSoftCircle(_maskCanv, pt.ToAbs(_maskW, _maskH), pt.Radius * _maskW / _dispW, _subtract);
                     _current.Points.Clear();
-                    _dirty = true;
                 }
             }
             else if (_isRight && _rightStart.HasValue)
@@ -130,7 +127,6 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
                 foreach (var pt in _current.Points)
                     DrawSoftCircle(_maskCanv, pt.ToAbs(_maskW, _maskH), pt.Radius * _maskW / _dispW, _subtract);
                 _current = null;
-                _dirty = true;
             }
             _isRight = false;
             _rightStart = null;
@@ -210,6 +206,16 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
             }
 
             return clone;
+        }
+
+        public override void LoadMaskBitmap(SKBitmap bmp)
+        {
+            _dispW = bmp.Width;
+            _dispH = bmp.Height;
+            ResizeCanvas(_dispW, _dispH);
+            _maskBmp?.Dispose();
+            _maskBmp = bmp.Copy();
+            RefreshAction?.Invoke();
         }
 
     }

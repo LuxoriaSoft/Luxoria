@@ -16,6 +16,9 @@ using Luxoria.Modules.Interfaces;
 using static LuxEditor.Models.EditableImage;
 using LuxEditor.Components;
 using Microsoft.UI.Xaml;
+using LuxEditor.EditorUI.Controls.ToolControls;
+using LuxEditor.Models;
+using SkiaSharp;
 
 namespace LuxEditor.Logic;
 
@@ -87,29 +90,44 @@ public sealed class PresetManager
         if (!doc.RootElement.TryGetProperty("Settings", out var settingsProp))
             return;
 
-        var img = ImageManager.Instance.SelectedImage;
-        if (img == null) return;
-
-        var newSettings = new Dictionary<string, object>();
-
-        foreach (var prop in settingsProp.EnumerateObject())
+        if (doc.RootElement.TryGetProperty("Layers", out var layersProp))
         {
-            var key = prop.Name;
-            var elem = prop.Value;
-            object? valueToApply = elem.ValueKind switch
+            var img = ImageManager.Instance.SelectedImage;
+            if (img != null)
             {
-                JsonValueKind.Number => (float)elem.GetDouble(),
-                JsonValueKind.String => DecodeStringSetting(key, elem.GetString()!),
-                JsonValueKind.Array => ParseArray(key, elem),
-                _ => null
-            };
-            if (valueToApply != null)
-                newSettings[key] = valueToApply;
-        }
 
-        img.Settings = newSettings;
-        img.SaveState();
-        ImageManager.Instance.SelectImage(img);
+                var newSettings = new Dictionary<string, object>();
+
+                foreach (var prop in settingsProp.EnumerateObject())
+                {
+                    var key = prop.Name;
+                    var elem = prop.Value;
+                    object? valueToApply = elem.ValueKind switch
+                    {
+                        JsonValueKind.Number => (float)elem.GetDouble(),
+                        JsonValueKind.String => DecodeStringSetting(key, elem.GetString()!),
+                        JsonValueKind.Array => ParseArray(key, elem),
+                        _ => null
+                    };
+                    if (valueToApply != null)
+                        newSettings[key] = valueToApply;
+                }
+
+                img.Settings = newSettings;
+
+                img.LayerManager.Layers.Clear();
+                foreach (var layerElem in layersProp.EnumerateArray())
+                {
+                    var dto = JsonSerializer.Deserialize<LayerDto>(layerElem.GetRawText());
+                    if (dto != null)
+                        img.LayerManager.Layers.Add(FromDto(dto, img));
+                }
+                img.LayerManager.SelectedLayer = img.LayerManager.Layers.FirstOrDefault();
+                img.SaveState();
+                
+                ImageManager.Instance.SelectImage(img);
+            }
+        }
     }
 
     private static object? ParseArray(string key, JsonElement arr)
@@ -290,29 +308,111 @@ public sealed class PresetManager
     /// Create a preset from a full EditableImage snapshot.
     /// </summary>
     public void CreatePresetFromSnapshot(
-        EditableImageSnapshot snap,
-        string category,
-        string name)
+        EditableImageSnapshot snap, string category, string name)
     {
-        // Reuse your existing folder logic
         var folder = EnsureCategoryFolder(category, _userRoot);
         var file = GetUniqueFilePath(folder, name + ".luxpreset");
 
+        var frozenLayers = snap.LayerManager.Layers.ToArray();
+
         var payload = new LuxPreset
         {
-            Version = 1,
+            Version = 2,
             Category = category,
             Name = name,
-            Settings = snap.Settings,  // grab exactly what the snapshot captured
-                                       // you could also serialize snap.FilterData or snap.LayerManager if desired
+            Settings = snap.Settings,
+            Layers = frozenLayers
+            .Where(l => l.Operations.Any())
+            .Select(ToDto)
+            .ToList()
+
         };
 
-        File.WriteAllText(file, JsonSerializer.Serialize(payload));
-        ApplySnapshot();      // push an undo step :contentReference[oaicite:1]{index=1}
+        File.WriteAllText(file,
+            JsonSerializer.Serialize(payload, new JsonSerializerOptions()));
+        ApplySnapshot();
         LoadAll();
     }
 
+    /// <summary>Convert a runtime layer into its DTO form</summary>
+    private static LayerDto ToDto(Layer layer)
+    {
+        var dto = new LayerDto
+        {
+            Name = layer.Name,
+            Visible = layer.Visible,
+            Invert = layer.Invert,
+            Strength = layer.Strength,
+            Filters = new Dictionary<string, object>(layer.Filters)
+        };
 
+        foreach (var op in layer.Operations.ToArray())
+        {
+            var bmp = op.Tool.GetResult();
+            string? b64 = null;
+            if (bmp != null)
+            {
+                using var img = SKImage.FromBitmap(bmp);
+                using var d = img.Encode(SKEncodedImageFormat.Png, 90);
+                b64 = Convert.ToBase64String(d.ToArray());
+            }
+            dto.Operations.Add(new MaskOperationDto
+            {
+                ToolType = op.Tool.ToolType,
+                Mode = op.Mode,
+                MaskPngBase64 = b64
+            });
+        }
+        return dto;
+    }
+
+    private static Layer FromDto(LayerDto dto, EditableImage targetImg)
+    {
+        var layer = new Layer
+        {
+            Name = dto.Name,
+            Visible = dto.Visible,
+            Invert = dto.Invert,
+            Strength = dto.Strength
+        };
+
+        foreach (var (k, v) in dto.Filters)
+        {
+            if (v is JsonElement je)
+            {
+                object? val = je.ValueKind switch
+                {
+                    JsonValueKind.Number => (float)je.GetDouble(),
+                    JsonValueKind.Array => je.EnumerateArray()
+                                              .Select(e => (float)e.GetDouble())
+                                              .ToList(),
+                    JsonValueKind.String => je.GetString(),
+                    _ => null
+                };
+                if (val != null) layer.Filters[k] = val;
+            }
+            else
+            {
+                layer.Filters[k] = v;
+            }
+        }
+
+        foreach (var mop in dto.Operations)
+        {
+            var op = targetImg.LayerManager.CreateMaskOperation(mop.ToolType, mop.Mode);
+
+            if (!string.IsNullOrEmpty(mop.MaskPngBase64))
+            {
+                var bytes = Convert.FromBase64String(mop.MaskPngBase64);
+                using var img = SKBitmap.Decode(bytes);
+
+                op.Tool.ResizeCanvas(img.Width, img.Height);
+                op.Tool.LoadMaskBitmap(img);
+            }
+            layer.Operations.Add(op);
+        }
+        return layer;
+    }
 
     private static void ApplySnapshot()
     {

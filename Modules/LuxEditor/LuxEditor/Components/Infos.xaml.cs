@@ -47,6 +47,7 @@ namespace LuxEditor.Components
             ImageManager.Instance.OnSelectionChanged += (image) =>
             {
                 DisplayExifData(image.Metadata);
+                PresetTree.SelectedItem = null;
             };
 
             var selector = new PresetTemplateSelector
@@ -116,88 +117,46 @@ namespace LuxEditor.Components
             var img = ImageManager.Instance.SelectedImage;
             if (img == null) return;
 
-            var categoryBox = new TextBox
-            {
-                Header = "Category",
-                PlaceholderText = "e.g. User Presets"
-            };
-            var nameBox = new TextBox
-            {
-                Header = "Preset Name",
-                PlaceholderText = "Untitled Preset"
-            };
+            var categoryBox = new TextBox { Header = "Category", PlaceholderText = "e.g. User Presets" };
+            var nameBox = new TextBox { Header = "Preset Name", PlaceholderText = "Untitled Preset" };
 
             var expanderPanel = new StackPanel { Spacing = 8 };
 
             void AddStringExpander(string title, IEnumerable<string> items)
             {
-                var exp = new Expander
-                {
-                    Header = title,
-                    IsExpanded = true
-                };
+                var exp = new Expander { Header = title, IsExpanded = true };
                 var sub = new StackPanel { Spacing = 4, Padding = new Thickness(12, 0, 0, 0) };
                 foreach (var k in items)
-                {
-                    sub.Children.Add(new CheckBox
-                    {
-                        Content = k,
-                        IsChecked = true,
-                        Tag = k
-                    });
-                }
+                    sub.Children.Add(new CheckBox { Content = k, IsChecked = true, Tag = k });
                 exp.Content = sub;
                 expanderPanel.Children.Add(exp);
             }
 
             AddStringExpander("Basic", new[] {
-                "Exposure","Contrast","Highlights","Shadows","Whites","Blacks",
-                "Texture","Clarity","Dehaze","Vibrance","Saturation"
-            });
+        "Exposure","Contrast","Highlights","Shadows","Whites","Blacks",
+        "Texture","Clarity","Dehaze","Vibrance","Saturation"
+    });
             AddStringExpander("White Balance", new[] { "Temperature", "Tint" });
 
-            var curves = new List<(string display, string key)> {
-                ("Parametric Curve",      "ToneCurve_Parametric"),
-                ("Luminance Point Curve", "ToneCurve_Point"),
-                ("Red Channel Curve",     "ToneCurve_Red"),
-                ("Green Channel Curve",   "ToneCurve_Green"),
-                ("Blue Channel Curve",    "ToneCurve_Blue"),
-            };
-
-            var curvesExp = new Expander
-            {
-                Header = "Curves",
-                IsExpanded = true
-            };
+            var curves = new List<(string disp, string key)> {
+        ("Parametric Curve","ToneCurve_Parametric"),
+        ("Luminance Point Curve","ToneCurve_Point"),
+        ("Red Channel Curve","ToneCurve_Red"),
+        ("Green Channel Curve","ToneCurve_Green"),
+        ("Blue Channel Curve","ToneCurve_Blue"),
+    };
+            var curvesExp = new Expander { Header = "Curves", IsExpanded = true };
             var curvesPanel = new StackPanel { Spacing = 4, Padding = new Thickness(12, 0, 0, 0) };
-
-            foreach (var (disp, key) in curves)
-            {
-                curvesPanel.Children.Add(new CheckBox
-                {
-                    Content = disp,
-                    IsChecked = true,
-                    Tag = key
-                });
-            }
-
+            foreach (var (d, k) in curves)
+                curvesPanel.Children.Add(new CheckBox { Content = d, IsChecked = true, Tag = k });
             curvesExp.Content = curvesPanel;
             expanderPanel.Children.Add(curvesExp);
 
-            var maskExp = new Expander
-            {
-                Header = "Masks",
-                IsExpanded = true
-            };
+            var maskExp = new Expander { Header = "Masks", IsExpanded = true };
             var maskRoot = new StackPanel { Spacing = 4, Padding = new Thickness(12, 0, 0, 0) };
             foreach (var layer in img.LayerManager.Layers)
             {
-                var layerExp = new Expander
-                {
-                    Header = layer.Name,
-                    IsExpanded = false,
-                    Margin = new Thickness(0, 4, 0, 0)
-                };
+                var layerExp = new Expander { Header = layer.Name, IsExpanded = false, Margin = new Thickness(0, 4, 0, 0) };
                 var layerPanel = new StackPanel { Spacing = 4, Padding = new Thickness(12, 0, 0, 0) };
                 foreach (var op in layer.Operations.OfType<MaskOperation>())
                 {
@@ -205,7 +164,7 @@ namespace LuxEditor.Components
                     {
                         Content = $"{op.Tool.ToolType} ({op.Mode})",
                         IsChecked = true,
-                        Tag = op
+                        Tag = op.Id
                     });
                 }
                 layerExp.Content = layerPanel;
@@ -214,79 +173,51 @@ namespace LuxEditor.Components
             maskExp.Content = maskRoot;
             expanderPanel.Children.Add(maskExp);
 
-            var dialogContent = new StackPanel { Spacing = 12 };
-            dialogContent.Children.Add(categoryBox);
-            dialogContent.Children.Add(nameBox);
-            dialogContent.Children.Add(new TextBlock
-            {
-                Text = "Include Settings:",
-                FontWeight = FontWeights.SemiBold
-            });
-
-            dialogContent.Children.Add(new ScrollViewer
-            {
-                Content = expanderPanel,
-                Height = 300
-            });
-
+            var dlgContent = new StackPanel { Spacing = 12 };
+            dlgContent.Children.Add(categoryBox);
+            dlgContent.Children.Add(nameBox);
+            dlgContent.Children.Add(new TextBlock { Text = "Include Settings:", FontWeight = FontWeights.SemiBold });
+            dlgContent.Children.Add(new ScrollViewer { Content = expanderPanel, Height = 300 });
 
             var dlg = new ContentDialog
             {
                 Title = "Create preset from current settings",
-                Content = dialogContent,
+                Content = dlgContent,
                 PrimaryButtonText = "Save",
                 CloseButtonText = "Cancel",
                 XamlRoot = ((FrameworkElement)sender).XamlRoot
             };
-            if (await dlg.ShowAsync() != ContentDialogResult.Primary)
-                return;
-
+            if (await dlg.ShowAsync() != ContentDialogResult.Primary) return;
 
             var category = categoryBox.Text.Trim();
             var name = nameBox.Text.Trim();
-            if (string.IsNullOrEmpty(category) || string.IsNullOrEmpty(name))
-                return;
-
+            if (string.IsNullOrEmpty(category) || string.IsNullOrEmpty(name)) return;
 
             var selSettings = new HashSet<string>();
-            var selMasks = new HashSet<MaskOperation>();
+            var selMaskIds = new HashSet<uint>();
 
             foreach (var cb in FindVisualChildren<CheckBox>(expanderPanel))
             {
-                if (cb.IsChecked != true || cb.Tag == null)
-                    continue;
+                if (cb.IsChecked != true || cb.Tag == null) continue;
                 switch (cb.Tag)
                 {
                     case string s: selSettings.Add(s); break;
-                    case MaskOperation mop: selMasks.Add(mop); break;
+                    case uint id: selMaskIds.Add(id); break;
                 }
             }
 
-
             var snap = img.CaptureSnapshot();
-            foreach (var kv in snap.Settings.Where(k => k.Key.StartsWith("ToneCurve_")))
-                Debug.WriteLine($"Loaded curve setting: {kv.Key} ({kv.Value.GetType().Name})");
 
             snap.Settings = snap.Settings
-                .Where(kv => selSettings.Any(key =>
-                    kv.Key == key || kv.Key.StartsWith(key + "_")))
+                .Where(kv => selSettings.Any(key => kv.Key == key || kv.Key.StartsWith(key + "_")))
                 .ToDictionary(kv => kv.Key, kv => kv.Value);
 
-
             var lmClone = snap.LayerManager.Clone();
-            foreach (var layer in lmClone.Layers)
-            {
-                var keep = layer.Operations
-                    .Where(o => selMasks.Contains(o))
-                    .ToList();
-                layer.Operations.Clear();
-                keep.ForEach(o => layer.Operations.Add(o));
-            }
             snap.LayerManager = lmClone;
-
 
             PresetManager.Instance.CreatePresetFromSnapshot(snap, category, name);
         }
+
 
 
         private static IEnumerable<T> FindVisualChildren<T>(DependencyObject root)
