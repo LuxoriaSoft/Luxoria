@@ -1,3 +1,12 @@
+## [1.50.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.1...v1.50.2) (2025-06-20)
+
+
+### Bug Fixes
+
+* Crash on layer creation : removing save state who stack overflow ([fc7aed1](https://github.com/LuxoriaSoft/Luxoria/commit/fc7aed1416f8610159cab2a8909846ad9a71945c))
+* Export modal to window, with events, and image processing inside export ([61924fc](https://github.com/LuxoriaSoft/Luxoria/commit/61924fc5c7028a81d3fe4665d0c94989250126a5))
+* Undo Redo system, more user friendly + debounce on value changed ([ebd09c3](https://github.com/LuxoriaSoft/Luxoria/commit/ebd09c363b4c052b919e577638d639f71cfb2f26))
+
 ## [1.50.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.0...v1.50.1) (2025-06-18)
 
 
