@@ -1,11 +1,13 @@
 ﻿using LuxEditor.EditorUI.Interfaces;
 using LuxEditor.EditorUI.Models;
+using LuxEditor.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using System;
+using System.Diagnostics;
 
 namespace LuxEditor.EditorUI.Controls;
 
@@ -20,6 +22,11 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
     public float DefaultValue { get; }
 
     public Action<float>? OnValueChanged;
+    public Action RequestSaveState;
+
+    private DispatcherTimer _debounceTimer;
+    private float _lastValue;
+    private bool _saveStateOnChange;
 
     /// <summary>
     /// Creates a new slider control for the editor UI.
@@ -30,11 +37,13 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
     /// <param name="defaultValue"></param>
     /// <param name="decimalPlaces"></param>
     /// <param name="stepFrequency"></param>
-    public EditorSlider(string key, float min, float max, float defaultValue, int decimalPlaces = 0, float stepFrequency = 1f)
+    public EditorSlider(string key, float min, float max, float defaultValue, int decimalPlaces = 0, float stepFrequency = 1f, bool saveStateOnChange = true)
     {
         Key = key;
         DefaultValue = defaultValue;
         _decimalPlaces = decimalPlaces;
+
+        _saveStateOnChange = saveStateOnChange;
 
         _slider = new Slider
         {
@@ -45,8 +54,7 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
             TickFrequency = stepFrequency,
             HorizontalAlignment = HorizontalAlignment.Stretch,
             Margin = new Thickness(0, 0, 5, 0),
-            Tag = key
-        };
+            Tag = key        };
 
         _valueBox = new TextBox
         {
@@ -65,6 +73,13 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
         _valueBox.LostFocus += ValueBoxEdited;
         _valueBox.KeyDown += ValueBoxEnterKey;
         _slider.DoubleTapped += (s, e) => ResetToDefault();
+
+        _debounceTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(200)
+        };
+        _debounceTimer.Tick += DebounceElapsed;
+
 
         var grid = new Grid();
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -93,6 +108,20 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
         };
     }
 
+    private void DebounceElapsed(object? sender, object e)
+    {
+        _debounceTimer.Stop();
+
+        if (!_saveStateOnChange)
+        {
+            RequestSaveState.Invoke();
+        }
+        else
+        {
+            ImageManager.Instance.SelectedImage?.SaveState(true);
+        }
+    }
+
     /// <summary>
     /// Handles the slider value change event.
     /// </summary>
@@ -102,7 +131,11 @@ public class EditorSlider : IEditorGroupItem, IEditorStylable
     {
         float newValue = (float)e.NewValue;
         _valueBox.Text = newValue.ToString($"F{_decimalPlaces}");
+        _lastValue = newValue;
         OnValueChanged?.Invoke(newValue);
+
+        _debounceTimer.Stop();
+        _debounceTimer.Start();
     }
 
     /// <summary>

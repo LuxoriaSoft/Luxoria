@@ -6,7 +6,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Background="#2E2E2E"
-    KeyDown="OnKeyDown"
     IsTabStop="True">
 
     <Grid Padding="0">
@@ -41,7 +40,16 @@
                 <ContentControl x:Name="OperationDetailsHost" Grid.Row="1" Visibility="Collapsed" Margin="8" Padding="8" BorderBrush="Gray" BorderThickness="1" Background="#55222288"/>
             </Grid>
         </Grid>
-
         <Button x:Name="ResetAllButton" Grid.Row="2" Content="Reset All" HorizontalAlignment="Stretch" Click="ResetAllClicked" Visibility="Collapsed"/>
     </Grid>
+
+    <Page.KeyboardAccelerators>
+        <KeyboardAccelerator Key="Z"
+                         Modifiers="Control"
+                         Invoked="Undo_Invoked" />
+
+        <KeyboardAccelerator Key="Z"
+                         Modifiers="Control,Shift"
+                         Invoked="Redo_Invoked" />
+    </Page.KeyboardAccelerators>
 </Page>

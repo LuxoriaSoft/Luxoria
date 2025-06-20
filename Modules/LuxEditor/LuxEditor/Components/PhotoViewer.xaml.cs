@@ -50,6 +50,12 @@ namespace LuxEditor.Components
 
             _mainCanvas.PaintSurface += OnPaintSurface;
             _overlayCanvas.PaintSurface += OnOverlayPaintSurface;
+            _overlayCanvas.PointerReleased += (_, _) => {
+                if (_currentImage == null) return;
+                if (_currentImage.LayerManager.SelectedLayer == null) return;
+                if (_currentImage.LayerManager.SelectedLayer.SelectedOperation == null) return;
+                _currentImage?.SaveState();
+            };
 
             ImageManager.Instance.OnSelectionChanged += img =>
             {

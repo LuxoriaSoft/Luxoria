@@ -1,7 +1,10 @@
-﻿using Microsoft.UI.Xaml.Input;
+﻿using LuxEditor.Services;
+using Microsoft.UI.Xaml.Input;
 using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace LuxEditor.EditorUI.Controls
 {
@@ -18,27 +21,50 @@ namespace LuxEditor.EditorUI.Controls
 
         private readonly byte[] _lut = new byte[256];
 
-        public override string SettingKey => "ToneCurve_Point";
+        private readonly string _key;
+        public override string SettingKey => _key;
 
-        public PointCurve() : this(
+
+        public PointCurve() : this("ToneCurve_Point",
             new SKColor(255, 255, 255, 50),
             new SKColor(0, 0, 0, 50))
         { }
 
-        public PointCurve(SKColor gradStart, SKColor gradEnd)
+        public PointCurve(string key, SKColor gradStart, SKColor gradEnd)
         {
+            _key = key;
             _grad0 = gradStart;
             _grad1 = gradEnd;
 
-            ControlPoints.AddRange(new[] { new SKPoint(0, 0), new SKPoint(1, 1) });
+            if (ImageManager.Instance.SelectedImage.Settings
+                    .TryGetValue(_key + "_Control_Points", out var raw)
+                && raw is List<Dictionary<string, double>> saved
+                && saved.Count >= 2)
+            {
+                ControlPoints.Clear();
+                foreach (var dict in saved)
+                    ControlPoints.Add(new SKPoint((float)dict["X"], (float)dict["Y"]));
+            }
+            else
+            {
+                // fallback to default two points
+                ControlPoints.Clear();
+                ControlPoints.AddRange(new[] { new SKPoint(0, 0), new SKPoint(1, 1) });
+                // and persist them
+                ImageManager.Instance.SelectedImage.Settings[_key + "_Control_Points"] =
+                    ControlPoints.ConvertAll(p => new Dictionary<string, double>
+                    {
+                { "X", p.X },
+                { "Y", p.Y }
+                    });
+            }
 
             _canvas.PointerPressed += Down;
             _canvas.PointerMoved += Move;
             _canvas.PointerReleased += Up;
 
             BuildLut();
-            Content = _canvas;
-        }
+            Content = _canvas;         }
 
         public void SetGradient(SKColor a, SKColor b)
         { _grad0 = a; _grad1 = b; _canvas.Invalidate(); }
@@ -51,7 +77,12 @@ namespace LuxEditor.EditorUI.Controls
 
             if (e.GetCurrentPoint(_canvas).Properties.IsRightButtonPressed)
             {
-                if (hit > 0 && hit < ControlPoints.Count - 1) { ControlPoints.RemoveAt(hit); Redraw(); BuildLut();}
+                if (hit > 0 && hit < ControlPoints.Count - 1) { ControlPoints.RemoveAt(hit); Redraw(); BuildLut(); }
+                ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Control_Points"] = ControlPoints.ConvertAll(p => new Dictionary<string, double>
+                {
+                    { "X", p.X },
+                    { "Y", p.Y }
+                });
                 return;
             }
 
@@ -70,6 +101,11 @@ namespace LuxEditor.EditorUI.Controls
                 Redraw();
                 BuildLut();
                 _tap = now;
+                ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Control_Points"] = ControlPoints.ConvertAll(p => new Dictionary<string, double>
+                {
+                    { "X", p.X },
+                    { "Y", p.Y }
+                });
                 return;
             }
 
@@ -89,6 +125,11 @@ namespace LuxEditor.EditorUI.Controls
             }
 
             _tap = now;
+            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Control_Points"] = ControlPoints.ConvertAll(p => new Dictionary<string, double>
+            {
+                { "X", p.X },
+                { "Y", p.Y }
+            });
         }
 
         private void Move(object s, PointerRoutedEventArgs e)
@@ -107,12 +148,17 @@ namespace LuxEditor.EditorUI.Controls
                 pt.X = Math.Min(pt.X, ControlPoints[_drag.Value + 1].X - 0.01f);
 
             ControlPoints[_drag.Value] = pt;
+            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Control_Points"] = ControlPoints.ConvertAll(p => new Dictionary<string, double>
+            {
+                { "X", p.X },
+                { "Y", p.Y }
+            });
             Redraw();
             BuildLut();
         }
 
         private void Up(object s, PointerRoutedEventArgs e)
-        { _drag = null; _canvas.ReleasePointerCaptures(); }
+        { _drag = null; _canvas.ReleasePointerCaptures(); ImageManager.Instance.SelectedImage.SaveState(); }
 
 
         private void Redraw() { _canvas.Invalidate(); }
@@ -182,6 +228,11 @@ namespace LuxEditor.EditorUI.Controls
                 DrawHandle(c, p.X * w, (1 - p.Y) * h);
 
             DrawBorder(c, w, h);
+            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Control_Points"] = ControlPoints.ConvertAll(p => new Dictionary<string, double>
+            {
+                { "X", p.X },
+                { "Y", p.Y }
+            });
         }
 
         /// <summary>
@@ -289,6 +340,29 @@ namespace LuxEditor.EditorUI.Controls
             var copy = new byte[256];
             Array.Copy(_lut, copy, 256);
             return copy;
+        }
+
+        public override void RefreshCurve(Dictionary<string, object> settings)
+        {
+            settings.TryGetValue(SettingKey, out var lutValue);
+            settings.TryGetValue(SettingKey + "_Control_Points", out var controlPoints);
+            if (lutValue != null)
+            {
+                if (lutValue is byte[] lut)
+                    Array.Copy(lut, _lut, 256);
+                _canvas.Invalidate();
+            }
+            if (controlPoints is List<Dictionary<string, double>> points)
+            {
+                Debug.WriteLine("Refreshing control points from settings.");
+                ControlPoints.Clear();
+                foreach (var p in points)
+                {
+                    ControlPoints.Add(new SKPoint((float)p["X"], (float)p["Y"]));
+                }
+            }
+            _canvas.Invalidate();
+            BuildLut();
         }
     }
 }

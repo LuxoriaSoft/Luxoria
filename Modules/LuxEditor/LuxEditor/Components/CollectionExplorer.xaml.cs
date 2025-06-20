@@ -1,5 +1,6 @@
 using CommunityToolkit.WinUI.Controls;
 using LuxEditor.Models;
+using LuxEditor.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -23,6 +24,7 @@ public sealed partial class CollectionExplorer : Page
     private (string Algorithm, bool Ascending) _filterBy = ("", false);
 
     public event Action<EditableImage>? OnImageSelected;
+    public event Action? ExportRequestedEvent;
 
     /// <summary>
     /// Constructor for the CollectionExplorer component
@@ -153,6 +155,23 @@ public sealed partial class CollectionExplorer : Page
             Text = "Show All / Reset",
             Icon = new SymbolIcon(Symbol.ViewAll)
         });
+
+        var exportButton = new MenuFlyoutItem
+        {
+            Text = "Export Collection",
+            Icon = new SymbolIcon(Symbol.ViewAll)
+        };
+
+        exportButton.Click += (s, e) =>
+        {
+            Debug.WriteLine("Export Collection clicked.");
+            ExportRequestedEvent?.Invoke();
+            //var col = ImageManager.Instance.OpenedImages;
+            //Debug.WriteLine("Size: " + col.Count);
+        };
+
+        menuFlyout.Items.Add(exportButton);
+
 
         return menuFlyout;
     }
