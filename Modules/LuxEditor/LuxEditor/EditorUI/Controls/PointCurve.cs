@@ -36,21 +36,27 @@ namespace LuxEditor.EditorUI.Controls
             _grad0 = gradStart;
             _grad1 = gradEnd;
 
-            if (ImageManager.Instance.SelectedImage.Settings.TryGetValue(_key + "_Control_Points", out var points))
+            if (ImageManager.Instance.SelectedImage.Settings
+                    .TryGetValue(_key + "_Control_Points", out var raw)
+                && raw is List<Dictionary<string, double>> saved
+                && saved.Count >= 2)
             {
                 ControlPoints.Clear();
-                foreach (var p in (List<Dictionary<string, double>>)points)
-                {
-                    ControlPoints.Add(new SKPoint((float)p["X"], (float)p["Y"]));
-                }
-            } else
+                foreach (var dict in saved)
+                    ControlPoints.Add(new SKPoint((float)dict["X"], (float)dict["Y"]));
+            }
+            else
             {
+                // fallback to default two points
+                ControlPoints.Clear();
                 ControlPoints.AddRange(new[] { new SKPoint(0, 0), new SKPoint(1, 1) });
-                ImageManager.Instance.SelectedImage.Settings[_key + "_Control_Points"] = ControlPoints.ConvertAll(p => new Dictionary<string, double>
-                {
-                    { "X", p.X },
-                    { "Y", p.Y }
-                });
+                // and persist them
+                ImageManager.Instance.SelectedImage.Settings[_key + "_Control_Points"] =
+                    ControlPoints.ConvertAll(p => new Dictionary<string, double>
+                    {
+                { "X", p.X },
+                { "Y", p.Y }
+                    });
             }
 
             _canvas.PointerPressed += Down;

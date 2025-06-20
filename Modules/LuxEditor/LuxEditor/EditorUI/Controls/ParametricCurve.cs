@@ -64,8 +64,13 @@ namespace LuxEditor.EditorUI.Controls
             VerticalAlignment = VerticalAlignment.Top;
             Height = double.NaN;
 
-            UpdateCurve();
+            var img = ImageManager.Instance.SelectedImage;
+            if (img != null)
+                RefreshCurve(img.Settings);
+            else
+                UpdateCurve();
         }
+
 
         /// <summary>
         /// Creates an <see cref="EditorSlider"/> wired to events.
@@ -178,9 +183,7 @@ namespace LuxEditor.EditorUI.Controls
         /// </summary>
         private void UpdateHover(double x) => SetHover(RegionFromX(x));
 
-        /// <summary>
-        /// Rebuilds the LUT, hover envelope and redraws.
-        /// </summary>
+
         private void UpdateCurve()
         {
             ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Shadow_Value"] = _shadow.GetValue();
@@ -188,11 +191,18 @@ namespace LuxEditor.EditorUI.Controls
             ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Light_Value"] = _light.GetValue();
             ImageManager.Instance.SelectedImage.Settings[SettingKey + "_High_Value"] = _high.GetValue();
 
-            BuildLut(_lut,
-                     _shadow.GetValue(),
-                     _dark.GetValue(),
-                     _light.GetValue(),
-                     _high.GetValue());
+            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Thresholds"] =
+                new List<float> { _bar.T1, _bar.T2, _bar.T3 };
+
+            BuildLut(
+                _lut,
+                _shadow.GetValue(),
+                _dark.GetValue(),
+                _light.GetValue(),
+                _high.GetValue()
+            );
+
+            ImageManager.Instance.SelectedImage.Settings[SettingKey] = GetLut();
 
             if (_hoverRegion != -1)
                 RecomputeEnvelope();
@@ -200,6 +210,7 @@ namespace LuxEditor.EditorUI.Controls
             NotifyCurveChanged();
             _canvas.Invalidate();
         }
+
 
         /// <summary>
         /// Calculates the min/max envelope for the current hover region.
@@ -378,12 +389,20 @@ namespace LuxEditor.EditorUI.Controls
             if (settings.TryGetValue(SettingKey + "_High_Value", out var hObj) && hObj is float hVal)
                 _high.SetValue((float)hVal);
 
-            if (settings.TryGetValue(SettingKey + "_Thresholds", out var tObj)
-                && tObj is List<float> thr && thr.Count == 3)
+            if (settings.TryGetValue(SettingKey + "_Thresholds", out var tObj))
             {
-                _bar.T1 = thr[0];
-                _bar.T2 = thr[1];
-                _bar.T3 = thr[2];
+                if (tObj is List<float> thrF && thrF.Count == 3)
+                {
+                    _bar.T1 = thrF[0];
+                    _bar.T2 = thrF[1];
+                    _bar.T3 = thrF[2];
+                }
+                else if (tObj is List<double> thrD && thrD.Count == 3)
+                {
+                    _bar.T1 = (float)thrD[0];
+                    _bar.T2 = (float)thrD[1];
+                    _bar.T3 = (float)thrD[2];
+                }
             }
 
             UpdateCurve();

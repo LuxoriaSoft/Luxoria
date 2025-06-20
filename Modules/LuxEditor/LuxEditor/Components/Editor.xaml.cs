@@ -497,6 +497,7 @@ namespace LuxEditor.Components
             _sliderCache.Clear();
             BuildEditorUI();
             UpdateSliderUI();
+            _toneGroup.RefreshCurves(CurrentImage.Settings);
             RequestFilterUpdate();
             UpdateResetButtonsVisibility();
             RefreshLayerTree();

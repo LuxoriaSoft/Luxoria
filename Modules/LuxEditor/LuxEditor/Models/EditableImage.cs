@@ -26,7 +26,7 @@ namespace LuxEditor.Models
         public SKBitmap EditedPreviewBitmap { get; set; }
         public ReadOnlyDictionary<string, string> Metadata { get; }
 
-        public Dictionary<string, object> Settings { get; private set; }
+        public Dictionary<string, object> Settings { get; set; }
         public FilterData FilterData { get; private set; }
         public readonly LayerManager LayerManager;
 
@@ -61,7 +61,7 @@ namespace LuxEditor.Models
             EditedPreviewBitmap = new SKBitmap(OriginalBitmap.Width, OriginalBitmap.Height);
             _luxCfg = asset.MetaData;
             _fileExtension = asset.MetaData.Extension;
-            LayerManager = new(this); Debug.WriteLine("[15]");
+            LayerManager = new(this);
             SaveState();
         }
 
@@ -71,7 +71,7 @@ namespace LuxEditor.Models
         /// Saves the current state of the settings to the history stack.
         /// </summary>
         /// 
-        private EditableImageSnapshot CaptureSnapshot()
+        public EditableImageSnapshot CaptureSnapshot()
         {
             //Debug.WriteLine("Capture Snapshot settings: " + PrintSettings(Settings));
             return new EditableImageSnapshot
@@ -88,7 +88,7 @@ namespace LuxEditor.Models
         public void ClearHistory()
         {
             _snapshots.Clear();
-            _cursor = -1; Debug.WriteLine("[16]");
+            _cursor = -1;
             SaveState();
         }
 

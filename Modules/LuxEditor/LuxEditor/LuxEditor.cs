@@ -41,6 +41,8 @@ namespace LuxEditor
             _context = context;
             _logger = logger;
 
+            PresetManager.Instance.ConfigureBus(_eventBus);
+
             if (_eventBus == null || _context == null)
             {
                 _logger?.Log("Failed to initialize LuxEditor: EventBus or Context is null", "LuxEditor", LogLevel.Error);
@@ -53,7 +55,7 @@ namespace LuxEditor
             _photoViewer = new PhotoViewer();
             _cExplorer = new CollectionExplorer();
             _editor = new Editor(null);
-            _infos = new Infos();
+            _infos = new Infos(_eventBus);
 
             _editor.OnEditorImageUpdated += (updatedBitmap) =>
             {
