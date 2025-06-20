@@ -1,15 +1,19 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using LuxEditor.Services;
+using Microsoft.UI.Xaml.Controls;
 using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace LuxEditor.EditorUI.Controls
 {
     public abstract class CurveBase : UserControl
     {
         protected readonly SKXamlCanvas _canvas;
-        protected readonly List<SKPoint> ControlPoints = new();
+        protected List<SKPoint> ControlPoints = new();
 
         public abstract string SettingKey { get; }
 
@@ -84,5 +88,6 @@ namespace LuxEditor.EditorUI.Controls
         /// <returns></returns>
         public abstract byte[] GetLut();
 
+        public abstract void RefreshCurve(Dictionary<string, object> settings);
     }
 }

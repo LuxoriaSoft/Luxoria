@@ -9,6 +9,7 @@ namespace Luxoria.GModules
         public string Name { get; private set; }
         public string Description { get; private set; }
         public Dictionary<SmartButtonType, Object> Pages { get; private set; }
+        public Action? OnClose { get; set; }
 
         public SmartButton(string name, string description, Dictionary<SmartButtonType, Object> dic)
         {

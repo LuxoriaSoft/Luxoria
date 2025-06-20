@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using LuxEditor.Models;
@@ -33,8 +34,11 @@ namespace LuxEditor.Logic
         public Action? OnLayerChanged;
         public Action? OnOperationChanged;
 
-        public LayerManager()
+        private readonly EditableImage _image;
+
+        public LayerManager(EditableImage img)
         {
+            _image = img;
         }
 
         public MaskOperation CreateMaskOperation(ToolType brushType, BooleanOperationMode mode = BooleanOperationMode.Add)
@@ -64,6 +68,7 @@ namespace LuxEditor.Logic
             OnLayerChanged?.Invoke();
             OnOperationChanged?.Invoke();
             layer.PropertyChanged += Layer_PropertyChanged;
+            _image.SaveState();
         }
 
         private void Layer_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -78,6 +83,7 @@ namespace LuxEditor.Logic
             {
                 layer.Name = name;
             }
+            _image.SaveState();
         }
 
         public uint? GetSelectedLayerId() => SelectedLayer?.Id ?? null;
@@ -114,6 +120,7 @@ namespace LuxEditor.Logic
             }
             OnLayerChanged?.Invoke();
             OnOperationChanged?.Invoke();
+            _image.SaveState();
         }
 
         public void RemoveLayer()
@@ -144,6 +151,7 @@ namespace LuxEditor.Logic
                 layer.SelectedOperation = maskOperation;
             }
             OnOperationChanged?.Invoke();
+            _image.SaveState();
         }
 
         public void AddOperation(MaskOperation maskOperation)
@@ -154,6 +162,7 @@ namespace LuxEditor.Logic
                 SelectedLayer.SelectedOperation = maskOperation;
             }
             OnOperationChanged?.Invoke();
+            _image.SaveState();
         }
 
         public void RemoveOperation(uint operationId)
@@ -174,39 +183,8 @@ namespace LuxEditor.Logic
                 }
             }
             OnOperationChanged?.Invoke();
+            _image.SaveState();
         }
-
-        public void MoveLayer(uint id, int newIndex)
-        {
-            var layer = GetLayer(id);
-            if (layer == null) return;
-            int oldIndex = Layers.IndexOf(layer);
-            if (oldIndex < 0 || newIndex < 0 || newIndex >= Layers.Count) return;
-            Layers.RemoveAt(oldIndex);
-            Layers.Insert(newIndex, layer);
-            SelectedLayer = layer;
-            OnLayerChanged?.Invoke();
-            OnOperationChanged?.Invoke();
-        }
-
-        public void MoveLayer(int oldIndex, int newIndex)
-        {
-            if (oldIndex < 0 || oldIndex >= Layers.Count || newIndex < 0 || newIndex >= Layers.Count) return;
-            var layer = Layers[oldIndex];
-            Layers.RemoveAt(oldIndex);
-            Layers.Insert(newIndex, layer);
-            SelectedLayer = layer;
-            OnLayerChanged?.Invoke();
-            OnOperationChanged?.Invoke();
-        }
-
-        //private void RefreshZIndices()
-        //{
-        //    for (int i = 0; i < Layers.Count; i++)
-        //    {
-        //        Layers[i].ZIndex = (uint)(i + 1);
-        //    }
-        //}
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected bool SetField<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
@@ -216,5 +194,80 @@ namespace LuxEditor.Logic
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             return true;
         }
+
+        public LayerManager Clone()
+        {
+            var clonedManager = new LayerManager(_image);
+
+            foreach (var layer in Layers)
+            {
+                var clonedLayer = new Layer
+                {
+                    Name = layer.Name,
+                    Visible = layer.Visible,
+                    Invert = layer.Invert,
+                    Strength = layer.Strength,
+                    OverlayColor = layer.OverlayColor
+                };
+
+                foreach (var op in layer.Operations)
+                {
+                    var clonedOp = new MaskOperation(op.Tool.ToolType, op.Mode)
+                    {
+                        Tool = op.Tool.Clone(),
+                    };
+                    clonedLayer.Operations.Add(clonedOp);
+                }
+
+                clonedLayer.SelectedOperation = clonedLayer.Operations
+                    .FirstOrDefault(op => op.Id == layer.SelectedOperation?.Id);
+
+                clonedLayer.PropertyChanged += Layer_PropertyChanged;
+                clonedManager.Layers.Add(clonedLayer);
+            }
+
+            clonedManager.SelectedLayer = clonedManager.Layers
+                .FirstOrDefault(l => l.Id == SelectedLayer?.Id);
+
+            return clonedManager;
+        }
+
+        public void RestoreFrom(LayerManager source)
+        {
+            Layers.Clear();
+
+            foreach (var layer in source.Layers)
+            {
+                var clonedLayer = new Layer
+                {
+                    Name = layer.Name,
+                    Visible = layer.Visible,
+                    Invert = layer.Invert,
+                    Strength = layer.Strength,
+                    OverlayColor = layer.OverlayColor
+                };
+
+                foreach (var op in layer.Operations)
+                {
+                    var clonedOp = new MaskOperation(op.Tool.ToolType, op.Mode)
+                    {
+                        Tool = op.Tool.Clone()
+                    };
+                    clonedLayer.Operations.Add(clonedOp);
+                }
+
+                clonedLayer.SelectedOperation = clonedLayer.Operations
+                    .FirstOrDefault(op => op.Id == layer.SelectedOperation?.Id);
+
+                clonedLayer.PropertyChanged += Layer_PropertyChanged;
+                Layers.Add(clonedLayer);
+            }
+
+            SelectedLayer = Layers.FirstOrDefault(l => l.Id == source.SelectedLayer?.Id);
+
+            OnLayerChanged?.Invoke();
+            OnOperationChanged?.Invoke();
+        }
+
     }
 }

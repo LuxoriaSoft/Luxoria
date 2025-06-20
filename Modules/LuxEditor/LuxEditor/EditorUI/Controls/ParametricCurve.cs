@@ -1,4 +1,5 @@
 ﻿using LuxEditor.EditorUI.Controls;
+using LuxEditor.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -6,6 +7,10 @@ using Microsoft.UI.Xaml.Media;
 using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace LuxEditor.EditorUI.Controls
 {
@@ -27,6 +32,7 @@ namespace LuxEditor.EditorUI.Controls
         private DateTime _lastTap;
 
         public override string SettingKey => "ToneCurve_Parametric";
+
 
         /// <summary>
         /// Initialises the UI and draws the first curve.
@@ -58,17 +64,28 @@ namespace LuxEditor.EditorUI.Controls
             VerticalAlignment = VerticalAlignment.Top;
             Height = double.NaN;
 
-            UpdateCurve();
+            var img = ImageManager.Instance.SelectedImage;
+            if (img != null)
+                RefreshCurve(img.Settings);
+            else
+                UpdateCurve();
         }
+
 
         /// <summary>
         /// Creates an <see cref="EditorSlider"/> wired to events.
         /// </summary>
         private EditorSlider CreateSlider(string label, int region, Panel host)
         {
-            var slider = new EditorSlider(label, -100, 100, 0, 0, 1f)
+            var slider = new EditorSlider(label, -100, 100, 0, 0, 1f, false)
             {
-                OnValueChanged = _ => UpdateCurve()
+                OnValueChanged = _ => UpdateCurve(),
+                RequestSaveState = () =>
+                {
+                    Debug.WriteLine("Requesting save state for " + label);
+                    
+                    ImageManager.Instance.SelectedImage?.SaveState(true);
+                }
             };
 
             var element = slider.GetElement();
@@ -128,7 +145,8 @@ namespace LuxEditor.EditorUI.Controls
         private void GridUp(object sender, PointerRoutedEventArgs e)
         {
             _dragging = false;
-            _canvas.ReleasePointerCaptures();
+            _canvas.ReleasePointerCaptures();   
+            ImageManager.Instance.SelectedImage?.SaveState();
         }
 
         /// <summary>
@@ -165,16 +183,26 @@ namespace LuxEditor.EditorUI.Controls
         /// </summary>
         private void UpdateHover(double x) => SetHover(RegionFromX(x));
 
-        /// <summary>
-        /// Rebuilds the LUT, hover envelope and redraws.
-        /// </summary>
+
         private void UpdateCurve()
         {
-            BuildLut(_lut,
-                     _shadow.GetValue(),
-                     _dark.GetValue(),
-                     _light.GetValue(),
-                     _high.GetValue());
+            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Shadow_Value"] = _shadow.GetValue();
+            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Dark_Value"] = _dark.GetValue();
+            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Light_Value"] = _light.GetValue();
+            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_High_Value"] = _high.GetValue();
+
+            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Thresholds"] =
+                new List<float> { _bar.T1, _bar.T2, _bar.T3 };
+
+            BuildLut(
+                _lut,
+                _shadow.GetValue(),
+                _dark.GetValue(),
+                _light.GetValue(),
+                _high.GetValue()
+            );
+
+            ImageManager.Instance.SelectedImage.Settings[SettingKey] = GetLut();
 
             if (_hoverRegion != -1)
                 RecomputeEnvelope();
@@ -182,6 +210,7 @@ namespace LuxEditor.EditorUI.Controls
             NotifyCurveChanged();
             _canvas.Invalidate();
         }
+
 
         /// <summary>
         /// Calculates the min/max envelope for the current hover region.
@@ -348,5 +377,36 @@ namespace LuxEditor.EditorUI.Controls
             Array.Copy(_lut, copy, 256);
             return copy;
         }
+
+        public override void RefreshCurve(Dictionary<string, object> settings)
+        {
+            if (settings.TryGetValue(SettingKey + "_Shadow_Value", out var sObj) && sObj is float sVal)
+                _shadow.SetValue((float)sVal);
+            if (settings.TryGetValue(SettingKey + "_Dark_Value", out var dObj) && dObj is float dVal)
+                _dark.SetValue((float)dVal);
+            if (settings.TryGetValue(SettingKey + "_Light_Value", out var lObj) && lObj is float lVal)
+                _light.SetValue((float)lVal);
+            if (settings.TryGetValue(SettingKey + "_High_Value", out var hObj) && hObj is float hVal)
+                _high.SetValue((float)hVal);
+
+            if (settings.TryGetValue(SettingKey + "_Thresholds", out var tObj))
+            {
+                if (tObj is List<float> thrF && thrF.Count == 3)
+                {
+                    _bar.T1 = thrF[0];
+                    _bar.T2 = thrF[1];
+                    _bar.T3 = thrF[2];
+                }
+                else if (tObj is List<double> thrD && thrD.Count == 3)
+                {
+                    _bar.T1 = (float)thrD[0];
+                    _bar.T2 = (float)thrD[1];
+                    _bar.T3 = (float)thrD[2];
+                }
+            }
+
+            UpdateCurve();
+        }
+
     }
 }

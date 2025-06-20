@@ -42,6 +42,8 @@ namespace LuxEditor.Components
 
         private readonly Dictionary<TreeViewNode, object> _nodeMap = new();
         private readonly List<Layer> _observedLayers = new();
+
+        private EditorToneCurveGroup _toneGroup;
         /// <summary>
         /// Style for the temperature slider.
         /// </summary>
@@ -495,6 +497,7 @@ namespace LuxEditor.Components
             _sliderCache.Clear();
             BuildEditorUI();
             UpdateSliderUI();
+            _toneGroup.RefreshCurves(CurrentImage.Settings);
             RequestFilterUpdate();
             UpdateResetButtonsVisibility();
             RefreshLayerTree();
@@ -549,8 +552,8 @@ namespace LuxEditor.Components
 
             _panelManager!.AddCategory(root);
 
-            var toneGroup = new EditorToneCurveGroup();
-            toneGroup.CurveChanged += (key, lut) =>
+            _toneGroup = new EditorToneCurveGroup();
+            _toneGroup.CurveChanged += (key, lut) =>
             {
                 if (CurrentImage == null) return;
                 CurrentImage.Settings[key] = lut;
@@ -558,8 +561,9 @@ namespace LuxEditor.Components
             };
 
             var toneExpander = new EditorGroupExpander("Tone Curve");
-            toneExpander.AddControl(toneGroup);
+            toneExpander.AddControl(_toneGroup);
             _panelManager.AddCategory(toneExpander);
+            CurrentImage.SaveState();
         }
 
         /// <summary>
@@ -849,46 +853,28 @@ namespace LuxEditor.Components
             return bmp;
         }
 
-        /// <summary>
-        /// Checks if the Control key is pressed.
-        /// </summary>
-        /// <returns></returns>
-        private static bool IsCtrlDown()
+        private void Undo_Invoked(KeyboardAccelerator sender,
+                                  KeyboardAcceleratorInvokedEventArgs e)
         {
-            var win = Microsoft.UI.Xaml.Window.Current;
-            return win != null &&
-                   win.CoreWindow.GetKeyState(VirtualKey.Control)
-                      .HasFlag(CoreVirtualKeyStates.Down);
+            if (CurrentImage?.Undo() == true) AfterHistoryJump();
+            e.Handled = true;
         }
 
-        /// <summary>
-        /// Handles the key down event for undo and redo operations.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnKeyDown(object? sender, KeyRoutedEventArgs e)
+        private void Redo_Invoked(KeyboardAccelerator sender,
+                                  KeyboardAcceleratorInvokedEventArgs e)
         {
-            if (!IsCtrlDown() || CurrentImage == null) return;
-
-            switch (e.Key)
-            {
-                case VirtualKey.Z:
-                    if (CurrentImage.Undo())
-                    {
-                        UpdateSliderUI();
-                        RequestFilterUpdate();
-                    }
-                    break;
-
-                case VirtualKey.Y:
-                    if (CurrentImage.Redo())
-                    {
-                        UpdateSliderUI();
-                        RequestFilterUpdate();
-                    }
-                    break;
-            }
+            if (CurrentImage?.Redo() == true) AfterHistoryJump();
+            e.Handled = true;
         }
+
+        private void AfterHistoryJump()
+        {
+            UpdateSliderUI();
+            RefreshLayerTree();
+            RequestFilterUpdate();
+            _toneGroup.RefreshCurves(CurrentImage.Settings);
+        }
+
     }
 
     internal static class Ext
