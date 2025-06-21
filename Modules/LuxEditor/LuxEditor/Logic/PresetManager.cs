@@ -172,10 +172,6 @@ public sealed class PresetManager
         if (target == null) return;
 
         File.Copy(preset.FilePath, target, true);
-        _bus?.Publish(new OpenCollectionEvent(
-            Path.GetFileNameWithoutExtension(target),
-            Path.GetDirectoryName(target)!));
-
         ApplySnapshot();
     }
 
@@ -196,11 +192,6 @@ public sealed class PresetManager
             zip.Write(File.ReadAllBytes(file));
         }
         zip.Finish();
-
-        _bus?.Publish(new OpenCollectionEvent(
-            Path.GetFileNameWithoutExtension(target),
-            Path.GetDirectoryName(target)!));
-
         ApplySnapshot();
     }
 
