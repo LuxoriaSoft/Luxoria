@@ -1,3 +1,10 @@
+## [1.50.4](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.3...v1.50.4) (2025-06-21)
+
+
+### Bug Fixes
+
+* Add async fetches for releases & Animation when a module has been installed ([cc54758](https://github.com/LuxoriaSoft/Luxoria/commit/cc5475851c144e5e75ba9714c8a2243ea4051b7f))
+
 ## [1.50.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.2...v1.50.3) (2025-06-21)
 
 
