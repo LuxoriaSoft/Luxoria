@@ -16,6 +16,10 @@ using Luxoria.Modules.Interfaces;
 using static LuxEditor.Models.EditableImage;
 using LuxEditor.Components;
 using Microsoft.UI.Xaml;
+using LuxEditor.EditorUI.Controls.ToolControls;
+using LuxEditor.Models;
+using SkiaSharp;
+using Microsoft.UI.Xaml.Media;
 
 namespace LuxEditor.Logic;
 
@@ -87,29 +91,44 @@ public sealed class PresetManager
         if (!doc.RootElement.TryGetProperty("Settings", out var settingsProp))
             return;
 
-        var img = ImageManager.Instance.SelectedImage;
-        if (img == null) return;
-
-        var newSettings = new Dictionary<string, object>();
-
-        foreach (var prop in settingsProp.EnumerateObject())
+        if (doc.RootElement.TryGetProperty("Layers", out var layersProp))
         {
-            var key = prop.Name;
-            var elem = prop.Value;
-            object? valueToApply = elem.ValueKind switch
+            var img = ImageManager.Instance.SelectedImage;
+            if (img != null)
             {
-                JsonValueKind.Number => (float)elem.GetDouble(),
-                JsonValueKind.String => DecodeStringSetting(key, elem.GetString()!),
-                JsonValueKind.Array => ParseArray(key, elem),
-                _ => null
-            };
-            if (valueToApply != null)
-                newSettings[key] = valueToApply;
-        }
 
-        img.Settings = newSettings;
-        img.SaveState();
-        ImageManager.Instance.SelectImage(img);
+                var newSettings = new Dictionary<string, object>();
+
+                foreach (var prop in settingsProp.EnumerateObject())
+                {
+                    var key = prop.Name;
+                    var elem = prop.Value;
+                    object? valueToApply = elem.ValueKind switch
+                    {
+                        JsonValueKind.Number => (float)elem.GetDouble(),
+                        JsonValueKind.String => DecodeStringSetting(key, elem.GetString()!),
+                        JsonValueKind.Array => ParseArray(key, elem),
+                        _ => null
+                    };
+                    if (valueToApply != null)
+                        newSettings[key] = valueToApply;
+                }
+
+                img.Settings = newSettings;
+
+                img.LayerManager.Layers.Clear();
+                foreach (var layerElem in layersProp.EnumerateArray())
+                {
+                    var dto = JsonSerializer.Deserialize<LayerDto>(layerElem.GetRawText());
+                    if (dto != null)
+                        img.LayerManager.Layers.Add(FromDto(dto, img));
+                }
+                img.LayerManager.SelectedLayer = img.LayerManager.Layers.FirstOrDefault();
+                img.SaveState();
+                
+                ImageManager.Instance.SelectImage(img);
+            }
+        }
     }
 
     private static object? ParseArray(string key, JsonElement arr)
@@ -154,10 +173,6 @@ public sealed class PresetManager
         if (target == null) return;
 
         File.Copy(preset.FilePath, target, true);
-        _bus?.Publish(new OpenCollectionEvent(
-            Path.GetFileNameWithoutExtension(target),
-            Path.GetDirectoryName(target)!));
-
         ApplySnapshot();
     }
 
@@ -178,20 +193,157 @@ public sealed class PresetManager
             zip.Write(File.ReadAllBytes(file));
         }
         zip.Finish();
-
-        _bus?.Publish(new OpenCollectionEvent(
-            Path.GetFileNameWithoutExtension(target),
-            Path.GetDirectoryName(target)!));
-
         ApplySnapshot();
     }
 
+    public async void EditCategory(PresetCategory cat)
+    {
+        if (cat.IsReadOnly)
+            return;
 
-    /// <summary>Allows inline rename of a category folder.</summary>
-    public void EditCategory(PresetCategory cat) { /* inline-rename logic */ }
+        var tcs = new TaskCompletionSource<string?>();
+        var nameBox = new TextBox
+        {
+            Text = cat.Name,
+            Margin = new Thickness(0, 8, 0, 0)
+        };
 
-    /// <summary>Shows the preset-edit dialog (name + category).</summary>
-    public void EditPreset(Preset preset, PresetCategory parent) { /* dialog */ }
+        var saveBtn = new Button { Content = "Save", MinWidth = 75 };
+        var cancelBtn = new Button { Content = "Cancel", MinWidth = 75, Margin = new Thickness(10, 0, 0, 0) };
+
+        Window wnd = null!;
+
+        saveBtn.Click += (_, __) =>
+        {
+            tcs.TrySetResult(nameBox.Text.Trim());
+            wnd.Close();
+        };
+        cancelBtn.Click += (_, __) =>
+        {
+            tcs.TrySetResult(null);
+            wnd.Close();
+        };
+
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Margin = new Thickness(0, 20, 0, 0),
+            Children = { saveBtn, cancelBtn }
+        };
+        var root = new StackPanel
+        {
+            Padding = new Thickness(20),
+            Children =
+        {
+            new TextBlock { Text = "New category name:" },
+            nameBox,
+            buttonPanel
+        }
+        };
+
+        wnd = new Window
+        {
+            Title = "Rename Category",
+            Content = root,
+        };
+
+        root.Background = (Brush)Application.Current.Resources["SystemControlBackgroundBaseLowBrush"];
+        wnd.AppWindow.Resize(new(350, 200));
+        wnd.Activate();
+
+        var newName = await tcs.Task;
+        if (string.IsNullOrEmpty(newName) || newName == cat.Name)
+            return;
+
+        var basePath = Path.GetDirectoryName(cat.Path)!;
+        var newPath = Path.Combine(basePath, newName);
+        Directory.Move(cat.Path, newPath);
+
+        ApplySnapshot();
+        LoadAll();
+    }
+
+    public async void EditPreset(Preset preset, PresetCategory parent)
+    {
+        if (parent.IsReadOnly)
+            return;
+
+        var tcs = new TaskCompletionSource<(string? Name, string? Category)>();
+        var nameBox = new TextBox
+        {
+            Text = preset.Name,
+            Margin = new Thickness(0, 4, 0, 12)
+        };
+        var combo = new ComboBox
+        {
+            ItemsSource = _categories.Select(c => c.Name).ToList(),
+            SelectedItem = parent.Name,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+        };
+
+        var saveBtn = new Button { Content = "Save", MinWidth = 75 };
+        var cancelBtn = new Button { Content = "Cancel", MinWidth = 75, Margin = new Thickness(10, 0, 0, 0) };
+
+        Window wnd = null!;
+
+        saveBtn.Click += (_, __) =>
+        {
+            tcs.TrySetResult((nameBox.Text.Trim(), combo.SelectedItem as string));
+            wnd.Close();
+        };
+        cancelBtn.Click += (_, __) =>
+        {
+            tcs.TrySetResult((null, null));
+            wnd.Close();
+        };
+
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Margin = new Thickness(0, 20, 0, 0),
+            Children = { saveBtn, cancelBtn }
+        };
+        var root = new StackPanel
+        {
+            Padding = new Thickness(20),
+            Children =
+            {
+                new TextBlock { Text = "Preset name:" },
+                nameBox,
+                new TextBlock { Text = "Category:" },
+                combo,
+                buttonPanel
+            }
+        };
+
+        root.Background = (Brush)Application.Current.Resources["SystemControlBackgroundBaseLowBrush"];
+
+        wnd = new Window
+        {
+            Title = "Edit Preset",
+            Content = root,
+        };
+        wnd.AppWindow.Resize(new(350, 250));
+        wnd.Activate();
+
+        var (newName, newCategory) = await tcs.Task;
+        if (string.IsNullOrEmpty(newName) || string.IsNullOrEmpty(newCategory))
+            return;
+
+        var srcPath = preset.FilePath;
+        var destFolder = EnsureCategoryFolder(newCategory, _userRoot);
+        var ext = Path.GetExtension(srcPath);
+        var destPath = Path.Combine(destFolder, newName + ext);
+        if (File.Exists(destPath))
+            destPath = GetUniqueFilePath(destFolder, newName + ext);
+
+        File.Move(srcPath, destPath);
+
+        ApplySnapshot();
+        LoadAll();
+    }
 
     /// <summary>Deletes a preset file and removes empty folders.</summary>
     public void DeletePreset(Preset preset, PresetCategory parent)
@@ -290,29 +442,111 @@ public sealed class PresetManager
     /// Create a preset from a full EditableImage snapshot.
     /// </summary>
     public void CreatePresetFromSnapshot(
-        EditableImageSnapshot snap,
-        string category,
-        string name)
+        EditableImageSnapshot snap, string category, string name)
     {
-        // Reuse your existing folder logic
         var folder = EnsureCategoryFolder(category, _userRoot);
         var file = GetUniqueFilePath(folder, name + ".luxpreset");
 
+        var frozenLayers = snap.LayerManager.Layers.ToArray();
+
         var payload = new LuxPreset
         {
-            Version = 1,
+            Version = 2,
             Category = category,
             Name = name,
-            Settings = snap.Settings,  // grab exactly what the snapshot captured
-                                       // you could also serialize snap.FilterData or snap.LayerManager if desired
+            Settings = snap.Settings,
+            Layers = frozenLayers
+            .Where(l => l.Operations.Any())
+            .Select(ToDto)
+            .ToList()
+
         };
 
-        File.WriteAllText(file, JsonSerializer.Serialize(payload));
-        ApplySnapshot();      // push an undo step :contentReference[oaicite:1]{index=1}
+        File.WriteAllText(file,
+            JsonSerializer.Serialize(payload, new JsonSerializerOptions()));
+        ApplySnapshot();
         LoadAll();
     }
 
+    /// <summary>Convert a runtime layer into its DTO form</summary>
+    private static LayerDto ToDto(Layer layer)
+    {
+        var dto = new LayerDto
+        {
+            Name = layer.Name,
+            Visible = layer.Visible,
+            Invert = layer.Invert,
+            Strength = layer.Strength,
+            Filters = new Dictionary<string, object>(layer.Filters)
+        };
 
+        foreach (var op in layer.Operations.ToArray())
+        {
+            var bmp = op.Tool.GetResult();
+            string? b64 = null;
+            if (bmp != null)
+            {
+                using var img = SKImage.FromBitmap(bmp);
+                using var d = img.Encode(SKEncodedImageFormat.Png, 90);
+                b64 = Convert.ToBase64String(d.ToArray());
+            }
+            dto.Operations.Add(new MaskOperationDto
+            {
+                ToolType = op.Tool.ToolType,
+                Mode = op.Mode,
+                MaskPngBase64 = b64
+            });
+        }
+        return dto;
+    }
+
+    private static Layer FromDto(LayerDto dto, EditableImage targetImg)
+    {
+        var layer = new Layer
+        {
+            Name = dto.Name,
+            Visible = dto.Visible,
+            Invert = dto.Invert,
+            Strength = dto.Strength
+        };
+
+        foreach (var (k, v) in dto.Filters)
+        {
+            if (v is JsonElement je)
+            {
+                object? val = je.ValueKind switch
+                {
+                    JsonValueKind.Number => (float)je.GetDouble(),
+                    JsonValueKind.Array => je.EnumerateArray()
+                                              .Select(e => (float)e.GetDouble())
+                                              .ToList(),
+                    JsonValueKind.String => je.GetString(),
+                    _ => null
+                };
+                if (val != null) layer.Filters[k] = val;
+            }
+            else
+            {
+                layer.Filters[k] = v;
+            }
+        }
+
+        foreach (var mop in dto.Operations)
+        {
+            var op = targetImg.LayerManager.CreateMaskOperation(mop.ToolType, mop.Mode);
+
+            if (!string.IsNullOrEmpty(mop.MaskPngBase64))
+            {
+                var bytes = Convert.FromBase64String(mop.MaskPngBase64);
+                using var img = SKBitmap.Decode(bytes);
+
+                op.Tool.ResizeCanvas(img.Width, img.Height);
+                op.Tool.LoadMaskBitmap(img);
+            }
+            layer.Operations.Add(op);
+        }
+        return layer;
+    }
 
     private static void ApplySnapshot()
     {

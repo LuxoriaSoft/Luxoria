@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using LuxEditor.Models;
+using SkiaSharp;
 using Windows.UI;
 
 namespace LuxEditor.Logic
@@ -199,7 +200,7 @@ namespace LuxEditor.Logic
         {
             var clonedManager = new LayerManager(_image);
 
-            foreach (var layer in Layers)
+            foreach (var layer in Layers.ToArray())
             {
                 var clonedLayer = new Layer
                 {
@@ -210,24 +211,32 @@ namespace LuxEditor.Logic
                     OverlayColor = layer.OverlayColor
                 };
 
-                foreach (var op in layer.Operations)
+                foreach (var (k, v) in layer.Filters)
+                {
+                    clonedLayer.Filters[k] = v switch
+                    {
+                        List<float> list => new List<float>(list),
+                        byte[] buf => (byte[])buf.Clone(),
+                        _ => v
+                    };
+                }
+
+                foreach (var op in layer.Operations.ToArray())
                 {
                     var clonedOp = new MaskOperation(op.Tool.ToolType, op.Mode)
-                    {
-                        Tool = op.Tool.Clone(),
-                    };
+                    { Tool = op.Tool.Clone() };
                     clonedLayer.Operations.Add(clonedOp);
                 }
 
-                clonedLayer.SelectedOperation = clonedLayer.Operations
-                    .FirstOrDefault(op => op.Id == layer.SelectedOperation?.Id);
+                clonedLayer.SelectedOperation =
+                    clonedLayer.Operations.FirstOrDefault(op => op.Id == layer.SelectedOperation?.Id);
 
                 clonedLayer.PropertyChanged += Layer_PropertyChanged;
                 clonedManager.Layers.Add(clonedLayer);
             }
 
-            clonedManager.SelectedLayer = clonedManager.Layers
-                .FirstOrDefault(l => l.Id == SelectedLayer?.Id);
+            clonedManager.SelectedLayer =
+                clonedManager.Layers.FirstOrDefault(l => l.Id == SelectedLayer?.Id);
 
             return clonedManager;
         }
@@ -236,7 +245,7 @@ namespace LuxEditor.Logic
         {
             Layers.Clear();
 
-            foreach (var layer in source.Layers)
+            foreach (var layer in source.Layers.ToArray())
             {
                 var clonedLayer = new Layer
                 {
@@ -247,17 +256,25 @@ namespace LuxEditor.Logic
                     OverlayColor = layer.OverlayColor
                 };
 
-                foreach (var op in layer.Operations)
+                foreach (var (k, v) in layer.Filters)
+                {
+                    clonedLayer.Filters[k] = v switch
+                    {
+                        List<float> list => new List<float>(list),
+                        byte[] buf => (byte[])buf.Clone(),
+                        _ => v
+                    };
+                }
+
+                foreach (var op in layer.Operations.ToArray())
                 {
                     var clonedOp = new MaskOperation(op.Tool.ToolType, op.Mode)
-                    {
-                        Tool = op.Tool.Clone()
-                    };
+                    { Tool = op.Tool.Clone() };
                     clonedLayer.Operations.Add(clonedOp);
                 }
 
-                clonedLayer.SelectedOperation = clonedLayer.Operations
-                    .FirstOrDefault(op => op.Id == layer.SelectedOperation?.Id);
+                clonedLayer.SelectedOperation =
+                    clonedLayer.Operations.FirstOrDefault(op => op.Id == layer.SelectedOperation?.Id);
 
                 clonedLayer.PropertyChanged += Layer_PropertyChanged;
                 Layers.Add(clonedLayer);
@@ -268,6 +285,8 @@ namespace LuxEditor.Logic
             OnLayerChanged?.Invoke();
             OnOperationChanged?.Invoke();
         }
+
+
 
     }
 }

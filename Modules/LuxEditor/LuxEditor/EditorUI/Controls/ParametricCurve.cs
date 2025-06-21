@@ -1,4 +1,4 @@
-﻿using LuxEditor.EditorUI.Controls;
+using LuxEditor.EditorUI.Controls;
 using LuxEditor.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -33,12 +33,14 @@ namespace LuxEditor.EditorUI.Controls
 
         public override string SettingKey => "ToneCurve_Parametric";
 
+        private bool _isLayer = false;
 
         /// <summary>
         /// Initialises the UI and draws the first curve.
         /// </summary>
-        public ParametricCurve()
+        public ParametricCurve(bool isLayer)
         {
+            _isLayer = isLayer;
             var root = new StackPanel { Spacing = 8 };
 
             _canvas.Height = 230;
@@ -186,14 +188,17 @@ namespace LuxEditor.EditorUI.Controls
 
         private void UpdateCurve()
         {
-            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Shadow_Value"] = _shadow.GetValue();
-            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Dark_Value"] = _dark.GetValue();
-            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Light_Value"] = _light.GetValue();
-            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_High_Value"] = _high.GetValue();
+            if (!_isLayer)
+            {
+                ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Shadow_Value"] = _shadow.GetValue();
+                ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Dark_Value"] = _dark.GetValue();
+                ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Light_Value"] = _light.GetValue();
+                ImageManager.Instance.SelectedImage.Settings[SettingKey + "_High_Value"] = _high.GetValue();
 
-            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Thresholds"] =
-                new List<float> { _bar.T1, _bar.T2, _bar.T3 };
+                ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Thresholds"] =
+                    new List<float> { _bar.T1, _bar.T2, _bar.T3 };
 
+            }
             BuildLut(
                 _lut,
                 _shadow.GetValue(),
@@ -201,8 +206,9 @@ namespace LuxEditor.EditorUI.Controls
                 _light.GetValue(),
                 _high.GetValue()
             );
+            if (!_isLayer)
+                ImageManager.Instance.SelectedImage.Settings[SettingKey] = GetLut();
 
-            ImageManager.Instance.SelectedImage.Settings[SettingKey] = GetLut();
 
             if (_hoverRegion != -1)
                 RecomputeEnvelope();

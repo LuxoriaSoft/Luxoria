@@ -137,14 +137,6 @@ namespace LuxEditor.Components
             radialGradientButton.Click += (s, e) => { BrushButton_Click(ToolType.RadialGradient); flyout.Hide(); };
             flyout.Items.Add(radialGradientButton);
 
-            var colorRangeButton = new MenuFlyoutItem
-            {
-                Text = "Color Range",
-
-            };
-            colorRangeButton.Click += (s, e) => { BrushButton_Click(ToolType.ColorRange); flyout.Hide(); };
-            flyout.Items.Add(colorRangeButton);
-
             flyout.ShowAt(AddLayerBtn);
         }
 
@@ -255,17 +247,6 @@ namespace LuxEditor.Components
                 flyout.Hide();
             };
             flyout.Items.Add(radialGradientButton);
-            var colorRangeButton = new MenuFlyoutItem
-            {
-                Text = "Color Range",
-            };
-            colorRangeButton.Click += (s, e) =>
-            {
-                CurrentImage.LayerManager.AddOperation(layer.Id, CurrentImage.LayerManager.CreateMaskOperation(ToolType.ColorRange, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract));
-                RefreshLayerTree();
-                flyout.Hide();
-            };
-            flyout.Items.Add(colorRangeButton);
             flyout.ShowAt(element);
 
             CurrentImage.LayerManager.OnOperationChanged?.Invoke();
@@ -423,39 +404,27 @@ namespace LuxEditor.Components
 
         private void RefreshLayerTree()
         {
-            if (CurrentImage == null)
-            {
-                Debug.WriteLine("No image selected, cannot refresh layer tree.");
-                return;
-            }
-
+            if (CurrentImage == null) return;
             LayerTreeView.RootNodes.Clear();
             _nodeMap.Clear();
 
-            foreach (var layer in CurrentImage.LayerManager.Layers)
+            foreach (var layer in CurrentImage.LayerManager.Layers.ToArray())
             {
-                var layerNode = new TreeViewNode
-                {
-                    Content = layer.Name,
-                    IsExpanded = true
-                };
-
                 if (!layer.Operations.Any())
                 {
                     CurrentImage.LayerManager.RemoveLayer(layer.Id);
+                    continue;
                 }
+
+                var layerNode = new TreeViewNode { Content = layer.Name, IsExpanded = true };
                 _nodeMap[layerNode] = layer;
 
-                foreach (var op in layer.Operations)
+                foreach (var op in layer.Operations.ToArray())
                 {
-                    var opNode = new TreeViewNode
-                    {
-                        Content = $"{op.Tool.ToolType} ({op.Mode})",
-                    };
+                    var opNode = new TreeViewNode { Content = $"{op.Tool.ToolType} ({op.Mode})" };
                     _nodeMap[opNode] = op;
                     layerNode.Children.Add(opNode);
                 }
-
                 LayerTreeView.RootNodes.Add(layerNode);
             }
         }
@@ -552,7 +521,7 @@ namespace LuxEditor.Components
 
             _panelManager!.AddCategory(root);
 
-            _toneGroup = new EditorToneCurveGroup();
+            _toneGroup = new EditorToneCurveGroup(false);
             _toneGroup.CurveChanged += (key, lut) =>
             {
                 if (CurrentImage == null) return;
@@ -724,11 +693,9 @@ namespace LuxEditor.Components
 
             _ = RunPipelineAsync(_cts.Token);
         }
-
         private async Task RunPipelineAsync(CancellationToken token)
         {
             _pendingUpdate = false;
-
             try
             {
                 if (CurrentImage == null) return;
@@ -736,7 +703,7 @@ namespace LuxEditor.Components
                 async Task<SKBitmap> RenderAsync(SKBitmap src)
                 {
                     var baseBmp = await ImageProcessingManager
-                                         .ApplyFiltersAsync(src, CurrentImage!.Settings, token);
+                                         .ApplyFiltersAsync(src, CurrentImage.Settings, token);
 
                     using var surf = SKSurface.Create(new SKImageInfo(baseBmp.Width, baseBmp.Height));
                     var can = surf.Canvas;
@@ -745,7 +712,8 @@ namespace LuxEditor.Components
                     var result = new SKBitmap(baseBmp.Width, baseBmp.Height);
                     surf.ReadPixels(result.Info, result.GetPixels(), result.RowBytes, 0, 0);
 
-                    foreach (var layer in CurrentImage.LayerManager.Layers.Where(l => l.Visible))
+                    var layers = CurrentImage.LayerManager.Layers.ToArray();
+                    foreach (var layer in layers.Where(l => l.Visible))
                     {
                         using var mask = BuildLayerMask(layer, baseBmp.Width, baseBmp.Height);
                         if (mask == null) continue;
@@ -765,15 +733,13 @@ namespace LuxEditor.Components
                     return outBmp;
                 }
 
-
                 if (CurrentImage.PreviewBitmap != null)
                 {
                     var prev = await RenderAsync(CurrentImage.PreviewBitmap);
                     CurrentImage.EditedPreviewBitmap = prev;
-
-                    var upscaled = ImageProcessingManager.Upscale(
-                                       prev,
-                                       CurrentImage.OriginalBitmap.Height, true);
+                    var upscaled = ImageProcessingManager.Upscale(prev,
+                                                                  CurrentImage.OriginalBitmap.Height,
+                                                                  true);
                     OnEditorImageUpdated?.Invoke(upscaled);
                 }
 
@@ -787,7 +753,6 @@ namespace LuxEditor.Components
             finally
             {
                 Interlocked.Exchange(ref _renderRunning, 0);
-
                 if (_pendingUpdate)
                 {
                     _pendingUpdate = false;
@@ -795,6 +760,7 @@ namespace LuxEditor.Components
                 }
             }
         }
+
 
         private static void DrawMasked(SKCanvas c, SKBitmap content, SKBitmap mask, Layer lay)
         {
@@ -832,17 +798,21 @@ namespace LuxEditor.Components
         private static SKBitmap? BuildLayerMask(Layer lay, int w, int h)
         {
             if (lay.Operations.Count == 0) return null;
+
             var bmp = new SKBitmap(w, h);
             using var surf = SKSurface.Create(new SKImageInfo(w, h));
             var can = surf.Canvas;
 
-            foreach (var op in lay.Operations)
+            foreach (var op in lay.Operations.ToArray())             // <-- instantané
             {
                 var m = op.Tool?.GetResult();
                 if (m == null) continue;
+
                 using var p = new SKPaint
                 {
-                    BlendMode = op.Mode == BooleanOperationMode.Add ? SKBlendMode.SrcOver : SKBlendMode.DstOut,
+                    BlendMode = op.Mode == BooleanOperationMode.Add
+                                    ? SKBlendMode.SrcOver
+                                    : SKBlendMode.DstOut,
                     FilterQuality = SKFilterQuality.High
                 };
                 can.DrawBitmap(m, new SKRect(0, 0, w, h), p);
@@ -852,6 +822,8 @@ namespace LuxEditor.Components
             surf.ReadPixels(bmp.Info, bmp.GetPixels(), bmp.RowBytes, 0, 0);
             return bmp;
         }
+
+
 
         private void Undo_Invoked(KeyboardAccelerator sender,
                                   KeyboardAcceleratorInvokedEventArgs e)

@@ -53,10 +53,6 @@ namespace LuxEditor.Models
                     Tool = new RadialGradientToolControl(mode);
                     Debug.WriteLine("MaskOperation: RadialGradient tool initialized.");
                     break;
-                case ToolType.ColorRange:
-                    //Tool = new ColorRangeToolControl();
-                    Debug.WriteLine("MaskOperation: ColorRange tool initialized.");
-                    break;
                 default:
                     throw new ArgumentException("Unsupported tool type for MaskOperation");
             }

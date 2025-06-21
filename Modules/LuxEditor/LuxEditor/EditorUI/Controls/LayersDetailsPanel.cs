@@ -96,7 +96,7 @@ namespace LuxEditor.Controls
 
             Content = root;
 
-            var toneCurve = new EditorToneCurveGroup();
+            var toneCurve = new EditorToneCurveGroup(true);
             toneCurve.CurveChanged += (k, lut) =>
             {
                 if (_currentLayer == null) return;

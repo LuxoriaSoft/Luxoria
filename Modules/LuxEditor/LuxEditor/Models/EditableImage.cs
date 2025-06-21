@@ -34,7 +34,7 @@ namespace LuxEditor.Models
         private int _cursor = -1;
         private const int MaxSnapshots = 100;
 
-        private DateTime _lastUndoRedoTime = DateTime.MinValue;
+        private DateTime _lastUndoRedoSaveStateTime = DateTime.MinValue;
 
         public record EditableImageSnapshot
         {
@@ -94,7 +94,7 @@ namespace LuxEditor.Models
 
         public void SaveState(bool isSensible = false)
         {
-            if (isSensible && (DateTime.UtcNow - _lastUndoRedoTime) < TimeSpan.FromMilliseconds(500))
+            if (isSensible && (DateTime.UtcNow - _lastUndoRedoSaveStateTime) < TimeSpan.FromMilliseconds(500))
                 return;
 
             var snap = CaptureSnapshot();
@@ -111,6 +111,7 @@ namespace LuxEditor.Models
                 _cursor--;
             }
 
+            _lastUndoRedoSaveStateTime = DateTime.UtcNow;
             _snapshots.Add(snap);
             _cursor++;
             Debug.WriteLine($"Saved snapshot {_cursor + 1}/{_snapshots.Count}");
@@ -123,7 +124,7 @@ namespace LuxEditor.Models
 
             _cursor--;
             RestoreSnapshot(_snapshots[_cursor]);
-            _lastUndoRedoTime = DateTime.UtcNow;
+            _lastUndoRedoSaveStateTime = DateTime.UtcNow;
             Debug.WriteLine($"Undo -> {_cursor}/{_snapshots.Count}");
             return true;
         }
@@ -135,7 +136,7 @@ namespace LuxEditor.Models
 
             _cursor++;
             RestoreSnapshot(_snapshots[_cursor]);
-            _lastUndoRedoTime = DateTime.UtcNow;
+            _lastUndoRedoSaveStateTime = DateTime.UtcNow;
             Debug.WriteLine($"Redo -> {_cursor}/{_snapshots.Count}");
             return true;
         }

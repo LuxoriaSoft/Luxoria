@@ -272,5 +272,15 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
             return clone;
         }
 
+        public override void LoadMaskBitmap(SKBitmap bmp)
+        {
+            _dispW = bmp.Width;
+            _dispH = bmp.Height;
+            ResizeCanvas(_dispW, _dispH);
+            _maskBmp?.Dispose();
+            _maskBmp = bmp.Copy();
+            RefreshAction?.Invoke();
+        }
+
     }
 }

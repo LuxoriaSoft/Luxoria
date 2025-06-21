@@ -44,7 +44,8 @@
                   Margin="0"
                   BorderThickness="0"
                   HorizontalAlignment="Stretch"
-                  VerticalAlignment="Top">
+                  VerticalAlignment="Top"
+                  HorizontalContentAlignment="Left">
 
             <Expander.Header>
                 <Grid>
@@ -74,15 +75,16 @@
                     
                 </Grid>
             </Expander.Header>
-
-            <TreeView x:Name="PresetTree"
+            <Grid HorizontalAlignment="Left" Padding="1">
+                <TreeView x:Name="PresetTree"
                       ItemsSource="{x:Bind ViewModel.Categories}"
                       SelectionMode="Single"
                       HorizontalAlignment="Left"/>
+            </Grid>
         </Expander>
 
         <Expander Header="EXIF Metadata"
-                  IsExpanded="True"
+                  IsExpanded="False"
                   Padding="0"
                   Margin="0"
                   BorderThickness="0"

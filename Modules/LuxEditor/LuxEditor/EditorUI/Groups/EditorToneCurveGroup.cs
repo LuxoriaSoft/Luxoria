@@ -20,7 +20,7 @@ namespace LuxEditor.EditorUI.Groups
         /// <summary>
         /// Initialises UI and wires selection.
         /// </summary>
-        public EditorToneCurveGroup()
+        public EditorToneCurveGroup(bool isLayer)
         {
             var root = new StackPanel { Spacing = 12 };
 
@@ -32,7 +32,7 @@ namespace LuxEditor.EditorUI.Groups
 
             _curves = new CurveBase[]
             {
-                new ParametricCurve(),
+                new ParametricCurve(isLayer),
 
                 new PointCurve(),
 
