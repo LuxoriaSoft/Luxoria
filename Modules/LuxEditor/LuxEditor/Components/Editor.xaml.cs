@@ -521,7 +521,7 @@ namespace LuxEditor.Components
 
             _panelManager!.AddCategory(root);
 
-            _toneGroup = new EditorToneCurveGroup();
+            _toneGroup = new EditorToneCurveGroup(false);
             _toneGroup.CurveChanged += (key, lut) =>
             {
                 if (CurrentImage == null) return;
