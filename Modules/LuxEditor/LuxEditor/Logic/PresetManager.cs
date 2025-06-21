@@ -19,6 +19,7 @@ using Microsoft.UI.Xaml;
 using LuxEditor.EditorUI.Controls.ToolControls;
 using LuxEditor.Models;
 using SkiaSharp;
+using Microsoft.UI.Xaml.Media;
 
 namespace LuxEditor.Logic;
 
@@ -195,12 +196,154 @@ public sealed class PresetManager
         ApplySnapshot();
     }
 
+    public async void EditCategory(PresetCategory cat)
+    {
+        if (cat.IsReadOnly)
+            return;
 
-    /// <summary>Allows inline rename of a category folder.</summary>
-    public void EditCategory(PresetCategory cat) { /* inline-rename logic */ }
+        var tcs = new TaskCompletionSource<string?>();
+        var nameBox = new TextBox
+        {
+            Text = cat.Name,
+            Margin = new Thickness(0, 8, 0, 0)
+        };
 
-    /// <summary>Shows the preset-edit dialog (name + category).</summary>
-    public void EditPreset(Preset preset, PresetCategory parent) { /* dialog */ }
+        var saveBtn = new Button { Content = "Save", MinWidth = 75 };
+        var cancelBtn = new Button { Content = "Cancel", MinWidth = 75, Margin = new Thickness(10, 0, 0, 0) };
+
+        Window wnd = null!;
+
+        saveBtn.Click += (_, __) =>
+        {
+            tcs.TrySetResult(nameBox.Text.Trim());
+            wnd.Close();
+        };
+        cancelBtn.Click += (_, __) =>
+        {
+            tcs.TrySetResult(null);
+            wnd.Close();
+        };
+
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Margin = new Thickness(0, 20, 0, 0),
+            Children = { saveBtn, cancelBtn }
+        };
+        var root = new StackPanel
+        {
+            Padding = new Thickness(20),
+            Children =
+        {
+            new TextBlock { Text = "New category name:" },
+            nameBox,
+            buttonPanel
+        }
+        };
+
+        wnd = new Window
+        {
+            Title = "Rename Category",
+            Content = root,
+        };
+
+        root.Background = (Brush)Application.Current.Resources["SystemControlBackgroundBaseLowBrush"];
+        wnd.AppWindow.Resize(new(350, 200));
+        wnd.Activate();
+
+        var newName = await tcs.Task;
+        if (string.IsNullOrEmpty(newName) || newName == cat.Name)
+            return;
+
+        var basePath = Path.GetDirectoryName(cat.Path)!;
+        var newPath = Path.Combine(basePath, newName);
+        Directory.Move(cat.Path, newPath);
+
+        ApplySnapshot();
+        LoadAll();
+    }
+
+    public async void EditPreset(Preset preset, PresetCategory parent)
+    {
+        if (parent.IsReadOnly)
+            return;
+
+        var tcs = new TaskCompletionSource<(string? Name, string? Category)>();
+        var nameBox = new TextBox
+        {
+            Text = preset.Name,
+            Margin = new Thickness(0, 4, 0, 12)
+        };
+        var combo = new ComboBox
+        {
+            ItemsSource = _categories.Select(c => c.Name).ToList(),
+            SelectedItem = parent.Name,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+        };
+
+        var saveBtn = new Button { Content = "Save", MinWidth = 75 };
+        var cancelBtn = new Button { Content = "Cancel", MinWidth = 75, Margin = new Thickness(10, 0, 0, 0) };
+
+        Window wnd = null!;
+
+        saveBtn.Click += (_, __) =>
+        {
+            tcs.TrySetResult((nameBox.Text.Trim(), combo.SelectedItem as string));
+            wnd.Close();
+        };
+        cancelBtn.Click += (_, __) =>
+        {
+            tcs.TrySetResult((null, null));
+            wnd.Close();
+        };
+
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Margin = new Thickness(0, 20, 0, 0),
+            Children = { saveBtn, cancelBtn }
+        };
+        var root = new StackPanel
+        {
+            Padding = new Thickness(20),
+            Children =
+            {
+                new TextBlock { Text = "Preset name:" },
+                nameBox,
+                new TextBlock { Text = "Category:" },
+                combo,
+                buttonPanel
+            }
+        };
+
+        root.Background = (Brush)Application.Current.Resources["SystemControlBackgroundBaseLowBrush"];
+
+        wnd = new Window
+        {
+            Title = "Edit Preset",
+            Content = root,
+        };
+        wnd.AppWindow.Resize(new(350, 250));
+        wnd.Activate();
+
+        var (newName, newCategory) = await tcs.Task;
+        if (string.IsNullOrEmpty(newName) || string.IsNullOrEmpty(newCategory))
+            return;
+
+        var srcPath = preset.FilePath;
+        var destFolder = EnsureCategoryFolder(newCategory, _userRoot);
+        var ext = Path.GetExtension(srcPath);
+        var destPath = Path.Combine(destFolder, newName + ext);
+        if (File.Exists(destPath))
+            destPath = GetUniqueFilePath(destFolder, newName + ext);
+
+        File.Move(srcPath, destPath);
+
+        ApplySnapshot();
+        LoadAll();
+    }
 
     /// <summary>Deletes a preset file and removes empty folders.</summary>
     public void DeletePreset(Preset preset, PresetCategory parent)
