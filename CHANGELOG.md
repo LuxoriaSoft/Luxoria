@@ -1,3 +1,13 @@
+## [1.50.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.2...v1.50.3) (2025-06-21)
+
+
+### Bug Fixes
+
+* Export presets window UI ([4ebd0bb](https://github.com/LuxoriaSoft/Luxoria/commit/4ebd0bb0bb93c7cfb7a3202a35a8ca64c1d7c2f6))
+* Improves preset tree UI and EXIF display ([784189f](https://github.com/LuxoriaSoft/Luxoria/commit/784189f3c177d6ee3f6b90863fc1dcd407818124))
+* Parametric curve saving settings in layers ([c6e6f76](https://github.com/LuxoriaSoft/Luxoria/commit/c6e6f76fb8eb9e72db357090ba59397bd3ac3df7))
+* Remove OpenCollectionEvent ([c47cfef](https://github.com/LuxoriaSoft/Luxoria/commit/c47cfefb7f0d771b36c8913e1c73805ad10d7235))
+
 ## [1.50.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.1...v1.50.2) (2025-06-20)
 
 
