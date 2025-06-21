@@ -57,10 +57,38 @@ namespace LuxEditor
             _editor = new Editor(null);
             _infos = new Infos(_eventBus);
 
+
+
+            _editor.AttachCropController(_photoViewer.CropController);
             _editor.OnEditorImageUpdated += (updatedBitmap) =>
             {
                 _photoViewer?.SetImage(updatedBitmap);
                 _photoViewer?.ResetOverlay();
+            };
+
+            _editor.IsCropModeChanged += (isCropMode) =>
+            {
+                _photoViewer.IsCropMode = isCropMode;
+            };
+
+            _editor.InvalidateCrop += () =>
+            {
+                _photoViewer?.InvalidateCrop();
+            };
+
+
+            _photoViewer.CropChanged += () => _editor?.RequestFilterUpdate();
+
+            _photoViewer.BeginCropEditing += () => _editor.BeginCropEditing();
+            _photoViewer.EndCropEditing += () => _editor.EndCropEditing();
+
+            _editor.CropBoxChanged += box =>
+            {
+                var ctl = _photoViewer.CropController;
+                ctl.SetSize(box.Width, box.Height);
+                ctl.SetAngle(box.Angle);
+                ctl.LockAspectRatio = _editor.LockAspectToggleIsOn;
+                _photoViewer.InvalidateCrop();
             };
 
             _cExplorer.OnImageSelected += (img) =>
