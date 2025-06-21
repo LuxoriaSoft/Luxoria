@@ -133,18 +133,18 @@ namespace LuxEditor.Components
             }
 
             AddStringExpander("Basic", new[] {
-        "Exposure","Contrast","Highlights","Shadows","Whites","Blacks",
-        "Texture","Clarity","Dehaze","Vibrance","Saturation"
-    });
+                "Exposure","Contrast","Highlights","Shadows","Whites","Blacks",
+                "Texture","Clarity","Dehaze","Vibrance","Saturation"
+            });
             AddStringExpander("White Balance", new[] { "Temperature", "Tint" });
 
             var curves = new List<(string disp, string key)> {
-        ("Parametric Curve","ToneCurve_Parametric"),
-        ("Luminance Point Curve","ToneCurve_Point"),
-        ("Red Channel Curve","ToneCurve_Red"),
-        ("Green Channel Curve","ToneCurve_Green"),
-        ("Blue Channel Curve","ToneCurve_Blue"),
-    };
+                ("Parametric Curve","ToneCurve_Parametric"),
+                ("Luminance Point Curve","ToneCurve_Point"),
+                ("Red Channel Curve","ToneCurve_Red"),
+                ("Green Channel Curve","ToneCurve_Green"),
+                ("Blue Channel Curve","ToneCurve_Blue"),
+            };
             var curvesExp = new Expander { Header = "Curves", IsExpanded = true };
             var curvesPanel = new StackPanel { Spacing = 4, Padding = new Thickness(12, 0, 0, 0) };
             foreach (var (d, k) in curves)
@@ -217,8 +217,6 @@ namespace LuxEditor.Components
 
             PresetManager.Instance.CreatePresetFromSnapshot(snap, category, name);
         }
-
-
 
         private static IEnumerable<T> FindVisualChildren<T>(DependencyObject root)
             where T : DependencyObject
