@@ -74,7 +74,7 @@ namespace LuxExport
 
             Dictionary<SmartButtonType, Object> mainPage = new Dictionary<SmartButtonType, Object>();
 
-            _export = new Export(_eventBus);
+            _export = new Export(_eventBus, _logger);
             mainPage.Add(SmartButtonType.Window, _export);
 
             var smrtBtn = new SmartButton("Export", "Export module", mainPage);
@@ -90,7 +90,7 @@ namespace LuxExport
             _eventBus.Subscribe<ExportRequestEvent>((e) =>
             {
                 OnCollectionUpdated(e.Assets);
-                Export specificExport = new Export(_eventBus);
+                Export specificExport = new Export(_eventBus, _logger);
 
                 specificExport?.SetBitmaps(e.Assets
                     .Select(x => new KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>(x.Data.Bitmap, x.Data.EXIF))
