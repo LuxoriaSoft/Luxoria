@@ -61,6 +61,7 @@ namespace LuxEditor.Models
             Metadata = asset.Data.EXIF;
             Settings = CreateDefaultSettings();
             EditedBitmap = OriginalBitmap.Copy();
+            Debug.WriteLine("OriginalBitmap Width: " + OriginalBitmap.Width + " Height: " + OriginalBitmap.Height);
             Crop = new CropController.CropBox
             {
                 X = 0,

@@ -12,7 +12,6 @@ using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
 using System.ComponentModel;
-using Windows.UI.Core;
 
 
 namespace LuxEditor.Components
@@ -92,7 +91,8 @@ namespace LuxEditor.Components
                 var prev = img.PreviewBitmap ?? img.EditedBitmap ?? img.OriginalBitmap;
                 SetImage(prev);
 
-                _cropController.ResizeCanvas(prev.Width, prev.Height);
+                _cropController.ResizeCanvas(img.OriginalBitmap.Width, img.OriginalBitmap.Height);
+                _cropController.Box = img.Crop;
                 _cropCanvas.Invalidate();
             };
 
@@ -103,28 +103,9 @@ namespace LuxEditor.Components
 
             _cropController.BoxChanged += () =>
             {
-                if (ImageManager.Instance.SelectedImage != null)
-                    ImageManager.Instance.SelectedImage.Crop = _cropController.Box;
                 CropChanged?.Invoke();
                 InvalidateCrop();
             };
-
-
-            SizeChanged += (_, __) =>
-            {
-                _cropCanvas.Width = _mainCanvas.Width;
-                _cropCanvas.Height = _mainCanvas.Height;
-                _cropController.ResizeCanvas((float)_mainCanvas.Width,
-                                             (float)_mainCanvas.Height);
-                _cropCanvas.Invalidate();
-            };
-
-            Loaded += (_, __) =>
-            {
-                _cropController.ResizeCanvas((float)_mainCanvas.ActualWidth,
-                                             (float)_mainCanvas.ActualHeight);
-            };
-
 
             _cropCanvas.PointerPressed += (s, e) => HandlePointer(e, _cropController.OnPointerPressed);
             _cropCanvas.PointerMoved += (s, e) =>
@@ -133,73 +114,30 @@ namespace LuxEditor.Components
 
                 var pt = e.GetCurrentPoint(_cropCanvas).Position;
                 _cropController.UpdateHover(pt.X, pt.Y);
-
-                switch (_cropController.HoverInteraction)
-                {
-                    case CropController.Interaction.Move:
-                        SetCanvasCursor(InputSystemCursorShape.SizeAll); break;
-
-                    case CropController.Interaction.Rotate:
-                        SetCanvasCursor(InputSystemCursorShape.Cross); break;
-
-                    case CropController.Interaction.ResizeNW:
-                    case CropController.Interaction.ResizeSE:
-                        SetCanvasCursor(InputSystemCursorShape.SizeNorthwestSoutheast); break;
-
-                    case CropController.Interaction.ResizeNE:
-                    case CropController.Interaction.ResizeSW:
-                        SetCanvasCursor(InputSystemCursorShape.SizeNortheastSouthwest); break;
-
-                    default:
-                        SetCanvasCursor(InputSystemCursorShape.Arrow); break;
-                }
             };
-
-
 
             _cropCanvas.PointerReleased += (s, e) => { if (IsCropMode) { _cropController.OnPointerReleased(); InvalidateCrop(); } };
 
             _cropCanvas.PaintSurface += CropCanvas_PaintSurface;
         }
 
-        private static void SetCanvasCursor(InputSystemCursorShape shape)
-        {
-            //Window.Current.CoreWindow.PointerCursor =
-            //    new CoreCursor(ToCoreCursor(shape), 0);
-        }
-
-        private static CoreCursorType ToCoreCursor(InputSystemCursorShape s) => s switch
-        {
-            InputSystemCursorShape.Arrow => CoreCursorType.Arrow,
-            InputSystemCursorShape.Cross => CoreCursorType.Cross,
-            InputSystemCursorShape.SizeAll => CoreCursorType.SizeAll,
-            InputSystemCursorShape.SizeNorthwestSoutheast => CoreCursorType.SizeNorthwestSoutheast,
-            InputSystemCursorShape.SizeNortheastSouthwest => CoreCursorType.SizeNortheastSouthwest,
-            _ => CoreCursorType.Arrow
-        };
-
         private void OnEnterCropMode()
         {
-            _cropController.Box = _currentImage.Crop;
-            BeginCropEditing.Invoke();
+            if (_currentImage != null)
+                _cropController.Box = _currentImage.Crop;
+            BeginCropEditing?.Invoke();
             _cropCanvas.Visibility = Visibility.Visible;
             InvalidateCrop();
         }
 
         private void OnExitCropMode()
         {
-            _currentImage.Crop = _cropController.Box;
-            EndCropEditing.Invoke();
-            _cropCanvas.Visibility = Visibility.Collapsed;
-            //ResizeCanvases((int)_currentImage.Crop.Width, (int)_currentImage.Crop.Height);
-            InvalidateCrop();
 
-            //if (_currentImage?.PreviewBitmap is { } prev)
-            //{
-            //    var sx = _currentImage.OriginalBitmap.Width / (float)prev.Width;
-            //    var sy = _currentImage.OriginalBitmap.Height / (float)prev.Height;
-            //    _currentImage.Crop = CropProcessor.Scale(_cropController.Box, sx, sy);
-            //}
+            if (_currentImage != null)
+                _currentImage.Crop = _cropController.Box;
+            EndCropEditing?.Invoke();
+            _cropCanvas.Visibility = Visibility.Collapsed;
+            InvalidateCrop();
 
             _currentImage?.SaveState();
         }
@@ -252,6 +190,8 @@ namespace LuxEditor.Components
             _currentImage = image;
             image.LayerManager.OnOperationChanged += OperationSelected;
             image.LayerManager.OnLayerChanged += LayerSelected;
+            _cropController.ResizeCanvas(image.OriginalBitmap.Width, image.OriginalBitmap.Height);
+            _cropController.Box = image.Crop;
         }
 
         private SKImage? GetImageOps()
@@ -396,7 +336,6 @@ namespace LuxEditor.Components
             _currentGpu = image;
             _currentCpu = null;
             ResizeCanvases(image.Width, image.Height);
-            _cropController.ResizeCanvas(image.Width, image.Height);
         }
 
         public void SetImage(SKBitmap bitmap)
@@ -405,7 +344,6 @@ namespace LuxEditor.Components
             _currentGpu?.Dispose();
             _currentGpu = null;
             ResizeCanvases(bitmap.Width, bitmap.Height);
-            _cropController.ResizeCanvas(bitmap.Width, bitmap.Height);
         }
 
         private void OnPaintSurface(object? sender, SKPaintSurfaceEventArgs e)
@@ -430,8 +368,6 @@ namespace LuxEditor.Components
             RefreshAction();
 
             _currentTool?.ResizeCanvas(width, height);
-            _cropController.ResizeCanvas(width, height);
-            _cropCanvas.Invalidate();
         }
 
 
