@@ -1,3 +1,14 @@
+## [1.50.5](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.4...v1.50.5) (2025-06-22)
+
+
+### Bug Fixes
+
+* Crop corner resize while box is rotated ([e7e4651](https://github.com/LuxoriaSoft/Luxoria/commit/e7e46516c08177df09f95109a859501569e41621))
+* Improves crop box clamping logic. ([8610851](https://github.com/LuxoriaSoft/Luxoria/commit/8610851f023a253584293bb243fcbf41eda9757f))
+* Infinite loop on crop changed ([a339e0a](https://github.com/LuxoriaSoft/Luxoria/commit/a339e0a37b5e1fd098b739cb7eae1b65da01cb8f))
+* Photoviewer Canvas Host horizontal and vertical alignment issue, forcing center position ([054d0e0](https://github.com/LuxoriaSoft/Luxoria/commit/054d0e08d5dcf5244ab682ca6bf4aae5a15a0421))
+* Start crop box ([84f16c1](https://github.com/LuxoriaSoft/Luxoria/commit/84f16c156080a90e2773fd818ace801d5d860a6b))
+
 ## [1.50.4](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.3...v1.50.4) (2025-06-21)
 
 
