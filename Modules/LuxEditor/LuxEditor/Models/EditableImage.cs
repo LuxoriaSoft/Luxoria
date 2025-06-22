@@ -30,6 +30,8 @@ namespace LuxEditor.Models
         public FilterData FilterData { get; private set; }
         public readonly LayerManager LayerManager;
 
+        public CropController.CropBox Crop { get; set; }
+
         private readonly List<EditableImageSnapshot> _snapshots = new();
         private int _cursor = -1;
         private const int MaxSnapshots = 100;
@@ -44,6 +46,7 @@ namespace LuxEditor.Models
             public required FilterData FilterData;
             public required ReadOnlyDictionary<string, string> Metadata;
             public required LayerManager LayerManager;
+            public required CropController.CropBox Crop;
         }
 
         private readonly LuxCfg _luxCfg;
@@ -58,6 +61,15 @@ namespace LuxEditor.Models
             Metadata = asset.Data.EXIF;
             Settings = CreateDefaultSettings();
             EditedBitmap = OriginalBitmap.Copy();
+            Debug.WriteLine("OriginalBitmap Width: " + OriginalBitmap.Width + " Height: " + OriginalBitmap.Height);
+            Crop = new CropController.CropBox
+            {
+                X = 0,
+                Y = 0,
+                Width = OriginalBitmap.Width,
+                Height = OriginalBitmap.Height,
+                Angle = 0
+            };
             EditedPreviewBitmap = new SKBitmap(OriginalBitmap.Width, OriginalBitmap.Height);
             _luxCfg = asset.MetaData;
             _fileExtension = asset.MetaData.Extension;
@@ -73,7 +85,6 @@ namespace LuxEditor.Models
         /// 
         public EditableImageSnapshot CaptureSnapshot()
         {
-            //Debug.WriteLine("Capture Snapshot settings: " + PrintSettings(Settings));
             return new EditableImageSnapshot
             {
                 FileName = FileName,
@@ -82,6 +93,7 @@ namespace LuxEditor.Models
                 FilterData = FilterDataClone(FilterData),
                 Settings = CloneSettings(Settings),
                 LayerManager = LayerManager.Clone(),
+                Crop = Crop
             };
         }
 
@@ -148,6 +160,7 @@ namespace LuxEditor.Models
             FilterData = FilterDataClone(s.FilterData);
             Settings = CloneSettings(s.Settings);
             LayerManager.RestoreFrom(s.LayerManager);
+            Crop = s.Crop;
         }
 
         /// <summary>

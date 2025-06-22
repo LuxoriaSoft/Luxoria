@@ -3,9 +3,10 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="#2E2E2E"
+    Loaded="Editor_Loaded"
     IsTabStop="True">
 
     <Grid Padding="0">
@@ -18,9 +19,66 @@
         <ContentControl x:Name="ToolBarHost" Grid.Row="0"/>
 
         <Grid Grid.Row="1">
-            <ScrollViewer x:Name="EditorScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            
+            <ScrollViewer x:Name="EditorScrollViewer"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto">
                 <StackPanel x:Name="EditorStackPanel" Orientation="Vertical"/>
             </ScrollViewer>
+            
+            <Grid x:Name="CropUI" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Orientation="Vertical" Spacing="8" Padding="8">
+                    <ToggleSwitch x:Name="LockAspectToggle" Header="Lock Aspect Ratio"/>
+
+                    <ComboBox x:Name="AspectPresetCombo" Header="Aspect Ratio" SelectedIndex="0">
+                        <ComboBoxItem>Original</ComboBoxItem>
+                        <ComboBoxItem>4:3</ComboBoxItem>
+                        <ComboBoxItem>16:9</ComboBoxItem>
+                        <ComboBoxItem>16:10</ComboBoxItem>
+                        <ComboBoxItem>Instagram 1:1</ComboBoxItem>
+                        <ComboBoxItem>Instagram 4:5</ComboBoxItem>
+                        <ComboBoxItem>Custom</ComboBoxItem>
+                    </ComboBox>
+
+                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                        <TextBlock Text="Width" VerticalAlignment="Center"/>
+                        <controls:NumberBox
+                            x:Name="CustomWidthInput"
+                            Minimum="1"
+                            Value="100"
+                            SmallChange="1"
+                            Width="80"/>
+                        <TextBlock Text="Height" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <controls:NumberBox
+                            x:Name="CustomHeightInput"
+                            Minimum="1"
+                            Value="100"
+                            SmallChange="1"
+                            Width="80"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                        <TextBlock Text="Angle" VerticalAlignment="Center"/>
+                        <controls:NumberBox
+                            x:Name="RotateAngleInput"
+                            Minimum="0"
+                            Maximum="360"
+                            Value="0"
+                            SmallChange="1"
+                            Width="80"/>
+                    </StackPanel>
+
+                    <Button x:Name="ResetCropButton"
+                        Content="Reset Crop"
+                        HorizontalAlignment="Left"/>
+                </StackPanel>
+                <ContentControl x:Name="CropPanelHost" Grid.Row="1"/>
+            </Grid>
 
             <Grid x:Name="LayersUI" Visibility="Collapsed">
                 <Grid.RowDefinitions>
@@ -37,19 +95,31 @@
                     <TreeView x:Name="LayerTreeView" Height="200" SelectionMode="Single" Background="#2a2a2a"/>
                 </StackPanel>
 
-                <ContentControl x:Name="OperationDetailsHost" Grid.Row="1" Visibility="Collapsed" Margin="8" Padding="8" BorderBrush="Gray" BorderThickness="1" Background="#55222288"/>
+                <ContentControl x:Name="OperationDetailsHost"
+                                Grid.Row="1"
+                                Visibility="Collapsed"
+                                Margin="8"
+                                Padding="8"
+                                BorderBrush="Gray"
+                                BorderThickness="1"
+                                Background="#55222288"/>
             </Grid>
         </Grid>
-        <Button x:Name="ResetAllButton" Grid.Row="2" Content="Reset All" HorizontalAlignment="Stretch" Click="ResetAllClicked" Visibility="Collapsed"/>
+
+        <Button x:Name="ResetAllButton"
+                Grid.Row="2"
+                Content="Reset All"
+                HorizontalAlignment="Stretch"
+                Click="ResetAllClicked"
+                Visibility="Collapsed"/>
     </Grid>
 
     <Page.KeyboardAccelerators>
         <KeyboardAccelerator Key="Z"
-                         Modifiers="Control"
-                         Invoked="Undo_Invoked" />
-
+                             Modifiers="Control"
+                             Invoked="Undo_Invoked" />
         <KeyboardAccelerator Key="Z"
-                         Modifiers="Control,Shift"
-                         Invoked="Redo_Invoked" />
+                             Modifiers="Control,Shift"
+                             Invoked="Redo_Invoked" />
     </Page.KeyboardAccelerators>
 </Page>

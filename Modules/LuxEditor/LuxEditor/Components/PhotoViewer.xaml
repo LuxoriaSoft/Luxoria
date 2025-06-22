@@ -20,7 +20,7 @@
             PointerMoved="ScrollViewerImage_PointerMoved"
             PointerReleased="ScrollViewerImage_PointerReleased"
             PointerCanceled="ScrollViewerImage_PointerCanceled">
-            <Grid x:Name="CanvasHost"/>
+            <Grid x:Name="CanvasHost" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </ScrollViewer>
     </Grid>
 </Page>
