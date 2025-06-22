@@ -294,41 +294,56 @@ namespace LuxEditor.EditorUI.Controls
             _box.Y = centre.Y - newH * 0.5f;
         }
 
-        /// <summary>Clamps the crop box so that it stays inside the canvas.</summary>
+
         private void Clamp()
         {
             if (_canvasW < 32f || _canvasH < 32f) return;
 
-            var ctr = Centre();
-
-            var rad = _box.Angle * MathF.PI / 180f;
-            var cos = MathF.Cos(rad);
-            var sin = MathF.Sin(rad);
-
-            var halfW = _box.Width * 0.5f;
-            var halfH = _box.Height * 0.5f;
-
-            var corners = new[]
+            static void GetBounds(in CropBox box, float canvasW, float canvasH,
+                                  out float minX, out float minY,
+                                  out float maxX, out float maxY)
             {
-                new SKPoint(-halfW, -halfH),
-                new SKPoint(halfW, -halfH),
-                new SKPoint(halfW, halfH),
-                new SKPoint(-halfW, halfH)
-            };
+                var ctr = new SKPoint(box.X + box.Width * .5f, box.Y + box.Height * .5f);
 
-            var minX = float.MaxValue;
-            var maxX = float.MinValue;
-            var minY = float.MaxValue;
-            var maxY = float.MinValue;
+                var rad = box.Angle * MathF.PI / 180f;
+                var cos = MathF.Cos(rad);
+                var sin = MathF.Sin(rad);
 
-            foreach (var p in corners)
+                var hw = box.Width * .5f;
+                var hh = box.Height * .5f;
+
+                minX = minY = float.MaxValue;
+                maxX = maxY = float.MinValue;
+
+                Span<SKPoint> local = stackalloc SKPoint[4]
+                {
+            new(-hw, -hh), new(hw, -hh), new(hw, hh), new(-hw, hh)
+        };
+
+                foreach (var p in local)
+                {
+                    var gx = p.X * cos - p.Y * sin + ctr.X;
+                    var gy = p.X * sin + p.Y * cos + ctr.Y;
+
+                    if (gx < minX) minX = gx;
+                    if (gx > maxX) maxX = gx;
+                    if (gy < minY) minY = gy;
+                    if (gy > maxY) maxY = gy;
+                }
+            }
+
+            GetBounds(_box, _canvasW, _canvasH, out var minX, out var minY, out var maxX, out var maxY);
+
+            var bboxW = maxX - minX;
+            var bboxH = maxY - minY;
+
+            var scale = MathF.Min(1f, MathF.Min(_canvasW / bboxW, _canvasH / bboxH));
+            if (scale < 0.999f)
             {
-                var gx = p.X * cos - p.Y * sin + ctr.X;
-                var gy = p.X * sin + p.Y * cos + ctr.Y;
-                if (gx < minX) minX = gx;
-                if (gx > maxX) maxX = gx;
-                if (gy < minY) minY = gy;
-                if (gy > maxY) maxY = gy;
+                _box.Width = MathF.Max(_box.Width * scale, 32f);
+                _box.Height = MathF.Max(_box.Height * scale, 32f);
+
+                GetBounds(_box, _canvasW, _canvasH, out minX, out minY, out maxX, out maxY);
             }
 
             var shiftX = 0f;
@@ -340,13 +355,13 @@ namespace LuxEditor.EditorUI.Controls
             if (minY < 0f) shiftY = -minY;
             else if (maxY > _canvasH) shiftY = _canvasH - maxY;
 
-            if (MathF.Abs(shiftX) > 0.01f || MathF.Abs(shiftY) > 0.01f)
+            if (MathF.Abs(shiftX) > 0.001f || MathF.Abs(shiftY) > 0.001f)
             {
                 _box.X += shiftX;
                 _box.Y += shiftY;
             }
-
-            //BoxChanged?.Invoke();
         }
+
+
     }
 }
