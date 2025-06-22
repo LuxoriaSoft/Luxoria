@@ -1,4 +1,7 @@
 using LuxExport.Logic;
+using Luxoria.Modules;
+using Luxoria.SDK.Interfaces;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -26,13 +29,16 @@ namespace LuxExport
         private bool _isPaused;
         private readonly ManualResetEventSlim _pauseEvent = new ManualResetEventSlim(true);
 
+        ILoggerService _logger;
+
         /// <summary>
         /// Constructs the export progress window with the given bitmaps and view model.
         /// </summary>
         /// <param name="bitmaps"> Bitmaps with Metadata </param>
         /// <param name="viewModel"></param>
-        public ExportProgressWindow(List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> bitmaps, ExportViewModel viewModel)
+        public ExportProgressWindow(List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> bitmaps, ExportViewModel viewModel, ILoggerService logger)
         {
+            _logger = logger;
             InitializeComponent();
 
             _bitmaps = bitmaps;
@@ -82,6 +88,8 @@ namespace LuxExport
         private async Task DoExportLoopAsync()
         {
             int total = _bitmaps.Count;
+            var wmService = new WatermarkService(new VaultService(_logger));
+            var wm = wmService.Load();
 
             for (int i = 0; i < total; i++)
             {
@@ -149,7 +157,9 @@ namespace LuxExport
 
                 if (!_cts.IsCancellationRequested)
                 {
-                    exporter.Export(ConvertColorSpace(bitmap, _viewModel.SelectedColorSpace), fullFilePath, _viewModel.SelectedFormat, settings);
+                    var colourConverted = ConvertColorSpace(bitmap, _viewModel.SelectedColorSpace);
+                    var wmApplied = WatermarkApplier.Apply(colourConverted, _viewModel.Watermark);
+                    exporter.Export(wmApplied, fullFilePath, _viewModel.SelectedFormat, settings);
                 }
 
                 int index = i;

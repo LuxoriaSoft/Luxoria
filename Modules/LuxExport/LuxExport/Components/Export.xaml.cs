@@ -20,6 +20,9 @@ using Luxoria.Modules.Interfaces;
 using Windows.System;
 using Luxoria.Modules.Models;
 using System.Linq;
+using Luxoria.SDK.Interfaces;
+using Luxoria.Modules;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace LuxExport
 {
@@ -29,23 +32,31 @@ namespace LuxExport
     public sealed partial class Export : Page
     {
         private List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> _bitmaps = new();
-        private ExportViewModel viewModel;
+        private ExportViewModel _viewModel;
         private readonly IEventBus _eventBus;
         public event Action? CloseWindow;
+        private ILoggerService _logger;
+
+        private WatermarkService _wmSvc;
 
         /// <summary>
         /// Initializes the export dialog and loads the necessary presets for file naming.
         /// </summary>
-        public Export(IEventBus eventBus)
+        public Export(IEventBus eventBus, ILoggerService logger)
         {
             this.InitializeComponent();
-            viewModel = new ExportViewModel();
+            _eventBus = eventBus;
+            _logger = logger; 
+            _viewModel = new ExportViewModel();
+            _wmSvc = new WatermarkService(new VaultService(logger));
+            _viewModel.Watermark = _wmSvc.Load();
+            _viewModel.RefreshLogoPreview();
 
-            viewModel.LoadPresets(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\..\\..\\..\\..\\..\\assets\\Presets\\FileNamingPresets.json");
+            _viewModel.LoadPresets(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\..\\..\\..\\..\\..\\assets\\Presets\\FileNamingPresets.json");
 
             RefreshPresetsMenu();
 
-            _eventBus = eventBus;
+            RefreshWatermarkUI();
         }
 
         /// <summary>
@@ -56,12 +67,12 @@ namespace LuxExport
             PresetsFlyout.Items.Clear();
 
             // Add each preset to the menu
-            foreach (var preset in viewModel.Presets)
+            foreach (var preset in _viewModel.Presets)
             {
                 var item = new MenuFlyoutItem { Text = preset.Name };
                 item.Click += (s, e) =>
                 {
-                    viewModel.CustomFileFormat = preset.Pattern;
+                    _viewModel.CustomFileFormat = preset.Pattern;
                 };
                 PresetsFlyout.Items.Add(item);
             }
@@ -74,38 +85,38 @@ namespace LuxExport
         {
             if (sender is MenuFlyoutItem menuItem)
             {
-                viewModel.SelectedExportLocation = menuItem.Text;
+                _viewModel.SelectedExportLocation = menuItem.Text;
 
                 switch (menuItem.Text)
                 {
                     case "Desktop":
-                        viewModel.ExportFilePath = GetSpecialFolderPath(Environment.SpecialFolder.Desktop);
+                        _viewModel.ExportFilePath = GetSpecialFolderPath(Environment.SpecialFolder.Desktop);
                         break;
                     case "Documents":
-                        viewModel.ExportFilePath = GetSpecialFolderPath(Environment.SpecialFolder.MyDocuments);
+                        _viewModel.ExportFilePath = GetSpecialFolderPath(Environment.SpecialFolder.MyDocuments);
                         break;
                     case "Pictures":
-                        viewModel.ExportFilePath = GetSpecialFolderPath(Environment.SpecialFolder.MyPictures);
+                        _viewModel.ExportFilePath = GetSpecialFolderPath(Environment.SpecialFolder.MyPictures);
                         break;
                     case "Same path as original file":
-                        viewModel.ExportFilePath = GetOriginalFilePath();
+                        _viewModel.ExportFilePath = GetOriginalFilePath();
                         break;
                     case "Custom Path":
                         // Browse for a custom folder
                         StorageFolder folder = await BrowseFolderAsync();
                         if (folder != null)
                         {
-                            viewModel.SelectedExportLocation = "Custom Path";
-                            viewModel.SetBasePath(folder.Path);
+                            _viewModel.SelectedExportLocation = "Custom Path";
+                            _viewModel.SetBasePath(folder.Path);
                         }
                         else
                         {
-                            viewModel.SelectedExportLocation = "Select a path...";
+                            _viewModel.SelectedExportLocation = "Select a path...";
                         }
                         break;
                 }
 
-                viewModel.UpdateExportPath();
+                _viewModel.UpdateExportPath();
             }
         }
 
@@ -135,7 +146,7 @@ namespace LuxExport
         {
             if (sender is MenuFlyoutItem menuItem)
             {
-                viewModel.SelectedFileConflictResolution = menuItem.Text;
+                _viewModel.SelectedFileConflictResolution = menuItem.Text;
             }
         }
 
@@ -183,7 +194,7 @@ namespace LuxExport
         {
             if (sender is MenuFlyoutItem item)
             {
-                viewModel.SelectedColorSpace = item.Text;
+                _viewModel.SelectedColorSpace = item.Text;
             }
         }
 
@@ -202,11 +213,13 @@ namespace LuxExport
             await _eventBus.Publish(new RequestLatestCollection(handle => tcs.SetResult(handle)));
             SetBitmaps(tcs.Task.GetAwaiter().GetResult().Select(x => new KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>(x.Data.Bitmap, x.Data.EXIF)).ToList());
 
+            _wmSvc.Save(_viewModel.Watermark);
+
             CloseWindow?.Invoke();
 
             DispatcherQueue.TryEnqueue(() =>
             {
-                var progressWindow = new ExportProgressWindow(_bitmaps, viewModel);
+                var progressWindow = new ExportProgressWindow(_bitmaps, _viewModel, _logger);
                 progressWindow.Activate();
             });
         }
@@ -219,7 +232,7 @@ namespace LuxExport
         {
             if (sender is MenuFlyoutItem item)
             {
-                viewModel.FileNamingMode = item.Text;
+                _viewModel.FileNamingMode = item.Text;
             }
         }
 
@@ -230,7 +243,7 @@ namespace LuxExport
         {
             if (sender is MenuFlyoutItem item)
             {
-                viewModel.ExtensionCase = item.Text;
+                _viewModel.ExtensionCase = item.Text;
             }
         }
 
@@ -261,7 +274,7 @@ namespace LuxExport
         {
             if (sender is MenuFlyoutItem item && Enum.TryParse<ExportFormat>(item.Text, true, out var format))
             {
-                viewModel.SelectedFormat = format;
+                _viewModel.SelectedFormat = format;
             }
         }
 
@@ -272,5 +285,62 @@ namespace LuxExport
         {
             CloseWindow?.Invoke();
         }
+
+        /// <summary>
+        /// Opens a FileOpenPicker, lets the user choose an image and stores it
+        /// in the current WatermarkSettings.
+        /// </summary>
+        private async void OnImportLogoClicked(object sender, RoutedEventArgs e)
+        {
+            var picker = new FileOpenPicker { ViewMode = PickerViewMode.Thumbnail };
+            picker.FileTypeFilter.Add(".png");
+            picker.FileTypeFilter.Add(".jpg");
+            picker.FileTypeFilter.Add(".jpeg");
+
+            var tcs = new TaskCompletionSource<nint>();
+            await _eventBus.Publish(new RequestWindowHandleEvent(h => tcs.SetResult(h)));
+            nint windowHandle = await tcs.Task;
+            if (windowHandle == 0) return;
+            InitializeWithWindow.Initialize(picker, windowHandle);
+
+            if (await picker.PickSingleFileAsync() is not StorageFile file) return;
+
+            using var inStream = await file.OpenReadAsync();
+            using var skStream = new SKManagedStream(inStream.AsStreamForRead());
+            if (SKBitmap.Decode(skStream) is not SKBitmap logo) return;
+
+            _viewModel.Watermark.Logo = logo;
+            _viewModel.Watermark.Type = WatermarkType.Logo;
+            _viewModel.Watermark.Enabled = true;
+
+            _viewModel.Watermark = _viewModel.Watermark;
+
+            _viewModel.RefreshLogoPreview();
+
+            _wmSvc.Save(_viewModel.Watermark);
+        }
+
+        private void RefreshWatermarkUI()
+        {
+            bool isText = _viewModel.Watermark.Type == WatermarkType.Text;
+
+            LblWatermarkText.Visibility = isText ? Visibility.Visible : Visibility.Collapsed;
+            TxtWatermark.Visibility = isText ? Visibility.Visible : Visibility.Collapsed;
+
+            BtnImportLogo.Visibility = isText ? Visibility.Collapsed : Visibility.Visible;
+            LogoPreview.Visibility = isText ? Visibility.Collapsed : Visibility.Visible;
+        }
+        private void OnWatermarkTypeChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is not ComboBox cb) return;
+
+            _viewModel.Watermark.Type = cb.SelectedIndex == 0
+                                        ? WatermarkType.Text
+                                        : WatermarkType.Logo;
+
+            _viewModel.Watermark = _viewModel.Watermark;
+            RefreshWatermarkUI();
+        }
+
     }
 }
