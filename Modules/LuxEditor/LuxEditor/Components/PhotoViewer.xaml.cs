@@ -12,7 +12,6 @@ using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
 using System.ComponentModel;
-
 using Windows.UI.Core;
 
 
@@ -93,16 +92,7 @@ namespace LuxEditor.Components
                 var prev = img.PreviewBitmap ?? img.EditedBitmap ?? img.OriginalBitmap;
                 SetImage(prev);
 
-
                 _cropController.ResizeCanvas(prev.Width, prev.Height);
-
-
-                var sx = prev.Width / (float)img.OriginalBitmap.Width;
-                var sy = prev.Height / (float)img.OriginalBitmap.Height;
-                var boxOnPrev = CropProcessor.Scale(img.Crop, sx, sy);
-
-
-                _cropController.Load(boxOnPrev);  
                 _cropCanvas.Invalidate();
             };
 
@@ -190,6 +180,7 @@ namespace LuxEditor.Components
 
         private void OnEnterCropMode()
         {
+            _cropController.Box = _currentImage.Crop;
             BeginCropEditing.Invoke();
             _cropCanvas.Visibility = Visibility.Visible;
             InvalidateCrop();
@@ -197,17 +188,18 @@ namespace LuxEditor.Components
 
         private void OnExitCropMode()
         {
+            _currentImage.Crop = _cropController.Box;
             EndCropEditing.Invoke();
             _cropCanvas.Visibility = Visibility.Collapsed;
-            ResizeCanvases((int)_currentImage.Crop.Width, (int)_currentImage.Crop.Height);
+            //ResizeCanvases((int)_currentImage.Crop.Width, (int)_currentImage.Crop.Height);
             InvalidateCrop();
 
-            if (_currentImage?.PreviewBitmap is { } prev)
-            {
-                var sx = _currentImage.OriginalBitmap.Width / (float)prev.Width;
-                var sy = _currentImage.OriginalBitmap.Height / (float)prev.Height;
-                _currentImage.Crop = CropProcessor.Scale(_cropController.Box, sx, sy);
-            }
+            //if (_currentImage?.PreviewBitmap is { } prev)
+            //{
+            //    var sx = _currentImage.OriginalBitmap.Width / (float)prev.Width;
+            //    var sy = _currentImage.OriginalBitmap.Height / (float)prev.Height;
+            //    _currentImage.Crop = CropProcessor.Scale(_cropController.Box, sx, sy);
+            //}
 
             _currentImage?.SaveState();
         }

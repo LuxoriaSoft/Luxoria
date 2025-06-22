@@ -48,13 +48,13 @@ namespace LuxEditor.Logic
         /// <summary>
         /// Return a copy of <paramref name="box"/> scaled by <paramref name="sx"/> and <paramref name="sy"/>.
         /// </summary>
-        public static CropController.CropBox Scale(CropController.CropBox box, float sx, float sy) => new()
-        {
-            X = box.X * sx,
-            Y = box.Y * sy,
-            Width = box.Width * sx,
-            Height = box.Height * sy,
-            Angle = box.Angle
-        };
+        //public static CropController.CropBox Scale(CropController.CropBox box, float sx, float sy) => new()
+        //{
+        //    X = box.X * sx,
+        //    Y = box.Y * sy,
+        //    Width = box.Width * sx,
+        //    Height = box.Height * sy,
+        //    Angle = box.Angle
+        //};
     }
 }
