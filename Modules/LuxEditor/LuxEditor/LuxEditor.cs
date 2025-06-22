@@ -11,6 +11,7 @@ using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace LuxEditor
@@ -77,7 +78,10 @@ namespace LuxEditor
             };
 
 
-            _photoViewer.CropChanged += () => _editor?.RequestFilterUpdate();
+            _photoViewer.CropChanged += () => {
+                _editor?.RequestFilterUpdate();
+
+            };
 
             _photoViewer.BeginCropEditing += () => _editor.BeginCropEditing();
             _photoViewer.EndCropEditing += () => _editor.EndCropEditing();

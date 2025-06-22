@@ -1,6 +1,7 @@
 using CommunityToolkit.WinUI;
 using LuxEditor.EditorUI.Controls;
 using LuxEditor.EditorUI.Controls.ToolControls;
+using LuxEditor.Logic;
 using LuxEditor.Models;
 using LuxEditor.Services;
 using Microsoft.UI.Input;
@@ -89,11 +90,19 @@ namespace LuxEditor.Components
                 else if (img.EditedBitmap != null) SetImage(img.EditedBitmap);
                 else if (img.OriginalBitmap != null) SetImage(img.OriginalBitmap);
 
-                _cropController.Reset();
-                _cropController.ApplyPresetRatio(
-                    img.Crop.Width / img.Crop.Height);
-                _cropController.SetSize(img.Crop.Width, img.Crop.Height);
-                _cropController.SetAngle(img.Crop.Angle);
+                var prev = img.PreviewBitmap ?? img.EditedBitmap ?? img.OriginalBitmap;
+                SetImage(prev);
+
+
+                _cropController.ResizeCanvas(prev.Width, prev.Height);
+
+
+                var sx = prev.Width / (float)img.OriginalBitmap.Width;
+                var sy = prev.Height / (float)img.OriginalBitmap.Height;
+                var boxOnPrev = CropProcessor.Scale(img.Crop, sx, sy);
+
+
+                _cropController.Load(boxOnPrev);  
                 _cropCanvas.Invalidate();
             };
 
@@ -192,6 +201,13 @@ namespace LuxEditor.Components
             _cropCanvas.Visibility = Visibility.Collapsed;
             ResizeCanvases((int)_currentImage.Crop.Width, (int)_currentImage.Crop.Height);
             InvalidateCrop();
+
+            if (_currentImage?.PreviewBitmap is { } prev)
+            {
+                var sx = _currentImage.OriginalBitmap.Width / (float)prev.Width;
+                var sy = _currentImage.OriginalBitmap.Height / (float)prev.Height;
+                _currentImage.Crop = CropProcessor.Scale(_cropController.Box, sx, sy);
+            }
 
             _currentImage?.SaveState();
         }

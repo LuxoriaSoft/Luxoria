@@ -225,12 +225,14 @@ namespace LuxEditor.EditorUI.Controls
 
         private void Clamp()
         {
-            if (_canvasW <= 1 || _canvasH <= 1) return;
+            if (_canvasW <= 32 || _canvasH <= 32) return;
             _box.Width = Math.Clamp(_box.Width, 32, _canvasW);
             _box.Height = Math.Clamp(_box.Height, 32, _canvasH);
             _box.X = Math.Clamp(_box.X, 0, _canvasW - _box.Width);
             _box.Y = Math.Clamp(_box.Y, 0, _canvasH - _box.Height);
-            BoxChanged?.Invoke();
+
+            //Debug.WriteLine("Clamp invoked");
+            //BoxChanged?.Invoke();
         }
     }
 }

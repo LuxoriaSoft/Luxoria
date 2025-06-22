@@ -786,6 +786,7 @@ namespace LuxEditor.Components
 
             _ = RunPipelineAsync(_cts.Token);
         }
+
         private async Task RunPipelineAsync(CancellationToken token)
         {
             _pendingUpdate = false;
@@ -856,7 +857,6 @@ namespace LuxEditor.Components
             }
         }
 
-
         private static void DrawMasked(SKCanvas c, SKBitmap content, SKBitmap mask, Layer lay)
         {
             float k = Math.Clamp((float)lay.Strength / 100f, 0f, 2f);
@@ -898,7 +898,7 @@ namespace LuxEditor.Components
             using var surf = SKSurface.Create(new SKImageInfo(w, h));
             var can = surf.Canvas;
 
-            foreach (var op in lay.Operations.ToArray())             // <-- instantané
+            foreach (var op in lay.Operations.ToArray())
             {
                 var m = op.Tool?.GetResult();
                 if (m == null) continue;
@@ -947,14 +947,6 @@ namespace LuxEditor.Components
         {
             if (CurrentImage == null) return src;
             var box = CurrentImage.Crop;
-
-            if (src == CurrentImage.OriginalBitmap && CurrentImage.PreviewBitmap != null)
-            {
-                float sx = (float)CurrentImage.OriginalBitmap.Width / CurrentImage.PreviewBitmap.Width;
-                float sy = (float)CurrentImage.OriginalBitmap.Height / CurrentImage.PreviewBitmap.Height;
-                box = CropProcessor.Scale(box, sx, sy);
-            }
-
             return CropProcessor.Apply(src, box);
         }
 
