@@ -46,8 +46,9 @@ export default function CollectionsPage() {
 
         // Récupération du user connecté
         const userData = await AuthService.whoAmI()
-        const roleNumber = userData.role === 'Client' ? 0 : 1
-        setUser({ role: roleNumber, email: userData.email }) 
+        const roleNumber = Number(userData.role);
+        console.log('userData.role reçu du backend :', userData.role);
+        setUser({ role: roleNumber, email: userData.email });
       } catch (err: any) {
         setError(err.message || 'Failed to load collections')
       } finally {

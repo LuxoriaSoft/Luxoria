@@ -10,7 +10,8 @@ namespace LuxAPI.Models
     public enum UserRole
     {
         Client,
-        Photographer
+        Photographer,
+        Admin
     }
 
     /// <summary>
@@ -69,5 +70,6 @@ namespace LuxAPI.Models
         /// </summary>
         [Required]
         public UserRole Role { get; set; } = UserRole.Client;
+        public bool IsBlocked { get; set; } = false;
     }
 }

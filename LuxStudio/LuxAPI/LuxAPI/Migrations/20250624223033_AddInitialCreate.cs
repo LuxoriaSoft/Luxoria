@@ -83,7 +83,8 @@ namespace LuxAPI.Migrations
                     AvatarFileName = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Role = table.Column<int>(type: "integer", nullable: false)
+                    Role = table.Column<int>(type: "integer", nullable: false),
+                    IsBlocked = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {

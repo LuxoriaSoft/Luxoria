@@ -78,6 +78,7 @@ export function ApplicationLayout({
 }) {
   const pathname = usePathname()
   const { user } = useUser()
+  
 
   const avatarUrl = user?.avatarFileName
     ? `${process.env.NEXT_PUBLIC_API_URL}/auth/avatar/${user.avatarFileName}`
@@ -153,6 +154,25 @@ export function ApplicationLayout({
             <SidebarSection className="max-lg:hidden">
               <SidebarHeading>Upcoming Events</SidebarHeading>
             </SidebarSection>
+                        {/* Section Admin visible uniquement si role === 2 */}
+            {user?.role === 2 && (
+              <SidebarSection>
+                <SidebarHeading>Admin</SidebarHeading>
+                <SidebarItem href="/admin/users">
+                  <UserCircleIcon />
+                  <SidebarLabel>User Management</SidebarLabel>
+                </SidebarItem>
+                <SidebarItem href="/admin/collections">
+                  <Square2StackIcon />
+                  <SidebarLabel>Collections Management</SidebarLabel>
+                </SidebarItem>
+                <SidebarItem href="/admin/logs">
+                  <TicketIcon />
+                  <SidebarLabel>Activity Logs</SidebarLabel>
+                </SidebarItem>
+              </SidebarSection>
+            )}
+
 
             <SidebarSpacer />
 

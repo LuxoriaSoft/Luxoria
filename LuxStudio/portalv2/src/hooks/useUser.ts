@@ -7,6 +7,7 @@ export type User = {
   avatarFileName?: string
   createdAt?: string
   updatedAt?: string
+  role?: number
 }
 
 export function useUser() {

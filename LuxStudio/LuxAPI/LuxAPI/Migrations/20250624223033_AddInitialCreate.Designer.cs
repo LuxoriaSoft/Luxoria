@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LuxAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250623214154_AddInitialCreate")]
+    [Migration("20250624223033_AddInitialCreate")]
     partial class AddInitialCreate
     {
         /// <inheritdoc />
@@ -304,6 +304,9 @@ namespace LuxAPI.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
