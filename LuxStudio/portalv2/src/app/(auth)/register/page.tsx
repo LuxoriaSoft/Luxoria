@@ -26,6 +26,8 @@ export default function Register() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [role, setRole] = useState<0 | 1>(0)
+
 
   useEffect(() => {
     const queryEmail = searchParams.get('email')
@@ -54,7 +56,7 @@ export default function Register() {
     setIsSubmitting(true)
     setErrorMessage('')
     try {
-      await AuthService.requestVerification(username, email, password)
+      await AuthService.requestVerification(username, email, password, role)
       setStep('code')
     } catch (err: any) {
       setErrorMessage(err.message || 'Unexpected error')
@@ -105,15 +107,40 @@ export default function Register() {
           </Field>
           <Field>
             <Label>Password</Label>
-            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </Field>
           <Field>
             <Label>Avatar (optional)</Label>
-            <Input type="file" ref={fileInputRef} onChange={handleAvatarChange} accept="image/png, image/jpeg" />
+            <Input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleAvatarChange}
+              accept="image/png, image/jpeg"
+            />
           </Field>
           {avatarPreviewUrl && (
-            <img src={avatarPreviewUrl} alt="Avatar preview" className="w-20 h-20 rounded-full object-cover border" />
+            <img
+              src={avatarPreviewUrl}
+              alt="Avatar preview"
+              className="w-20 h-20 rounded-full object-cover border"
+            />
           )}
+          <Field>
+            <Label>Account Type</Label>
+            <select
+              value={role}
+              onChange={(e) => setRole(Number(e.target.value) as 0 | 1)}
+              className="w-full rounded border p-2"
+            >
+              <option value={0}>Client</option>
+              <option value={1}>Photographer</option>
+            </select>
+          </Field>
         </>
       )}
 
@@ -131,7 +158,6 @@ export default function Register() {
 
       {errorMessage && <Text className="text-red-500 text-sm">{errorMessage}</Text>}
       {successMessage && <Text className="text-green-500 text-sm">{successMessage}</Text>}
-
       <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? 'Please wait...' : step === 'form' ? 'Register' : 'Confirm Code'}
       </Button>

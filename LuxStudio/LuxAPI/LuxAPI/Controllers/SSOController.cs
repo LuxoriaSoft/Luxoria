@@ -133,7 +133,7 @@ namespace LuxAPI.Controllers
                 _context.AuthorizationCodes.Remove(authorizationCode);
                 _context.SaveChanges();
 
-                var accessToken = _jwtService.GenerateJwtToken(user.Id, user.Username, user.Email);
+                var accessToken = _jwtService.GenerateJwtToken(user.Id, user.Username, user.Email, user.Role);
                 var refreshToken = TokenService.GenerateRefreshToken();
 
                 _context.Tokens.Add(new Token { AccessToken = accessToken, RefreshToken = refreshToken, UserId = user.Id, Expiry = DateTime.UtcNow.AddHours(1) });
@@ -177,7 +177,7 @@ namespace LuxAPI.Controllers
                     return BadRequest(new { error = "User not found." });
                 }
 
-                var newAccessToken = _jwtService.GenerateJwtToken(user.Id, user.Username, user.Email);
+                var newAccessToken = _jwtService.GenerateJwtToken(user.Id, user.Username, user.Email, user.Role);
                 var newRefreshToken = TokenService.GenerateRefreshToken();
 
                 existingToken.Token = newRefreshToken;

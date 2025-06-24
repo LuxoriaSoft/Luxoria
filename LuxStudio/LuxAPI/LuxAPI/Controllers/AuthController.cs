@@ -76,15 +76,16 @@ namespace LuxAPI.Controllers
             {
                 Username = registration.Username,
                 Email = registration.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(registration.Password), // Hash password securely
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(registration.Password),
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                Role = registration.Role
             };
 
             _context.Users.Add(user);
             _context.SaveChanges();
 
-            _logger.LogInformation("User registered successfully: {Username}", registration.Username);
+            _logger.LogInformation("User registered successfully: {Username} ({Role})", registration.Username, registration.Role);
             return Ok("User registered successfully.");
         }
 
@@ -197,7 +198,7 @@ namespace LuxAPI.Controllers
             }
 
             // Generate a JWT token for the authenticated user
-            var token = _jwtService.GenerateJwtToken(user.Id, user.Username, user.Email);
+            var token = _jwtService.GenerateJwtToken(user.Id, user.Username, user.Email, user.Role);
 
             _logger.LogInformation("User logged in successfully: {Username}", login.Username);
             return Ok(new { token }); // Return the JWT token
@@ -223,10 +224,10 @@ namespace LuxAPI.Controllers
                 Email = data.Email,
                 Username = data.Username,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(data.Password),
+                Role = data.Role,
                 Code = code,
                 ExpiresAt = expiresAt
             };
-
             _context.PendingRegistrations.Add(pending);
             await _context.SaveChangesAsync();
 
@@ -264,7 +265,8 @@ namespace LuxAPI.Controllers
                 Email = entry.Email,
                 PasswordHash = entry.PasswordHash,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                Role = entry.Role
             };
 
             _context.Users.Add(user);

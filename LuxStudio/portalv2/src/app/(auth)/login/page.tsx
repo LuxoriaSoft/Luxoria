@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { redirect, useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/button'
 import { Checkbox, CheckboxField } from '@/components/checkbox'
 import { Field, Label } from '@/components/fieldset'
@@ -40,7 +40,13 @@ export default function LoginPage() {
     try {
       const token = await AuthService.login(username, password, captchaToken)
       localStorage.setItem('token', token)
-      router.push('/')
+      document.cookie = `token=${token}; path=/`
+
+      const query = window.location.search
+    
+      const params = new URLSearchParams(query)
+      let redirectUrl = params.get('redirect')
+      router.push(redirectUrl || '/')
     } catch (error: any) {
       setErrorMessage(error.message || 'An unexpected error occurred.')
     } finally {
