@@ -11,7 +11,6 @@ namespace LuxEditor.Models
         Brush,
         LinearGradient,
         RadialGradient,
-        ColorRange,
         Unknown
     }
 }

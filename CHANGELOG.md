@@ -1,3 +1,31 @@
+## [1.50.5](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.4...v1.50.5) (2025-06-22)
+
+
+### Bug Fixes
+
+* Crop corner resize while box is rotated ([e7e4651](https://github.com/LuxoriaSoft/Luxoria/commit/e7e46516c08177df09f95109a859501569e41621))
+* Improves crop box clamping logic. ([8610851](https://github.com/LuxoriaSoft/Luxoria/commit/8610851f023a253584293bb243fcbf41eda9757f))
+* Infinite loop on crop changed ([a339e0a](https://github.com/LuxoriaSoft/Luxoria/commit/a339e0a37b5e1fd098b739cb7eae1b65da01cb8f))
+* Photoviewer Canvas Host horizontal and vertical alignment issue, forcing center position ([054d0e0](https://github.com/LuxoriaSoft/Luxoria/commit/054d0e08d5dcf5244ab682ca6bf4aae5a15a0421))
+* Start crop box ([84f16c1](https://github.com/LuxoriaSoft/Luxoria/commit/84f16c156080a90e2773fd818ace801d5d860a6b))
+
+## [1.50.4](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.3...v1.50.4) (2025-06-21)
+
+
+### Bug Fixes
+
+* Add async fetches for releases & Animation when a module has been installed ([cc54758](https://github.com/LuxoriaSoft/Luxoria/commit/cc5475851c144e5e75ba9714c8a2243ea4051b7f))
+
+## [1.50.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.2...v1.50.3) (2025-06-21)
+
+
+### Bug Fixes
+
+* Export presets window UI ([4ebd0bb](https://github.com/LuxoriaSoft/Luxoria/commit/4ebd0bb0bb93c7cfb7a3202a35a8ca64c1d7c2f6))
+* Improves preset tree UI and EXIF display ([784189f](https://github.com/LuxoriaSoft/Luxoria/commit/784189f3c177d6ee3f6b90863fc1dcd407818124))
+* Parametric curve saving settings in layers ([c6e6f76](https://github.com/LuxoriaSoft/Luxoria/commit/c6e6f76fb8eb9e72db357090ba59397bd3ac3df7))
+* Remove OpenCollectionEvent ([c47cfef](https://github.com/LuxoriaSoft/Luxoria/commit/c47cfefb7f0d771b36c8913e1c73805ad10d7235))
+
 ## [1.50.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.1...v1.50.2) (2025-06-20)
 
 

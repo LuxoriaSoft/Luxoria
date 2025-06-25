@@ -37,7 +37,8 @@ namespace Luxoria.App.Components
         {
             IMarketplaceService mkplaceSvc = (Application.Current as App)?.GetHost().Services.GetRequiredService<IMarketplaceService>();
             IStorageAPI cacheSvc = (Application.Current as App)?.GetHost().Services.GetRequiredService<IVaultService>().GetVault(VAULT_NAME);
-            Window window = new MarketplaceView(mkplaceSvc, cacheSvc);
+            IEventBus eventBus = (Application.Current as App)?.GetHost().Services.GetRequiredService<IEventBus>();
+            Window window = new MarketplaceView(mkplaceSvc, cacheSvc, eventBus);
             window.Activate();
         }
 

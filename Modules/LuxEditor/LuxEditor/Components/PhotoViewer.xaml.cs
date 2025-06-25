@@ -1,9 +1,10 @@
 using CommunityToolkit.WinUI;
+using LuxEditor.EditorUI.Controls;
 using LuxEditor.EditorUI.Controls.ToolControls;
-using LuxEditor.EditorUI.Interfaces;
 using LuxEditor.Logic;
 using LuxEditor.Models;
 using LuxEditor.Services;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -11,9 +12,7 @@ using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
+
 
 namespace LuxEditor.Components
 {
@@ -38,6 +37,32 @@ namespace LuxEditor.Components
         private Action? _overlayTempHandler;
         private Action? _operationRefreshHandler;
         bool _isOperationSelected = false;
+        public event Action? CropChanged;
+
+        private CropController _cropController;
+        public CropController CropController => _cropController;
+
+        private readonly SKXamlCanvas _cropCanvas;
+        private bool _isCropMode;
+        public bool IsCropMode { get => _isCropMode; set
+            {
+                _isCropMode = value;
+                _cropCanvas.IsHitTestVisible = value;
+                _cropCanvas.Invalidate();
+                _overlayCanvas.Invalidate();
+                if (_isCropMode)
+                {
+                    OnEnterCropMode();
+                }
+                else
+                {
+                    OnExitCropMode();
+                }
+            }
+        }
+
+        public event Action? BeginCropEditing;
+        public event Action? EndCropEditing;
 
         public PhotoViewer()
         {
@@ -62,8 +87,97 @@ namespace LuxEditor.Components
                 if (img.PreviewBitmap != null) SetImage(img.PreviewBitmap);
                 else if (img.EditedBitmap != null) SetImage(img.EditedBitmap);
                 else if (img.OriginalBitmap != null) SetImage(img.OriginalBitmap);
+
+                var prev = img.PreviewBitmap ?? img.EditedBitmap ?? img.OriginalBitmap;
+                SetImage(prev);
+
+                _cropController.ResizeCanvas(img.OriginalBitmap.Width, img.OriginalBitmap.Height);
+                _cropController.Box = img.Crop;
+                _cropCanvas.Invalidate();
             };
+
+            _cropCanvas = new SKXamlCanvas { IsHitTestVisible = false };
+            CanvasHost.Children.Add(_cropCanvas);
+
+            _cropController = new CropController((float)ActualWidth, (float)ActualHeight);
+
+            _cropController.BoxChanged += () =>
+            {
+                CropChanged?.Invoke();
+                InvalidateCrop();
+            };
+
+            _cropCanvas.PointerPressed += (s, e) => HandlePointer(e, _cropController.OnPointerPressed);
+            _cropCanvas.PointerMoved += (s, e) =>
+            {
+                HandlePointer(e, _cropController.OnPointerMoved);
+
+                var pt = e.GetCurrentPoint(_cropCanvas).Position;
+                _cropController.UpdateHover(pt.X, pt.Y);
+            };
+
+            _cropCanvas.PointerReleased += (s, e) => { if (IsCropMode) { _cropController.OnPointerReleased(); InvalidateCrop(); } };
+
+            _cropCanvas.PaintSurface += CropCanvas_PaintSurface;
         }
+
+        private void OnEnterCropMode()
+        {
+            if (_currentImage != null)
+                _cropController.Box = _currentImage.Crop;
+            BeginCropEditing?.Invoke();
+            _cropCanvas.Visibility = Visibility.Visible;
+            InvalidateCrop();
+        }
+
+        private void OnExitCropMode()
+        {
+
+            if (_currentImage != null)
+                _currentImage.Crop = _cropController.Box;
+            EndCropEditing?.Invoke();
+            _cropCanvas.Visibility = Visibility.Collapsed;
+            InvalidateCrop();
+
+            _currentImage?.SaveState();
+        }
+
+
+        private void CropCanvas_PaintSurface(object sender, SKPaintSurfaceEventArgs e)
+        {
+            if (!IsCropMode) return;
+
+            var c = e.Surface.Canvas;
+            c.Clear(SKColors.Transparent);
+
+            using var dim = new SKPaint { Color = SKColors.Black.WithAlpha(140) };
+            var shadow = new SKPath { FillType = SKPathFillType.EvenOdd };
+            shadow.AddRect(SKRect.Create(e.Info.Width, e.Info.Height));
+
+            var b = _cropController.Box;
+
+            var inner = new SKPath();
+            inner.AddRect(SKRect.Create(b.X, b.Y, b.Width, b.Height));
+            inner.Transform(SKMatrix.CreateRotationDegrees(b.Angle,
+                                b.X + b.Width * .5f,
+                                b.Y + b.Height * .5f));
+            shadow.AddPath(inner);
+
+            c.DrawPath(shadow, dim);
+
+            _cropController.Draw(c);
+        }
+
+
+        private void HandlePointer(PointerRoutedEventArgs e, Action<double, double> action)
+        {
+            if (!IsCropMode) return;
+            var pt = e.GetCurrentPoint(_cropCanvas).Position;
+            action(pt.X, pt.Y);
+            InvalidateCrop();
+        }
+
+        public void InvalidateCrop() => _cropCanvas.Invalidate();
 
         public void SetEditableImage(EditableImage image)
         {
@@ -76,6 +190,8 @@ namespace LuxEditor.Components
             _currentImage = image;
             image.LayerManager.OnOperationChanged += OperationSelected;
             image.LayerManager.OnLayerChanged += LayerSelected;
+            _cropController.ResizeCanvas(image.OriginalBitmap.Width, image.OriginalBitmap.Height);
+            _cropController.Box = image.Crop;
         }
 
         private SKImage? GetImageOps()
@@ -244,10 +360,16 @@ namespace LuxEditor.Components
             _mainCanvas.Height = height;
             _overlayCanvas.Width = width;
             _overlayCanvas.Height = height;
+
+            _cropCanvas.Width = width;
+            _cropCanvas.Height = height;
+
             _mainCanvas.Invalidate();
             RefreshAction();
+
             _currentTool?.ResizeCanvas(width, height);
         }
+
 
         private void SubscribeTool(ATool tool)
         {
@@ -328,6 +450,8 @@ namespace LuxEditor.Components
 
         private void OnOverlayPaintSurface(object sender, SKPaintSurfaceEventArgs e)
         {
+            if (IsCropMode) return;
+
             var canvas = e.Surface.Canvas;
             canvas.Clear(SKColors.Transparent);
 

@@ -39,6 +39,13 @@ namespace LuxEditor.Components
         private int _renderRunning;
         private bool _pendingUpdate;
         public event Action<SKImage>? OnEditorImageUpdated;
+        public event Action<bool>? IsCropModeChanged;
+        public event Action? InvalidateCrop;
+        private CropController _crop;
+        public event Action<CropController.CropBox>? CropBoxChanged;
+        private bool _isCropEditing;
+
+        public bool LockAspectToggleIsOn => LockAspectToggle.IsOn;
 
         private readonly Dictionary<TreeViewNode, object> _nodeMap = new();
         private readonly List<Layer> _observedLayers = new();
@@ -92,7 +99,90 @@ namespace LuxEditor.Components
 
                 OnToolSelectionChanged(this, 0);
             }
+
         }
+
+        /// <summary>Called by PhotoViewer when the user enters crop mode.</summary>
+        public void BeginCropEditing()
+        {
+            if (_isCropEditing) return;
+            _isCropEditing = true;
+            RequestFilterUpdate();
+        }
+
+        /// <summary>Called when the user valide ou annule le crop.</summary>
+        public void EndCropEditing()
+        {
+            if (!_isCropEditing) return;
+            _isCropEditing = false;
+            RequestFilterUpdate();
+        }
+
+        private void Editor_Loaded(object sender, RoutedEventArgs e)
+        {
+            LockAspectToggle.Toggled += (_, __) =>
+            {
+                _crop.LockAspectRatio = LockAspectToggle.IsOn;
+                CropChanged();
+            };
+
+            AspectPresetCombo.SelectionChanged += (_, __) =>
+            {
+                switch (AspectPresetCombo.SelectedIndex)
+                {
+                    case 0: _crop.Reset(); break;
+                    case 1: _crop.ApplyPresetRatio(4f / 3f); break;
+                    case 2: _crop.ApplyPresetRatio(16f / 9f); break;
+                    case 3: _crop.ApplyPresetRatio(16f / 10f); break;
+                    case 4: _crop.ApplyPresetRatio(1f); break;
+                    case 5: _crop.ApplyPresetRatio(4f / 5f); break;
+                    case 6: EnableCustomInputs(true); return;
+                }
+                EnableCustomInputs(false);
+                CropChanged();
+            };
+
+            CustomWidthInput.ValueChanged += (_, e) =>
+                _crop.SetSize((float)e.NewValue,
+                              _crop.LockAspectRatio ? _crop.Box.Height
+                                                    : (float)CustomHeightInput.Value);
+
+            CustomHeightInput.ValueChanged += (_, e) =>
+            {
+                if (!_crop.LockAspectRatio)
+                    _crop.SetSize((float)CustomWidthInput.Value, (float)e.NewValue);
+            };
+
+            RotateAngleInput.ValueChanged += (_, e) =>
+            { _crop.SetAngle((float)e.NewValue); CropChanged(); };
+        }
+
+        private void EnableCustomInputs(bool on)
+        {
+            CustomWidthInput.IsEnabled = on;
+            CustomHeightInput.IsEnabled = on;
+        }
+
+        private void CropChanged()
+        {
+            RefreshCropInputs();
+            CropBoxChanged?.Invoke(_crop.Box);
+        }
+
+        private void RefreshCropInputs()
+        {
+            CustomWidthInput.Value = _crop.Box.Width;
+            CustomHeightInput.Value = _crop.Box.Height;
+            RotateAngleInput.Value = _crop.Box.Angle;
+            LockAspectToggle.IsOn = _crop.LockAspectRatio;
+        }
+
+        public void AttachCropController(CropController ctl)
+        {
+            _crop = ctl;
+            _crop.BoxChanged += RefreshCropInputs;
+        }
+
 
         private void OnAddLayerClicked(object sender, RoutedEventArgs e)
         {
@@ -136,14 +226,6 @@ namespace LuxEditor.Components
             };
             radialGradientButton.Click += (s, e) => { BrushButton_Click(ToolType.RadialGradient); flyout.Hide(); };
             flyout.Items.Add(radialGradientButton);
-
-            var colorRangeButton = new MenuFlyoutItem
-            {
-                Text = "Color Range",
-
-            };
-            colorRangeButton.Click += (s, e) => { BrushButton_Click(ToolType.ColorRange); flyout.Hide(); };
-            flyout.Items.Add(colorRangeButton);
 
             flyout.ShowAt(AddLayerBtn);
         }
@@ -255,17 +337,6 @@ namespace LuxEditor.Components
                 flyout.Hide();
             };
             flyout.Items.Add(radialGradientButton);
-            var colorRangeButton = new MenuFlyoutItem
-            {
-                Text = "Color Range",
-            };
-            colorRangeButton.Click += (s, e) =>
-            {
-                CurrentImage.LayerManager.AddOperation(layer.Id, CurrentImage.LayerManager.CreateMaskOperation(ToolType.ColorRange, isAdded ? BooleanOperationMode.Add : BooleanOperationMode.Subtract));
-                RefreshLayerTree();
-                flyout.Hide();
-            };
-            flyout.Items.Add(colorRangeButton);
             flyout.ShowAt(element);
 
             CurrentImage.LayerManager.OnOperationChanged?.Invoke();
@@ -423,47 +494,38 @@ namespace LuxEditor.Components
 
         private void RefreshLayerTree()
         {
-            if (CurrentImage == null)
-            {
-                Debug.WriteLine("No image selected, cannot refresh layer tree.");
-                return;
-            }
-
+            if (CurrentImage == null) return;
             LayerTreeView.RootNodes.Clear();
             _nodeMap.Clear();
 
-            foreach (var layer in CurrentImage.LayerManager.Layers)
+            foreach (var layer in CurrentImage.LayerManager.Layers.ToArray())
             {
-                var layerNode = new TreeViewNode
-                {
-                    Content = layer.Name,
-                    IsExpanded = true
-                };
-
                 if (!layer.Operations.Any())
                 {
                     CurrentImage.LayerManager.RemoveLayer(layer.Id);
+                    continue;
                 }
+
+                var layerNode = new TreeViewNode { Content = layer.Name, IsExpanded = true };
                 _nodeMap[layerNode] = layer;
 
-                foreach (var op in layer.Operations)
+                foreach (var op in layer.Operations.ToArray())
                 {
-                    var opNode = new TreeViewNode
-                    {
-                        Content = $"{op.Tool.ToolType} ({op.Mode})",
-                    };
+                    var opNode = new TreeViewNode { Content = $"{op.Tool.ToolType} ({op.Mode})" };
                     _nodeMap[opNode] = op;
                     layerNode.Children.Add(opNode);
                 }
-
                 LayerTreeView.RootNodes.Add(layerNode);
             }
         }
 
         private void OnToolSelectionChanged(object sender, int idx)
         {
-            EditorScrollViewer.Visibility = idx == 0 ? Visibility.Visible : Visibility.Collapsed;
-            LayersUI.Visibility = idx == 1 ? Visibility.Visible : Visibility.Collapsed;
+            IsCropModeChanged?.Invoke(idx == 1);
+            EditorScrollViewer.Visibility = (idx == 0) ? Visibility.Visible : Visibility.Collapsed;
+            CropUI.Visibility = (idx == 1) ? Visibility.Visible : Visibility.Collapsed;
+            LayersUI.Visibility = (idx == 2) ? Visibility.Visible : Visibility.Collapsed;
+            ResetAllButton.Visibility = (idx == 0) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public void SetEditableImage(EditableImage image)
@@ -552,7 +614,7 @@ namespace LuxEditor.Components
 
             _panelManager!.AddCategory(root);
 
-            _toneGroup = new EditorToneCurveGroup();
+            _toneGroup = new EditorToneCurveGroup(false);
             _toneGroup.CurveChanged += (key, lut) =>
             {
                 if (CurrentImage == null) return;
@@ -728,15 +790,16 @@ namespace LuxEditor.Components
         private async Task RunPipelineAsync(CancellationToken token)
         {
             _pendingUpdate = false;
-
             try
             {
                 if (CurrentImage == null) return;
 
                 async Task<SKBitmap> RenderAsync(SKBitmap src)
                 {
+                    var srcForFilters = _isCropEditing ? src : ApplyCrop(src);
+
                     var baseBmp = await ImageProcessingManager
-                                         .ApplyFiltersAsync(src, CurrentImage!.Settings, token);
+                                         .ApplyFiltersAsync(srcForFilters, CurrentImage.Settings, token);
 
                     using var surf = SKSurface.Create(new SKImageInfo(baseBmp.Width, baseBmp.Height));
                     var can = surf.Canvas;
@@ -745,7 +808,8 @@ namespace LuxEditor.Components
                     var result = new SKBitmap(baseBmp.Width, baseBmp.Height);
                     surf.ReadPixels(result.Info, result.GetPixels(), result.RowBytes, 0, 0);
 
-                    foreach (var layer in CurrentImage.LayerManager.Layers.Where(l => l.Visible))
+                    var layers = CurrentImage.LayerManager.Layers.ToArray();
+                    foreach (var layer in layers.Where(l => l.Visible))
                     {
                         using var mask = BuildLayerMask(layer, baseBmp.Width, baseBmp.Height);
                         if (mask == null) continue;
@@ -765,15 +829,13 @@ namespace LuxEditor.Components
                     return outBmp;
                 }
 
-
                 if (CurrentImage.PreviewBitmap != null)
                 {
                     var prev = await RenderAsync(CurrentImage.PreviewBitmap);
                     CurrentImage.EditedPreviewBitmap = prev;
-
-                    var upscaled = ImageProcessingManager.Upscale(
-                                       prev,
-                                       CurrentImage.OriginalBitmap.Height, true);
+                    var upscaled = ImageProcessingManager.Upscale(prev,
+                                                                  CurrentImage.OriginalBitmap.Height,
+                                                                  true);
                     OnEditorImageUpdated?.Invoke(upscaled);
                 }
 
@@ -787,7 +849,6 @@ namespace LuxEditor.Components
             finally
             {
                 Interlocked.Exchange(ref _renderRunning, 0);
-
                 if (_pendingUpdate)
                 {
                     _pendingUpdate = false;
@@ -832,17 +893,21 @@ namespace LuxEditor.Components
         private static SKBitmap? BuildLayerMask(Layer lay, int w, int h)
         {
             if (lay.Operations.Count == 0) return null;
+
             var bmp = new SKBitmap(w, h);
             using var surf = SKSurface.Create(new SKImageInfo(w, h));
             var can = surf.Canvas;
 
-            foreach (var op in lay.Operations)
+            foreach (var op in lay.Operations.ToArray())
             {
                 var m = op.Tool?.GetResult();
                 if (m == null) continue;
+
                 using var p = new SKPaint
                 {
-                    BlendMode = op.Mode == BooleanOperationMode.Add ? SKBlendMode.SrcOver : SKBlendMode.DstOut,
+                    BlendMode = op.Mode == BooleanOperationMode.Add
+                                    ? SKBlendMode.SrcOver
+                                    : SKBlendMode.DstOut,
                     FilterQuality = SKFilterQuality.High
                 };
                 can.DrawBitmap(m, new SKRect(0, 0, w, h), p);
@@ -852,6 +917,8 @@ namespace LuxEditor.Components
             surf.ReadPixels(bmp.Info, bmp.GetPixels(), bmp.RowBytes, 0, 0);
             return bmp;
         }
+
+
 
         private void Undo_Invoked(KeyboardAccelerator sender,
                                   KeyboardAcceleratorInvokedEventArgs e)
@@ -874,6 +941,15 @@ namespace LuxEditor.Components
             RequestFilterUpdate();
             _toneGroup.RefreshCurves(CurrentImage.Settings);
         }
+
+        /// <summary>Return the bitmap after applying the current crop.</summary>
+        private SKBitmap ApplyCrop(SKBitmap src)
+        {
+            if (CurrentImage == null) return src;
+            var box = CurrentImage.Crop;
+            return CropProcessor.Apply(src, box);
+        }
+
 
     }
 

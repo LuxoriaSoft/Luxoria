@@ -41,5 +41,6 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
             Color = newColor;
         }
         public abstract ATool Clone();
+        public abstract void LoadMaskBitmap(SKBitmap bmp);
     }
 }
