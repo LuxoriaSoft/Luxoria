@@ -1,10 +1,9 @@
-'use client'
-
 import { Heading } from '@/components/heading'
 import { ApplicationLayout } from '@/app/(app)/application-layout'
 import { getEvents } from '@/data'
 
-export default function AdminActivityLogsPage({ events }: { events: Awaited<ReturnType<typeof getEvents>> }) {
+export default async function AdminActivityLogsPage() {
+  const events = await getEvents();
   return (
     <ApplicationLayout events={events}>
       <div className="p-6 space-y-4">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Button } from '@/components/button'
 import { Input } from '@/components/input'
 import { Heading } from '@/components/heading'
@@ -10,20 +10,25 @@ import { AdminService, AdminCollection } from '@/services/admin.services' // À 
 import { ApplicationLayout } from '@/app/(app)/application-layout'
 import { getEvents } from '@/data'
 
-export default function AdminCollectionsPage({ events }: { events: Awaited<ReturnType<typeof getEvents>> }) {
+export default function AdminCollectionsPage() {
   const [collections, setCollections] = useState<AdminCollection[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [events, setEvents] = useState<Awaited<ReturnType<typeof getEvents>>>([])
 
-  const fetchCollections = async () => {
+  useEffect(() => {
+    getEvents().then(setEvents)
+  }, [])
+
+  const fetchCollections = useCallback(async () => {
     const data = await AdminService.getCollections(search)
     setCollections(data)
     setLoading(false)
-  }
+  }, [search])
 
   useEffect(() => {
     fetchCollections()
-  }, [search])
+  }, [fetchCollections])
 
   const handleDeleteCollection = async (collectionId: string) => {
     if (!confirm('Are you sure you want to delete this collection?')) return

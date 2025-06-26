@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Button } from '@/components/button'
 import { Input } from '@/components/input'
 import { AuthService } from '@/services/auth'
@@ -10,20 +10,25 @@ import { Divider } from '@/components/divider'
 import { ApplicationLayout } from '@/app/(app)/application-layout' // ✅ Import du layout global
 import { getEvents } from '@/data'
 
-export default function AdminUsersPage({ events }: { events: Awaited<ReturnType<typeof getEvents>> }) {
+export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [events, setEvents] = useState<Awaited<ReturnType<typeof getEvents>>>([])
 
-  const fetchUsers = async () => {
+  useEffect(() => {
+    getEvents().then(setEvents)
+  }, [])
+
+  const fetchUsers = useCallback(async () => {
     const data = await AdminService.getUsers(search)
     setUsers(data)
     setLoading(false)
-  }
+  }, [search])
 
   useEffect(() => {
     fetchUsers()
-  }, [search])
+  }, [fetchUsers])
 
   const handleResetPassword = async (userId: string) => {
     await AdminService.resetPassword(userId)
