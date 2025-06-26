@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Text, TextLink } from '@/components/text'
 import { Heading } from '@/components/heading'
-import { cn } from '@/lib/utils'
 import { AuthService } from '@/services/auth'
 
 export default function RegisterConfirmation() {
@@ -72,7 +71,7 @@ export default function RegisterConfirmation() {
           </Text>
           <TextLink
             href="/login"
-            className={cn(
+            className={(
               'inline-block bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded mt-2 text-sm'
             )}
           >
@@ -86,7 +85,7 @@ export default function RegisterConfirmation() {
           <Text className="text-red-400 font-medium mb-2">❌ {errorMessage}</Text>
           <TextLink
             href="/login"
-            className={cn(
+            className={(
               'inline-block bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded mt-4 text-sm'
             )}
           >
