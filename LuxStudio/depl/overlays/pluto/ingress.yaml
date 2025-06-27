@@ -37,7 +37,7 @@ spec:
               service:
                 name: luxstudio-service
                 port:
-                  number: 80
+                  number: 3000
     - host: api.studio.pluto.luxoria.bluepelicansoft.com
       http:
         paths:
