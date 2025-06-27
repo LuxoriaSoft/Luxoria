@@ -10,5 +10,10 @@ spec:
           image: luxoria/luxstudio
           imagePullPolicy: Always
           env:
-            - name: API_URL
-              value: https://api.studio.pluto.luxoria.bluepelicansoft.com
+            - name: NEXT_PUBLIC_API_URL
+              value: https://api.studio.pluto.luxoria.bluepelicansoft.com/api
+            - name: NEXT_PUBLIC_HCAPTCHA_SITEKEY
+              value: 3406257c-d7d0-4ca2-93ec-dc3cf6346ac4
+            - name: NEXT_PUBLIC_SIGNALR_URL
+              value: https://api.studio.pluto.luxoria.bluepelicansoft.com/
+              
