@@ -22,17 +22,24 @@ export class AuthService {
     password: string,
     role: 0 | 1
   ) {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/request-verification`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password, role }), // <-- role est bien un 0 ou 1
-    })
+    // const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/request-verification`, {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify({ username, email, password, role }), // <-- role est bien un 0 ou 1
+    // })
 
-    if (!response.ok) {
-      const error = await response.text()
-      throw new Error(error || 'Error during verification request')
+    const response = await api.post('/auth/request-verification',
+      {
+        username, email, password, role
+      }
+    )
+
+    // If status OK
+    if (response.status < 200 || response.status >= 300) {
+      const error = response.data?.message || response.statusText || 'Error during verification request'
+      throw new Error(error)
     }
-    return await response.text()
+    return response.data
 }
 
   static async verifyCode(email: string, code: string): Promise<void> {
