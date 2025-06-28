@@ -1,4 +1,8 @@
 using Luxoria.App.Views;
+using Luxoria.Core.Interfaces;
+using Luxoria.GModules.Helpers;
+using Luxoria.Modules.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
@@ -9,8 +13,9 @@ namespace Luxoria.App.Components
 {
     public sealed partial class MainMenuBarComponent : UserControl
     {
-        private List<Button> LeftButtons { get; set; } = new();
-        private List<Button> RightButtons { get; set; } = new();
+        private List<Button> LeftButtons { get; set; } = [];
+        private List<Button> RightButtons { get; set; } = [];
+        private static string VAULT_NAME = "Luxoria.App.Marketplace";
 
         public MainMenuBarComponent()
         {
@@ -21,10 +26,20 @@ namespace Luxoria.App.Components
         {
             var moduleService = (Application.Current as App)?.ModuleService;
 
-            var newWindow = new Microsoft.UI.Xaml.Window();
-            var moduleManagerPage = new ModuleManagerWindow(moduleService, newWindow);
+            var newWindow = new Window();
+            var moduleManagerPage = new ModuleManagerView(moduleService, newWindow);
+            WindowHelper.SetCaption(newWindow.AppWindow, "Luxoria_Icon");
             newWindow.Content = moduleManagerPage;
             newWindow.Activate();
+        }
+
+        private void Marketplace_Click(object sender, RoutedEventArgs e)
+        {
+            IMarketplaceService mkplaceSvc = (Application.Current as App)?.GetHost().Services.GetRequiredService<IMarketplaceService>();
+            IStorageAPI cacheSvc = (Application.Current as App)?.GetHost().Services.GetRequiredService<IVaultService>().GetVault(VAULT_NAME);
+            IEventBus eventBus = (Application.Current as App)?.GetHost().Services.GetRequiredService<IEventBus>();
+            Window window = new MarketplaceView(mkplaceSvc, cacheSvc, eventBus);
+            window.Activate();
         }
 
         public void AddLeftButton(string text, Action onClick)

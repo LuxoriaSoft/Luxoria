@@ -1,12 +1,10 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using LuxAPI.DAL;
 using LuxAPI.Models;
 using LuxAPI.Models.DTOs;
 using LuxAPI.Services;
+using LuxAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,6 +22,7 @@ namespace LuxAPI.Controllers
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly MinioService _minioService;
+        private readonly IJwtService _jwtService;
 
         /// <summary>
         /// Initializes the authentication controller with logging, database context, and configuration.
@@ -36,12 +35,14 @@ namespace LuxAPI.Controllers
             ILogger<AuthController> logger,
             AppDbContext context,
             IConfiguration configuration,
-            MinioService minioService)
+            MinioService minioService,
+            IJwtService jwtService)
         {
             _logger = logger;
             _context = context;
             _configuration = configuration;
             _minioService = minioService;
+            _jwtService = jwtService;
         }
 
         /// <summary>
@@ -193,7 +194,7 @@ namespace LuxAPI.Controllers
             }
 
             // Generate a JWT token for the authenticated user
-            var token = GenerateJwtToken(user.Id, user.Username, user.Email);
+            var token = _jwtService.GenerateJwtToken(user.Id, user.Username, user.Email);
 
             _logger.LogInformation("User logged in successfully: {Username}", login.Username);
             return Ok(new { token }); // Return the JWT token
@@ -270,40 +271,6 @@ namespace LuxAPI.Controllers
             return Ok(new { message = "Account created successfully." });
         }
 
-
-        /// <summary>
-        /// Generates a JWT token for an authenticated user.
-        /// </summary>
-        /// <param name="userId">The unique identifier of the user.</param>
-        /// <param name="username">The username of the authenticated user.</param>
-        /// <param name="email">The email of the authenticated user.</param>
-        /// <param name="expiryHours">The expiration time in hours (default is 48 hours).</param>
-        /// <returns>A JWT token as a string.</returns>
-        private string GenerateJwtToken(Guid userId, string username, string email, int expiryHours = 48)
-        {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Email, email), // ✅ utilisé comme .Name
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                new Claim(JwtRegisteredClaimNames.Sub, username),
-                new Claim(ClaimTypes.Name, username),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
-
-            var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(expiryHours),
-                signingCredentials: credentials
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
         /// <summary>
         /// Retrieve the email of a user by ID. Used for email confirmation flow.
         /// </summary>
@@ -332,10 +299,20 @@ namespace LuxAPI.Controllers
         [Authorize] // Requires a valid JWT token
         public IActionResult WhoAmI()
         {
+            // http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var username = User.FindFirst(ClaimTypes.Name)?.Value;
-            var userEmail = User.FindFirst(ClaimTypes.Email)?.Value; // 👈 ici
-            return Ok(new { userId, username, userEmail });
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User not authenticated.");
+            
+            var user = _context.Users.FirstOrDefault(u => u.Id == Guid.Parse(userId));
+            
+            if (user == null)
+                return Unauthorized("User not found.");
+            
+            // Mask sensitive information
+            user.PasswordHash = string.Empty;
+            
+            return Ok(user);
         }
 
         /// <summary>

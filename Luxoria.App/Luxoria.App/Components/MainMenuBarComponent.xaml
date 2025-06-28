@@ -20,20 +20,24 @@
         <Button 
             Content="Luxoria" 
             Background="Transparent" 
-            Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
-            FontSize="16" 
-            Padding="10,5" 
+            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
             BorderThickness="0">
             <Button.Flyout>
                 <MenuFlyout Placement="Bottom">
                     <MenuFlyoutItem 
-                        Text="Module Management" 
+                        Text="Modules" 
                         Click="ModuleManagement_Click" 
                         Background="Transparent"
-                        Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
-                        FontSize="14" 
-                        Padding="8,4"
-                        BorderThickness="0"/>
+                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                        BorderThickness="0"
+                    />
+                    <MenuFlyoutItem 
+                        Text="Marketplace" 
+                        Click="Marketplace_Click" 
+                        Background="Transparent"
+                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                        BorderThickness="0"
+                    />
                     <!-- Add other logical sections as needed -->
                 </MenuFlyout>
             </Button.Flyout>

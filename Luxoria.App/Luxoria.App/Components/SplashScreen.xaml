@@ -11,7 +11,7 @@
     <Grid Background="{ThemeResource SystemControlBackgroundBaseLowBrush}">
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <Image Source="/Assets/Luxoria_logo.svg" Width="70" />
-            <TextBlock Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}" x:Name="CurrentModuleText" Text="Loading modules..." FontSize="24" HorizontalAlignment="Center"/>
+            <TextBlock Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}" x:Name="CurrentModuleText" Text="Loading modules..." HorizontalAlignment="Center"/>
             <ProgressBar IsIndeterminate="True" Width="300" Margin="0,20,0,0"/>
         </StackPanel>
     </Grid>

@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using LuxAPI.DAL;
 using LuxAPI.Models;
 using LuxAPI.Models.DTOs;
 using LuxAPI.Services;
+using LuxAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 
 namespace LuxAPI.Controllers
@@ -22,6 +20,7 @@ namespace LuxAPI.Controllers
         private readonly ILogger<SSOController> _logger;
         private readonly IConfiguration _configuration;
         private readonly AppDbContext _context;
+        private readonly IJwtService _jwtService;
 
         /// <summary>
         /// Initializes the SSOController with logging, database context, and configuration.
@@ -29,11 +28,16 @@ namespace LuxAPI.Controllers
         /// <param name="logger">Logger service for tracking authentication events.</param>
         /// <param name="configuration">Configuration service for retrieving JWT settings.</param>
         /// <param name="context">Database context for managing authentication data.</param>
-        public SSOController(ILogger<SSOController> logger, IConfiguration configuration, AppDbContext context)
+        public SSOController(
+            ILogger<SSOController> logger,
+            IConfiguration configuration,
+            AppDbContext context,
+            IJwtService jwtService)
         {
             _logger = logger;
             _configuration = configuration;
             _context = context;
+            _jwtService = jwtService;
         }
 
         /// <summary>
@@ -129,7 +133,7 @@ namespace LuxAPI.Controllers
                 _context.AuthorizationCodes.Remove(authorizationCode);
                 _context.SaveChanges();
 
-                var accessToken = GenerateJwtToken(user.Id.ToString());
+                var accessToken = _jwtService.GenerateJwtToken(user.Id, user.Username, user.Email);
                 var refreshToken = TokenService.GenerateRefreshToken();
 
                 _context.Tokens.Add(new Token { AccessToken = accessToken, RefreshToken = refreshToken, UserId = user.Id, Expiry = DateTime.UtcNow.AddHours(1) });
@@ -166,8 +170,14 @@ namespace LuxAPI.Controllers
                 {
                     return BadRequest(new { error = "Invalid or expired refresh token." });
                 }
+                
+                var user = _context.Users.FirstOrDefault(u => u.Id == existingToken.UserId);
+                if (user == null)
+                {
+                    return BadRequest(new { error = "User not found." });
+                }
 
-                var newAccessToken = GenerateJwtToken(existingToken.UserId.ToString());
+                var newAccessToken = _jwtService.GenerateJwtToken(user.Id, user.Username, user.Email);
                 var newRefreshToken = TokenService.GenerateRefreshToken();
 
                 existingToken.Token = newRefreshToken;
@@ -183,23 +193,6 @@ namespace LuxAPI.Controllers
                 _logger.LogError(ex, "An error occurred while refreshing the token.");
                 return StatusCode(500, new { error = "An error occurred while processing your request." });
             }
-        }
-
-        /// <summary>
-        /// Generates a JWT token for an authenticated user.
-        /// </summary>
-        /// <param name="userId">The unique identifier of the user.</param>
-        /// <returns>A JWT access token as a string.</returns>
-        private string GenerateJwtToken(string userId)
-        {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[] { new Claim(ClaimTypes.NameIdentifier, userId), new Claim("scope", "openid profile email") };
-
-            var token = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], claims, expires: DateTime.UtcNow.AddHours(1), signingCredentials: credentials);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

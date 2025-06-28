@@ -12,7 +12,7 @@ using Windows.Storage.Pickers;
 
 namespace Luxoria.App.Views
 {
-    public sealed partial class ModuleManagerWindow : Page
+    public sealed partial class ModuleManagerView : Page
     {
         private readonly IModuleService _moduleService;
         private readonly Window _mainWindow;
@@ -20,7 +20,7 @@ namespace Luxoria.App.Views
         // Utilisation d'ObservableCollection pour les mises à jour automatiques de l'interface utilisateur
         public ObservableCollection<IModule> Modules { get; private set; }
 
-        public ModuleManagerWindow(IModuleService moduleService, Window mainWindow)
+        public ModuleManagerView(IModuleService moduleService, Window mainWindow)
         {
             InitializeComponent();
             _moduleService = moduleService;

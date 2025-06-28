@@ -1,3 +1,238 @@
+## [1.50.5](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.4...v1.50.5) (2025-06-22)
+
+
+### Bug Fixes
+
+* Crop corner resize while box is rotated ([e7e4651](https://github.com/LuxoriaSoft/Luxoria/commit/e7e46516c08177df09f95109a859501569e41621))
+* Improves crop box clamping logic. ([8610851](https://github.com/LuxoriaSoft/Luxoria/commit/8610851f023a253584293bb243fcbf41eda9757f))
+* Infinite loop on crop changed ([a339e0a](https://github.com/LuxoriaSoft/Luxoria/commit/a339e0a37b5e1fd098b739cb7eae1b65da01cb8f))
+* Photoviewer Canvas Host horizontal and vertical alignment issue, forcing center position ([054d0e0](https://github.com/LuxoriaSoft/Luxoria/commit/054d0e08d5dcf5244ab682ca6bf4aae5a15a0421))
+* Start crop box ([84f16c1](https://github.com/LuxoriaSoft/Luxoria/commit/84f16c156080a90e2773fd818ace801d5d860a6b))
+
+## [1.50.4](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.3...v1.50.4) (2025-06-21)
+
+
+### Bug Fixes
+
+* Add async fetches for releases & Animation when a module has been installed ([cc54758](https://github.com/LuxoriaSoft/Luxoria/commit/cc5475851c144e5e75ba9714c8a2243ea4051b7f))
+
+## [1.50.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.2...v1.50.3) (2025-06-21)
+
+
+### Bug Fixes
+
+* Export presets window UI ([4ebd0bb](https://github.com/LuxoriaSoft/Luxoria/commit/4ebd0bb0bb93c7cfb7a3202a35a8ca64c1d7c2f6))
+* Improves preset tree UI and EXIF display ([784189f](https://github.com/LuxoriaSoft/Luxoria/commit/784189f3c177d6ee3f6b90863fc1dcd407818124))
+* Parametric curve saving settings in layers ([c6e6f76](https://github.com/LuxoriaSoft/Luxoria/commit/c6e6f76fb8eb9e72db357090ba59397bd3ac3df7))
+* Remove OpenCollectionEvent ([c47cfef](https://github.com/LuxoriaSoft/Luxoria/commit/c47cfefb7f0d771b36c8913e1c73805ad10d7235))
+
+## [1.50.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.1...v1.50.2) (2025-06-20)
+
+
+### Bug Fixes
+
+* Crash on layer creation : removing save state who stack overflow ([fc7aed1](https://github.com/LuxoriaSoft/Luxoria/commit/fc7aed1416f8610159cab2a8909846ad9a71945c))
+* Export modal to window, with events, and image processing inside export ([61924fc](https://github.com/LuxoriaSoft/Luxoria/commit/61924fc5c7028a81d3fe4665d0c94989250126a5))
+* Undo Redo system, more user friendly + debounce on value changed ([ebd09c3](https://github.com/LuxoriaSoft/Luxoria/commit/ebd09c363b4c052b919e577638d639f71cfb2f26))
+
+## [1.50.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.0...v1.50.1) (2025-06-18)
+
+
+### Bug Fixes
+
+* Clean up trigger branches list only [main, dev, release/*] ([c24343f](https://github.com/LuxoriaSoft/Luxoria/commit/c24343f88d7fce674539177c5b10ce895a161a56))
+* Complete the upload artifact path using github workflow's matrix ([9d1fe1c](https://github.com/LuxoriaSoft/Luxoria/commit/9d1fe1cd1c4c50858ba0514e70498040167d3073))
+* Path now includes matrix.configuration fetches from matrix instead of global env ([6a07311](https://github.com/LuxoriaSoft/Luxoria/commit/6a07311544febe45bbf3e3beb296830ae7b9abd9))
+
+# [1.50.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.49.1...v1.50.0) (2025-06-18)
+
+
+### Bug Fixes
+
+* Copy the brochure MD inside the "ModuleName.ARCH" folder ([9d70c9a](https://github.com/LuxoriaSoft/Luxoria/commit/9d70c9a38a93077b8bd41a746b1731d5589f3e30))
+
+
+### Features
+
+* Add fondation of ModuleInstaller Helper ([4c205c9](https://github.com/LuxoriaSoft/Luxoria/commit/4c205c920c9c63a4b1410fead711bf967d189b86))
+* Add fondation on Marketplace View on LDA ([be8bb5e](https://github.com/LuxoriaSoft/Luxoria/commit/be8bb5eab07e2c09ae586ac029b186d1b7b5d394))
+* Add LuxExport's luxmod.json + LuxEditor's luxmod.json files ([eb7c565](https://github.com/LuxoriaSoft/Luxoria/commit/eb7c5652b0aaf6e503f2b05be5f41e0f534af740))
+* Add necessary methods inside ModuleInstaller ([3ad9391](https://github.com/LuxoriaSoft/Luxoria/commit/3ad9391078f0ff1b3bcf3fb9cdb1f809755c6f7c))
+* Add the cache system into VaultService & StorageAPI ([6ab56d8](https://github.com/LuxoriaSoft/Luxoria/commit/6ab56d87f39d0167d8a657a3a5e38b337b672647))
+* View Module README + Caching backups ([a9e3aa4](https://github.com/LuxoriaSoft/Luxoria/commit/a9e3aa4dafbfe4a6b953fd32253e7435c6f9789f))
+
+## [1.49.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.49.0...v1.49.1) (2025-06-15)
+
+
+### Bug Fixes
+
+* Add brochure field to luxmod.json ([08efc54](https://github.com/LuxoriaSoft/Luxoria/commit/08efc54eed74d74816a25fdc629465583d58f158))
+
+# [1.49.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.48.1...v1.49.0) (2025-06-14)
+
+
+### Bug Fixes
+
+* Add bucket initialisation process before launching app ([a6a5ad0](https://github.com/LuxoriaSoft/Luxoria/commit/a6a5ad0371d5117038e7739b073cb68f04ea46e5))
+* Add debug URL in allowed origins (CORS) ([34404ea](https://github.com/LuxoriaSoft/Luxoria/commit/34404eaaf00812cf69ebc92dd024d7eb917b540f))
+* Add luxapi script to create its secrets ([f70eb1e](https://github.com/LuxoriaSoft/Luxoria/commit/f70eb1e7fbc5198f79baa770c40a4c9999a284af))
+* Add random username and passwd as admin user for MinIO bucket ([77dead1](https://github.com/LuxoriaSoft/Luxoria/commit/77dead15b5b5342d42a2b28766112e97359292cd))
+* Add secret vars from minio service on LuxAPI ([7c234c9](https://github.com/LuxoriaSoft/Luxoria/commit/7c234c920cfac1be131c55e926b17aabf3f9167e))
+* Change from debug message to Console message ([a90d118](https://github.com/LuxoriaSoft/Luxoria/commit/a90d118addf50acd049f372efd7d375ba2404907))
+* Correct MinIO console address and environment variable values ([ae9ac50](https://github.com/LuxoriaSoft/Luxoria/commit/ae9ac50c130a81ec2b91099449f2d2e1a3ffadfa))
+* Delete dev-only console.log & debug origin (cors) ([69131e1](https://github.com/LuxoriaSoft/Luxoria/commit/69131e1edd511737074e8be91b38fe5e7f6aeba1))
+* Enable SSL for bucket connection ([21903b3](https://github.com/LuxoriaSoft/Luxoria/commit/21903b3e50a10426aae520973a7399bc518a5f27))
+* Rename method in BuildManager part ([798648e](https://github.com/LuxoriaSoft/Luxoria/commit/798648e22eb13e28aa418bdc6c8431ac0ff53f96))
+* Set the final path for published module directory set as "ModuleName.luxmod" ([8cda6ad](https://github.com/LuxoriaSoft/Luxoria/commit/8cda6adf9b5f9269903905af37a2eb2623c4021b))
+* Specify namespace for luxoria/minio secret ([c091a3b](https://github.com/LuxoriaSoft/Luxoria/commit/c091a3ba6251c04f50676de7dfb60e835a719bde))
+* Translate error & return values and fix the asset link for retreival ([26b03f0](https://github.com/LuxoriaSoft/Luxoria/commit/26b03f0474f0d7c6af9c8abb9f1287a202c5813e))
+* Translate pages in English and fix API triggering ([4eb9b6d](https://github.com/LuxoriaSoft/Luxoria/commit/4eb9b6d0d86a0e77bc88b3cfd8bf7ff93507ef9c))
+* Update error message for invalid CreateCollectionDto ([1b8f81f](https://github.com/LuxoriaSoft/Luxoria/commit/1b8f81fe53b6a497e8fbc45c1c74e9ceb86c5964))
+* Update MinIO console address and browser redirect URL ([d5f5795](https://github.com/LuxoriaSoft/Luxoria/commit/d5f5795ccbd1fddcf8d5ebb169bae30f5535742b))
+* Update MinIO console address to use HTTPS ([dd77511](https://github.com/LuxoriaSoft/Luxoria/commit/dd775119be96ddf50e5cce114bf56ce0791aacf7))
+* Update MinIO console address to use local path ([2a19d82](https://github.com/LuxoriaSoft/Luxoria/commit/2a19d82f7109037954e93058c701d23a162c42b0))
+* Update MinIO endpoint to use internal service address ([2a2ddc9](https://github.com/LuxoriaSoft/Luxoria/commit/2a2ddc906359db93a8ebeb84cba7e81086e61ece))
+
+
+### Features
+
+* add MinIO password generation script and configure environment variables in deployment ([633a6cf](https://github.com/LuxoriaSoft/Luxoria/commit/633a6cf03ded3aac57bf3d9476c3f556ec144cf8))
+
+## [1.48.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.48.0...v1.48.1) (2025-06-13)
+
+
+### Bug Fixes
+
+* Remove Z-Index, and remove possibility to move masks ([359e163](https://github.com/LuxoriaSoft/Luxoria/commit/359e1638b4ee43f479bd0f4efb384e6307ad855e))
+
+# [1.48.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.47.0...v1.48.0) (2025-06-12)
+
+
+### Bug Fixes
+
+* Comments norm ([aba0ac8](https://github.com/LuxoriaSoft/Luxoria/commit/aba0ac806b3be3d8230e465b2a683b6bd6992f7e))
+* Comments norm ([2ed4d5e](https://github.com/LuxoriaSoft/Luxoria/commit/2ed4d5e7355b34a5642d7ffdfb400604e0ff20e2))
+* Double overlay drawing + update overlay color instantly on color changed ([2978110](https://github.com/LuxoriaSoft/Luxoria/commit/29781101b5b15dc9d9a6acdbd1a9b4a3cd58daa4))
+* Linear and Gradial radient with the new system ([c082dcb](https://github.com/LuxoriaSoft/Luxoria/commit/c082dcbd25c138836cd669357d6a0672bfe2957f))
+* Linear gradient, 2 line instead of 3 ([4a4a669](https://github.com/LuxoriaSoft/Luxoria/commit/4a4a6691c0057c2ccfcd8413d43566d36892e2f7))
+* Loading curve with default parameters ([480587b](https://github.com/LuxoriaSoft/Luxoria/commit/480587bc1033a86522107ebf60066a8901c02b3c))
+* Loading curve with default parameters ([a529607](https://github.com/LuxoriaSoft/Luxoria/commit/a529607582c326e75261640ece492ee433bec373))
+* Overlay superposition ([6158e00](https://github.com/LuxoriaSoft/Luxoria/commit/6158e00802be64d75e81a86a21ed8d163f5cc126))
+* Useless draw who make the current operation always visible even if there is a substract operation over it ([290dc08](https://github.com/LuxoriaSoft/Luxoria/commit/290dc089ad48d45ea524a196e5bcecc9fb352fcd))
+
+
+### Features
+
+* integration LuxEditor v2 to develop branche ([a30898a](https://github.com/LuxoriaSoft/Luxoria/commit/a30898a01d5736df03e299295057f0cc34887c30))
+
+# [1.47.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.5...v1.47.0) (2025-06-11)
+
+
+### Features
+
+* Add fondation of LuxMarketplace manager/BuildSystem segment ([0249769](https://github.com/LuxoriaSoft/Luxoria/commit/024976913e6fd158b561f97aca43672efdaa0dad))
+
+## [1.46.5](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.4...v1.46.5) (2025-06-11)
+
+
+### Bug Fixes
+
+* Inject GH_TOKEN as secret using Github secrets ([6655f1c](https://github.com/LuxoriaSoft/Luxoria/commit/6655f1ce3487f3c058c68a9574ca7ed55dccfa72))
+
+## [1.46.4](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.3...v1.46.4) (2025-06-10)
+
+
+### Bug Fixes
+
+* Change python version from >=3.13 to >=3.11 for marketplacemgr ([936ab23](https://github.com/LuxoriaSoft/Luxoria/commit/936ab231a93684571b4cdfe00afb5180956a6734))
+
+## [1.46.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.2...v1.46.3) (2025-06-10)
+
+
+### Bug Fixes
+
+* Checkout code before executing script ([2ed7239](https://github.com/LuxoriaSoft/Luxoria/commit/2ed7239ead9b95b578cc1ae82abee78d74762357))
+
+## [1.46.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.1...v1.46.2) (2025-06-10)
+
+
+### Bug Fixes
+
+* Update working directory ([b423a99](https://github.com/LuxoriaSoft/Luxoria/commit/b423a99eca50a6f484354fbb95ce41196f5d8aee))
+
+## [1.46.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.46.0...v1.46.1) (2025-06-10)
+
+
+### Bug Fixes
+
+* Update workflow name ([3998861](https://github.com/LuxoriaSoft/Luxoria/commit/399886133f1d3d0a1532069fa5fc995c11d2de4e))
+
+# [1.46.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.45.1...v1.46.0) (2025-06-10)
+
+
+### Features
+
+* Add GitHub Actions workflow to attach artifacts to marketplace ([004c427](https://github.com/LuxoriaSoft/Luxoria/commit/004c427d1ec6a397c38caa76bb7a8a43504dc26f))
+* Add uploadmgr script which aims to publish a branch on target (that contains Luxoria.App & Modules folders) ([664e6de](https://github.com/LuxoriaSoft/Luxoria/commit/664e6de26107a5f3dfe6f2cd7899d4a17741dc77))
+
+## [1.45.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.45.0...v1.45.1) (2025-06-09)
+
+
+### Bug Fixes
+
+* Wait the building of Luxoria App & Modules before releasing artifacts ([a7d4948](https://github.com/LuxoriaSoft/Luxoria/commit/a7d4948e6ee5f2f9d0f05c9e2a0763e8258e22b8))
+
+# [1.45.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.44.1...v1.45.0) (2025-06-09)
+
+
+### Features
+
+* Add steps to list and zip downloaded artifacts before uploading to GitHub Release ([4417de2](https://github.com/LuxoriaSoft/Luxoria/commit/4417de297d0402a8b77d5a33db2ca14cc0618f9b))
+
+## [1.44.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.44.0...v1.44.1) (2025-06-09)
+
+
+### Bug Fixes
+
+* Rename job identifiers ([42d2e2e](https://github.com/LuxoriaSoft/Luxoria/commit/42d2e2e17cdb2b1151e1b5e93e36ddad9d6170eb))
+
+# [1.44.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.43.0...v1.44.0) (2025-06-09)
+
+
+### Features
+
+* Add workflow_call trigger to build-upload workflows and enhance artifact release process ([78eb71e](https://github.com/LuxoriaSoft/Luxoria/commit/78eb71e2d5e058ca954bd55e10c57087867c1d70))
+
+# [1.43.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.42.3...v1.43.0) (2025-06-09)
+
+
+### Features
+
+* Add GitHub Actions workflow to attach artifacts to release ([bb482f2](https://github.com/LuxoriaSoft/Luxoria/commit/bb482f2fe3dd31468b7cead24915685ae3776c12))
+
+## [1.42.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.42.2...v1.42.3) (2025-06-04)
+
+
+### Bug Fixes
+
+* Bring docs for IJwtService ([a807a82](https://github.com/LuxoriaSoft/Luxoria/commit/a807a8256ceec479123d46d2852bfa8a3518d794))
+* Create I/JwtService that handles TokenCreation ([11855bd](https://github.com/LuxoriaSoft/Luxoria/commit/11855bd3ca1b8947f3594f3de807bb742016df08))
+
+## [1.42.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.42.1...v1.42.2) (2025-06-04)
+
+
+### Bug Fixes
+
+* Generate JWT token the same way as AuthController does ([40f21d8](https://github.com/LuxoriaSoft/Luxoria/commit/40f21d81826048ff128bc5114714892fbe8af741))
+
+## [1.42.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.42.0...v1.42.1) (2025-06-04)
+
+
+### Bug Fixes
+
+* Improve WhoAmI method (AuthController), returns User model fetched from DB, instead of reading JWT cache info ([2c62808](https://github.com/LuxoriaSoft/Luxoria/commit/2c62808ddf96eaa81c7ffe8eb51a143ce87f6f9d))
+* User retrieval from JWT token (WhoAmI method) ([efcf644](https://github.com/LuxoriaSoft/Luxoria/commit/efcf6443281e8de9a41a44e340ac4a81ce9eb6bf))
+
 # [1.42.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.41.2...v1.42.0) (2025-06-04)
 
 

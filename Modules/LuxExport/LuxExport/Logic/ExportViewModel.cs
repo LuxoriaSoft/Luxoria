@@ -3,9 +3,16 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.Json;
+using System.Threading.Tasks;
+using CommunityToolkit.WinUI;
 using LuxExport.Logic;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using SkiaSharp;
+using Windows.Storage.Streams;
 
 public class ExportViewModel : INotifyPropertyChanged
 {
@@ -39,6 +46,62 @@ public class ExportViewModel : INotifyPropertyChanged
     private string _exportFilePath = "";
     private string _filePath;
 
+    // Watermark
+    private WatermarkSettings _watermark = new();
+    public WatermarkSettings Watermark
+    {
+        get => _watermark;
+        set
+        {
+            _watermark = value;
+            OnPropertyChanged(nameof(Watermark));
+            OnPropertyChanged(nameof(IsText));
+            OnPropertyChanged(nameof(IsLogo));
+            OnPropertyChanged(nameof(TextVisibility));
+            OnPropertyChanged(nameof(LogoVisibility));
+            RefreshLogoPreview();
+        }
+    }
+
+    public bool WatermarkEnabled
+    {
+        get => Watermark.Enabled;
+        set { Watermark.Enabled = value; OnPropertyChanged(nameof(WatermarkEnabled)); }
+    }
+
+    public string WatermarkText
+    {
+        get => Watermark.Text;
+        set { Watermark.Text = value; OnPropertyChanged(nameof(WatermarkText)); }
+    }
+    public int WatermarkTypeToInt
+    {
+        get => (int)Watermark.Type;
+        set
+        {
+            if ((int)Watermark.Type == value) return;
+            Watermark.Type = (WatermarkType)value;
+
+            OnPropertyChanged(nameof(IsText));
+            OnPropertyChanged(nameof(IsLogo));
+            OnPropertyChanged(nameof(TextVisibility));
+            OnPropertyChanged(nameof(LogoVisibility));
+        }
+    }
+    private ImageSource? _logoPreview;
+    public ImageSource? LogoPreview
+    {
+        get => _logoPreview;
+        private set { _logoPreview = value; OnPropertyChanged(nameof(LogoPreview)); }
+    }
+
+
+    public bool IsText => Watermark.Type == WatermarkType.Text;
+    public bool IsLogo => Watermark.Type == WatermarkType.Logo;
+
+    public Visibility TextVisibility => IsText ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility LogoVisibility => IsLogo ? Visibility.Visible : Visibility.Collapsed;
+
     /// <summary>
     /// Initializes the ExportViewModel with default export path.
     /// </summary>
@@ -46,6 +109,24 @@ public class ExportViewModel : INotifyPropertyChanged
     {
         _baseExportPath = GetDefaultPath(_selectedExportLocation);
         UpdateExportPath();
+    }
+
+    private static WriteableBitmap ToWriteable(SKBitmap bmp)
+    {
+        var wb = new WriteableBitmap(bmp.Width, bmp.Height);
+
+        using var src = bmp.PeekPixels();
+        using var dst = wb.PixelBuffer.AsStream();
+        dst.Write(src.GetPixelSpan());
+
+        wb.Invalidate();
+        return wb;
+    }
+
+
+    public void RefreshLogoPreview()
+    {
+        LogoPreview = Watermark.Logo is null ? null : ToWriteable(Watermark.Logo);
     }
 
     // Format & Export Settings

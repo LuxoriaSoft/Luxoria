@@ -5,11 +5,14 @@ using LuxEditor.Services;
 using Luxoria.GModules;
 using Luxoria.GModules.Interfaces;
 using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Models;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace LuxEditor
 {
@@ -39,6 +42,8 @@ namespace LuxEditor
             _context = context;
             _logger = logger;
 
+            PresetManager.Instance.ConfigureBus(_eventBus);
+
             if (_eventBus == null || _context == null)
             {
                 _logger?.Log("Failed to initialize LuxEditor: EventBus or Context is null", "LuxEditor", LogLevel.Error);
@@ -50,12 +55,44 @@ namespace LuxEditor
 
             _photoViewer = new PhotoViewer();
             _cExplorer = new CollectionExplorer();
-            _editor = new Editor();
-            _infos = new Infos();
+            _editor = new Editor(null);
+            _infos = new Infos(_eventBus);
 
+
+
+            _editor.AttachCropController(_photoViewer.CropController);
             _editor.OnEditorImageUpdated += (updatedBitmap) =>
             {
                 _photoViewer?.SetImage(updatedBitmap);
+                _photoViewer?.ResetOverlay();
+            };
+
+            _editor.IsCropModeChanged += (isCropMode) =>
+            {
+                _photoViewer.IsCropMode = isCropMode;
+            };
+
+            _editor.InvalidateCrop += () =>
+            {
+                _photoViewer?.InvalidateCrop();
+            };
+
+
+            _photoViewer.CropChanged += () => {
+                _editor?.RequestFilterUpdate();
+
+            };
+
+            _photoViewer.BeginCropEditing += () => _editor.BeginCropEditing();
+            _photoViewer.EndCropEditing += () => _editor.EndCropEditing();
+
+            _editor.CropBoxChanged += box =>
+            {
+                var ctl = _photoViewer.CropController;
+                ctl.SetSize(box.Width, box.Height);
+                ctl.SetAngle(box.Angle);
+                ctl.LockAspectRatio = _editor.LockAspectToggleIsOn;
+                _photoViewer.InvalidateCrop();
             };
 
             _cExplorer.OnImageSelected += (img) =>
@@ -63,11 +100,24 @@ namespace LuxEditor
                 ImageManager.Instance.SelectImage(img);
             };
 
+            _cExplorer.ExportRequestedEvent += () =>
+            {
+                ICollection<LuxAsset> images = ImageManager.Instance.OpenedImages.Select(img => img.ToLuxAsset()).ToList();
+
+                _eventBus?.Publish(
+                    new ExportRequestEvent
+                    {
+                        Assets = images,
+                    }
+                );
+            };
+
             ImageManager.Instance.OnSelectionChanged += (img) =>
             {
                 _editor?.SetEditableImage(img);
                 _photoViewer?.SetImage(img.PreviewBitmap ?? img.EditedBitmap ?? img.OriginalBitmap);
                 _infos?.DisplayExifData(img.Metadata);
+                _photoViewer?.SetEditableImage(img);
             };
 
             mainPage.Add(SmartButtonType.MainPanel, _photoViewer);
@@ -79,6 +129,12 @@ namespace LuxEditor
             Items.Add(new LuxMenuBarItem("LuxEditor", false, Guid.NewGuid(), smartButtons));
 
             _eventBus.Subscribe<CollectionUpdatedEvent>(OnCollectionUpdated);
+            _eventBus?.Subscribe<RequestLatestCollection>(e =>
+            {
+                e.OnHandleReceived?.Invoke(
+                    ImageManager.Instance.OpenedImages.Select(img => img.ToLuxAsset()).ToList()
+                );
+            });
 
             _logger?.Log($"{Name} initialized", "LuxEditor", LogLevel.Info);
         }
@@ -99,13 +155,12 @@ namespace LuxEditor
                     {
                         ThumbnailBitmap = ImageProcessingManager.GeneratePreview(asset.Data.Bitmap, 200),
                         PreviewBitmap = ImageProcessingManager.GeneratePreview(asset.Data.Bitmap, 500),
-                        MediumBitmap = ImageProcessingManager.GenerateMediumResolution(asset.Data.Bitmap)
                     }
                 );
             }
 
             ImageManager.Instance.LoadImages(editableImages);
-            _cExplorer?.SetImages(editableImages);
+            _cExplorer?.SetImages(editableImages);            
         }
 
         /// <summary>
