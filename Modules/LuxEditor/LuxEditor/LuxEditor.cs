@@ -155,7 +155,6 @@ namespace LuxEditor
                     {
                         ThumbnailBitmap = ImageProcessingManager.GeneratePreview(asset.Data.Bitmap, 200),
                         PreviewBitmap = ImageProcessingManager.GeneratePreview(asset.Data.Bitmap, 500),
-                        MediumBitmap = ImageProcessingManager.GenerateMediumResolution(asset.Data.Bitmap)
                     }
                 );
             }
