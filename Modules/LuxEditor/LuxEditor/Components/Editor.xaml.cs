@@ -8,6 +8,7 @@ using LuxEditor.EditorUI.Models;
 using LuxEditor.Logic;
 using LuxEditor.Models;
 using LuxEditor.Services;
+using Luxoria.Algorithm.YoLoDetectModel;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -51,6 +52,11 @@ namespace LuxEditor.Components
         private readonly List<Layer> _observedLayers = new();
 
         private EditorToneCurveGroup _toneGroup;
+
+        private Lazy<YoLoDetectModelAPI> _yoloDetectionAPI = new(() =>
+            new YoLoDetectModelAPI(SubjectRecognition.ExtractEmbeddedResource("LuxEditor.ExternalLibs.Models.yolov5l.onnx")));
+        private SubjectRecognition _subjectRecognition;
+
         /// <summary>
         /// Style for the temperature slider.
         /// </summary>
@@ -557,6 +563,8 @@ namespace LuxEditor.Components
             EditorStackPanel.Children.Clear();
             _categories.Clear();
             _sliderCache.Clear();
+            _subjectRecognition = new(_yoloDetectionAPI);
+            _subjectRecognition.SetImage(image);
             BuildEditorUI();
             UpdateSliderUI();
             _toneGroup.RefreshCurves(CurrentImage.Settings);
@@ -626,6 +634,11 @@ namespace LuxEditor.Components
             toneExpander.AddControl(_toneGroup);
             _panelManager.AddCategory(toneExpander);
             CurrentImage.SaveState();
+
+            var subjectRecognitionExpender = new EditorGroupExpander("Subject Recognition");
+            _subjectRecognition.SetImage(CurrentImage);
+            subjectRecognitionExpender.AddControl(_subjectRecognition);
+            _panelManager.AddCategory(subjectRecognitionExpender);
         }
 
         /// <summary>
