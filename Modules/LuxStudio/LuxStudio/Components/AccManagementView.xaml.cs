@@ -57,7 +57,7 @@ public sealed partial class AccManagementView : Page
 
             ShowPanel(LoadingMessagePanel, "Retrieving Configuration...");
             var configTask = configService.GetConfigAsync();
-            var timeoutTask = Task.Delay(2000);
+            var timeoutTask = Task.Delay(15000);
 
             var completed = await Task.WhenAny(configTask, timeoutTask);
 

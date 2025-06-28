@@ -281,7 +281,7 @@ public class AuthService
          */
         _logger.Log("Fetching user information...", _section, LogLevel.Info);
 
-        var requestUri = $"{_apiBaseUrl}/auth/whoami";
+        var requestUri = $"{_apiBaseUrl}/api/auth/whoami";
 
         using var httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.Authorization =
