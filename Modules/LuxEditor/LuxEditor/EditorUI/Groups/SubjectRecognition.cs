@@ -1,8 +1,10 @@
 ﻿using LuxEditor.EditorUI.Interfaces;
 using LuxEditor.Models;
+using Luxoria.Algorithm.GrabCut;
 using Luxoria.Algorithm.YoLoDetectModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using SkiaSharp;
 using System;
 using System.Diagnostics;
@@ -45,7 +47,6 @@ namespace LuxEditor.EditorUI.Groups
             _startButton = new Button
             {
                 Content = "Start Recognition",
-                //Padding = new Thickness(12, 6),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center
             };
@@ -119,7 +120,6 @@ namespace LuxEditor.EditorUI.Groups
                 if (data == null)
                     throw new InvalidOperationException("Failed to encode bitmap as PNG");
 
-
                 using (var stream = File.OpenWrite(outputPath))
                 {
                     data.SaveTo(stream);
@@ -136,14 +136,15 @@ namespace LuxEditor.EditorUI.Groups
             });
             DispatcherQueue.TryEnqueue(() => _statusText.Text = "Detection completed");
 
-            Debug.WriteLine($"Detection completed, Found {result?.Count} ROI");
+            Debug.WriteLine($"Detection completed, Found {result?.Count} ROI(s)");
 
             DispatcherQueue.TryEnqueue(() =>
             {
                 _spinner.IsActive = false;
                 _spinner.Visibility = Visibility.Collapsed;
-                _statusText.Text = $"Found {result?.Count} subjects";
-                _statusText.Visibility = Visibility.Visible;
+                _statusText.Visibility = Visibility.Collapsed;
+                _progressPanel.Visibility = Visibility.Collapsed;
+                _startButton.Visibility = Visibility.Collapsed;
                 _ROIPanel.Visibility = Visibility.Visible;
             });
 
@@ -153,8 +154,53 @@ namespace LuxEditor.EditorUI.Groups
                 {
                     var roiItem = new TextBlock
                     {
-                        Text = $"Subject: {roi.ClassId} - Confidence: {roi.Confidence:F2}"
+                        Text = $"ID: {roi.ClassId} ({roi.Confidence * 100:#.##}%)"
                     };
+
+                    var flyout = new MenuFlyout();
+
+                    var highlight = new MenuFlyoutItem { Text = "Highlight" };
+                    highlight.Click += (s, e) =>
+                    {
+                        Debug.WriteLine($"Highlight clicked for {roi.ClassId}");
+                    };
+                    flyout.Items.Add(highlight);
+
+                    var viewDetails = new MenuFlyoutItem { Text = "Details" };
+                    viewDetails.Click += (s, e) =>
+                    {
+                        Debug.WriteLine($"View Details clicked for {roi.ClassId}");
+                    };
+                    flyout.Items.Add(viewDetails);
+
+                    flyout.Items.Add(new MenuFlyoutSeparator());
+                    
+                    var blur = new MenuFlyoutItem { Text = "Apply Blur effect" };
+                    blur.Click += (s, e) =>
+                    {
+                        Debug.WriteLine($"Blur clicked for {roi.ClassId}");
+                        if (_selectedImage != null)
+                        {
+                        }
+                    };
+                    flyout.Items.Add(blur);
+
+                    flyout.Items.Add(new MenuFlyoutSeparator());
+
+                    var remove = new MenuFlyoutItem { Text = "Remove" };
+                    remove.Click += (s, e) =>
+                    {
+                        Debug.WriteLine($"Remove clicked for {roi.ClassId}");
+                        _ROIView.Items.Remove(roiItem);
+                    };
+                    flyout.Items.Add(remove);
+
+
+                    roiItem.Tapped += (s, args) =>
+                    {
+                        flyout.ShowAt(roiItem);
+                    };
+
                     _ROIView.Items.Add(roiItem);
                 });
             }
