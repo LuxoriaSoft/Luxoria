@@ -834,7 +834,7 @@ namespace LuxEditor.Components
                     var prev = await RenderAsync(CurrentImage.PreviewBitmap);
                     CurrentImage.EditedPreviewBitmap = prev;
                     var upscaled = ImageProcessingManager.Upscale(prev,
-                                                                  CurrentImage.OriginalBitmap.Height,
+                                                                  (int)CurrentImage.Crop.Height,
                                                                   true);
                     OnEditorImageUpdated?.Invoke(upscaled);
                 }
@@ -947,6 +947,13 @@ namespace LuxEditor.Components
         {
             if (CurrentImage == null) return src;
             var box = CurrentImage.Crop;
+            if (src != CurrentImage.OriginalBitmap)
+            {
+                float sx = (float)src.Width / CurrentImage.OriginalBitmap.Width;
+                float sy = (float)src.Height / CurrentImage.OriginalBitmap.Height;
+                box = CropProcessor.Scale(box, sx, sy);
+                
+            }
             return CropProcessor.Apply(src, box);
         }
 
