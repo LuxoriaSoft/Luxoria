@@ -19,6 +19,10 @@ namespace LuxEditor.EditorUI.Groups
         private StackPanel _progressPanel;
         private ProgressRing _spinner;
         private TextBlock _statusText;
+
+        private StackPanel _ROIPanel;
+        private ListView _ROIView;
+        
         private EditableImage? _selectedImage;
         private Lazy<YoLoDetectModelAPI>? _detectionAPI;
 
@@ -71,8 +75,20 @@ namespace LuxEditor.EditorUI.Groups
                 Children = { _spinner, _statusText }
             };
 
+            _ROIView = new();
+
+            _ROIPanel = new StackPanel
+            {
+                Orientation = Orientation.Vertical,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Children = { _ROIView },
+                Visibility = Visibility.Collapsed
+            };
+
             _root.Children.Add(_startButton);
             _root.Children.Add(_progressPanel);
+            _root.Children.Add(_ROIPanel);
         }
 
         private async void OnStartClicked(object sender, RoutedEventArgs e)
@@ -101,7 +117,7 @@ namespace LuxEditor.EditorUI.Groups
             using (var data = _selectedImage.EditedBitmap.Encode(SKEncodedImageFormat.Png, 100))
             {
                 if (data == null)
-                    throw new InvalidOperationException("Failed to encode bitmap as PNG.");
+                    throw new InvalidOperationException("Failed to encode bitmap as PNG");
 
 
                 using (var stream = File.OpenWrite(outputPath))
@@ -115,10 +131,10 @@ namespace LuxEditor.EditorUI.Groups
             var result = await Task.Run(() =>
             {
                 if (_detectionAPI == null)
-                    throw new InvalidOperationException("Detection API is not initialized.");
+                    throw new InvalidOperationException("Detection API is not initialized");
                 return _detectionAPI.Value.Detect(outputPath);
             });
-            DispatcherQueue.TryEnqueue(() => _statusText.Text = "Detection completed...");
+            DispatcherQueue.TryEnqueue(() => _statusText.Text = "Detection completed");
 
             Debug.WriteLine($"Detection completed, Found {result?.Count} ROI");
 
@@ -128,7 +144,20 @@ namespace LuxEditor.EditorUI.Groups
                 _spinner.Visibility = Visibility.Collapsed;
                 _statusText.Text = $"Found {result?.Count} subjects";
                 _statusText.Visibility = Visibility.Visible;
+                _ROIPanel.Visibility = Visibility.Visible;
             });
+
+            foreach (var roi in result ?? [])
+            {
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    var roiItem = new TextBlock
+                    {
+                        Text = $"Subject: {roi.ClassId} - Confidence: {roi.Confidence:F2}"
+                    };
+                    _ROIView.Items.Add(roiItem);
+                });
+            }
         }
 
         public UIElement GetElement()
