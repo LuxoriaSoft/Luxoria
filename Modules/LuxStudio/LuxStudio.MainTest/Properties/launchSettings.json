@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "LuxStudio.MainTest": {
+      "commandName": "Project"
+    },
+    "Profile 1": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\noahg\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "commandLineArgs": "buildsystem.py",
+      "workingDirectory": "C:\\Users\\noahg\\Desktop\\Github\\Luxoria\\Modules\\LuxStudio"
+    }
+  }
+}

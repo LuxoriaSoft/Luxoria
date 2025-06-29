@@ -1,6 +1,9 @@
 ﻿using LuxStudio.COM.Auth;
+using LuxStudio.COM.Models;
 using LuxStudio.COM.Services;
+using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 
 ConfigService configSvc = new("https://studio.pluto.luxoria.bluepelicansoft.com");
 
@@ -52,3 +55,48 @@ Debug.WriteLine("Is Authenticated: " + authManager.IsAuthenticated());
 Debug.WriteLine("Access Token (third call): " + token3);
 
 Debug.WriteLine(await authManager.GetUserInfoAsync());
+
+var cs = new CollectionService(config ?? throw new InvalidOperationException("Configuration cannot be null. Ensure the config service is properly initialized."));
+ICollection<LuxCollection> collections = await cs.GetAllAsync(token);
+
+Debug.WriteLine("Collections Count: " + collections.Count);
+
+
+// Upload
+StreamContent CreateStreamContent(string filePath,
+                                                string contentType = "application/octet-stream")
+{
+    ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
+
+    if (!File.Exists(filePath))
+        throw new FileNotFoundException("File not found.", filePath);
+
+    var stream = new FileStream(
+        path: filePath,
+        mode: FileMode.Open,
+        access: FileAccess.Read,
+        share: FileShare.Read,
+        bufferSize: 4096,
+        useAsync: true);
+
+    var content = new StreamContent(stream);
+    content.Headers.ContentType =
+        new MediaTypeHeaderValue(contentType);
+
+    content.Headers.ContentDisposition =
+        new ContentDispositionHeaderValue("form-data")
+        {
+            Name = "\"file\"",
+            FileName = $"\"{Path.GetFileName(filePath)}\""
+        };
+
+    return content;
+}
+
+
+//StreamContent streamContent = CreateStreamContent("C:\\Users\\noahg\\Desktop\\Github\\Luxoria\\assets\\BaseCollection\\hazy-man-walking-in-the-mountains-image.jpg", "image/jpg");
+
+//await cs.UploadAssetAsync(token, new ("0197bad5-af3f-7e79-bb97-3d1513d2debf"), "hazy.jpg", streamContent);
+
+//await cs.CreateCollectionAsync(token, "superCollection", "descriptionDeFou", ["example@email.com"]);
+
