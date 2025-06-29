@@ -184,11 +184,8 @@ using (var scope = builder.Services.BuildServiceProvider().CreateScope())
 
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 // Disabled for Kubernetes usage ONLY
 //app.UseHttpsRedirection();
