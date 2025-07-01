@@ -16,7 +16,11 @@ namespace LuxEditor.Logic
         {
             int w = (int)MathF.Round(box.Width);
             int h = (int)MathF.Round(box.Height);
-            if (w <= 0 || h <= 0) return src.Copy();
+            if (w <= 0 || h <= 0) return src;
+            if (box.X < 0 || box.Y < 0 || box.X + box.Width > src.Width || box.Y + box.Height > src.Height)
+            {
+                return src;
+            }
 
             var info = new SKImageInfo(w, h, src.ColorType, src.AlphaType, src.ColorSpace);
             var dst = new SKBitmap(info);
@@ -40,21 +44,20 @@ namespace LuxEditor.Logic
 
             surface.ReadPixels(dst.Info, dst.GetPixels(), dst.RowBytes, 0, 0);
 
-            Debug.WriteLine("Box: X:" + box.X + " Y: " + box.Y + " Width: " + box.Width + " Height: " + box.Height + " Angle: " + box.Angle);
-
+            Debug.WriteLine("CropProcessor.Apply: dst: " + dst.Width + "x" + dst.Height);
             return dst;
         }
 
         /// <summary>
         /// Return a copy of <paramref name="box"/> scaled by <paramref name="sx"/> and <paramref name="sy"/>.
         /// </summary>
-        //public static CropController.CropBox Scale(CropController.CropBox box, float sx, float sy) => new()
-        //{
-        //    X = box.X * sx,
-        //    Y = box.Y * sy,
-        //    Width = box.Width * sx,
-        //    Height = box.Height * sy,
-        //    Angle = box.Angle
-        //};
+        public static CropController.CropBox Scale(CropController.CropBox box, float sx, float sy) => new()
+        {
+            X = box.X * sx,
+            Y = box.Y * sy,
+            Width = box.Width * sx,
+            Height = box.Height * sy,
+            Angle = box.Angle
+        };
     }
 }

@@ -20,7 +20,6 @@ namespace LuxEditor.Models
         public string FileName { get; }
         public SKBitmap OriginalBitmap { get; }
         public SKBitmap? ThumbnailBitmap { get; set; }
-        public SKBitmap? MediumBitmap { get; set; }
         public SKBitmap? PreviewBitmap { get; set; }
         public SKBitmap EditedBitmap { get; set; }
         public SKBitmap EditedPreviewBitmap { get; set; }

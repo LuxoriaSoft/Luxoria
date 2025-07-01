@@ -1,3 +1,20 @@
+# [1.51.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.5...v1.51.0) (2025-07-01)
+
+
+### Bug Fixes
+
+* Add files inside gonogo folder ([2d760d9](https://github.com/LuxoriaSoft/Luxoria/commit/2d760d9a25e295c837947eddce41a9e826a34263))
+
+
+### Features
+
+* Add documentation and images for contributions ([d2cadb9](https://github.com/LuxoriaSoft/Luxoria/commit/d2cadb9a67dadbcbcb7694cabe94e788dda90efe))
+* Add Epitech BTP file ([a088aaa](https://github.com/LuxoriaSoft/Luxoria/commit/a088aaaa38decdeb938e6c993330c02b19f9c1ec))
+* Add files ([e4eceed](https://github.com/LuxoriaSoft/Luxoria/commit/e4eceed03368edad786904a7fa39e75c9a1d906a))
+* Add License Justification document for Apache 2.0 ([d08043e](https://github.com/LuxoriaSoft/Luxoria/commit/d08043e49838892ddb541771d40f29b5eafb5b21))
+* Add Mandatory folder ([89dc6ac](https://github.com/LuxoriaSoft/Luxoria/commit/89dc6ac180aee74b157f418c435f7540b1f442e3))
+* Add PoC List ([33478bb](https://github.com/LuxoriaSoft/Luxoria/commit/33478bb887bb4b7be818a34ecf24973dc575a536))
+
 ## [1.50.5](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.4...v1.50.5) (2025-06-22)
 
 
