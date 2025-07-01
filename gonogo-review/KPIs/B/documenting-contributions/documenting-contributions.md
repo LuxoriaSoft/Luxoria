@@ -2,21 +2,21 @@
 
 ## Brisque Score Nuget
 
-https://www.nuget.org/packages/Luxoria.Algorithm.BrisqueScore, See : [1](1.png), [2](2.png)
+https://www.nuget.org/packages/Luxoria.Algorithm.BrisqueScore, See : 1, 2
 
 +2700 Downloads as of 22/06/2025
 
 ## Luxoria SDK
 
-https://www.nuget.org/packages/Luxoria.SDK#readme-body-tab, See : [3](3.png)
+https://www.nuget.org/packages/Luxoria.SDK#readme-body-tab, See : 3
 
 ## Luxoria Algorithm YoLo Detect Model in .NET
 
-https://www.nuget.org/packages/Luxoria.Algorithm.YoLoDetectModel, See : [4](4.png)
+https://www.nuget.org/packages/Luxoria.Algorithm.YoLoDetectModel, See : 4
 
 ## GrabCut Implementation (v1.0.0 / v1.0.1)
 
-https://www.nuget.org/packages/Luxoria.Algorithm.YoLoDetectModel, See : [5](5.png)
+https://www.nuget.org/packages/Luxoria.Algorithm.YoLoDetectModel, See : 5
 
 ## Luxoria (Front-End) LuxPortal Public Docker Image
 
