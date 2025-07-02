@@ -1,3 +1,10 @@
+# [1.52.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.51.0...v1.52.0) (2025-07-02)
+
+
+### Features
+
+* Add Roadmap PG5 documents in DOCX and PDF formats ([511b9a6](https://github.com/LuxoriaSoft/Luxoria/commit/511b9a60b482352133b236bc099daba17320c59d))
+
 # [1.51.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.50.5...v1.51.0) (2025-07-01)
 
 
