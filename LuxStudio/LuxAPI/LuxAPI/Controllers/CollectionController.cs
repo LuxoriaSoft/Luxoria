@@ -395,7 +395,7 @@ namespace LuxAPI.Controllers
             if (file == null || file.Length == 0)
                 return BadRequest("No file has been uploaded");
 
-            var permittedExtensions = new[] { ".png", ".jpg", ".jpeg" };
+            var permittedExtensions = new[] { ".png", ".jpg", ".jpeg", ".webp" };
             var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (!permittedExtensions.Contains(ext))
                 return BadRequest("File extension not supported");
