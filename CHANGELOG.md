@@ -1,3 +1,10 @@
+## [1.53.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.53.0...v1.53.1) (2025-07-03)
+
+
+### Bug Fixes
+
+* Roadmap 2025-2026 ([468ec76](https://github.com/LuxoriaSoft/Luxoria/commit/468ec76fbb79a10b9f28c359f326e29f91ca2e02))
+
 # [1.53.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.52.0...v1.53.0) (2025-07-03)
 
 
