@@ -1,3 +1,17 @@
+# [1.53.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.52.0...v1.53.0) (2025-07-03)
+
+
+### Bug Fixes
+
+* Change GridView for a StackView for visibility purpose ([d824aa7](https://github.com/LuxoriaSoft/Luxoria/commit/d824aa74c2fe98967e5a0ec508a1025d6712a0ca))
+
+
+### Features
+
+* Add Blur background effect on LuxEditor @ 2.0.4 ([b9505e8](https://github.com/LuxoriaSoft/Luxoria/commit/b9505e80acf58a0c9928daf1545b3e8dec1ebef9))
+* Add FlyoutMenu for highlighting ROI, viewing details, removing or applying blur-effect + Installation of Luxoria.Algorithm.GrabCut nuget ([1895226](https://github.com/LuxoriaSoft/Luxoria/commit/18952261aef51f3b431ce5d6b866ad41f6520dad))
+* Add fondation of subject recognition on LuxEditor ([88fb9c6](https://github.com/LuxoriaSoft/Luxoria/commit/88fb9c6024549370510146f2374e2318d0921ded))
+
 # [1.52.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.51.0...v1.52.0) (2025-07-02)
 
 
