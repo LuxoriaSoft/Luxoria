@@ -10,13 +10,45 @@ namespace LuxAPI.Services
         private readonly ILogger<EmailService> _logger;
         private readonly string _frontEndUrl;
 
-        public EmailService(IConfiguration config, IConfiguration configuration, ILogger<EmailService> logger)
+        public EmailService(IConfiguration config, ILogger<EmailService> logger)
         {
             _config = config;
             _logger = logger;
-            _frontEndUrl = configuration["URI:FrontEnd"] ?? throw new Exception("Frontend URL is not set.");
+            _frontEndUrl = _config["URI:FrontEnd"] ?? throw new Exception("Frontend URL is not set.");
         }
         public string FrontEndUrl => _frontEndUrl;
+
+        public async Task SendMentionEmailAsync(string toEmail, string fromEmail, string message)
+        {
+            var subject = "Vous avez été mentionné sur Luxoria";
+            var htmlBody = $@"
+        <h2>Notification de mention</h2>
+        <p>Vous avez été mentionné par <strong>{fromEmail}</strong> dans un message :</p>
+        <blockquote>{message}</blockquote>
+        <p>Connectez-vous pour voir le message complet.</p>
+        <p style='font-size:12px; color:#999;'>Si vous ne reconnaissez pas cette notification, ignorez ce message.</p>
+    ";
+
+            var mailMessage = new MailMessage
+            {
+                From = new MailAddress(_config["Smtp:From"], "Luxoria"),
+                Subject = subject,
+                Body = htmlBody,
+                IsBodyHtml = true
+            };
+
+            mailMessage.To.Add(toEmail);
+
+            using var smtp = new SmtpClient(_config["Smtp:Host"], int.Parse(_config["Smtp:Port"]))
+            {
+                Credentials = new NetworkCredential(_config["Smtp:Username"], _config["Smtp:Password"]),
+                EnableSsl = true
+            };
+
+            await smtp.SendMailAsync(mailMessage);
+            _logger.LogInformation("Mention email sent to {Email} from {FromEmail}", toEmail, fromEmail);
+        }
+
         public async Task SendVerificationCodeAsync(string toEmail, string toName, string code, Guid pendingId)
         {
             var confirmationUrl = $"{_frontEndUrl}/register/confirmation?id={pendingId}&code={code}";

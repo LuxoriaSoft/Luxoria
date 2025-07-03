@@ -115,33 +115,47 @@ const handleUploadPhoto = async () => {
 }
 
 
-  // Envoi message + ajout local direct
-  const handleSendMessage = async () => {
-    if (!chatMessage.trim() || !user) return
-    try {
-      const currentPhotoId = selectedImage?.id
-      await CollectionService.sendChatMessage(id, {
-        senderEmail: user.email,
-        senderUsername: user.username,
-        message: chatMessage.trim(),
-        photoId: currentPhotoId,
-      })
+const handleSendMessage = async () => {
+  if (!chatMessage.trim() || !user) return
+  try {
+    const currentPhotoId = selectedImage?.id
 
-      const newMessage: ChatMessage = {
-        senderUsername: user.username,
-        senderEmail: user.email,
-        message: chatMessage.trim(),
-        sentAt: new Date().toISOString(),
-        isMine: true,
-        avatarFileName: user.avatarFileName ?? 'default_avatar.jpg',
-        photoId: currentPhotoId,
+    // Envoie le message
+    await CollectionService.sendChatMessage(id, {
+      senderEmail: user.email,
+      senderUsername: user.username,
+      message: chatMessage.trim(),
+      photoId: currentPhotoId,
+    })
+
+    // Extraire toutes les mentions (emails précédées d’un @)
+    const mentionEmails = Array.from(chatMessage.matchAll(/@([\w.-]+@[\w.-]+\.[\w.-]+)/g)).map(m => m[1]);
+
+    // Envoie une notif mail pour chaque email mentionné
+    for (const email of mentionEmails) {
+      try {
+        await CollectionService.sendMentionNotification(id, email, user.email, chatMessage.trim())
+      } catch (e) {
+        console.error(`Failed to send mention email to ${email}`, e)
       }
-      setMessages(prev => [...prev, newMessage])
-      setChatMessage('')
-    } catch (err) {
-      console.error('Error sending message:', err)
     }
+
+    // Ajoute le message localement
+    const newMessage: ChatMessage = {
+      senderUsername: user.username,
+      senderEmail: user.email,
+      message: chatMessage.trim(),
+      sentAt: new Date().toISOString(),
+      isMine: true,
+      avatarFileName: user.avatarFileName ?? 'default_avatar.jpg',
+      photoId: currentPhotoId,
+    }
+    setMessages(prev => [...prev, newMessage])
+    setChatMessage('')
+  } catch (err) {
+    console.error('Error sending message:', err)
   }
+}
 
   // Invitation utilisateur
   const handleInvite = async () => {
@@ -383,6 +397,19 @@ const handleUploadPhoto = async () => {
         onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
         className="w-full rounded border border-zinc-700 px-3 py-2 bg-zinc-800 text-white placeholder-zinc-500"
       />
+        {mentionVisible && (
+    <ul className="absolute z-50 bg-zinc-800 border border-zinc-700 rounded mt-1 w-full max-h-40 overflow-y-auto text-white">
+      {filteredEmails.map((email) => (
+        <li
+          key={email}
+          className="px-3 py-1 cursor-pointer hover:bg-purple-700"
+          onClick={() => insertMention(email)}
+        >
+          {email}
+        </li>
+      ))}
+    </ul>
+  )}
       <Button
         onClick={handleSendMessage}
         className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-1.5 rounded text-sm flex items-center justify-center"

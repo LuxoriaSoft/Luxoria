@@ -100,6 +100,28 @@ export class CollectionService {
       throw new Error(res.data?.message || 'Failed to report user');
     }
   }
+  
+  static async sendMentionNotification(
+    collectionId: string,
+    mentionedEmail: string,
+    senderEmail: string,
+    message: string
+  ): Promise<void> {
+    const token = localStorage.getItem('token')
+    if (!token) throw new Error('No token found')
+
+    const res = await api.post(
+      `/collection/${collectionId}/mention-notification`,
+      { mentionedEmail, senderEmail, message },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    )
+
+    if (res.status < 200 || res.status >= 300) {
+      throw new Error(res.data?.message || 'Failed to send mention notification')
+    }
+  }
 
   static async uploadPhoto(id: string, file: File): Promise<Photo> {
     const formData = new FormData()

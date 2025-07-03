@@ -24,15 +24,17 @@ namespace LuxAPI.Controllers
         private readonly AppDbContext _context;
         private readonly MinioService _minioService;
         private readonly IHubContext<ChatHub> _chatHub;
+        private readonly EmailService _emailService;
         private readonly string _bucketName = "photos-bucket";
         private readonly string _frontEndUrl;
         private readonly string _backEndUrl;
 
-        public CollectionController(AppDbContext context, IConfiguration configuration, MinioService minioService, IHubContext<ChatHub> chatHub)
+        public CollectionController(AppDbContext context, IConfiguration configuration, MinioService minioService, IHubContext<ChatHub> chatHub, EmailService emailService)
         {
             _context = context;
             _minioService = minioService;
             _chatHub = chatHub;
+            _emailService = emailService;
             _frontEndUrl = configuration["URI:FrontEnd"] ?? throw new Exception("Frontend URL is not set.");
             _backEndUrl = configuration["URI:Backend"] ?? throw new Exception("Backend URL is not set.");
         }
@@ -196,6 +198,21 @@ namespace LuxAPI.Controllers
 
             await _context.SaveChangesAsync();
             return NoContent();
+        }
+        [HttpPost("{collectionId}/mention-notification")]
+        public async Task<IActionResult> SendMentionNotification(Guid collectionId, [FromBody] MentionNotificationDto dto)
+        {
+            // Vérifier si l’email mentionné a bien accès à la collection
+            var collection = await _context.Collections.Include(c => c.Accesses).FirstOrDefaultAsync(c => c.Id == collectionId);
+            if (collection == null) return NotFound();
+
+            var hasAccess = collection.Accesses.Any(a => a.Email == dto.MentionedEmail);
+            if (!hasAccess) return BadRequest("User does not have access to this collection");
+
+            // Envoyer un mail à dto.MentionedEmail pour prévenir qu'il a été mentionné par dto.SenderEmail
+            await _emailService.SendMentionEmailAsync(dto.MentionedEmail, dto.SenderEmail, dto.Message);
+
+            return Ok(new { message = "Notification sent" });
         }
 
         [HttpPatch("{collectionId}/allowedEmails")]
@@ -427,7 +444,7 @@ namespace LuxAPI.Controllers
 
             return CreatedAtAction(nameof(GetCollection), new { id = collectionId }, message);
         }
-        
+
         [HttpPatch("photo/{photoId}/status")]
         [Authorize]
         public async Task<IActionResult> UpdatePhotoStatus(Guid photoId, [FromBody] UpdatePhotoStatusDto dto)
@@ -479,6 +496,14 @@ namespace LuxAPI.Controllers
     {
         public string Email { get; set; }
     }
+    
+    public class MentionNotificationDto
+{
+    public string MentionedEmail { get; set; }
+    public string SenderEmail { get; set; }
+    public string Message { get; set; }
+}
+
 
     #endregion
 }

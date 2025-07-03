@@ -15,6 +15,7 @@ export default function CollectionChatPage() {
   const [mentionVisible, setMentionVisible] = useState(false)
   const [mentionQuery, setMentionQuery] = useState('')
   const [filteredEmails, setFilteredEmails] = useState<string[]>([])
+  const [isSending, setIsSending] = useState(false);
 
   // Gestion des mentions
   useEffect(() => {
@@ -51,30 +52,33 @@ export default function CollectionChatPage() {
   }
 
   const handleSendMessage = async () => {
+    if (isSending) return;  // Bloque si déjà en envoi
     if (!chatMessage.trim() || !user) return
     try {
+      setIsSending(true)
       await CollectionService.sendChatMessage(id, {
         senderEmail: user.email,
         senderUsername: user.username,
         message: chatMessage.trim(),
       })
 
-      // Ajout local pour afficher direct le message envoyé
-      setMessages(prev => [
-        ...prev,
-        {
-          senderUsername: user.username,
-          senderEmail: user.email,
-          message: chatMessage.trim(),
-          sentAt: new Date().toISOString(),
-          avatarFileName: '', // si tu as avatar, mets-le ici
-          isMine: true,
-        },
-      ])
+      // Envoi des mails de notification pour chaque mention (emails précédés de @)
+      const mentionEmails = Array.from(chatMessage.matchAll(/@([\w.-]+@[\w.-]+\.[\w.-]+)/g)).map(m => m[1])
+
+      for (const email of mentionEmails) {
+        try {
+          await CollectionService.sendMentionNotification(id, email, user.email, chatMessage.trim())
+        } catch (e) {
+          console.error(`Failed to send mention email to ${email}`, e)
+        }
+      }
+
 
       setChatMessage('')
     } catch (err) {
       console.error('Error sending message:', err)
+    } finally {
+      setIsSending(false)  // Réactive l'envoi après la tentative
     }
   }
 
@@ -148,6 +152,7 @@ export default function CollectionChatPage() {
         </div>
         <Button
           onClick={handleSendMessage}
+          disabled={isSending}
           className="bg-purple-600 hover:bg-purple-700 text-white font-bold"
         >
           Chat

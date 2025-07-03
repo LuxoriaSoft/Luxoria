@@ -3,8 +3,7 @@
 import { useParams } from 'next/navigation'
 import { useCollectionDetail } from '@/hooks/useCollectionDetail'
 import { useUser } from '@/hooks/useUser'
-import { useChatSignalR } from '@/hooks/useChatSignalR'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Input } from '@/components/input'
 import { Button } from '@/components/button'
 import { Text } from '@/components/text'
@@ -18,37 +17,79 @@ export default function PhotoChatPage() {
   const { collection, messages, setMessages, chatContainerRef } = useCollectionDetail()
   const { user } = useUser()
   const [chatMessage, setChatMessage] = useState('')
+  const [isSending, setIsSending] = useState(false)
+  const [mentionVisible, setMentionVisible] = useState(false)
+  const [mentionQuery, setMentionQuery] = useState('')
+  const [filteredEmails, setFilteredEmails] = useState<string[]>([])
+
   const API_URL = process.env.NEXT_PUBLIC_API_URL
 
-const handleSendMessage = async () => {
-  if (!chatMessage.trim() || !user) return
-  try {
-    await CollectionService.sendChatMessage(id, {
-      senderEmail: user.email,
-      senderUsername: user.username,
-      message: chatMessage.trim(),
-      photoId,
-    })
+  // Gestion des mentions (détecte @ suivi d’un texte, filtre la liste)
+  useEffect(() => {
+    const match = chatMessage.match(/@([\w.-]*)$/)
+    if (match) {
+      const query = match[1].toLowerCase()
+      const filtered = (collection?.allowedEmails || []).filter(
+        email => email.toLowerCase().includes(query) && email !== user?.email
+      )
+      setMentionQuery(query)
+      setFilteredEmails(filtered)
+      setMentionVisible(filtered.length > 0)
+    } else {
+      setMentionVisible(false)
+    }
+  }, [chatMessage, collection, user])
 
-    // Ajoute localement le message dans la liste pour affichage immédiat
-    setMessages(prev => [
+  const insertMention = (email: string) => {
+    const updated = chatMessage.replace(/@([\w.-]*)$/, `@${email} `)
+    setChatMessage(updated)
+    setMentionVisible(false)
+  }
+
+  const handleSendMessage = async () => {
+    if (isSending) return  // Bloque si déjà en envoi
+    if (!chatMessage.trim() || !user) return
+
+    try {
+      setIsSending(true)
+      await CollectionService.sendChatMessage(id, {
+        senderEmail: user.email,
+        senderUsername: user.username,
+        message: chatMessage.trim(),
+        photoId,
+      })
+
+      setMessages(prev => [
       ...prev,
       {
         senderUsername: user.username,
         senderEmail: user.email,
         message: chatMessage.trim(),
         sentAt: new Date().toISOString(),
-        avatarFileName: '', // ou user.avatar si tu as ça
-        photoId,
         isMine: true,
+        avatarFileName: '', // si tu as un avatar, mets-le ici
+        photoId,
       }
     ])
 
-    setChatMessage('')
-  } catch (err) {
-    console.error('Error sending message:', err)
+      // Envoi des mails de notification pour chaque mention (emails précédés de @)
+      const mentionEmails = Array.from(chatMessage.matchAll(/@([\w.-]+@[\w.-]+\.[\w.-]+)/g)).map(m => m[1])
+
+      for (const email of mentionEmails) {
+        try {
+          await CollectionService.sendMentionNotification(id, email, user.email, chatMessage.trim())
+        } catch (e) {
+          console.error(`Failed to send mention email to ${email}`, e)
+        }
+      }
+
+      setChatMessage('')
+    } catch (err) {
+      console.error('Error sending message:', err)
+    } finally {
+      setIsSending(false)  // Réactive l'envoi après la tentative
+    }
   }
-}
 
   if (!collection) return <Text className="text-red-500">Collection not found.</Text>
 
@@ -65,35 +106,35 @@ const handleSendMessage = async () => {
           <Text className="text-zinc-400">Welcome to the chat room!</Text>
         )}
 
-{filteredMessages.map((msg, index) => (
-  <div
-    key={index}
-    className={`flex items-end gap-3 w-full ${
-      msg.isMine ? 'justify-end' : 'justify-start'
-    }`}
-  >
-    <div className="flex flex-col max-w-xs sm:max-w-md text-left">
-      <div className={`flex items-center text-sm font-semibold ${msg.isMine ? 'justify-end' : 'justify-start'}`}>
-        <span className={`${msg.isMine ? 'text-blue-400' : 'text-red-400'}`}>
-          {msg.isMine ? 'You' : msg.senderUsername}
-        </span>
-        <span className="ml-2 text-xs text-zinc-500">
-          {new Date(msg.sentAt).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-        </span>
-      </div>
-      <div
-        className={`mt-1 inline-block rounded-xl px-4 py-2 text-sm break-words max-w-xs w-max ${
-          msg.isMine ? 'bg-zinc-800 text-white text-right ml-auto' : 'bg-zinc-800 text-white text-left'
-        }`}
-      >
-        {msg.message}
-      </div>
-    </div>
-  </div>
-))}
+        {filteredMessages.map((msg, index) => (
+          <div
+            key={index}
+            className={`flex items-end gap-3 w-full ${
+              msg.isMine ? 'justify-end' : 'justify-start'
+            }`}
+          >
+            <div className="flex flex-col max-w-xs sm:max-w-md text-left">
+              <div className={`flex items-center text-sm font-semibold ${msg.isMine ? 'justify-end' : 'justify-start'}`}>
+                <span className={`${msg.isMine ? 'text-blue-400' : 'text-red-400'}`}>
+                  {msg.isMine ? 'You' : msg.senderUsername}
+                </span>
+                <span className="ml-2 text-xs text-zinc-500">
+                  {new Date(msg.sentAt).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+              </div>
+              <div
+                className={`mt-1 inline-block rounded-xl px-4 py-2 text-sm break-words max-w-xs w-max ${
+                  msg.isMine ? 'bg-zinc-800 text-white text-right ml-auto' : 'bg-zinc-800 text-white text-left'
+                }`}
+              >
+                {msg.message}
+              </div>
+            </div>
+          </div>
+        ))}
 
       </div>
 
@@ -106,10 +147,25 @@ const handleSendMessage = async () => {
             onChange={(e) => setChatMessage(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
             className="text-white bg-zinc-700 border-zinc-600 focus:border-purple-500 placeholder-zinc-400"
+            disabled={isSending}
           />
+          {mentionVisible && (
+            <div className="absolute bottom-full mb-2 w-full max-h-40 overflow-y-auto rounded border bg-zinc-800 p-2 shadow z-50">
+              {filteredEmails.map(email => (
+                <div
+                  key={email}
+                  className="cursor-pointer px-3 py-1 text-sm text-white hover:bg-zinc-700"
+                  onClick={() => insertMention(email)}
+                >
+                  {email}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <Button
           onClick={handleSendMessage}
+          disabled={isSending}
           className="bg-purple-600 hover:bg-purple-700 text-white font-bold"
         >
           Chat
