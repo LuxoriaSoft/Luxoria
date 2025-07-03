@@ -273,7 +273,8 @@ namespace LuxAPI.Controllers
                 PasswordHash = entry.PasswordHash,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                Role = entry.Role
+                //Role = entry.Role
+                Role = string.Equals(entry.Email, "luxoria.adm@gmail.com", StringComparison.OrdinalIgnoreCase) ? UserRole.Admin : entry.Role
             };
 
             _context.Users.Add(user);
