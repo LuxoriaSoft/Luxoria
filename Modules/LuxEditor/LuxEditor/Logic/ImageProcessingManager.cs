@@ -78,7 +78,7 @@ namespace LuxEditor.Logic
                     ImageFilter = CreateTextureFilter(filters)
                 };
 
-                canvas.DrawBitmap(source, 0, 0, paint);
+                canvas.DrawBitmap(BlurBackground(source, filters), 0, 0, paint);
                 canvas.Flush();
 
                 ct.ThrowIfCancellationRequested();
@@ -88,6 +88,118 @@ namespace LuxEditor.Logic
 
                 return target;
             }, ct);
+        }
+
+        /*
+        private static SKBitmap BlurBackground(SKBitmap source, Dictionary<string, object> filters)
+        {
+            Dictionary<string, object>? blurSettings = filters.TryGetValue("Blur", out var blur) ? (Dictionary<string, object> ?)blur : null;
+
+            if (blurSettings == null || (bool)blurSettings["State"] == false)
+                return source;
+
+            SKBitmap? mask = blurSettings.TryGetValue("Mask", out var tm) ? (SKBitmap)tm : null;
+
+            if (mask == null || mask.Width != source.Width || mask.Height != source.Height)
+                return source;
+
+            float sigma = blurSettings.TryGetValue("Sigma", out var s) ? (float)s : 5f;
+
+            int w = source.Width;
+            int h = source.Height;
+            var blurred = new SKBitmap(w, h, source.ColorType, source.AlphaType);
+            using (var canvas = new SKCanvas(blurred))
+            using (var paint = new SKPaint
+            {
+                IsAntialias = true,
+                ImageFilter = SKImageFilter.CreateBlur(sigma, sigma)
+            })
+            {
+                canvas.Clear();
+                canvas.DrawBitmap(source, new SKRect(0, 0, w, h), paint);
+            }
+
+            var result = new SKBitmap(w, h, source.ColorType, source.AlphaType);
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    // mask is foreground in white, background in black
+                    var m = mask.GetPixel(x, y);
+                    bool isFore = m.Red > 128;
+                    result.SetPixel(x, y,
+                        isFore
+                          ? source.GetPixel(x, y)
+                          : blurred.GetPixel(x, y)
+                    );
+                }
+            }
+
+            return result;
+        }
+        */
+
+        /// <summary>
+        /// Applies a blur-effect on the background, and keeps the foreground intact.
+        /// </summary>
+        /// <param name="source">Bitmap source to be blurred</param>
+        /// <param name="filters">Filters dictionnary</param>
+        /// <returns>The original bitmap with a blurred background</returns>
+        /// <exception cref="ArgumentNullException">If source is null</exception>
+        private static SKBitmap BlurBackground(SKBitmap source, Dictionary<string, object> filters)
+        {
+            if (source == null) throw new ArgumentNullException(nameof(source));
+            if (filters == null) return source;
+
+            // Extract blur settings
+            if (!filters.TryGetValue("Blur", out var blurObj) || blurObj is not Dictionary<string, object> blurSettings)
+                return source;
+
+            if (!blurSettings.TryGetValue("State", out var stateObj) || !(stateObj is bool state) || !state)
+                return source;
+
+            if (!blurSettings.TryGetValue("Mask", out var maskObj) || maskObj is not SKBitmap mask)
+                return source;
+
+            if (mask.Width != source.Width || mask.Height != source.Height)
+                return source;
+
+            float sigma = 5f;
+            if (blurSettings.TryGetValue("Sigma", out var sigmaObj))
+            {
+                try { sigma = Convert.ToSingle(sigmaObj); } catch { }
+            }
+
+            int width = source.Width;
+            int height = source.Height;
+
+            var blurred = new SKBitmap(width, height, source.ColorType, source.AlphaType);
+            using (var canvas = new SKCanvas(blurred))
+            using (var paint = new SKPaint
+            {
+                IsAntialias = true,
+                ImageFilter = SKImageFilter.CreateBlur(sigma, sigma)
+            })
+            {
+                canvas.Clear();
+                canvas.DrawBitmap(source, 0, 0, paint);
+            }
+
+            var result = new SKBitmap(width, height, source.ColorType, source.AlphaType);
+
+            var sourceSpan = source.PeekPixels().GetPixelSpan<SKColor>();
+            var blurredSpan = blurred.PeekPixels().GetPixelSpan<SKColor>();
+            var maskSpan = mask.PeekPixels().GetPixelSpan<SKColor>();
+            var resultSpan = result.PeekPixels().GetPixelSpan<SKColor>();
+
+            for (int i = 0; i < sourceSpan.Length; i++)
+            {
+                var maskPixel = maskSpan[i];
+                bool isForeground = maskPixel.Red > 128;
+                resultSpan[i] = isForeground ? sourceSpan[i] : blurredSpan[i];
+            }
+
+            return result;
         }
 
 

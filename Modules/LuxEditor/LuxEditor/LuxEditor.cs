@@ -58,8 +58,6 @@ namespace LuxEditor
             _editor = new Editor(null);
             _infos = new Infos(_eventBus);
 
-
-
             _editor.AttachCropController(_photoViewer.CropController);
             _editor.OnEditorImageUpdated += (updatedBitmap) =>
             {

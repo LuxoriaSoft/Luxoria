@@ -8,6 +8,7 @@ using LuxEditor.EditorUI.Models;
 using LuxEditor.Logic;
 using LuxEditor.Models;
 using LuxEditor.Services;
+using Luxoria.Algorithm.YoLoDetectModel;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -51,6 +52,11 @@ namespace LuxEditor.Components
         private readonly List<Layer> _observedLayers = new();
 
         private EditorToneCurveGroup _toneGroup;
+
+        private Lazy<YoLoDetectModelAPI> _yoloDetectionAPI = new(() =>
+            new YoLoDetectModelAPI(SubjectRecognition.ExtractEmbeddedResource("LuxEditor.ExternalLibs.Models.yolov5l.onnx")));
+        private SubjectRecognition _subjectRecognition;
+
         /// <summary>
         /// Style for the temperature slider.
         /// </summary>
@@ -528,6 +534,21 @@ namespace LuxEditor.Components
             ResetAllButton.Visibility = (idx == 0) ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        private void OnBlurAppliedEventHandler(SKBitmap mask)
+        {
+            Debug.WriteLine("Applying new bitmap on orginal");
+            if (CurrentImage?.Settings == null) return;
+            Dictionary<string, object>? blurSettings = (Dictionary<string, object>?)CurrentImage?.Settings?["Blur"];
+
+            if (blurSettings == null) return;
+            blurSettings["State"] = true;
+            blurSettings["Mask"] = mask;
+            if (CurrentImage?.Settings == null)
+                return;
+            CurrentImage!.Settings["Blur"] = blurSettings;
+            RequestFilterUpdate();
+        }
+
         public void SetEditableImage(EditableImage image)
         {
             CurrentImage = image;
@@ -557,6 +578,9 @@ namespace LuxEditor.Components
             EditorStackPanel.Children.Clear();
             _categories.Clear();
             _sliderCache.Clear();
+            _subjectRecognition = new(_yoloDetectionAPI);
+            _subjectRecognition.BlurAppliedEvent += OnBlurAppliedEventHandler;
+            _subjectRecognition.SetImage(image);
             BuildEditorUI();
             UpdateSliderUI();
             _toneGroup.RefreshCurves(CurrentImage.Settings);
@@ -626,6 +650,11 @@ namespace LuxEditor.Components
             toneExpander.AddControl(_toneGroup);
             _panelManager.AddCategory(toneExpander);
             CurrentImage.SaveState();
+
+            var subjectRecognitionExpender = new EditorGroupExpander("Subject Recognition");
+            _subjectRecognition.SetImage(CurrentImage);
+            subjectRecognitionExpender.AddControl(_subjectRecognition);
+            _panelManager.AddCategory(subjectRecognitionExpender);
         }
 
         /// <summary>
