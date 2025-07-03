@@ -140,7 +140,7 @@ export default function RegisterClient() {
             <select
               value={role}
               onChange={(e) => setRole(Number(e.target.value) as 0 | 1)}
-              className="w-full rounded border p-2"
+              className="w-full rounded border p-2 bg-zinc-900 text-white"
             >
               <option value={0}>Client</option>
               <option value={1}>Photographer</option>
