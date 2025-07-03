@@ -77,6 +77,7 @@ namespace LuxAPI.Controllers
                     m.SenderEmail,
                     m.Message,
                     m.SentAt,
+                    m.PhotoId,
                     AvatarFileName = _context.Users
                         .Where(u => u.Email == m.SenderEmail)
                         .Select(u => u.AvatarFileName ?? "default_avatar.jpg")
@@ -108,6 +109,7 @@ namespace LuxAPI.Controllers
                 m.SenderEmail,
                 m.Message,
                 m.SentAt,
+                m.PhotoId,
                 AvatarFileName = _context.Users
                     .Where(u => u.Email == m.SenderEmail)
                     .Select(u => u.AvatarFileName)
@@ -412,7 +414,8 @@ namespace LuxAPI.Controllers
                 SenderEmail = dto.SenderEmail,
                 SenderUsername = dto.SenderUsername,
                 Message = dto.Message,
-                SentAt = DateTime.UtcNow
+                SentAt = DateTime.UtcNow,
+                PhotoId = dto.PhotoId
             };
 
             _context.ChatMessages.Add(message);
@@ -469,6 +472,7 @@ namespace LuxAPI.Controllers
         public string SenderEmail { get; set; }
         public string SenderUsername { get; set; }
         public string Message { get; set; }
+        public Guid? PhotoId { get; set; }
     }
 
     public class EmailDto

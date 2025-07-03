@@ -14,6 +14,7 @@ export interface ChatMessage {
   sentAt: string
   avatarFileName?: string
   isMine?: boolean
+  photoId?: string
 }
 
 export interface Collection {
@@ -129,11 +130,15 @@ export class CollectionService {
     return res.data
   }
 
-  static async sendChatMessage(id: string, data: {
-    senderEmail: string
-    senderUsername: string
-    message: string
-  }): Promise<void> {
+  static async sendChatMessage(
+    id: string,
+    data: {
+      senderEmail: string
+      senderUsername: string
+      message: string
+      photoId?: string
+    }
+  ): Promise<void> {
     const token = localStorage.getItem('token')
     if (!token) throw new Error('No token found')
 

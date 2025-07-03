@@ -9,8 +9,9 @@ import { Text } from '@/components/text'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/dialog'
 import { useUser } from '@/hooks/useUser'
 import { useCollectionDetail } from '@/hooks/useCollectionDetail'
-import { CollectionService } from '@/services/collection.services'
+import { CollectionService, ChatMessage } from '@/services/collection.services'
 import { useRouter } from 'next/navigation'
+import { useChatSignalR } from '@/hooks/useChatSignalR'
 
 export default function CollectionDetail() {
   const {
@@ -36,6 +37,8 @@ export default function CollectionDetail() {
   const [reportReason, setReportReason] = useState('');
   const [selectedUserToReport, setSelectedUserToReport] = useState('');
   const router = useRouter()
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
 
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -64,19 +67,56 @@ export default function CollectionDetail() {
     setMentionVisible(false)
   }
 
-  const handleSendMessage = async () => {
-    if (!chatMessage.trim() || !user) return
-    try {
-      await CollectionService.sendChatMessage(id, {
-        senderEmail: user.email,
-        senderUsername: user.username,
-        message: chatMessage.trim(),
-      })
-      setChatMessage('')
-    } catch (err) {
-      console.error('Error sending message:', err)
-    }
+  const handleUploadPhoto = async () => {
+  if (!selectedFile) return;
+  setUploading(true);
+  try {
+    await CollectionService.uploadPhoto(id, selectedFile);
+
+    alert('Photo uploaded successfully!');
+
+    // Recharge la collection mise à jour
+    const updated = await CollectionService.fetchCollection(id);
+    setCollection(updated);
+    setSelectedFile(null);
+  } catch (err) {
+    console.error(err);
+    alert('Error uploading photo');
+  } finally {
+    setUploading(false);
   }
+};
+
+
+const handleSendMessage = async () => {
+  if (!chatMessage.trim() || !user) return
+  try {
+    const currentPhotoId = selectedImage?.id
+    await CollectionService.sendChatMessage(id, {
+      senderEmail: user.email,
+      senderUsername: user.username,
+      message: chatMessage.trim(),
+      photoId: currentPhotoId,
+    })
+
+    // ✅ Ajoute immédiatement le message localement dans le chat
+    const newMessage: ChatMessage = {
+      senderUsername: user.username,
+      senderEmail: user.email,
+      message: chatMessage.trim(),
+      sentAt: new Date().toISOString(),
+      isMine: true,
+      avatarFileName: user.avatarFileName ?? 'default_avatar.jpg',
+      photoId: currentPhotoId,
+    }
+    setMessages((prev) => [...prev, newMessage])
+
+    setChatMessage('')
+  } catch (err) {
+    console.error('Error sending message:', err)
+  }
+}
+
 
   const handleInvite = async () => {
     if (!inviteEmail) return
@@ -92,10 +132,29 @@ export default function CollectionDetail() {
     }
   }
 
+  useChatSignalR(id, (newMsg) => {
+    setMessages(prev => [
+      ...prev,
+      {
+        senderUsername: newMsg.username,
+        senderEmail: '', // tu peux ajuster si tu veux le mail
+        message: newMsg.message,
+        sentAt: newMsg.sentAt,
+        avatarFileName: newMsg.avatarFileName,
+        photoId: newMsg.photoId,
+        isMine: newMsg.username === user?.username,
+      },
+    ])
+  })
+
+
   if (loading) return <Text>Loading...</Text>
   if (!collection) return <Text className="text-red-500">Collection not found.</Text>
 
   const selectedImage = collection.photos[modalIndex ?? 0]
+  const filteredMessages = messages.filter(msg =>
+    msg.photoId === selectedImage?.id
+  )
 
   return (
     <div className="p-6 max-w-screen-xl mx-auto space-y-10">
@@ -112,6 +171,21 @@ export default function CollectionDetail() {
             Open Chat
           </Button>
         </div>
+      </div>
+        <div className="flex flex-col md:flex-row items-start gap-4 mt-4">
+        <input
+          type="file"
+          accept=".png,.jpg,.jpeg"
+          onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+          className="bg-white p-2 rounded border"
+        />
+        <Button
+          onClick={handleUploadPhoto}
+          disabled={uploading || !selectedFile}
+          className="self-start"
+        >
+          {uploading ? 'Uploading...' : 'Upload Photo'}
+        </Button>
       </div>
       {isReportUserModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -184,7 +258,7 @@ export default function CollectionDetail() {
             ref={chatContainerRef}
             className="flex-1 space-y-4 overflow-y-auto my-4"
           >
-            {messages.map((msg, index) => (
+            {filteredMessages.map((msg, index) => (
               <div
                 key={index}
                 className={`flex items-end gap-3 ${msg.isMine ? 'flex-row-reverse' : ''}`}

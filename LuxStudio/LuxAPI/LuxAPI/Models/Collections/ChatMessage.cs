@@ -29,5 +29,11 @@ namespace LuxAPI.Models
         public string Message { get; set; } = string.Empty;
 
         public DateTime SentAt { get; set; } = DateTime.UtcNow;
+
+        public Guid? PhotoId { get; set; }
+
+        [ForeignKey(nameof(PhotoId))]
+        [JsonIgnore]
+        public Photo? Photo { get; set; }
     }
 }
