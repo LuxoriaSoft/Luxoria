@@ -9,6 +9,33 @@
     mc:Ignorable="d">
 
     <Grid>
+        <ListView x:Name="CollectionListView" Visibility="{x:Bind AuthenticatedVisibility, Mode=OneWay}" SelectionChanged="CollectionListView_SelectionChanged"
+                          ItemsSource="{x:Bind CollectionItems}"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="local:CollectionItem">
+                    <StackPanel Orientation="Vertical" Spacing="5">
+                        <TextBlock Text="{x:Bind Name}" HorizontalAlignment="Left"
+                                           FontWeight="Bold"
+                                           Width="150"  FontSize="15" />
+                        <TextBlock Text="{x:Bind Description}"  HorizontalAlignment="Left"
+                                           TextWrapping="Wrap" FontWeight="Light" FontSize="12" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <StackPanel x:Name="AuthenticationPanel" Visibility="{x:Bind NotAuthenticatedVisibility, Mode=OneWay}">
+            <TextBlock Text="You must authenticate before"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       Margin="0,20,0,10" />
+            <Button Content="Authenticate using official website"
+                    Click="Authenticate"
+                    HorizontalAlignment="Center"
+                    Margin="0,0,0,10"/>
 
+        </StackPanel>
     </Grid>
 </Page>

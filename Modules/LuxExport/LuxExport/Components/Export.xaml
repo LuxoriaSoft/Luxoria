@@ -47,11 +47,13 @@
         <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Padding="10,10,10,0">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Export To" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                <DropDownButton Content="HardDrive" VerticalAlignment="Center">
+                <DropDownButton x:Name="ExportTargetDropDown"
+                Content="{x:Bind _viewModel.SelectedExportTarget, Mode=OneWay}"
+                VerticalAlignment="Center">
                     <DropDownButton.Flyout>
                         <MenuFlyout Placement="Bottom">
-                            <MenuFlyoutItem Text="HardDrive"/>
-                            <MenuFlyoutItem Text="Web"/>
+                            <MenuFlyoutItem Text="HardDrive" Click="ExportTarget_Selected"/>
+                            <MenuFlyoutItem Text="Web" Click="ExportTarget_Selected"/>
                         </MenuFlyout>
                     </DropDownButton.Flyout>
                 </DropDownButton>
@@ -126,7 +128,7 @@
                     </Grid>
                 </Expander>
 
-                <Expander Header="File Naming" Padding="10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" IsExpanded="True">
+                <Expander x:Name="FileNamingExpander" Header="File Naming" Padding="10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" IsExpanded="True">
                     <Grid RowSpacing="5" ColumnSpacing="5">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -212,34 +214,6 @@
                                 </MenuFlyout>
                             </DropDownButton.Flyout>
                         </DropDownButton>
-                    </Grid>
-                </Expander>
-
-                <Expander Header="Metadata" Padding="10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" IsExpanded="True">
-                    <Grid RowSpacing="5" ColumnSpacing="5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Include" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                        <DropDownButton Grid.Row="0" Grid.Column="1" Content="All Metadata" VerticalAlignment="Center" HorizontalAlignment="Stretch">
-                            <DropDownButton.Flyout>
-                                <MenuFlyout Placement="Bottom">
-                                    <MenuFlyoutItem Text="All Metadata"/>
-                                    <MenuFlyoutItem Text="Copyright"/>
-                                    <MenuFlyoutItem Text="None"/>
-                                </MenuFlyout>
-                            </DropDownButton.Flyout>
-                        </DropDownButton>
-
-                        <CheckBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Content="Remove Person Information" IsChecked="True" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                        <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Content="Remove Location Information" IsChecked="True" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     </Grid>
                 </Expander>
 

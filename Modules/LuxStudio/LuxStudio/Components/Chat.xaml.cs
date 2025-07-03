@@ -27,5 +27,7 @@ namespace LuxStudio.Components
         {
             this.InitializeComponent();
         }
+
+
     }
 }

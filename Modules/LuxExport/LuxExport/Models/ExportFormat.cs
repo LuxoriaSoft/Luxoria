@@ -17,5 +17,6 @@ public enum ExportFormat
     HEIF,
     AVIF,
     JPEGXL,
+    LuxStudio,
     Original
 }

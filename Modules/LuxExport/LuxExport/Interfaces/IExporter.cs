@@ -1,4 +1,6 @@
 ﻿using LuxExport.Logic;
+using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Models;
 using SkiaSharp;
 using System.Threading.Tasks;
 
@@ -16,6 +18,6 @@ namespace LuxExport.Interfaces
         /// <param name="path">The path where the exported file will be saved.</param>
         /// <param name="format">The format to export the image in.</param>
         /// <param name="settings">The settings to use for the export, such as quality and color space.</param>
-        void Export(SKBitmap image, string path, ExportFormat format, ExportSettings settings);
+        Task Export(SKBitmap image, LuxAsset asset, string? path, ExportFormat format, ExportSettings settings, IEventBus eventBus);
     }
 }

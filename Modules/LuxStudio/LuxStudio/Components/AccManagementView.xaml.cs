@@ -12,6 +12,7 @@ public sealed partial class AccManagementView : Page
 {
     private AuthManager? _authMgr;
     private LuxStudioConfig? _config;
+    public event Action<LuxStudioConfig, AuthManager>? OnAuthenticated;
 
     public AccManagementView(ref AuthManager? authMgr)
     {
@@ -88,6 +89,7 @@ public sealed partial class AccManagementView : Page
             if (_authMgr.IsAuthenticated())
             {
                 Debug.WriteLine("Authenticated");
+                OnAuthenticated?.Invoke(_config, _authMgr);
                 await ShowMainContentPanelAsync();
             }
             else

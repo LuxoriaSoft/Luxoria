@@ -1,4 +1,6 @@
-﻿using LuxStudio.COM.Models;
+﻿using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Models.Events;
+using LuxStudio.COM.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,6 +9,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace LuxStudio.COM.Services;
@@ -14,11 +17,13 @@ namespace LuxStudio.COM.Services;
 public class CollectionService
 {
     private readonly string _apiBaseUrl;
+    private readonly IEventBus _eventBus;
 
-    public CollectionService(LuxStudioConfig config)
+    public CollectionService(LuxStudioConfig config, IEventBus eventBus)
     {
         //_clientId = config?.Sso?.Params?.ClientId ?? throw new NullReferenceException();
         _apiBaseUrl = config?.ApiUrl ?? throw new NullReferenceException();
+        _eventBus = eventBus;
         //_redirectUri = config?.Sso?.Params?.RedirectUrl ?? throw new NullReferenceException();
         //_ssoBaseUrl = config?.Sso?.Url ?? throw new NullReferenceException();
 
@@ -100,36 +105,72 @@ public class CollectionService
         }
     }
 
-    public async Task<bool> UploadAssetAsync(string accessToken, Guid collectionId, string fileName, StreamContent stream)
+    public class UploadResponse
+    {
+        [property: JsonPropertyName("id")]
+        public Guid Id { get; set; }
+        [property: JsonPropertyName("collectionId")]
+        public Guid CollectionId { get; set; }
+        [property: JsonPropertyName("filePath")]
+        public string FilePath { get; set; }
+        [property: JsonPropertyName("status")]
+        public int Status { get; set; }
+        [property: JsonPropertyName("comments")]
+        public List<object> Comments { get; set; }
+    }
+
+
+    public async Task<bool> UploadAssetAsync(Guid assetId, string accessToken, Guid collectionId, string fileName, StreamContent stream, Guid? overrideId = null)
     {
         Debug.WriteLine("Fetching user information...");
 
         var requestUri = $"{_apiBaseUrl}/api/collection/{collectionId}/upload";
 
+        Debug.WriteLine("Request URI: " + requestUri);
+        Debug.WriteLine("Token: " + accessToken);
+
         using var httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
         using var form = new MultipartFormDataContent();
-        form.Add(stream, "file", fileName);
 
+        Debug.WriteLine("Using stream!");
+
+        form.Add(stream, "file", fileName);
+        if (overrideId != null)
+            form.Add(new StringContent(overrideId.ToString() ?? ""), "photoId");
+
+        Debug.WriteLine("Preparing for upload... with body: " + form.ToString());
         try
         {
             var response = await httpClient.PostAsync(requestUri, form);
             if (response.IsSuccessStatusCode)
             {
-                var json = await response.Content.ReadAsStringAsync();
-                Console.WriteLine("Upload successful! Server returned:");
-                Console.WriteLine(json);
+                var jsonString = await response.Content.ReadAsStringAsync();
+                Debug.WriteLine("Response JSON: " + jsonString);
+
+                var json = JsonSerializer.Deserialize<UploadResponse>(jsonString);
+
+                Debug.WriteLine("Upload successful! Server returned:");
+                Debug.WriteLine(json);
+
+                await _eventBus.Publish(new SaveLastUpdatedIdEvent(
+                    _apiBaseUrl,
+                    json.Id,
+                    collectionId,
+                    assetId
+                ));
                 return true;
             }
             else
             {
-                Console.WriteLine($"Error: {response.StatusCode}");
+                Debug.WriteLine($"Error: {response.StatusCode}");
                 var errorText = await response.Content.ReadAsStringAsync();
-                Console.WriteLine(errorText);
+                Debug.WriteLine(errorText);
                 return false;
             }
         }
+
         catch (Exception ex)
         {
             Debug.WriteLine($"Exception during fetching user information: {ex.Message}");

@@ -1,5 +1,8 @@
+using LuxExport.Interfaces;
 using LuxExport.Logic;
 using Luxoria.Modules;
+using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Models;
 using Luxoria.SDK.Interfaces;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.UI.Xaml;
@@ -21,7 +24,8 @@ namespace LuxExport
 {
     public sealed partial class ExportProgressWindow : Window
     {
-        private readonly List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> _bitmaps;
+        //private readonly List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> _bitmaps;
+        private readonly ICollection<LuxAsset> _assets;
         private readonly ExportViewModel _viewModel;
 
         private CancellationTokenSource _cts = new();
@@ -31,18 +35,21 @@ namespace LuxExport
 
         ILoggerService _logger;
 
+        private readonly IEventBus _eventBus;
+
         /// <summary>
         /// Constructs the export progress window with the given bitmaps and view model.
         /// </summary>
         /// <param name="bitmaps"> Bitmaps with Metadata </param>
         /// <param name="viewModel"></param>
-        public ExportProgressWindow(List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> bitmaps, ExportViewModel viewModel, ILoggerService logger)
+        public ExportProgressWindow(ICollection<LuxAsset> assets, ExportViewModel viewModel, ILoggerService logger, IEventBus eventBus)
         {
-            _logger = logger;
             InitializeComponent();
-
-            _bitmaps = bitmaps;
+            _logger = logger;
+            _assets = assets;
             _viewModel = viewModel;
+
+            _eventBus = eventBus;
 
             this.AppWindow.Resize(new SizeInt32(400, 300));
 
@@ -87,32 +94,43 @@ namespace LuxExport
         /// </summary>
         private async Task DoExportLoopAsync()
         {
-            int total = _bitmaps.Count;
+            int total = _assets.Count;
             var wmService = new WatermarkService(new VaultService(_logger));
             var wm = wmService.Load();
+            var i = 0;
 
-            for (int i = 0; i < total; i++)
+            foreach (var asset in _assets)
             {
+                i++;
                 if (_cts.IsCancellationRequested)
                     break;
 
                 _pauseEvent.Wait();
 
-                var bitmap = _bitmaps[i].Key;
-                var metadata = _bitmaps[i].Value;
+                var bitmap = asset.Data.Bitmap;
+                var metadata = asset.Data.EXIF;
 
                 string originalFileName = metadata["File Name"];
                 string fileName;
 
-                var exporter = ExporterFactory.CreateExporter(_viewModel.SelectedFormat);
+                IExporter exporter;
 
-                var settings = new ExportSettings
+                if (_viewModel.IsWebExport)
                 {
-                    Quality = _viewModel.Quality,
-                    ColorSpace = _viewModel.SelectedColorSpace,
-                    LimitFileSize = _viewModel.LimitFileSize,
-                    MaxFileSizeKB = _viewModel.MaxFileSizeKB
-                };
+                    exporter = ExporterFactory.CreateExporter(ExportFormat.LuxStudio);
+                }
+                else
+                {
+                    exporter = ExporterFactory.CreateExporter(_viewModel.SelectedFormat);
+                }
+
+                    var settings = new ExportSettings
+                    {
+                        Quality = _viewModel.Quality,
+                        ColorSpace = _viewModel.SelectedColorSpace,
+                        LimitFileSize = _viewModel.LimitFileSize,
+                        MaxFileSizeKB = _viewModel.MaxFileSizeKB
+                    };
 
                 if (_viewModel.RenameFile)
                 {
@@ -159,7 +177,7 @@ namespace LuxExport
                 {
                     var colourConverted = ConvertColorSpace(bitmap, _viewModel.SelectedColorSpace);
                     var wmApplied = WatermarkApplier.Apply(colourConverted, _viewModel.Watermark);
-                    exporter.Export(wmApplied, fullFilePath, _viewModel.SelectedFormat, settings);
+                    await exporter.Export(wmApplied, asset, fullFilePath, _viewModel.SelectedFormat, settings, _eventBus);
                 }
 
                 int index = i;
