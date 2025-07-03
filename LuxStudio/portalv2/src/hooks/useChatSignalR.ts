@@ -5,8 +5,12 @@ export function useChatSignalR(collectionId: string, onNewMessage: (msg: any) =>
   const connectionRef = useRef<HubConnection | null>(null)
 
   useEffect(() => {
+    const token = localStorage.getItem('token') || ''
+
     const conn = new HubConnectionBuilder()
-      .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/hubs/chat?collectionId=${collectionId}`)
+      .withUrl(`${process.env.NEXT_PUBLIC_SIGNALR_URL}/hubs/chat?collectionId=${collectionId}`, {
+        accessTokenFactory: () => token,
+      })
       .withAutomaticReconnect()
       .build()
 

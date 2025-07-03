@@ -4,7 +4,7 @@ import * as signalR from '@microsoft/signalr'
 export class ChatService {
   static createConnection(collectionId: string, token: string) {
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl(`${process.env.NEXT_PUBLIC_SIGNALR_URL}/hubs/chat`, {
+      .withUrl(`${process.env.NEXT_PUBLIC_SIGNALR_URL}/hubs/chat?collectionId=${collectionId}`, {
         accessTokenFactory: () => token,
       })
       .withAutomaticReconnect()

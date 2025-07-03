@@ -2,6 +2,7 @@
   "devDependencies": {
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
+    "@types/file-saver": "^2.0.7",
     "husky": "^8.0.0"
   },
   "scripts": {

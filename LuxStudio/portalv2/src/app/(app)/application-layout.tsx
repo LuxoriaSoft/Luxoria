@@ -96,7 +96,7 @@ export function ApplicationLayout({
   const pathname = usePathname()
   const { user } = useUser()
   const searchParams = useSearchParams()
-  const hiddenBar = searchParams.get('hiddenbar') === 'true'
+  const hiddenBar = pathname.startsWith('/collections/') && (/\/chat($|\/)/.test(pathname))
 
   const avatarUrl = user?.avatarFileName
     ? `${process.env.NEXT_PUBLIC_API_URL}/auth/avatar/${user.avatarFileName}`

@@ -4,23 +4,19 @@ import { useCollectionDetail } from '@/hooks/useCollectionDetail'
 import { useUser } from '@/hooks/useUser'
 import { Input } from '@/components/input'
 import { Button } from '@/components/button'
-import { Avatar } from '@/components/avatar'
 import { Text } from '@/components/text'
 import { useEffect, useState } from 'react'
 import { CollectionService } from '@/services/collection.services'
-import { useRouter } from 'next/navigation'
-import { ArrowLeftIcon } from '@heroicons/react/20/solid' // pour une icône flèche
-
 
 export default function CollectionChatPage() {
-  const { id, collection, messages, chatContainerRef } = useCollectionDetail()
+  const { id, collection, messages, setMessages, chatContainerRef } = useCollectionDetail()
   const { user } = useUser()
   const [chatMessage, setChatMessage] = useState('')
   const [mentionVisible, setMentionVisible] = useState(false)
   const [mentionQuery, setMentionQuery] = useState('')
   const [filteredEmails, setFilteredEmails] = useState<string[]>([])
-  const API_URL = process.env.NEXT_PUBLIC_API_URL
 
+  // Gestion des mentions
   useEffect(() => {
     const match = chatMessage.match(/@([\w.-]*)$/)
     if (match) {
@@ -36,6 +32,18 @@ export default function CollectionChatPage() {
     }
   }, [chatMessage, collection, user])
 
+  // Scroll auto vers le bas à chaque nouveau message
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      setTimeout(() => {
+        chatContainerRef.current!.scrollTo({
+          top: chatContainerRef.current!.scrollHeight,
+          behavior: 'smooth',
+        })
+      }, 50)
+    }
+  }, [messages])
+
   const insertMention = (email: string) => {
     const updated = chatMessage.replace(/@([\w.-]*)$/, `@${email} `)
     setChatMessage(updated)
@@ -50,6 +58,20 @@ export default function CollectionChatPage() {
         senderUsername: user.username,
         message: chatMessage.trim(),
       })
+
+      // Ajout local pour afficher direct le message envoyé
+      setMessages(prev => [
+        ...prev,
+        {
+          senderUsername: user.username,
+          senderEmail: user.email,
+          message: chatMessage.trim(),
+          sentAt: new Date().toISOString(),
+          avatarFileName: '', // si tu as avatar, mets-le ici
+          isMine: true,
+        },
+      ])
+
       setChatMessage('')
     } catch (err) {
       console.error('Error sending message:', err)
@@ -57,34 +79,31 @@ export default function CollectionChatPage() {
   }
 
   if (!collection) return <Text className="text-red-500">Collection not found.</Text>
-  
-  return (
-    <div className="p-6 max-w-screen-xl mx-auto">
-      <div className="flex items-center mb-4 gap-2">
-    </div>
-      <h1 className="text-2xl font-bold mb-4">{collection.name} - Chat</h1>
 
+  return (
+    <div className="flex flex-col min-h-screen w-full bg-zinc-900 text-white">
+      {/* Zone de messages */}
       <div
         ref={chatContainerRef}
-        className="border rounded p-4 h-[70vh] overflow-y-auto bg-white space-y-4"
+        className="flex-1 overflow-y-auto p-4 space-y-4"
       >
+        {messages.length === 0 && (
+          <Text className="text-zinc-400">Welcome to the chat room!</Text>
+        )}
+
         {messages.map((msg, index) => (
           <div
             key={index}
-            className={`flex items-end gap-3 ${msg.isMine ? 'flex-row-reverse' : ''}`}
+            className={`flex items-end gap-3 w-full ${
+              msg.isMine ? 'justify-end' : 'justify-start'
+            }`}
           >
-            {msg.avatarFileName && (
-              <Avatar
-                src={`${API_URL}/auth/avatar/${msg.avatarFileName}`}
-                alt={msg.senderUsername}
-                className="w-10 h-10"
-                square
-              />
-            )}
-            <div className={`max-w-xs sm:max-w-md ${msg.isMine ? 'text-left' : 'text-right'}`}>
-              <div className="text-sm font-semibold text-zinc-800">
-                {msg.isMine ? 'You' : msg.senderUsername}{' '}
-                <span className="text-xs text-zinc-400 ml-1">
+            <div className="flex flex-col max-w-xs sm:max-w-md text-left">
+              <div className={`flex items-center text-sm font-semibold ${msg.isMine ? 'justify-end' : 'justify-start'}`}>
+                <span className={`${msg.isMine ? 'text-blue-400' : 'text-red-400'}`}>
+                  {msg.isMine ? 'You' : msg.senderUsername}
+                </span>
+                <span className="ml-2 text-xs text-zinc-500">
                   {new Date(msg.sentAt).toLocaleTimeString([], {
                     hour: '2-digit',
                     minute: '2-digit',
@@ -92,8 +111,8 @@ export default function CollectionChatPage() {
                 </span>
               </div>
               <div
-                className={`mt-1 inline-block rounded-xl px-4 py-2 text-sm ${
-                  msg.isMine ? 'bg-blue-600 text-white' : 'bg-zinc-100 text-zinc-800'
+                className={`mt-1 inline-block rounded-xl px-4 py-2 text-sm break-words max-w-xs w-max ${
+                  msg.isMine ? 'bg-zinc-800 text-white text-right ml-auto' : 'bg-zinc-800 text-white text-left'
                 }`}
               >
                 {msg.message}
@@ -103,21 +122,22 @@ export default function CollectionChatPage() {
         ))}
       </div>
 
-      <div className="relative mt-4 flex gap-2">
-        <div className="relative w-full">
+      {/* Input sticky en bas */}
+      <div className="sticky bottom-0 bg-zinc-800 p-3 flex gap-2 border-t border-zinc-700">
+        <div className="relative flex-1">
           <Input
-            placeholder="Your message..."
+            placeholder="Send a message"
             value={chatMessage}
             onChange={(e) => setChatMessage(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-            className="text-zinc-900"
+            className="text-white bg-zinc-700 border-zinc-600 focus:border-purple-500 placeholder-zinc-400"
           />
           {mentionVisible && (
-            <div className="absolute bottom-full mb-2 w-full max-h-40 overflow-y-auto rounded border bg-white p-2 shadow z-50">
+            <div className="absolute bottom-full mb-2 w-full max-h-40 overflow-y-auto rounded border bg-zinc-800 p-2 shadow z-50">
               {filteredEmails.map(email => (
                 <div
                   key={email}
-                  className="cursor-pointer px-3 py-1 text-sm text-zinc-700 hover:bg-zinc-100"
+                  className="cursor-pointer px-3 py-1 text-sm text-white hover:bg-zinc-700"
                   onClick={() => insertMention(email)}
                 >
                   {email}
@@ -126,7 +146,12 @@ export default function CollectionChatPage() {
             </div>
           )}
         </div>
-        <Button onClick={handleSendMessage}>Send</Button>
+        <Button
+          onClick={handleSendMessage}
+          className="bg-purple-600 hover:bg-purple-700 text-white font-bold"
+        >
+          Chat
+        </Button>
       </div>
     </div>
   )
