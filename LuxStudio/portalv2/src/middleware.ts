@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value
   const { pathname, searchParams, search, origin } = request.nextUrl
-  const publicPaths = ['/login', '/register', '/register-confirmation']
+  const publicPaths = ['/login', '/register', '/register-confirmation', '/config/api']
 
   const isPublicPage = publicPaths.some(path => pathname.startsWith(path))
 
