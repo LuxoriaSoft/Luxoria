@@ -4,8 +4,8 @@ import Script from 'next/script'
 
 export const metadata: Metadata = {
   title: {
-    template: '%s - Catalyst',
-    default: 'Catalyst',
+    template: '%s - Luxoria',
+    default: 'Luxoria',
   },
   description: '',
 }

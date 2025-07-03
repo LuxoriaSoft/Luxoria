@@ -10,6 +10,7 @@ import { Input } from '@/components/input'
 import { Strong, Text, TextLink } from '@/components/text'
 import { Logo } from '@/app/logo'
 import { AuthService } from '@/services/auth'
+import { LuxoriaLogo } from '@/components/LuxoriaLogo'
 
 export default function LoginClient() {
   const router = useRouter()
@@ -19,6 +20,8 @@ export default function LoginClient() {
   const [captchaToken, setCaptchaToken] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+
+  const blocked = searchParams.get('blocked') === 'true';
 
   const captchaRef = useRef<HTMLDivElement>(null)
 
@@ -56,11 +59,18 @@ export default function LoginClient() {
     <div className="flex min-h-screen flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-sm space-y-8">
         <div className="flex justify-center">
-          <Logo className="h-6 text-zinc-950 dark:text-white forced-colors:text-[CanvasText]" />
+          <LuxoriaLogo className="h-12 w-auto" />
         </div>
         <Heading level={1} className="text-center">
           Sign in to your account
         </Heading>
+
+        {blocked && (
+          <div className="mb-4 rounded bg-red-600 p-3 text-white text-sm">
+            Your account has been blocked. Please contact an administrator.
+          </div>
+        )}
+
         <form onSubmit={handleLogin} className="space-y-6">
           <Field>
             <Label>Email</Label>

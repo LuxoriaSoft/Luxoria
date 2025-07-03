@@ -21,6 +21,9 @@ namespace LuxAPI.DAL
         public DbSet<PhotoComment> PhotoComments { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<PendingRegistration> PendingRegistrations { get; set; }
+        public DbSet<ActivityLog> ActivityLogs { get; set; }
+        public DbSet<CollectionReport> CollectionReports { get; set; }
+        public DbSet<UserReport> UserReports { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

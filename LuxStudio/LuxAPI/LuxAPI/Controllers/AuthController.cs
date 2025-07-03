@@ -172,6 +172,7 @@ namespace LuxAPI.Controllers
         /// <param name="login">User login data (username, password).</param>
         /// <returns>JWT token if authentication is successful, otherwise an error.</returns>
         [HttpPost("login")]
+        [AllowAnonymous]
         public IActionResult Login([FromBody] UserLoginModelDto login)
         {
             if (!ModelState.IsValid)
@@ -180,7 +181,6 @@ namespace LuxAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            //var user = _context.Users.FirstOrDefault(u => u.Username == login.Username);
             var user = _context.Users.FirstOrDefault(u =>
                 u.Username == login.Username || u.Email == login.Username);
 
@@ -190,6 +190,13 @@ namespace LuxAPI.Controllers
                 return Unauthorized("Invalid username or password.");
             }
 
+            // ✅ Vérifie si le compte est bloqué AVANT de vérifier le mot de passe
+            if (user.IsBlocked)
+            {
+                _logger.LogWarning("Blocked user tried to log in: {Username}", login.Username);
+                return StatusCode(403, "Your account has been blocked. Please contact an administrator.");
+            }
+
             var isPasswordValid = BCrypt.Net.BCrypt.Verify(login.Password, user.PasswordHash);
             if (!isPasswordValid)
             {
@@ -197,11 +204,11 @@ namespace LuxAPI.Controllers
                 return Unauthorized("Invalid username or password.");
             }
 
-            // Generate a JWT token for the authenticated user
+            // ✅ Générer le token si tout est bon
             var token = _jwtService.GenerateJwtToken(user.Id, user.Username, user.Email, user.Role);
 
             _logger.LogInformation("User logged in successfully: {Username}", login.Username);
-            return Ok(new { token }); // Return the JWT token
+            return Ok(new { token });
         }
 
         [HttpPost("request-verification")]
@@ -299,25 +306,36 @@ namespace LuxAPI.Controllers
         /// Returns information about the currently authenticated user.
         /// This route requires a valid JWT token.
         /// </summary>
-        /// <returns>User ID and username of the authenticated user.</returns>
+        /// <returns>User info if authenticated.</returns>
         [HttpGet("whoami")]
         [Authorize] // Requires a valid JWT token
         public IActionResult WhoAmI()
         {
-            // http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("User not authenticated.");
-            
+
             var user = _context.Users.FirstOrDefault(u => u.Id == Guid.Parse(userId));
-            
+
             if (user == null)
                 return Unauthorized("User not found.");
-            
-            // Mask sensitive information
+
+            if (user.IsBlocked)
+            {
+                _logger.LogWarning("Blocked user tried to access WhoAmI: {Username}", user.Username);
+                return Unauthorized("Your account has been blocked. Please contact an administrator.");
+            }
+
             user.PasswordHash = string.Empty;
-            
-            return Ok(user);
+
+            return Ok(new
+            {
+                user.Id,
+                user.Username,
+                user.Email,
+                user.Role,
+                user.AvatarFileName
+            });
         }
 
         /// <summary>

@@ -12,7 +12,11 @@ export class AuthService {
 
       return response.data.token
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Login failed.')
+      throw new Error(
+        typeof error.response?.data === 'string'
+          ? error.response.data
+          : error.response?.data?.message || 'Login failed.'
+      )
     }
   }
 

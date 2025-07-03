@@ -9,6 +9,15 @@ export function middleware(request: NextRequest) {
 
   const isPublicPage = publicPaths.some(path => pathname.startsWith(path))
 
+  if (
+    pathname.startsWith('/teams/') ||
+    pathname.startsWith('/flags/') ||
+    pathname.startsWith('/_next/') ||
+    pathname === '/favicon.ico'
+  ) {
+    return NextResponse.next()
+  }
+
   if (!token && !isPublicPage) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'

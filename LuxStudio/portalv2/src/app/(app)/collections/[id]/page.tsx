@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/d
 import { useUser } from '@/hooks/useUser'
 import { useCollectionDetail } from '@/hooks/useCollectionDetail'
 import { CollectionService } from '@/services/collection.services'
+import { useRouter } from 'next/navigation'
 
 export default function CollectionDetail() {
   const {
@@ -31,6 +32,11 @@ export default function CollectionDetail() {
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteMessage, setInviteMessage] = useState('')
   const [inviteError, setInviteError] = useState(false)
+  const [isReportUserModalOpen, setIsReportUserModalOpen] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [selectedUserToReport, setSelectedUserToReport] = useState('');
+  const router = useRouter()
+
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -101,9 +107,71 @@ export default function CollectionDetail() {
         <div className="flex gap-2">
           <Button onClick={() => setInviteOpen(true)}>Invite</Button>
           <Button className="btn-secondary">Download</Button>
+          <Button onClick={() => setIsReportUserModalOpen(true)}>Report a user</Button>
+          <Button onClick={() => router.push(`/collections/${id}/chat`)}>
+            Open Chat
+          </Button>
         </div>
       </div>
+      {isReportUserModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-zinc-800 text-white p-6 rounded-lg max-w-sm w-full space-y-4">
+            <h2 className="text-lg font-bold">Report a user in this collection</h2>
 
+            <div>
+              <label className="block text-sm mb-1">Select user:</label>
+              <select
+                value={selectedUserToReport}
+                onChange={(e) => setSelectedUserToReport(e.target.value)}
+                className="w-full p-2 rounded bg-zinc-700 text-white"
+              >
+                <option value="" disabled>Select a user…</option>
+                {collection.allowedEmails.map(email => (
+                  <option key={email} value={email}>{email}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <textarea
+                className="w-full p-2 rounded bg-zinc-700 text-white placeholder-zinc-400 mt-2"
+                placeholder="Describe your reason..."
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                rows={4}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button onClick={() => setIsReportUserModalOpen(false)}>Cancel</Button>
+              <Button
+                onClick={async () => {
+                  if (!selectedUserToReport || !reportReason.trim()) {
+                    alert("Please select a user and provide a reason.");
+                    return;
+                  }
+                  try {
+                    await CollectionService.reportUser({
+                      collectionId: collection.id,
+                      reportedUserEmail: selectedUserToReport,
+                      reason: reportReason.trim(),
+                    });
+                    alert("Report submitted successfully!");
+                    setIsReportUserModalOpen(false);
+                    setSelectedUserToReport('');
+                    setReportReason('');
+                  } catch (err) {
+                    console.error(err);
+                    alert("Error submitting report");
+                  }
+                }}
+              >
+                Submit Report
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex gap-6">
         <div className="flex-1 border rounded overflow-hidden">
           {selectedImage && (
@@ -158,6 +226,7 @@ export default function CollectionDetail() {
                 value={chatMessage}
                 onChange={(e) => setChatMessage(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                className="!text-zinc-900 !bg-zinc-900"
               />
               {mentionVisible && (
                 <div className="absolute bottom-full mb-2 w-full max-h-40 overflow-y-auto rounded border bg-white p-2 shadow z-50">

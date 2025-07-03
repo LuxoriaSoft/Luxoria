@@ -41,10 +41,27 @@ import {
   SparklesIcon,
   Square2StackIcon,
   TicketIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/20/solid'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
+
+function clearAuthData() {
+  localStorage.removeItem('token')
+  localStorage.removeItem('refreshToken')
+  document.cookie = 'token=; Max-Age=0; path=/;'
+  document.cookie = 'refreshToken=; Max-Age=0; path=/;'
+}
 
 function AccountDropdownMenu({ anchor }: { anchor: 'top start' | 'bottom end' }) {
+  const router = useRouter()
+
+  const handleSignOut = (e: React.MouseEvent) => {
+    e.preventDefault()
+    clearAuthData()
+    router.push('/login')
+  }
+
   return (
     <DropdownMenu className="min-w-64" anchor={anchor}>
       <DropdownItem href="/account">
@@ -61,7 +78,7 @@ function AccountDropdownMenu({ anchor }: { anchor: 'top start' | 'bottom end' })
         <DropdownLabel>Share feedback</DropdownLabel>
       </DropdownItem>
       <DropdownDivider />
-      <DropdownItem href="/login">
+      <DropdownItem href="/login" onClick={handleSignOut}>
         <ArrowRightStartOnRectangleIcon />
         <DropdownLabel>Sign out</DropdownLabel>
       </DropdownItem>
@@ -78,34 +95,46 @@ export function ApplicationLayout({
 }) {
   const pathname = usePathname()
   const { user } = useUser()
-  
+  const searchParams = useSearchParams()
+  const hiddenBar = searchParams.get('hiddenbar') === 'true'
 
   const avatarUrl = user?.avatarFileName
     ? `${process.env.NEXT_PUBLIC_API_URL}/auth/avatar/${user.avatarFileName}`
     : '/users/default.jpg'
 
+  const NavbarContent = (
+    <Navbar>
+      <NavbarSpacer />
+      <NavbarSection>
+        <Dropdown>
+          <DropdownButton as={NavbarItem}>
+            <Avatar src={avatarUrl} square />
+          </DropdownButton>
+          <AccountDropdownMenu anchor="bottom end" />
+        </Dropdown>
+      </NavbarSection>
+    </Navbar>
+  )
+
+  if (hiddenBar) {
+    // ✅ Plein écran sans sidebar
+    return (
+      <div className="flex flex-col min-h-screen w-full">
+        <main className="flex-1 w-full">{children}</main>
+      </div>
+    )
+  }
+
   return (
     <SidebarLayout
-      navbar={
-        <Navbar>
-          <NavbarSpacer />
-          <NavbarSection>
-            <Dropdown>
-              <DropdownButton as={NavbarItem}>
-                <Avatar src={avatarUrl} square />
-              </DropdownButton>
-              <AccountDropdownMenu anchor="bottom end" />
-            </Dropdown>
-          </NavbarSection>
-        </Navbar>
-      }
+      navbar={NavbarContent}
       sidebar={
         <Sidebar>
           <SidebarHeader>
             <Dropdown>
               <DropdownButton as={SidebarItem}>
-                <Avatar src="/teams/catalyst.svg" />
-                <SidebarLabel>Catalyst</SidebarLabel>
+                <Avatar src="/teams/luxoria.svg" />
+                <SidebarLabel>Luxoria</SidebarLabel>
                 <ChevronDownIcon />
               </DropdownButton>
               <DropdownMenu className="min-w-80 lg:min-w-64" anchor="bottom start">
@@ -115,8 +144,8 @@ export function ApplicationLayout({
                 </DropdownItem>
                 <DropdownDivider />
                 <DropdownItem href="#">
-                  <Avatar slot="icon" src="/teams/catalyst.svg" />
-                  <DropdownLabel>Catalyst</DropdownLabel>
+                  <Avatar slot="icon" src="/teams/luxoria.svg" />
+                  <DropdownLabel>Luxoria</DropdownLabel>
                 </DropdownItem>
                 <DropdownItem href="#">
                   <Avatar slot="icon" initials="BE" className="bg-purple-500 text-white" />
@@ -154,7 +183,7 @@ export function ApplicationLayout({
             <SidebarSection className="max-lg:hidden">
               <SidebarHeading>Upcoming Events</SidebarHeading>
             </SidebarSection>
-                        {/* Section Admin visible uniquement si role === 2 */}
+
             {user?.role === 2 && (
               <SidebarSection>
                 <SidebarHeading>Admin</SidebarHeading>
@@ -170,9 +199,40 @@ export function ApplicationLayout({
                   <TicketIcon />
                   <SidebarLabel>Activity Logs</SidebarLabel>
                 </SidebarItem>
+                <SidebarItem href="/admin/reports">
+                  <ExclamationTriangleIcon />
+                  <SidebarLabel>View Reports</SidebarLabel>
+                </SidebarItem>
+                <SidebarItem
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        'You will be redirected to a Google Forms page to request Sentry access. Continue?'
+                      )
+                    ) {
+                      window.open('https://forms.gle/your-google-form-link', '_blank')
+                    }
+                  }}
+                >
+                  <ShieldCheckIcon />
+                  <SidebarLabel>Sentry Access</SidebarLabel>
+                </SidebarItem>
+                <SidebarItem
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        'You will be redirected to a Google Forms page to request Feedback access. Continue?'
+                      )
+                    ) {
+                      window.open('https://forms.gle/your-feedback-google-form-link', '_blank')
+                    }
+                  }}
+                >
+                  <LightBulbIcon />
+                  <SidebarLabel>Feedback Access</SidebarLabel>
+                </SidebarItem>
               </SidebarSection>
             )}
-
 
             <SidebarSpacer />
 

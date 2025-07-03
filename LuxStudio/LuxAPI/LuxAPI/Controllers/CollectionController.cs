@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using LuxAPI.DAL;
 using LuxAPI.Models;
+using LuxAPI.Models.DTOs;
 using LuxAPI.Hubs;
 using LuxAPI.Services;
 using Microsoft.AspNetCore.Http;
@@ -284,6 +285,65 @@ namespace LuxAPI.Controllers
                 ".png" => "image/png",
                 _ => "application/octet-stream"
             };
+        }
+
+        [Authorize]
+        [HttpPost("report-user")]
+        public async Task<IActionResult> ReportUser([FromBody] UserReportDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest("Invalid report data");
+
+            var collection = await _context.Collections
+                .Include(c => c.Accesses)
+                .FirstOrDefaultAsync(c => c.Id == dto.CollectionId);
+            if (collection == null) return NotFound("Collection not found");
+
+            // Vérifie que l'utilisateur signalé fait bien partie de la collection
+            if (!collection.Accesses.Any(a => a.Email.Equals(dto.ReportedUserEmail, StringComparison.OrdinalIgnoreCase)))
+                return BadRequest("Reported user does not belong to this collection");
+
+            var reportingUserEmail = User.Identity?.Name ?? "Unknown";
+
+            var report = new UserReport
+            {
+                CollectionId = dto.CollectionId,
+                ReportedUserEmail = dto.ReportedUserEmail,
+                ReportedBy = reportingUserEmail,
+                Reason = dto.Reason,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.UserReports.Add(report);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "User report submitted successfully" });
+        }
+
+        [HttpPost("report")]
+        public async Task<IActionResult> ReportCollection([FromBody] CollectionReportDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest("Invalid report data");
+
+            var collection = await _context.Collections.FindAsync(dto.CollectionId);
+            if (collection == null) return NotFound("Collection not found");
+
+            var userEmail = User.Identity?.Name ?? "Unknown";
+
+            var report = new CollectionReport
+            {
+                CollectionId = collection.Id,
+                CollectionName = collection.Name,
+                ReportedBy = userEmail,
+                Reason = dto.Reason,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.CollectionReports.Add(report);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Report submitted successfully" });
         }
 
         [HttpDelete("{id}")]

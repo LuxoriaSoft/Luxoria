@@ -16,7 +16,7 @@ namespace LuxAPI.Services
             _logger = logger;
             _frontEndUrl = configuration["URI:FrontEnd"] ?? throw new Exception("Frontend URL is not set.");
         }
-
+        public string FrontEndUrl => _frontEndUrl;
         public async Task SendVerificationCodeAsync(string toEmail, string toName, string code, Guid pendingId)
         {
             var confirmationUrl = $"{_frontEndUrl}/register/confirmation?id={pendingId}&code={code}";

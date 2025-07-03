@@ -9,6 +9,7 @@ import { Heading } from '@/components/heading'
 import { Input } from '@/components/input'
 import { Strong, Text, TextLink } from '@/components/text'
 import { AuthService } from '@/services/auth'
+import { LuxoriaLogo } from '@/components/LuxoriaLogo'
 
 export default function RegisterClient() {
   const router = useRouter()
@@ -96,7 +97,7 @@ export default function RegisterClient() {
       onSubmit={step === 'form' ? handleRegister : verifyCodeHandler}
       className="grid w-full max-w-sm grid-cols-1 gap-8"
     >
-      <Logo className="h-6 text-zinc-950 dark:text-white forced-colors:text-[CanvasText]" />
+      <LuxoriaLogo className="h-12 w-auto" />
       <Heading>{step === 'form' ? 'Create your account' : 'Enter verification code'}</Heading>
 
       {step === 'form' && (

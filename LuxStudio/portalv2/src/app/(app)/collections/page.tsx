@@ -26,6 +26,10 @@ export default function CollectionsPage() {
   const [currentCollection, setCurrentCollection] = useState<Collection | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [collectionToDelete, setCollectionToDelete] = useState<Collection | null>(null);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [collectionToReport, setCollectionToReport] = useState<Collection | null>(null);
+  const [reportReason, setReportReason] = useState('');
+
 
 
   useEffect(() => {
@@ -210,6 +214,45 @@ export default function CollectionsPage() {
           </div>
         </div>
       )}
+      {isReportModalOpen && collectionToReport && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-zinc-800 text-white p-6 rounded-lg max-w-sm w-full space-y-4">
+            <h2 className="text-lg font-bold">Report Collection</h2>
+            <p className="text-sm text-zinc-400">
+              Reporting: <strong>{collectionToReport.name}</strong>
+            </p>
+            <textarea
+              className="w-full p-2 rounded bg-zinc-700 text-white placeholder-zinc-400"
+              placeholder="Describe your reason..."
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+              rows={4}
+            />
+            <div className="flex justify-end gap-2">
+              <Button onClick={() => setIsReportModalOpen(false)}>Cancel</Button>
+              <Button
+                onClick={async () => {
+                  try {
+                    if (!reportReason.trim()) {
+                      alert("Please provide a reason for the report.");
+                      return;
+                    }
+
+                    await CollectionService.reportCollection(collectionToReport.id, reportReason);
+                    alert("Report submitted successfully!");
+
+                    setIsReportModalOpen(false);
+                  } catch (err) {
+                    alert("Error submitting report");
+                  }
+                }}
+              >
+                Submit Report
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-sm:w-full sm:flex-1">
           <Heading>Your collections</Heading>
@@ -227,7 +270,7 @@ export default function CollectionsPage() {
             </div>
           </div>
         </div>
-        {user?.role === 1 && (
+        {user?.role === 2 && (
           <Button onClick={() => setIsModalOpen(true)}>Create collection</Button>
         )}
       </div>
@@ -276,6 +319,15 @@ export default function CollectionsPage() {
                       }}
                     >
                       Delete
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={() => {
+                        setCollectionToReport(col);
+                        setReportReason('');
+                        setIsReportModalOpen(true);
+                      }}
+                    >
+                      Report
                     </DropdownItem>
                   </DropdownMenu>
                 </Dropdown>

@@ -78,6 +78,28 @@ export class CollectionService {
     });
   }
 
+  static async reportCollection(collectionId: string, reason: string): Promise<void> {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No token found');
+
+    await api.post('/collection/report', { collectionId, reason }, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  }
+
+  static async reportUser(data: { collectionId: string; reportedUserEmail: string; reason: string }): Promise<void> {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No token found');
+
+    const res = await api.post('/collection/report-user', data, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (res.status < 200 || res.status >= 300) {
+      throw new Error(res.data?.message || 'Failed to report user');
+    }
+  }
+
   static async uploadPhoto(id: string, file: File): Promise<Photo> {
     const formData = new FormData()
     formData.append('file', file)

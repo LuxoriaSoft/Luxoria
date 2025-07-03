@@ -67,6 +67,8 @@ builder.Services.AddSingleton<IJwtService, JwtService>();
 builder.Services.AddSingleton<MinioService>();
 builder.Services.AddTransient<EmailService>();
 builder.Services.AddHostedService<CleanupExpiredRegistrations>();
+builder.Services.AddScoped<ActivityLogService>();
+builder.Services.AddHttpContextAccessor();
 
 
 // Configure JWT Authentication
