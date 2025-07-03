@@ -267,44 +267,67 @@ const handleUploadPhoto = async () => {
         </div>
       )}
 
-{/* Photos + Chat */}
-<div className="flex gap-6">
-  {/* Photo sélectionnée */}
-  <div className="flex-1 border rounded overflow-hidden">
-    {selectedImage && (
-<div className="w-full h-[600px] flex items-center justify-center ">
-  <img
-    src={selectedImage.filePath}
-    alt="Current"
-    className="max-w-full max-h-full object-contain"
-    loading="lazy"
-    style={{ width: 'auto', height: '100%' }}
-  />
-</div>
-
-    )}
-  </div>
-
-  {/* Zone chat */}
-  <div className="w-1/3 flex flex-col border rounded p-4 bg-zinc-900 max-h-[600px] overflow-hidden text-white">
-    <Subheading className="text-white">Chat</Subheading>
-
-    {/* Messages */}
-    <div
-      ref={chatContainerRef}
-      className="flex-1 overflow-y-auto space-y-4 p-2 max-h-[520px]"
-    >
-      {filteredMessages.length === 0 && (
-        <Text className="text-zinc-500 text-center mt-8">No messages yet.</Text>
+      {inviteOpen && (
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50"
+          style={{ height: '100vh', width: '100vw' }}
+        >
+          <div className="bg-zinc-800 text-white p-6 rounded-lg max-w-sm w-full mx-4">
+            <h2 className="text-lg font-bold mb-4">Invite a user</h2>
+            <Input
+              placeholder="Enter user email"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              className="bg-zinc-700 text-white placeholder-zinc-400"
+            />
+            <div className="flex justify-end gap-2 mt-4">
+              <Button onClick={() => setInviteOpen(false)}>Cancel</Button>
+              <Button onClick={handleInvite} disabled={!inviteEmail.trim()}>
+                Send Invitation
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
 
-{filteredMessages.map((msg, index) => (
-  <div
-    key={index}
-    className={`flex items-end gap-3 w-full ${
-      msg.isMine ? 'justify-end' : 'justify-start'
-    }`}
-  >
+    {/* Photos + Chat */}
+    <div className="flex gap-6">
+      {/* Photo sélectionnée */}
+      <div className="flex-1 border rounded overflow-hidden">
+        {selectedImage && (
+    <div className="w-full h-[600px] flex items-center justify-center ">
+      <img
+        src={selectedImage.filePath}
+        alt="Current"
+        className="max-w-full max-h-full object-contain"
+        loading="lazy"
+        style={{ width: 'auto', height: '100%' }}
+      />
+    </div>
+
+        )}
+      </div>
+
+      {/* Zone chat */}
+      <div className="w-1/3 flex flex-col border rounded p-4 bg-zinc-900 max-h-[600px] overflow-hidden text-white">
+        <Subheading className="text-white">Chat</Subheading>
+
+        {/* Messages */}
+        <div
+          ref={chatContainerRef}
+          className="flex-1 overflow-y-auto space-y-4 p-2 max-h-[520px]"
+        >
+          {filteredMessages.length === 0 && (
+            <Text className="text-zinc-500 text-center mt-8">No messages yet.</Text>
+          )}
+
+    {filteredMessages.map((msg, index) => (
+      <div
+        key={index}
+        className={`flex items-end gap-3 w-full ${
+          msg.isMine ? 'justify-end' : 'justify-start'
+        }`}
+      >
     {msg.avatarFileName && !msg.isMine && (
       <Avatar
         src={`${API_URL}/auth/avatar/${msg.avatarFileName}`}
