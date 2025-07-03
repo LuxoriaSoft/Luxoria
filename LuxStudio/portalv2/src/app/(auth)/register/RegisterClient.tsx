@@ -84,7 +84,7 @@ export default function RegisterClient() {
         await AuthService.uploadAvatar(avatarFile, token)
       }
 
-      router.push('/dashboard')
+      router.push('/')
     } catch (err: any) {
       setErrorMessage(err.message || 'Error during verification')
     } finally {
