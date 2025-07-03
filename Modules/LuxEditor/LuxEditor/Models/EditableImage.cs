@@ -182,6 +182,12 @@ namespace LuxEditor.Models
                 ["Dehaze"] = 0f,
                 ["Vibrance"] = 0f,
                 ["Saturation"] = 0f,
+                ["Blur"] = new Dictionary<string, object>
+                {
+                    ["State"] = false,
+                    ["Mask"] = new SKBitmap(),
+                    ["Sigma"] = 7f
+                }
             };
         }
 
