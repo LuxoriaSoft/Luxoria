@@ -377,9 +377,17 @@ namespace LuxAPI.Controllers
             return NoContent();
         }
 
-        [HttpPost("{collectionId}/upload")]
-        public async Task<IActionResult> UploadPhoto(Guid collectionId, [FromForm] IFormFile file)
+        public class UploadPhotoDto
         {
+            public IFormFile File { get; set; }
+            public Guid? PhotoId { get; set; }
+        }
+
+        [HttpPost("{collectionId}/upload")]public async Task<IActionResult> UploadPhoto(Guid collectionId, [FromForm] UploadPhotoDto dto)
+        {
+            Console.WriteLine($"photoId reçue : {dto.PhotoId}");
+            var file = dto.File;
+            var photoId = dto.PhotoId;
             var collection = await _context.Collections.FindAsync(collectionId);
             if (collection == null)
                 return NotFound("Collection not found");
@@ -401,17 +409,36 @@ namespace LuxAPI.Controllers
 
             var fileUrl = $"{_backEndUrl}/api/collection/image/{objectName}";
 
-            var photo = new Photo
+            if (photoId.HasValue)
             {
-                CollectionId = collectionId,
-                FilePath = fileUrl,
-                Status = PhotoStatus.Pending
-            };
+                var existingPhoto = await _context.Photos.FirstOrDefaultAsync(p => p.Id == photoId.Value && p.CollectionId == collectionId);
+                if (existingPhoto == null)
+                    return NotFound("Photo to update not found");
 
-            _context.Photos.Add(photo);
-            await _context.SaveChangesAsync();
+                var oldObjectName = Path.GetFileName(new Uri(existingPhoto.FilePath).AbsolutePath);
+                await _minioService.DeleteFileAsync(_bucketName, oldObjectName);
 
-            return CreatedAtAction(nameof(GetCollection), new { id = collectionId }, photo);
+                existingPhoto.FilePath = fileUrl;
+                existingPhoto.Status = PhotoStatus.Pending;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(existingPhoto);
+            }
+            else
+            {
+                var photo = new Photo
+                {
+                    CollectionId = collectionId,
+                    FilePath = fileUrl,
+                    Status = PhotoStatus.Pending
+                };
+
+                _context.Photos.Add(photo);
+                await _context.SaveChangesAsync();
+
+                return CreatedAtAction(nameof(GetCollection), new { id = collectionId }, photo);
+            }
         }
 
         [HttpPost("{collectionId}/chat")]
