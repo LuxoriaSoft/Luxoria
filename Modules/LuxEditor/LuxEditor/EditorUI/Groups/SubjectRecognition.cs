@@ -5,9 +5,11 @@ using Luxoria.Algorithm.YoLoDetectModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media.Animation;
 using SkiaSharp;
 using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -27,6 +29,9 @@ namespace LuxEditor.EditorUI.Groups
         
         private EditableImage? _selectedImage;
         private Lazy<YoLoDetectModelAPI>? _detectionAPI;
+        private Lazy<GrabCut> _grabCut => new(() => new GrabCut());
+
+        public event Action<SKBitmap> BlurAppliedEvent;
 
         public SubjectRecognition(Lazy<YoLoDetectModelAPI> detectionAPI)
         {
@@ -176,11 +181,35 @@ namespace LuxEditor.EditorUI.Groups
                     flyout.Items.Add(new MenuFlyoutSeparator());
                     
                     var blur = new MenuFlyoutItem { Text = "Apply Blur effect" };
-                    blur.Click += (s, e) =>
+                    blur.Click += async (s, e) =>
                     {
                         Debug.WriteLine($"Blur clicked for {roi.ClassId}");
                         if (_selectedImage != null)
                         {
+                            string outputPath = Path.Combine(Path.GetTempPath(), $"{_selectedImage.Id}_grabcut.png");
+                            using (var data = _selectedImage.EditedBitmap.Encode(SKEncodedImageFormat.Png, 100))
+                            {
+                                if (data == null)
+                                    throw new InvalidOperationException("Failed to encode bitmap as PNG");
+
+                                using (var stream = File.OpenWrite(outputPath))
+                                {
+                                    data.SaveTo(stream);
+                                }
+                            }
+                            string outPath = Path.Combine(Path.GetTempPath(), $"{_selectedImage.Id}_grabcut_ret.png");
+                            Debug.WriteLine("Applying GrabCut...");
+                            await Task.Run(() =>
+                            {
+                                if (_grabCut == null)
+                                    throw new InvalidOperationException("GrabCut is not initialized");
+                                _grabCut.Value.Exec(outputPath, outPath, roi.Box.X, roi.Box.Y, roi.Box.Width, roi.Box.Height, 5, false, Color.White, Color.Black);
+                            });
+                            Debug.WriteLine("GrabCut applied, applying blur...");
+                            SKBitmap mask = SKBitmap.Decode(outPath);
+                            //SKBitmap updatedWithBlur = BlurBackground(_selectedImage.EditedBitmap, mask, 10.0f);
+
+                            BlurAppliedEvent.Invoke(mask);
                         }
                     };
                     flyout.Items.Add(blur);

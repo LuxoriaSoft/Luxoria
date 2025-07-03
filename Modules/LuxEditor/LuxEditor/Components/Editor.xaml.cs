@@ -534,6 +534,21 @@ namespace LuxEditor.Components
             ResetAllButton.Visibility = (idx == 0) ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        private void OnBlurAppliedEventHandler(SKBitmap mask)
+        {
+            Debug.WriteLine("Applying new bitmap on orginal");
+            if (CurrentImage?.Settings == null) return;
+            Dictionary<string, object>? blurSettings = (Dictionary<string, object>?)CurrentImage?.Settings?["Blur"];
+
+            if (blurSettings == null) return;
+            blurSettings["State"] = true;
+            blurSettings["Mask"] = mask;
+            if (CurrentImage?.Settings == null)
+                return;
+            CurrentImage!.Settings["Blur"] = blurSettings;
+            RequestFilterUpdate();
+        }
+
         public void SetEditableImage(EditableImage image)
         {
             CurrentImage = image;
@@ -564,6 +579,7 @@ namespace LuxEditor.Components
             _categories.Clear();
             _sliderCache.Clear();
             _subjectRecognition = new(_yoloDetectionAPI);
+            _subjectRecognition.BlurAppliedEvent += OnBlurAppliedEventHandler;
             _subjectRecognition.SetImage(image);
             BuildEditorUI();
             UpdateSliderUI();
