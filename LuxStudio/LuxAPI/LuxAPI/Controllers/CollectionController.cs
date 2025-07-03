@@ -412,33 +412,31 @@ namespace LuxAPI.Controllers
             if (photoId.HasValue)
             {
                 var existingPhoto = await _context.Photos.FirstOrDefaultAsync(p => p.Id == photoId.Value && p.CollectionId == collectionId);
-                if (existingPhoto == null)
-                    return NotFound("Photo to update not found");
-
-                var oldObjectName = Path.GetFileName(new Uri(existingPhoto.FilePath).AbsolutePath);
-                await _minioService.DeleteFileAsync(_bucketName, oldObjectName);
-
-                existingPhoto.FilePath = fileUrl;
-                existingPhoto.Status = PhotoStatus.Pending;
-
-                await _context.SaveChangesAsync();
-
-                return Ok(existingPhoto);
-            }
-            else
-            {
-                var photo = new Photo
+                if (existingPhoto != null)
                 {
-                    CollectionId = collectionId,
-                    FilePath = fileUrl,
-                    Status = PhotoStatus.Pending
-                };
+                    var oldObjectName = Path.GetFileName(new Uri(existingPhoto.FilePath).AbsolutePath);
+                    await _minioService.DeleteFileAsync(_bucketName, oldObjectName);
 
-                _context.Photos.Add(photo);
-                await _context.SaveChangesAsync();
+                    existingPhoto.FilePath = fileUrl;
+                    existingPhoto.Status = PhotoStatus.Pending;
 
-                return CreatedAtAction(nameof(GetCollection), new { id = collectionId }, photo);
+                    await _context.SaveChangesAsync();
+
+                    return Ok(existingPhoto);
+                }
             }
+        
+            var photo = new Photo
+            {
+                CollectionId = collectionId,
+                FilePath = fileUrl,
+                Status = PhotoStatus.Pending
+            };
+
+            _context.Photos.Add(photo);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetCollection), new { id = collectionId }, photo);
         }
 
         [HttpPost("{collectionId}/chat")]
