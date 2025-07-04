@@ -1,3 +1,15 @@
+# [1.55.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.54.1...v1.55.0) (2025-07-04)
+
+
+### Bug Fixes
+
+* Missing image data for chat URL ([46df1fe](https://github.com/LuxoriaSoft/Luxoria/commit/46df1fe53cf7444765ef06d540660f37a060be72))
+
+
+### Features
+
+* Chat integration in LuxEditor ([17f44e4](https://github.com/LuxoriaSoft/Luxoria/commit/17f44e4d0c6093d6ed574134b13e4e615987ab2c))
+
 ## [1.54.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.54.0...v1.54.1) (2025-07-04)
 
 
