@@ -486,6 +486,16 @@ namespace LuxAPI.Controllers
             return Ok(new { message = "Status has been updated" });
         }
 
+        [HttpGet("photo/{photoId}/status")]
+        public async Task<IActionResult> GetPhotoStatus(Guid photoId)
+        {
+            var photo = await _context.Photos.FindAsync(photoId);
+            if (photo == null)
+                return NotFound("Photo not found");
+
+            return Ok(new { photoId = photo.Id, status = photo.Status });
+        }
+
         public class UpdatePhotoStatusDto
         {
             public PhotoStatus Status { get; set; }
