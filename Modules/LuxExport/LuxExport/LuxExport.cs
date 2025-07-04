@@ -92,9 +92,7 @@ namespace LuxExport
                 OnCollectionUpdated(e.Assets);
                 Export specificExport = new Export(_eventBus, _logger);
 
-                specificExport?.SetBitmaps(e.Assets
-                    .Select(x => new KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>(x.Data.Bitmap, x.Data.EXIF))
-                    .ToList());
+                specificExport?.SetAssets(e.Assets);
 
                 Window window = new Window() { Content = specificExport };
 
@@ -107,6 +105,7 @@ namespace LuxExport
 
                 window?.Activate();
             });
+
 
             _eventBus.Subscribe<CollectionUpdatedEvent>((e) => { OnCollectionUpdated(e.Assets); });
 
@@ -143,15 +142,15 @@ namespace LuxExport
                 _logger?.Log($"Asset info {i}: {imageData.Height}x{imageData.Width}, pixels: {imageData.Height * imageData.Width}");
             }
 
-            List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> lst = assets
-                .Select(x => new KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>(x.Data.Bitmap, x.Data.EXIF))
-                .ToList();
+            //List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> lst = assets
+            //    .Select(x => new KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>(x.Data.Bitmap, x.Data.EXIF))
+            //    .ToList();
 
             Debug.WriteLine("Calling function ....");
-            Debug.WriteLine("Lst count: " + lst.Count);
-            Debug.WriteLine(lst);
+            //Debug.WriteLine("Lst count: " + lst.Count);
+            //Debug.WriteLine(lst);
 
-            _export?.SetBitmaps(lst);
+            _export?.SetAssets(assets);
         }
     }
 }

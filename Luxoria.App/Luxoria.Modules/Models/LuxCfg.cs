@@ -49,6 +49,21 @@ public class LuxCfg
     public List<LuxAction> Actions { get; private set; }
 
     /// <summary>
+    /// Last upload identifier for the picture, if applicable.
+    /// </summary>
+    public Guid? LastUploadId { get; set; }
+
+    /// <summary>
+    /// Collection identifier.
+    /// </summary>
+    public Guid? CollectionId { get; set; }
+
+    /// <summary>
+    /// url of the studio associated, if applicable.
+    /// </summary>
+    public string? StudioUrl { get; set; }
+
+    /// <summary>
     /// Gets the list of versions associated with the picture.
     /// </summary>
     public List<LuxVersion> Versionning { get; private set; }

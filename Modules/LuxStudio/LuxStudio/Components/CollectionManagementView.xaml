@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Page
     x:Class="LuxStudio.Components.CollectionManagementView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -8,7 +7,96 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid>
+    <Page.Resources>
+        <MenuFlyout x:Key="CollectionItemFlyout">
+            <MenuFlyoutItem Text="Edit" Click="EditCollection_Click" Tag="{Binding}"/>
+            <MenuFlyoutItem Text="Delete" Click="DeleteCollection_Click" Tag="{Binding}"/>
+        </MenuFlyout>
+    </Page.Resources>
 
+
+    <Grid>
+        <Grid Visibility="{x:Bind AuthenticatedVisibility, Mode=OneWay}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <ListView Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                      x:Name="CollectionListView"
+                      SelectionChanged="CollectionListView_SelectionChanged"
+                      ItemsSource="{x:Bind CollectionItems}"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                      Visibility="{x:Bind CollectionListVisibility, Mode=OneWay}">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:CollectionItem">
+                        <Grid ContextFlyout="{StaticResource CollectionItemFlyout}">
+                            <StackPanel Orientation="Vertical" Spacing="5" Padding="5">
+                                <TextBlock Text="{x:Bind Name}" FontWeight="Bold" FontSize="15" Width="150" HorizontalAlignment="Left"/>
+                                <TextBlock Text="{x:Bind Description}" TextWrapping="Wrap" FontSize="12"/>
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Padding="20">
+                <StackPanel Visibility="{x:Bind CollectionListVisibility, Mode=OneWay}">
+                    <Button Content="Create Collection"
+                            HorizontalAlignment="Right"
+                            Click="StartCreateCollection_Click"
+                            Margin="0,0,0,10"/>
+                </StackPanel>
+
+                <StackPanel Visibility="{x:Bind CreateFormVisibility, Mode=OneWay}" Spacing="10">
+                    <TextBox x:Name="CollectionNameTextBox" PlaceholderText="Name"/>
+                    <TextBox x:Name="CollectionDescriptionTextBox" PlaceholderText="Description"
+                             AcceptsReturn="True" TextWrapping="Wrap" Height="60"/>
+
+                    <TextBlock Text="Allowed Emails:" FontWeight="Bold"/>
+                    <TextBox x:Name="EmailInputTextBox" PlaceholderText="Enter email and press Enter"
+                             KeyDown="EmailInputTextBox_KeyDown"/>
+                    <ScrollView HorizontalScrollMode="Disabled" Height="50">
+                        <ListView x:Name="EmailListView"
+                              ItemsSource="{x:Bind AllowedEmails}"
+                              Height="100">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="local:EmailItem">
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <TextBlock Text="{x:Bind Value}" VerticalAlignment="Center"/>
+                                        <Button Content="✕" Tag="{x:Bind Value}" Click="RemoveEmail_Click"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </ScrollView>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+                        <Button Content="Cancel" Click="CancelCreateCollection_Click"/>
+                        <Button x:Name="ConfirmCreateOrEditButton"
+                            Click="ConfirmCreateOrEdit_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Grid>
+
+        <StackPanel x:Name="AuthenticationPanel"
+                    Visibility="{x:Bind NotAuthenticatedVisibility, Mode=OneWay}">
+            <TextBlock Text="You must authenticate before"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       Margin="0,20,0,10"/>
+            <Button Content="Authenticate using official website"
+                    Click="Authenticate"
+                    HorizontalAlignment="Center"
+                    Margin="0,0,0,10"/>
+        </StackPanel>
     </Grid>
 </Page>

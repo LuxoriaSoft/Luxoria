@@ -232,6 +232,17 @@ namespace LuxImport.Services
             _luxCfgRepository.Save(updatedLuxCfg);
         }
 
+        public void UpdateLastUploadId(Guid assetId, string url, Guid collectionid, Guid lastUploadedId)
+        {
+            var luxCfgTobeModified = _luxCfgRepository.Load(assetId);
+
+            luxCfgTobeModified.StudioUrl = url;
+            luxCfgTobeModified.LastUploadId = lastUploadedId;
+            luxCfgTobeModified.CollectionId = collectionid;
+            
+            _luxCfgRepository.Save(luxCfgTobeModified);
+        }
+
         /// <summary>
         /// Finalizes the indexing process by cleaning up unused assets.
         /// </summary>

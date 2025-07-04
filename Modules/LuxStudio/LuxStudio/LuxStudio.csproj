@@ -45,6 +45,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Page Update="Components\Chat.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
+	</ItemGroup>
+
+	<ItemGroup>
 	  <Page Update="Components\CollectionManagementView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </Page>

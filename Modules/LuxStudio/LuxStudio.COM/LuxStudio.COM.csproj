@@ -10,4 +10,10 @@
     <PackageReference Include="Luxoria.SDK" Version="1.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Luxoria.Modules">
+      <HintPath>..\..\..\Luxoria.App\Luxoria.Modules\obj\Debug\net9.0\ref\Luxoria.Modules.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

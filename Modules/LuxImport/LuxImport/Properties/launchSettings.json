@@ -1,13 +1,13 @@
 {
   "profiles": {
-    "LuxExport": {
+    "LuxImport": {
       "commandName": "Project"
     },
     "Profile 1": {
       "commandName": "Executable",
       "executablePath": "D:\\Program Files\\Python311\\python.exe",
       "commandLineArgs": "buildsystem.py",
-      "workingDirectory": "C:\\Users\\noahg\\Desktop\\github\\Luxoria\\Modules\\LuxExport"
+      "workingDirectory": "C:\\Users\\noahg\\Desktop\\github\\Luxoria\\Modules\\LuxImport"
     }
   }
 }

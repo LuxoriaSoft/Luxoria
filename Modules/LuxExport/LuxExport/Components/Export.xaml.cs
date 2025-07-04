@@ -1,28 +1,29 @@
-using System;
-using System.IO;
+using LuxExport.Logic;
+using Luxoria.Modules;
+using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Models;
+using Luxoria.Modules.Models.Events;
+using Luxoria.SDK.Interfaces;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Storage;
-using Microsoft.UI;
-using Windows.Graphics;
-using WinRT.Interop;
-using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml.Media;
 using SkiaSharp;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Microsoft.UI.Xaml.Media;
+using System.ComponentModel;
 using System.Diagnostics;
-using System.Threading.Tasks;
-using LuxExport.Logic;
-using Luxoria.Modules.Models.Events;
-using Windows.Storage.Pickers;
-using Luxoria.Modules.Interfaces;
-using Windows.System;
-using Luxoria.Modules.Models;
+using System.IO;
 using System.Linq;
-using Luxoria.SDK.Interfaces;
-using Luxoria.Modules;
-using Microsoft.Extensions.Logging.Abstractions;
+using System.Threading.Tasks;
+using Windows.Graphics;
+using Windows.Storage;
+using Windows.Storage.Pickers;
+using Windows.System;
+using WinRT.Interop;
 
 namespace LuxExport
 {
@@ -31,7 +32,8 @@ namespace LuxExport
     /// </summary>
     public sealed partial class Export : Page
     {
-        private List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> _bitmaps = new();
+        //private List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> _bitmaps = new();
+        private ICollection<LuxAsset> _assets = new Collection<LuxAsset>();
         private ExportViewModel _viewModel;
         private readonly IEventBus _eventBus;
         public event Action? CloseWindow;
@@ -53,6 +55,9 @@ namespace LuxExport
             _viewModel.RefreshLogoPreview();
 
             _viewModel.LoadPresets(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\..\\..\\..\\..\\..\\assets\\Presets\\FileNamingPresets.json");
+            _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+            UpdateFileNamingVisibility();
+
 
             RefreshPresetsMenu();
 
@@ -163,7 +168,7 @@ namespace LuxExport
         /// </summary>
         private string GetOriginalFilePath()
         {
-            if (_bitmaps.Count > 0 && _bitmaps[0].Value.TryGetValue("File Path", out string path))
+            if (_assets.Count > 0 && _assets.First().Data.EXIF.TryGetValue("File Path", out string path))
             {
                 return Path.GetDirectoryName(path) ?? "Unknown";
             }
@@ -173,18 +178,18 @@ namespace LuxExport
         /// <summary>
         /// Sets the bitmaps to be exported, clearing previous selections if necessary.
         /// </summary>
-        public void SetBitmaps(List<KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>> bitmaps)
+        public void SetAssets(ICollection<LuxAsset> assets)
         {
-            if (bitmaps == null || bitmaps.Count == 0)
+            if (assets == null || assets.Count == 0)
             {
-                Debug.WriteLine("SetBitmaps: No bitmaps provided.");
+                Debug.WriteLine("SetBitmaps: No assets provided.");
                 return;
             }
 
-            _bitmaps.Clear();
-            _bitmaps.AddRange(bitmaps);
+            _assets.Clear();
+            _assets = assets;
 
-            Debug.WriteLine($"SetBitmaps: {_bitmaps.Count} bitmaps added.");
+            Debug.WriteLine($"SetBitmaps: {_assets.Count} bitmaps added.");
         }
 
         /// <summary>
@@ -203,15 +208,20 @@ namespace LuxExport
         /// </summary>
         private async void ExportButton_Click(object sender, object e)
         {
-            if (_bitmaps.Count == 0)
+            if (_assets.Count == 0)
             {
                 Debug.WriteLine("No images available for export.");
                 return;
             }
-
+            //if (_viewModel.IsWebExport)
+            //{
+                //var tcs = new TaskCompletionSource<ICollection<LuxAsset>>();
+                //await _eventBus.Publish(new RequestExportOnlineEvent(tcs.Task.GetAwaiter().GetResult()));
+            //} else
+            //{
             var tcs = new TaskCompletionSource<ICollection<LuxAsset>>();
             await _eventBus.Publish(new RequestLatestCollection(handle => tcs.SetResult(handle)));
-            SetBitmaps(tcs.Task.GetAwaiter().GetResult().Select(x => new KeyValuePair<SKBitmap, ReadOnlyDictionary<string, string>>(x.Data.Bitmap, x.Data.EXIF)).ToList());
+            SetAssets(tcs.Task.GetAwaiter().GetResult().ToList());
 
             _wmSvc.Save(_viewModel.Watermark);
 
@@ -219,9 +229,10 @@ namespace LuxExport
 
             DispatcherQueue.TryEnqueue(() =>
             {
-                var progressWindow = new ExportProgressWindow(_bitmaps, _viewModel, _logger);
+                var progressWindow = new ExportProgressWindow(_assets, _viewModel, _logger, _eventBus);
                 progressWindow.Activate();
             });
+            //}
         }
 
 
@@ -342,5 +353,28 @@ namespace LuxExport
             RefreshWatermarkUI();
         }
 
+        private void ExportTarget_Selected(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuFlyoutItem item)
+            {
+                _viewModel.SelectedExportTarget = item.Text;
+                ExportTargetDropDown.Content = item.Text;
+            }
+        }
+
+        private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ExportViewModel.IsWebExport))
+            {
+                UpdateFileNamingVisibility();
+            }
+        }
+
+        private void UpdateFileNamingVisibility()
+        {
+            FileNamingExpander.Visibility = _viewModel.IsWebExport
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+        }
     }
 }

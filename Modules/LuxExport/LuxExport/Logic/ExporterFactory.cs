@@ -21,6 +21,7 @@ namespace LuxExport.Logic
                 ExportFormat.JPEG => new JpegExporter(),
                 ExportFormat.PNG => new PngExporter(),
                 ExportFormat.WEBP => new WebpExporter(),
+                ExportFormat.LuxStudio => new LuxStudioExporter(),
                 _ => throw new ArgumentOutOfRangeException(nameof(format), format, null)
             };
         }

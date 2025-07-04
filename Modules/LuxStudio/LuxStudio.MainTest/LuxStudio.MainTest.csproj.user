@@ -4,16 +4,6 @@
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup>
-    <ActiveDebugProfile>Profile 1</ActiveDebugProfile>
+    <ActiveDebugProfile>LuxStudio.MainTest</ActiveDebugProfile>
   </PropertyGroup>
-  <ItemGroup>
-    <Page Update="Components\CollectionManagementView.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Components\AccManagementView.xaml">
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
 </Project>

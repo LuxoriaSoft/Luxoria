@@ -8,7 +8,30 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid Padding="20">
+        <!-- Loading message with spinner -->
+        <StackPanel x:Name="LoadingMessagePanel" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+            <ProgressRing IsActive="True" Width="40" Height="40"/>
+            <TextBlock x:Name="LoadingMessageText" FontSize="16" HorizontalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- User input for URL -->
+        <StackPanel x:Name="UrlInputPanel" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+            <TextBlock Text="Enter LuxStudio URL:" FontSize="18"/>
+            <TextBox x:Name="StudioUrlTextBox" PlaceholderText="https://studio.example.com" Width="300"/>
+            <Button Content="Connect" Click="ConnectButton_Click" Width="100"/>
+        </StackPanel>
+
+        <!-- Main content area -->
+        <StackPanel x:Name="MainContentPanel" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Top" Spacing="20">
+            <TextBlock Text="Account Management" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+
+            <!-- User Info Display -->
+            <StackPanel x:Name="UserInfoPanel" Spacing="10" HorizontalAlignment="Center">
+                <TextBlock x:Name="UIUsernameText" FontSize="18"/>
+                <TextBlock x:Name="UIEmailText" FontSize="16"/>
+            </StackPanel>
+        </StackPanel>
 
     </Grid>
 </Page>
