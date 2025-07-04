@@ -1,3 +1,10 @@
+## [1.54.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.54.0...v1.54.1) (2025-07-04)
+
+
+### Bug Fixes
+
+* Add details inside Roadmap ([14af136](https://github.com/LuxoriaSoft/Luxoria/commit/14af136df7ff76ae8a44ebae2534877381055db4))
+
 # [1.54.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.53.1...v1.54.0) (2025-07-04)
 
 
