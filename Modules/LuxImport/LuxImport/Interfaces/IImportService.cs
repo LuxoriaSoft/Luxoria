@@ -34,5 +34,8 @@ namespace LuxImport.Interfaces
         /// Loads the collection into memory.
         /// </summary>
         ICollection<LuxAsset> LoadAssets();
+
+
+        public void UpdateLastUploadId(Guid assetId, string url, Guid collectionid, Guid lastUploadedId);
     }
 }

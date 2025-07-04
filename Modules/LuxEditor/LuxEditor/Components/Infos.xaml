@@ -39,6 +39,21 @@
 
     <StackPanel>
 
+        <Expander Header="Chat"
+                  IsExpanded="False"
+                  Padding="0"
+                  Margin="0"
+                  BorderThickness="0"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Top"
+                  HorizontalContentAlignment="Stretch">
+
+
+            <Grid HorizontalAlignment="Stretch" Padding="1">
+                
+            </Grid>
+        </Expander>
+
         <Expander IsExpanded="True"
                   Padding="0"
                   Margin="0"

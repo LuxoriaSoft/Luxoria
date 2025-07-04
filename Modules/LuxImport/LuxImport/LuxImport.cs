@@ -16,6 +16,7 @@ public class LuxImport : IModule, IModuleUI
     private IEventBus? _eventBus;
     private IModuleContext? _context;
     private ILoggerService? _logger;
+    private IImportService? _importService;
 
     public string Name => "LuxImport";
     public string Description => "Generic Luxoria Importation Module";
@@ -40,6 +41,7 @@ public class LuxImport : IModule, IModuleUI
 
         // Subscribe to mandatory events with an async handler
         _eventBus.Subscribe<OpenCollectionEvent>(HandleOnOpenCollectionAsync);
+        _eventBus.Subscribe<SaveLastUpdatedIdEvent>(HandleSaveLastUpdatedId);
 
         // Add a menu bar item to the main menu bar
         List<ISmartButton> smartButtons = new List<ISmartButton>();
@@ -92,8 +94,8 @@ public class LuxImport : IModule, IModuleUI
 
             // Initialize the import service with the collection name and path
             _logger?.Log("Initializing ImportService...", "Mods/LuxImport", LogLevel.Info);
-            IImportService importService = new ImportService(@event.CollectionName, @event.CollectionPath);
-            importService.ProgressMessageSent += (messageTuple) =>
+            _importService = new ImportService(@event.CollectionName, @event.CollectionPath);
+            _importService.ProgressMessageSent += (messageTuple) =>
             {
                 SendProgressMessage(@event, messageTuple.message, messageTuple.progress);
             };
@@ -105,7 +107,7 @@ public class LuxImport : IModule, IModuleUI
 
             // Check if the collection is already initialized
             SendProgressMessage(@event, "Checking collection initialization...");
-            if (importService.IsInitialized())
+            if (_importService.IsInitialized())
             {
                 SendProgressMessage(@event, "Collection is already initialized.", 10);
             }
@@ -113,7 +115,7 @@ public class LuxImport : IModule, IModuleUI
             {
                 // Initializing collection's database
                 SendProgressMessage(@event, "Initializing collection's database...", 20);
-                importService.InitializeDatabase();
+                _importService.InitializeDatabase();
             }
 
             stepStopwatch.Stop();
@@ -123,8 +125,8 @@ public class LuxImport : IModule, IModuleUI
 
             // Update indexing files
             SendProgressMessage(@event, "Updating indexing files...", 25);
-            importService.BaseProgressPercent = 25;
-            await importService.IndexCollectionAsync();
+            _importService.BaseProgressPercent = 25;
+            await _importService.IndexCollectionAsync();
 
             stepStopwatch.Stop();
             _logger?.Log($"Indexing completed in {stepStopwatch.ElapsedMilliseconds} ms", "Mods/LuxImport", LogLevel.Debug);
@@ -135,7 +137,7 @@ public class LuxImport : IModule, IModuleUI
 
             // Load assets into memory
             _logger?.Log("Loading assets into memory...", "Mods/LuxImport", LogLevel.Info);
-            var assets = importService.LoadAssets();
+            var assets = _importService.LoadAssets();
 
             stepStopwatch.Stop();
             _logger?.Log($"Loaded {assets.Count} assets into memory in {stepStopwatch.ElapsedMilliseconds} ms", "Mods/LuxImport", LogLevel.Debug);
@@ -171,5 +173,18 @@ public class LuxImport : IModule, IModuleUI
         // Send the message through the event tunnel
         if (progress.HasValue) @event.SendProgressMessage(message, progress.Value);
         else @event.SendProgressMessage(message);
+    }
+
+    private void HandleSaveLastUpdatedId(SaveLastUpdatedIdEvent @event)
+    {
+        _logger?.Log($"Saving last updated ID: {@event.LastUpdatedId}", "Mods/LuxImport", LogLevel.Info);
+        if (_importService != null)
+        {
+            _importService.UpdateLastUploadId(@event.LuxAssetId, @event.Url, @event.CollectionId, @event.LastUpdatedId);
+        }
+        else
+        {
+            _logger?.Log("ImportService is not initialized, cannot set BaseProgressPercent.", "Mods/LuxImport", LogLevel.Warning);
+        }
     }
 }

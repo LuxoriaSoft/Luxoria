@@ -1,3 +1,34 @@
+## [1.54.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.54.0...v1.54.1) (2025-07-04)
+
+
+### Bug Fixes
+
+* Add details inside Roadmap ([14af136](https://github.com/LuxoriaSoft/Luxoria/commit/14af136df7ff76ae8a44ebae2534877381055db4))
+
+# [1.54.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.53.1...v1.54.0) (2025-07-04)
+
+
+### Bug Fixes
+
+* Add converter for GetApiUrlAsync choosing between LuxPortal v1 / v2 (default set to v2) ([5a948f8](https://github.com/LuxoriaSoft/Luxoria/commit/5a948f83455bbc873e061476d65ff8c03da1108b))
+* AuthSrv might be null by modifying the l22 ([fe106e2](https://github.com/LuxoriaSoft/Luxoria/commit/fe106e2d84d30035f71f385b234b647fad134440))
+* Bring Simplification over Configuration Service ([023c95c](https://github.com/LuxoriaSoft/Luxoria/commit/023c95c0b89c3abd00fb880a17c88efde34adb17))
+
+
+### Features
+
+* Add AuthManager to automaticly handle Token Generation, Login Page, Token renewal, etc. ([9dc9a29](https://github.com/LuxoriaSoft/Luxoria/commit/9dc9a290105fe4ee818b68975389ca80ac2a3c0a))
+* Add check to automatically add "https://" before studio URL ([6ef9c5e](https://github.com/LuxoriaSoft/Luxoria/commit/6ef9c5eae34311bdf1a9832785ac704f3c7ae3ab))
+* Add ExchangeAuthorizationCode method in AuthService (LuxStudio.COM) ([066e474](https://github.com/LuxoriaSoft/Luxoria/commit/066e47487e06feeeadb8daf361ce334541961da6))
+* Add Init AuthManager on LuxStudio/AccManagement part ([8957a92](https://github.com/LuxoriaSoft/Luxoria/commit/8957a92ee5756e6a9a379bcb50487331cabc4a94))
+* Add RefreshAccessToken method in AuthService to swap for new credentials ([8af96db](https://github.com/LuxoriaSoft/Luxoria/commit/8af96db1d8d4eb71ec903cbc1336d37a370b92f1))
+* Add WhoAmIAsync method and refactorisation of AccManagementView (Logic part) ([0b572e3](https://github.com/LuxoriaSoft/Luxoria/commit/0b572e30615bfeb224575d4cd38d36d9f16c4000))
+* Adds data models and collection service ([eff4687](https://github.com/LuxoriaSoft/Luxoria/commit/eff4687ab401a1768459c5686ef90ebb06fe0450))
+* chat functionality and collection handling ([70cb704](https://github.com/LuxoriaSoft/Luxoria/commit/70cb70468553cbc8c54bb6c8e4ad16c7377be76c))
+* collection management features ([fc140f0](https://github.com/LuxoriaSoft/Luxoria/commit/fc140f08725ed40255d66d0a254249a61c89ebe0))
+* Injects token into WebView2 for authentication ([74e0322](https://github.com/LuxoriaSoft/Luxoria/commit/74e032201ca29c771ff2f00619feda48bd7d85b1))
+* LuxStudio export ([5b1ba53](https://github.com/LuxoriaSoft/Luxoria/commit/5b1ba5368510d7cdd72ba5e5785d5a06369fcf88))
+
 ## [1.53.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.53.0...v1.53.1) (2025-07-03)
 
 

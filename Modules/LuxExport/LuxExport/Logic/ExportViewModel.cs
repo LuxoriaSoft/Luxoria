@@ -18,6 +18,23 @@ public class ExportViewModel : INotifyPropertyChanged
 {
     private readonly TagResolverManager _tagManager = new();
 
+    private string _selectedExportTarget = "HardDrive";
+    public string SelectedExportTarget
+    {
+        get => _selectedExportTarget;
+        set
+        {
+            if (_selectedExportTarget != value)
+            {
+                _selectedExportTarget = value;
+                OnPropertyChanged(nameof(IsWebExport));
+            }
+        }
+    }
+
+    public bool IsWebExport => SelectedExportTarget?.ToLowerInvariant() == "web";
+
+
     // Export Settings
     private ExportFormat _selectedFormat = ExportFormat.JPEG;
     private int _quality = 100;
