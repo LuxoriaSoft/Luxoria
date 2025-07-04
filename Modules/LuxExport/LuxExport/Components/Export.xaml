@@ -81,7 +81,7 @@
         <ScrollViewer x:Name="RightPanel" Grid.Row="1" Grid.Column="1" HorizontalScrollMode="Disabled" VerticalScrollMode="Enabled" Padding="0,10,10,10" MinWidth="300" MinHeight="500">
             <StackPanel Orientation="Vertical">
 
-                <Expander Header="Export Location" Padding="5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" IsExpanded="True">
+                <Expander x:Name="ExportLocationExpander" Header="Export Location" Padding="5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" IsExpanded="True">
                     <Grid RowSpacing="5" ColumnSpacing="5">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>

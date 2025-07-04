@@ -56,8 +56,7 @@ namespace LuxExport
 
             _viewModel.LoadPresets(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\..\\..\\..\\..\\..\\assets\\Presets\\FileNamingPresets.json");
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
-            UpdateFileNamingVisibility();
-
+            UpdateWebVisibility();
 
             RefreshPresetsMenu();
 
@@ -366,13 +365,16 @@ namespace LuxExport
         {
             if (e.PropertyName == nameof(ExportViewModel.IsWebExport))
             {
-                UpdateFileNamingVisibility();
+                UpdateWebVisibility();
             }
         }
 
-        private void UpdateFileNamingVisibility()
+        private void UpdateWebVisibility()
         {
             FileNamingExpander.Visibility = _viewModel.IsWebExport
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+            ExportLocationExpander.Visibility = _viewModel.IsWebExport
                 ? Visibility.Collapsed
                 : Visibility.Visible;
         }
