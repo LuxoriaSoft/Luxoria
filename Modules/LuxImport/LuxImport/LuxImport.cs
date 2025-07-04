@@ -181,6 +181,7 @@ public class LuxImport : IModule, IModuleUI
         if (_importService != null)
         {
             _importService.UpdateLastUploadId(@event.LuxAssetId, @event.Url, @event.CollectionId, @event.LastUpdatedId);
+            _eventBus?.Publish(new UpdateUpdatedAssetEvent(@event.LuxAssetId, @event.Url, @event.CollectionId, @event.LastUpdatedId));
         }
         else
         {

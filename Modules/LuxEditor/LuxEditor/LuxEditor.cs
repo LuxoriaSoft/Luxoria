@@ -1,3 +1,4 @@
+using CommunityToolkit.WinUI;
 using LuxEditor.Components;
 using LuxEditor.Logic;
 using LuxEditor.Models;
@@ -9,9 +10,9 @@ using Luxoria.Modules.Models;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
+using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace LuxEditor
@@ -32,6 +33,7 @@ namespace LuxEditor
         private PhotoViewer? _photoViewer;
         private Infos? _infos;
         private Editor? _editor;
+        private Guid? _collectionId;
 
         /// <summary>
         /// Initializes the module and sets up the UI panels and event handlers.
@@ -96,6 +98,8 @@ namespace LuxEditor
             _cExplorer.OnImageSelected += (img) =>
             {
                 ImageManager.Instance.SelectImage(img);
+                if (_collectionId != null)
+                    _infos?.OnWebCollectionSelected(_collectionId ?? throw new Exception("Collection Id cannot be null here"));
             };
 
             _cExplorer.ExportRequestedEvent += () =>
@@ -133,6 +137,9 @@ namespace LuxEditor
                     ImageManager.Instance.OpenedImages.Select(img => img.ToLuxAsset()).ToList()
                 );
             });
+            _eventBus?.Subscribe<WebCollectionSelectedEvent>(OnWebCollectionSelected);
+
+            _eventBus?.Subscribe<UpdateUpdatedAssetEvent>(OnUpdateUpdatedAsset);
 
             _logger?.Log($"{Name} initialized", "LuxEditor", LogLevel.Info);
         }
@@ -140,7 +147,7 @@ namespace LuxEditor
         /// <summary>
         /// Called when the image collection is updated. Converts assets into EditableImage objects.
         /// </summary>
-        public void OnCollectionUpdated(CollectionUpdatedEvent body)
+        private void OnCollectionUpdated(CollectionUpdatedEvent body)
         {
             _logger?.Log($"Collection updated: {body.CollectionName}", "LuxEditor", LogLevel.Info);
 
@@ -160,6 +167,34 @@ namespace LuxEditor
             ImageManager.Instance.LoadImages(editableImages);
             _cExplorer?.SetImages(editableImages);            
         }
+
+        private void OnWebCollectionSelected(WebCollectionSelectedEvent body)
+        {
+            _infos.OnWebCollectionSelected(body.CollectionId);
+            _collectionId = body.CollectionId;
+        }
+
+        private async void OnUpdateUpdatedAsset(UpdateUpdatedAssetEvent body)
+        {
+            EditableImage imageToModify = ImageManager.Instance.OpenedImages.First(img => img.Id == body.AssetId);
+            int index = ImageManager.Instance.OpenedImages.IndexOf(imageToModify);
+
+            imageToModify.LuxCfg.LastUploadId = body.LastUploadedId;
+            imageToModify.LuxCfg.CollectionId = body.CollectionId;
+            imageToModify.LuxCfg.StudioUrl = body.Url;
+
+            ImageManager.Instance.OpenedImages[index] = imageToModify;
+
+            if (imageToModify == ImageManager.Instance.SelectedImage && _infos is not null)
+            {
+                await _infos.DispatcherQueue.EnqueueAsync(() =>
+                {
+                    _infos.OnWebCollectionSelected(body.CollectionId);
+                });
+            }
+        }
+
+
 
         /// <summary>
         /// Executes the module logic manually.

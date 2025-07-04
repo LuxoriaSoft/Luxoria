@@ -5,7 +5,7 @@
     },
     "Profile 1": {
       "commandName": "Executable",
-      "executablePath": "C:\\Users\\noahg\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "executablePath": "D:\\Program Files\\Python311\\python.exe",
       "commandLineArgs": "buildsystem.py",
       "workingDirectory": "C:\\Users\\noahg\\Desktop\\Github\\Luxoria\\Modules\\LuxEditor"
     }
