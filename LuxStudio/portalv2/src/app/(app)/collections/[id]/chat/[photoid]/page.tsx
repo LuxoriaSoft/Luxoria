@@ -23,8 +23,6 @@ export default function PhotoChatPage() {
   const [filteredEmails, setFilteredEmails] = useState<string[]>([])
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL
-
-  // Gestion des mentions (détecte @ suivi d’un texte, filtre la liste)
   useEffect(() => {
     const match = chatMessage.match(/@([\w.-]*)$/)
     if (match) {
@@ -59,54 +57,42 @@ export default function PhotoChatPage() {
     setMentionVisible(false)
   }
 
-  const handleSendMessage = async () => {
-    if (isSending) return  // Bloque si déjà en envoi
-    if (!chatMessage.trim() || !user) return
+const handleSendMessage = async () => {
+  if (isSending) return  // Bloque si déjà en envoi
+  if (!chatMessage.trim() || !user) return
 
-    try {
-      setIsSending(true)
-      await CollectionService.sendChatMessage(id, {
-        senderEmail: user.email,
-        senderUsername: user.username,
-        message: chatMessage.trim(),
-        photoId,
-      })
+  try {
+    setIsSending(true)
+    await CollectionService.sendChatMessage(id, {
+      senderEmail: user.email,
+      senderUsername: user.username,
+      message: chatMessage.trim(),
+      photoId,
+    })
 
-      setMessages(prev => [
-      ...prev,
-      {
-        senderUsername: user.username,
-        senderEmail: user.email,
-        message: chatMessage.trim(),
-        sentAt: new Date().toISOString(),
-        isMine: true,
-        avatarFileName: '', // si tu as un avatar, mets-le ici
-        photoId,
+
+    // Envoi des mails de notification pour chaque mention (emails précédés de @)
+    const mentionEmails = Array.from(chatMessage.matchAll(/@([\w.-]+@[\w.-]+\.[\w.-]+)/g)).map(m => m[1])
+    for (const email of mentionEmails) {
+      try {
+        await CollectionService.sendMentionNotification(id, email, user.email, chatMessage.trim())
+      } catch (e) {
+        console.error(`Failed to send mention email to ${email}`, e)
       }
-    ])
-
-      // Envoi des mails de notification pour chaque mention (emails précédés de @)
-      const mentionEmails = Array.from(chatMessage.matchAll(/@([\w.-]+@[\w.-]+\.[\w.-]+)/g)).map(m => m[1])
-
-      for (const email of mentionEmails) {
-        try {
-          await CollectionService.sendMentionNotification(id, email, user.email, chatMessage.trim())
-        } catch (e) {
-          console.error(`Failed to send mention email to ${email}`, e)
-        }
-      }
-
-      setChatMessage('')
-    } catch (err) {
-      console.error('Error sending message:', err)
-    } finally {
-      setIsSending(false)  // Réactive l'envoi après la tentative
     }
+
+    setChatMessage('')
+  } catch (err) {
+    console.error('Error sending message:', err)
+  } finally {
+    setIsSending(false)
   }
+}
+
 
   if (!collection) return <Text className="text-red-500">Collection not found.</Text>
 
-  const filteredMessages = messages.filter(msg => msg.photoId === photoId)
+  const filteredMessages = messages.filter(msg => String(msg.photoId) === String(photoId))
 
   return (
     <div className="flex flex-col min-h-screen w-full bg-zinc-900 text-white">
@@ -119,9 +105,9 @@ export default function PhotoChatPage() {
           <Text className="text-zinc-400">Welcome to the chat room!</Text>
         )}
 
-        {filteredMessages.map((msg, index) => (
+        {filteredMessages.map((msg) => (
           <div
-            key={index}
+              key={`${msg.sentAt}-${msg.senderUsername}`} // clé unique stable
             className={`flex items-end gap-3 w-full ${
               msg.isMine ? 'justify-end' : 'justify-start'
             }`}

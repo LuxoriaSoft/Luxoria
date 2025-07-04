@@ -154,10 +154,9 @@ const handleSendMessage = async () => {
       message: chatMessage.trim(),
       sentAt: new Date().toISOString(),
       isMine: true,
-      avatarFileName: user.avatarFileName ?? 'default_avatar.jpg',
+      //avatarFileName: user.avatarFileName ?? 'default_avatar.jpg',
       photoId: currentPhotoId,
     }
-    setMessages(prev => [...prev, newMessage])
     setChatMessage('')
   } catch (err) {
     console.error('Error sending message:', err)
@@ -351,14 +350,6 @@ const handleSendMessage = async () => {
           msg.isMine ? 'justify-end' : 'justify-start'
         }`}
       >
-    {msg.avatarFileName && !msg.isMine && (
-      <Avatar
-        src={`${API_URL}/auth/avatar/${msg.avatarFileName}`}
-        alt={msg.senderUsername}
-        className="w-10 h-10 rounded-full"
-        square={false}
-      />
-    )}
     <div className="max-w-xs sm:max-w-md">
       <div className={`text-xs font-semibold text-zinc-400 mb-1 flex items-center ${msg.isMine ? 'justify-end' : 'justify-start'}`}>
         {msg.isMine ? (

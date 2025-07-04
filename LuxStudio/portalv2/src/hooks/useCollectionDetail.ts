@@ -37,7 +37,8 @@ export function useCollectionDetail() {
     const conn = ChatService.createConnection(id, token)
     connectionRef.current = conn
 
-    const handleReceive = (sender: string, message: string, avatar: string, sentAt: string) => {
+    const handleReceive = (sender: string, message: string, avatar: string, sentAt: string, photoId: string) => {
+      console.log('SignalR new message:', { sender, message, avatar, sentAt, photoId })
       const isMine = sender === user.username // ✅ ici user est garanti
       setMessages(prev => [
         ...prev,
@@ -48,6 +49,7 @@ export function useCollectionDetail() {
           sentAt,
           avatarFileName: avatar,
           isMine,
+          photoId,
         },
       ])
       setTimeout(() => {

@@ -479,7 +479,7 @@ namespace LuxAPI.Controllers
 
             // ✅ Envoie le message avec avatar et date
             await _chatHub.Clients.Group(collectionId.ToString())
-                .SendAsync("ReceiveMessage", dto.SenderUsername, dto.Message, avatarFileName, message.SentAt);
+                .SendAsync("ReceiveMessage", dto.SenderUsername, dto.Message, avatarFileName, message.SentAt, dto.PhotoId);
 
             return CreatedAtAction(nameof(GetCollection), new { id = collectionId }, message);
         }
