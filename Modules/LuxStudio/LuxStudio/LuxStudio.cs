@@ -1,6 +1,7 @@
 ﻿using Luxoria.GModules;
 using Luxoria.GModules.Interfaces;
 using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Models;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
@@ -160,6 +161,13 @@ public class LuxStudio : IModule, IModuleUI
         return content;
     }
 
+    private string getFileExtension(string filePath)
+    {
+        if (string.IsNullOrEmpty(filePath))
+            return "jpg";
+        return Path.GetExtension(filePath).TrimStart('.').ToLowerInvariant();
+    }
+
     private async void OnExportRequest(RequestExportOnlineEvent evt)
     {
         Debug.WriteLine("Export request received for asset");
@@ -172,9 +180,11 @@ public class LuxStudio : IModule, IModuleUI
         {
             var cs = new CollectionService(_selectedCollection.Config ?? throw new InvalidOperationException("Configuration cannot be null. Ensure the config service is properly initialized."), _eventBus);
 
-            StreamContent strm = CreateStreamContent(evt.AssetPath, "image/jpeg");
+            var extension = getFileExtension(evt.AssetPath);
+
+            StreamContent strm = CreateStreamContent(evt.AssetPath, $"image/{extension}");
             var token = await _selectedCollection.AuthManager.GetAccessTokenAsync();
-            var response = await cs.UploadAssetAsync(evt.Asset.Id, token, _selectedCollection.Id, $"tbe{evt.Asset.Id}.jpeg", strm, evt.Asset.MetaData.LastUploadId);
+            var response = await cs.UploadAssetAsync(evt.Asset.Id, token, _selectedCollection.Id, $"tbe{evt.Asset.Id}.{extension}", strm, evt.Asset.MetaData.LastUploadId);
         }
         catch (Exception ex)
         {

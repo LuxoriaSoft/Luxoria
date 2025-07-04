@@ -77,13 +77,6 @@ namespace LuxExport.Logic
 
     public class LuxStudioExporter : IExporter
     {
-        private static string GetMimeTypeStr(ExportFormat format) => format switch
-        {
-            ExportFormat.PNG => "image/png",
-            ExportFormat.JPEG => "image/jpeg",
-            ExportFormat.WEBP => "image/webp",
-            _ => "image/jpeg"
-        };
         private static SKEncodedImageFormat GetMimeType(ExportFormat format) => format switch
         {
             ExportFormat.PNG => SKEncodedImageFormat.Png,
@@ -93,16 +86,18 @@ namespace LuxExport.Logic
         };
 
 
+
+
         /// <summary>
         /// Publishes a stream export event with the encoded image.
         /// </summary>
         public async Task Export(SKBitmap image, LuxAsset asset, string? path, ExportFormat format, ExportSettings settings, IEventBus eventBus)
         {
-            string outputPath = Path.Combine(Path.GetTempPath(), $"tbe{asset.Id.ToString()}.jpeg");
-            using (var data = image.Encode(SKEncodedImageFormat.Jpeg, 100))
+            string outputPath = Path.Combine(Path.GetTempPath(), $"tbe{asset.Id.ToString()}.{format.ToString().ToLower()}");
+            using (var data = image.Encode(GetMimeType(format), settings.Quality))
             {
                 if (data == null)
-                    throw new InvalidOperationException("Failed to encode bitmap as Jpeg");
+                    throw new InvalidOperationException($"Failed to encode bitmap as {format.ToString().ToLower()}");
 
                 using (var stream = File.OpenWrite(outputPath))
                 {
