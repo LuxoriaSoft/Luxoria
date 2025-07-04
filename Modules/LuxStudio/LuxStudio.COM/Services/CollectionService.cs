@@ -207,4 +207,46 @@ public class CollectionService
         Debug.WriteLine(await response.Content.ReadAsStringAsync());
         return true;
     }
+
+    public async Task<bool> DeleteCollectionAsync(string accessToken, Guid collectionId)
+    {
+        var requestUri = $"{_apiBaseUrl}/api/collection/{collectionId}";
+        using var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var response = await httpClient.DeleteAsync(requestUri);
+        if (!response.IsSuccessStatusCode)
+        {
+            Debug.WriteLine($"Error: {response.StatusCode}");
+            Debug.WriteLine(await response.Content.ReadAsStringAsync());
+            return false;
+        }
+        Debug.WriteLine("Delete collection successful! Server returned:");
+        Debug.WriteLine(await response.Content.ReadAsStringAsync());
+        return true;
+    }
+
+    public class UpdateCollectionDto
+    {
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public List<string>? AllowedEmails { get; set; }
+    }
+
+    public async Task<bool> UpdateCollectionAsync(string accessToken, Guid collectionId, UpdateCollectionDto updateDto)
+    {
+        var requestUri = $"{_apiBaseUrl}/api/collection/{collectionId}";
+        using var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        using var content = new StringContent(JsonSerializer.Serialize(updateDto), Encoding.UTF8, "application/json");
+        var response = await httpClient.PutAsync(requestUri, content);
+        if (!response.IsSuccessStatusCode)
+        {
+            Debug.WriteLine($"Error: {response.StatusCode}");
+            Debug.WriteLine(await response.Content.ReadAsStringAsync());
+            return false;
+        }
+        Debug.WriteLine("Update collection successful! Server returned:");
+        Debug.WriteLine(await response.Content.ReadAsStringAsync());
+        return true;
+    }
 }

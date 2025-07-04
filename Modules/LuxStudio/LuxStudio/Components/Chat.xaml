@@ -11,7 +11,7 @@
 
     <Grid>
         <controls:WebView2 x:Name="ChatWebView"
-        Source="https://studio.pluto.luxoria.bluepelicansoft.com/" HorizontalAlignment="Stretch" 
+        Source="" HorizontalAlignment="Stretch" 
         VerticalAlignment="Stretch"/>
     </Grid>
 </Page>
