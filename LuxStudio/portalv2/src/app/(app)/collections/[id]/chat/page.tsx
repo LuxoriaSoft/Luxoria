@@ -35,15 +35,11 @@ export default function CollectionChatPage() {
 
   // Scroll auto vers le bas à chaque nouveau message
   useEffect(() => {
-    if (chatContainerRef.current) {
-      setTimeout(() => {
-        chatContainerRef.current!.scrollTo({
-          top: chatContainerRef.current!.scrollHeight,
-          behavior: 'smooth',
-        })
-      }, 50)
-    }
+    setTimeout(() => {
+      window.scrollTo(0, document.body.scrollHeight)
+    }, 50)
   }, [messages])
+
 
   const insertMention = (email: string) => {
     const updated = chatMessage.replace(/@([\w.-]*)$/, `@${email} `)

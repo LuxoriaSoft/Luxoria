@@ -40,6 +40,19 @@ export default function PhotoChatPage() {
     }
   }, [chatMessage, collection, user])
 
+  useEffect(() => {
+    setTimeout(() => {
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTo({
+          top: chatContainerRef.current.scrollHeight,
+          behavior: 'smooth',
+        })
+      }
+      window.scrollTo(0, document.body.scrollHeight)
+    }, 50)
+  }, [messages])
+
+
   const insertMention = (email: string) => {
     const updated = chatMessage.replace(/@([\w.-]*)$/, `@${email} `)
     setChatMessage(updated)
