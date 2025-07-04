@@ -1,3 +1,15 @@
+# [1.56.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.55.0...v1.56.0) (2025-07-04)
+
+
+### Bug Fixes
+
+* Hides UI elements for web export ([a9e40ad](https://github.com/LuxoriaSoft/Luxoria/commit/a9e40adf00c106475ece6d1063628df70f5783b7))
+
+
+### Features
+
+* Enables exporting assets in different formats (for web) ([a1b9930](https://github.com/LuxoriaSoft/Luxoria/commit/a1b9930bb745990fa654e16e419a8323af4a01e6))
+
 # [1.55.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.54.1...v1.55.0) (2025-07-04)
 
 
