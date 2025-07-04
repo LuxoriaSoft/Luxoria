@@ -51,34 +51,71 @@ namespace LuxStudio.Components
                 _lastUrl = null;
             };
 
-            ChatURLUpdated += async (Uri url, AuthManager authManager) => {
+            ChatURLUpdated += async (Uri url, AuthManager authManager) =>
+            {
                 _authManager = authManager;
-                WebView2 ChatWebView = new WebView2
-                {
-                    Source = url,
-                    HorizontalAlignment = HorizontalAlignment.Stretch,
-                    VerticalAlignment = VerticalAlignment.Stretch
-                };
-                WebViewHote.Children.Clear();
-                WebViewHote.Children.Add(ChatWebView);
                 string accessToken = await _authManager.GetAccessTokenAsync();
                 Debug.WriteLine($"Chat URL updated: {url}, Token: {accessToken}");
                 _lastUrl = url;
+
+                WebView2 chatWebView = new WebView2
+                {
+                    Source = new Uri("about:blank"),
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch
+                };
+
+                chatWebView.NavigationCompleted += async (s, e) =>
+                {
+                    if (chatWebView.CoreWebView2 != null)
+                    {
+                        string script = $@"
+                            document.cookie = 'token={accessToken}; path=/;';
+                            localStorage.setItem('token', '{accessToken}');
+                        ";
+                        await chatWebView.CoreWebView2.ExecuteScriptAsync(script);
+                        Debug.WriteLine("Token injected into localStorage and cookies.");
+                        if (chatWebView.Source != url)
+                            chatWebView.Source = url;
+                    }
+                };
+
+                WebViewHote.Children.Clear();
+                WebViewHote.Children.Add(chatWebView);
             };
+
 
             Loaded += async (s, e) =>
             {
+                WebViewHote.Children.Clear();
                 if (_lastUrl != null && _authManager != null)
                 {
-                    Debug.WriteLine($"Loading last URL: {_lastUrl}");
-                    WebView2 ChatWebView = new WebView2
+                    string accessToken = await _authManager.GetAccessTokenAsync();
+                    Debug.WriteLine($"Chat URL updated: {_lastUrl}, Token: {accessToken}");
+
+                    WebView2 chatWebView = new WebView2
                     {
-                        Source = _lastUrl,
+                        Source = new Uri("about:blank"),
                         HorizontalAlignment = HorizontalAlignment.Stretch,
                         VerticalAlignment = VerticalAlignment.Stretch
                     };
-                    WebViewHote.Children.Clear();
-                    WebViewHote.Children.Add(ChatWebView);
+
+                    chatWebView.NavigationCompleted += async (s, e) =>
+                    {
+                        if (chatWebView.CoreWebView2 != null)
+                        {
+                            string script = $@"
+                                document.cookie = 'token={accessToken}; path=/;';
+                                localStorage.setItem('token', '{accessToken}');
+                            ";
+                            await chatWebView.CoreWebView2.ExecuteScriptAsync(script);
+                            Debug.WriteLine("Token injected into localStorage and cookies.");
+                            if (chatWebView.Source != _lastUrl)
+                                chatWebView.Source = _lastUrl;
+                        }
+                    };
+
+                    WebViewHote.Children.Add(chatWebView);
                 }
                 else
                 {
@@ -89,21 +126,9 @@ namespace LuxStudio.Components
                         VerticalAlignment = VerticalAlignment.Center,
                         FontSize = 24
                     };
-
-                    WebViewHote.Children.Clear();
                     WebViewHote.Children.Add(textBlock);
                 }
             };
-
-            //ChatWebView.NavigationCompleted += async (s, e) =>
-            //{
-            //    Debug.WriteLine($"Navigation completed: {_accessToken}");
-            //    await ChatWebView.CoreWebView2.ExecuteScriptAsync(
-            //        $@"document.cookie = 'token={_accessToken};
-            //            path=/';
-            //            localStorage.setItem('token', '{_accessToken}');"
-            //    );
-            //};
         }           
     }
 }
