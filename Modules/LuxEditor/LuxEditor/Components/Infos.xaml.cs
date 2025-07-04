@@ -68,7 +68,35 @@ namespace LuxEditor.Components
                 await _eventBus.Publish(new RequestTokenEvent(h => tcs.SetResult(h)));
                 string accessToken = await tcs.Task;
 
-                var url = new Uri($"{ImageManager.Instance.SelectedImage.LuxCfg.StudioUrl}/collections/{collectionId}/chat/{ImageManager.Instance.SelectedImage.LuxCfg.LastUploadId}");
+                if (ImageManager.Instance.SelectedImage == null)
+                {
+                    Debug.WriteLine("No image selected, cannot update chat URL.");
+                    return;
+                }
+                if (ImageManager.Instance.SelectedImage.LuxCfg == null)
+                {
+                    Debug.WriteLine("Selected image has no LuxCfg, cannot update chat URL.");
+                    return;
+                }
+                Uri url;
+                try
+                {
+                    url = new Uri($"{ImageManager.Instance.SelectedImage.LuxCfg.StudioUrl}/collections/{collectionId}/chat/{ImageManager.Instance.SelectedImage.LuxCfg.LastUploadId}");
+                }
+                catch (Exception ex)
+                {
+                    WebViewHote.Children.Clear();
+                    WebViewHote.Children.Add(new TextBlock
+                    {
+                        Text = "Please upload photo first",
+                        Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 0, 0)),
+                        FontWeight = FontWeights.Bold,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    });
+                    Debug.WriteLine($"Failed to create chat URL: {ex.Message}");
+                    return;
+                }
 
                 Debug.WriteLine($"LUX EDITOR Chat URL updated: {url}, Token: {accessToken}");
 

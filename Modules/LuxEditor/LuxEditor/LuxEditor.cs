@@ -1,3 +1,4 @@
+using CommunityToolkit.WinUI;
 using LuxEditor.Components;
 using LuxEditor.Logic;
 using LuxEditor.Models;
@@ -9,9 +10,9 @@ using Luxoria.Modules.Models;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
+using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace LuxEditor
@@ -173,24 +174,27 @@ namespace LuxEditor
             _collectionId = body.CollectionId;
         }
 
-        private void OnUpdateUpdatedAsset(UpdateUpdatedAssetEvent body)
+        private async void OnUpdateUpdatedAsset(UpdateUpdatedAssetEvent body)
         {
-            EditableImage imageToModify = ImageManager.Instance.OpenedImages.Where(img => img.Id == body.AssetId).First();
-            Debug.WriteLine("Image to modify id" + imageToModify.Id);
-            Debug.WriteLine("Before Image to modify LastUploadId" + imageToModify.LuxCfg.LastUploadId);
-            Debug.WriteLine("Before Image to modify CollectionId" + imageToModify.LuxCfg.CollectionId);
-            Debug.WriteLine("Before Image to modify StudioUrl" + imageToModify.LuxCfg.StudioUrl);
+            EditableImage imageToModify = ImageManager.Instance.OpenedImages.First(img => img.Id == body.AssetId);
             int index = ImageManager.Instance.OpenedImages.IndexOf(imageToModify);
+
             imageToModify.LuxCfg.LastUploadId = body.LastUploadedId;
             imageToModify.LuxCfg.CollectionId = body.CollectionId;
             imageToModify.LuxCfg.StudioUrl = body.Url;
-            Debug.WriteLine("After Image to modify LastUploadId" + imageToModify.LuxCfg.LastUploadId);
-            Debug.WriteLine("After Image to modify CollectionId" + imageToModify.LuxCfg.CollectionId);
-            Debug.WriteLine("After Image to modify StudioUrl" + imageToModify.LuxCfg.StudioUrl);
-            ImageManager.Instance.OpenedImages[index] = imageToModify;
-            Debug.WriteLine("Image to modify id after" + ImageManager.Instance.OpenedImages[index].LuxCfg.LastUploadId);
 
+            ImageManager.Instance.OpenedImages[index] = imageToModify;
+
+            if (imageToModify == ImageManager.Instance.SelectedImage && _infos is not null)
+            {
+                await _infos.DispatcherQueue.EnqueueAsync(() =>
+                {
+                    _infos.OnWebCollectionSelected(body.CollectionId);
+                });
+            }
         }
+
+
 
         /// <summary>
         /// Executes the module logic manually.
