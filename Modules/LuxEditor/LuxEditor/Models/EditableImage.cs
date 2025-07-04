@@ -48,7 +48,7 @@ namespace LuxEditor.Models
             public required CropController.CropBox Crop;
         }
 
-        private readonly LuxCfg _luxCfg;
+        public readonly LuxCfg LuxCfg;
         private readonly FileExtension _fileExtension;
 
         public EditableImage(LuxAsset asset)
@@ -70,13 +70,13 @@ namespace LuxEditor.Models
                 Angle = 0
             };
             EditedPreviewBitmap = new SKBitmap(OriginalBitmap.Width, OriginalBitmap.Height);
-            _luxCfg = asset.MetaData;
+            LuxCfg = asset.MetaData;
             _fileExtension = asset.MetaData.Extension;
             LayerManager = new(this);
             SaveState();
         }
 
-        public LuxAsset ToLuxAsset() => new() { MetaData = _luxCfg, FilterData = FilterData, Data = new ImageData(EditedBitmap, _fileExtension, Metadata.ToDictionary()) };
+        public LuxAsset ToLuxAsset() => new() { MetaData = LuxCfg, FilterData = FilterData, Data = new ImageData(EditedBitmap, _fileExtension, Metadata.ToDictionary()) };
 
         /// <summary>
         /// Saves the current state of the settings to the history stack.

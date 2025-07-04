@@ -13,6 +13,7 @@ using SkiaSharp;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using WinRT.Interop;
 
 namespace LuxStudio;
 
@@ -53,6 +54,7 @@ public class LuxStudio : IModule, IModuleUI
         _logger?.Log("LuxStudio initialized", "Mods/LuxStudio", LogLevel.Info);
         
         _eventBus.Subscribe<RequestExportOnlineEvent>(OnExportRequest);
+        _eventBus.Subscribe<RequestTokenEvent>(OnRequestToken);
 
         // Add a menu bar item to the main menu bar
         List<ISmartButton> smartButtons = [];
@@ -68,6 +70,7 @@ public class LuxStudio : IModule, IModuleUI
 
         _collectionManagementView.OnCollectionItemSelected += async (item) =>
         {
+            await _eventBus.Publish(new WebCollectionSelectedEvent(item.Id));
             _selectedCollection = item;
             _chat.ChatURLUpdated?.Invoke(new Uri(new Uri(item.Config?.Url), $"/collections/{item.Id}/chat") ?? new Uri(string.Empty), item.AuthManager);
         };
@@ -176,5 +179,15 @@ public class LuxStudio : IModule, IModuleUI
         catch (Exception ex)
         {
         }
+    }
+
+    private async void OnRequestToken(RequestTokenEvent evt)
+    {
+        if (_authManager == null)
+        {
+            Debug.WriteLine("AuthManager is null, cannot get access token.");
+            return;
+        }
+        evt.OnHandleReceived?.Invoke(await _authManager.GetAccessTokenAsync());
     }
 }

@@ -32,6 +32,7 @@ namespace LuxEditor
         private PhotoViewer? _photoViewer;
         private Infos? _infos;
         private Editor? _editor;
+        private Guid? _collectionId;
 
         /// <summary>
         /// Initializes the module and sets up the UI panels and event handlers.
@@ -57,8 +58,6 @@ namespace LuxEditor
             _cExplorer = new CollectionExplorer();
             _editor = new Editor(null);
             _infos = new Infos(_eventBus);
-
-
 
             _editor.AttachCropController(_photoViewer.CropController);
             _editor.OnEditorImageUpdated += (updatedBitmap) =>
@@ -98,6 +97,8 @@ namespace LuxEditor
             _cExplorer.OnImageSelected += (img) =>
             {
                 ImageManager.Instance.SelectImage(img);
+                if (_collectionId != null)
+                    _infos?.OnWebCollectionSelected(_collectionId ?? throw new Exception("Collection Id cannot be null here"));
             };
 
             _cExplorer.ExportRequestedEvent += () =>
@@ -135,6 +136,9 @@ namespace LuxEditor
                     ImageManager.Instance.OpenedImages.Select(img => img.ToLuxAsset()).ToList()
                 );
             });
+            _eventBus?.Subscribe<WebCollectionSelectedEvent>(OnWebCollectionSelected);
+
+            _eventBus?.Subscribe<UpdateUpdatedAssetEvent>(OnUpdateUpdatedAsset);
 
             _logger?.Log($"{Name} initialized", "LuxEditor", LogLevel.Info);
         }
@@ -142,7 +146,7 @@ namespace LuxEditor
         /// <summary>
         /// Called when the image collection is updated. Converts assets into EditableImage objects.
         /// </summary>
-        public void OnCollectionUpdated(CollectionUpdatedEvent body)
+        private void OnCollectionUpdated(CollectionUpdatedEvent body)
         {
             _logger?.Log($"Collection updated: {body.CollectionName}", "LuxEditor", LogLevel.Info);
 
@@ -161,6 +165,31 @@ namespace LuxEditor
 
             ImageManager.Instance.LoadImages(editableImages);
             _cExplorer?.SetImages(editableImages);            
+        }
+
+        private void OnWebCollectionSelected(WebCollectionSelectedEvent body)
+        {
+            _infos.OnWebCollectionSelected(body.CollectionId);
+            _collectionId = body.CollectionId;
+        }
+
+        private void OnUpdateUpdatedAsset(UpdateUpdatedAssetEvent body)
+        {
+            EditableImage imageToModify = ImageManager.Instance.OpenedImages.Where(img => img.Id == body.AssetId).First();
+            Debug.WriteLine("Image to modify id" + imageToModify.Id);
+            Debug.WriteLine("Before Image to modify LastUploadId" + imageToModify.LuxCfg.LastUploadId);
+            Debug.WriteLine("Before Image to modify CollectionId" + imageToModify.LuxCfg.CollectionId);
+            Debug.WriteLine("Before Image to modify StudioUrl" + imageToModify.LuxCfg.StudioUrl);
+            int index = ImageManager.Instance.OpenedImages.IndexOf(imageToModify);
+            imageToModify.LuxCfg.LastUploadId = body.LastUploadedId;
+            imageToModify.LuxCfg.CollectionId = body.CollectionId;
+            imageToModify.LuxCfg.StudioUrl = body.Url;
+            Debug.WriteLine("After Image to modify LastUploadId" + imageToModify.LuxCfg.LastUploadId);
+            Debug.WriteLine("After Image to modify CollectionId" + imageToModify.LuxCfg.CollectionId);
+            Debug.WriteLine("After Image to modify StudioUrl" + imageToModify.LuxCfg.StudioUrl);
+            ImageManager.Instance.OpenedImages[index] = imageToModify;
+            Debug.WriteLine("Image to modify id after" + ImageManager.Instance.OpenedImages[index].LuxCfg.LastUploadId);
+
         }
 
         /// <summary>
