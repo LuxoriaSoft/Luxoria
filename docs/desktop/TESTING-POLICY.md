@@ -3,6 +3,8 @@
 ## **Objective**
 The purpose of this testing policy is to establish a clear and robust framework for writing, organizing, and maintaining unit tests for the **Luxoria** project. This ensures consistent quality, high coverage, and minimal regressions throughout development.
 
+Please refer to [Luxoria UI Manual Test Protocol](./MTP1.md), to test / assert our Luxoria Desktop Application
+
 ---
 
 ## **Core Principles**
