@@ -135,6 +135,7 @@ export default function CollectionChatPage() {
             onChange={(e) => setChatMessage(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
             className="text-white bg-zinc-700 border-zinc-600 focus:border-purple-500 placeholder-zinc-400"
+            disabled={isSending}
           />
           {mentionVisible && (
             <div className="absolute bottom-full mb-2 w-full max-h-40 overflow-y-auto rounded border bg-zinc-800 p-2 shadow z-50">

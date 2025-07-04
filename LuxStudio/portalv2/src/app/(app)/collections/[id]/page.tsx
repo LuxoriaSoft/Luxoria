@@ -40,6 +40,8 @@ export default function CollectionDetail() {
   const router = useRouter()
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
+  const [isSending, setIsSending] = useState(false);
+
 
   const { user } = useUser()
   const API_URL = process.env.NEXT_PUBLIC_API_URL
@@ -97,8 +99,9 @@ export default function CollectionDetail() {
   // Upload photo
 const handleUploadPhoto = async () => {
   if (selectedFiles.length === 0) return
-  setUploading(true)
+  if (isSending) return;
   try {
+    setIsSending(true)
     for (const file of selectedFiles) {
       await CollectionService.uploadPhoto(id, file)
     }
@@ -110,14 +113,18 @@ const handleUploadPhoto = async () => {
     console.error(err)
     alert('Error uploading photos')
   } finally {
-    setUploading(false)
+    setIsSending(false)
   }
 }
 
 
 const handleSendMessage = async () => {
   if (!chatMessage.trim() || !user) return
+  if (isSending) return  // bloque si déjà en envoi
+
   try {
+    setIsSending(true)  // <<==== Active le loading / disable bouton
+
     const currentPhotoId = selectedImage?.id
 
     // Envoie le message
@@ -154,8 +161,11 @@ const handleSendMessage = async () => {
     setChatMessage('')
   } catch (err) {
     console.error('Error sending message:', err)
+  } finally {
+    setIsSending(false)  // <<==== Réactive le bouton quand fini
   }
 }
+
 
   // Invitation utilisateur
   const handleInvite = async () => {
@@ -216,7 +226,7 @@ const handleSendMessage = async () => {
         />
         <Button
           onClick={handleUploadPhoto}
-          disabled={uploading || !selectedFiles}
+          disabled={uploading || isSending || !selectedFiles}
           className="self-start"
         >
           {uploading ? 'Uploading...' : 'Upload Photo'}
@@ -396,6 +406,7 @@ const handleSendMessage = async () => {
         onChange={(e) => setChatMessage(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
         className="w-full rounded border border-zinc-700 px-3 py-2 bg-zinc-800 text-white placeholder-zinc-500"
+        disabled={isSending}
       />
         {mentionVisible && (
     <ul className="absolute z-50 bg-zinc-800 border border-zinc-700 rounded mt-1 w-full max-h-40 overflow-y-auto text-white">
@@ -412,6 +423,7 @@ const handleSendMessage = async () => {
   )}
       <Button
         onClick={handleSendMessage}
+        disabled={isSending}
         className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-1.5 rounded text-sm flex items-center justify-center"
       >
         Send
