@@ -143,11 +143,16 @@ namespace LuxAPI.Controllers
         }
 
 
+        [Authorize]
         [HttpPost("create")]
         public async Task<IActionResult> CreateCollection([FromBody] CreateCollectionDto dto)
         {
+            var currentUserEmail = User?.Identity?.Name;
+            if (string.IsNullOrEmpty(currentUserEmail))
+                return Unauthorized();
+
             if (dto == null)
-                return BadRequest("Invalid DTO Please refer to CreateCollectionDto");
+                return BadRequest("Invalid DTO");
 
             var collection = new Collection
             {
@@ -155,15 +160,24 @@ namespace LuxAPI.Controllers
                 Description = dto.Description
             };
 
+            collection.Accesses.Add(new CollectionAccess
+            {
+                Email = currentUserEmail,
+                Collection = collection
+            });
+
             if (dto.AllowedEmails != null)
             {
                 foreach (var email in dto.AllowedEmails)
                 {
-                    collection.Accesses.Add(new CollectionAccess
+                    if (!string.Equals(email, currentUserEmail, StringComparison.OrdinalIgnoreCase))
                     {
-                        Email = email,
-                        Collection = collection
-                    });
+                        collection.Accesses.Add(new CollectionAccess
+                        {
+                            Email = email,
+                            Collection = collection
+                        });
+                    }
                 }
             }
 

@@ -210,7 +210,7 @@ export function ApplicationLayout({
                         'You will be redirected to a Google Forms page to request Sentry access. Continue?'
                       )
                     ) {
-                      window.open('https://forms.gle/your-google-form-link', '_blank')
+                      window.open('https://docs.google.com/forms/d/e/1FAIpQLSekFe85AONUMKtMXm0uG_vXh-TknDYMBUqLNLzNliDWIzazeQ/viewform?usp=header', '_blank')
                     }
                   }}
                 >
@@ -224,7 +224,7 @@ export function ApplicationLayout({
                         'You will be redirected to a Google Forms page to request Feedback access. Continue?'
                       )
                     ) {
-                      window.open('https://forms.gle/your-feedback-google-form-link', '_blank')
+                      window.open('https://docs.google.com/forms/d/e/1FAIpQLSc8AYwfTPP-_Iu_XKXfxwsAnET2-X_MOO7POxFH7dBCJLJfFw/viewform?usp=header', '_blank')
                     }
                   }}
                 >
