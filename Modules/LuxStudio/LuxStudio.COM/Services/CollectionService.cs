@@ -178,7 +178,7 @@ public class CollectionService
         }
     }
 
-    public async Task<bool> CreateCollectionAsync(string accessToken, string name, string description, ICollection<string> allowedEmails)
+    public async Task<LuxCollection?> CreateCollectionAsync(string accessToken, string name, string description, ICollection<string> allowedEmails)
     {
         var requestUri = $"{_apiBaseUrl}/api/collection/create";
 
@@ -198,15 +198,32 @@ public class CollectionService
 
         if (!response.IsSuccessStatusCode)
         {
-            Debug.WriteLine($"Error: {response.StatusCode}");
+            Debug.WriteLine($"[CreateCollection] Error: {response.StatusCode}");
             Debug.WriteLine(await response.Content.ReadAsStringAsync());
-            return false;
+            return null;
         }
 
-        Debug.WriteLine("Create collection successful! Server returned:");
-        Debug.WriteLine(await response.Content.ReadAsStringAsync());
-        return true;
+        var responseJson = await response.Content.ReadAsStringAsync();
+
+        try
+        {
+            var collection = JsonSerializer.Deserialize<LuxCollection>(responseJson, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            Debug.WriteLine("[CreateCollection] Success:");
+            Debug.WriteLine(responseJson);
+
+            return collection;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[CreateCollection] Failed to deserialize response: {ex.Message}");
+            return null;
+        }
     }
+
 
     public async Task<bool> DeleteCollectionAsync(string accessToken, Guid collectionId)
     {

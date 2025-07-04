@@ -54,7 +54,9 @@ public sealed partial class CollectionManagementView : Page, INotifyPropertyChan
     public ObservableCollection<CollectionItem> CollectionItems { get; set; } = new ObservableCollection<CollectionItem>();
     private CollectionService? _collectionService;
     public Action<LuxStudioConfig, AuthManager>? Authenticated;
-    
+
+    public event Action NoCollectionSelected;
+
     private bool _isAuthenticated = false;
     private bool _isNotAuthenticated => !_isAuthenticated;
     private AuthManager? _authManager;
@@ -131,7 +133,14 @@ public sealed partial class CollectionManagementView : Page, INotifyPropertyChan
     private void CollectionListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         Debug.WriteLine("Collection changed!");
-        OnCollectionItemSelected?.Invoke((CollectionItem)((ListView)sender).SelectedItem);
+
+        CollectionItem item = (CollectionItem)((ListView)sender).SelectedItem;
+        if (item == null)
+        {
+            Debug.WriteLine("No collection selected.");
+            return;
+        }
+        OnCollectionItemSelected?.Invoke(item);
     }
 
     private void SetCreateMode(bool isCreating, bool isEdit = false)
@@ -173,21 +182,26 @@ public sealed partial class CollectionManagementView : Page, INotifyPropertyChan
 
         if (_collectionBeingEdited == null)
         {
-            var success = await _collectionService.CreateCollectionAsync(
+            var created = await _collectionService.CreateCollectionAsync(
                 await _authManager.GetAccessTokenAsync(),
                 name,
                 description,
                 emails
             );
 
-            if (success)
+            if (created != null)
             {
-                CollectionItems.Add(new CollectionItem(name, description, Guid.NewGuid(), _authManager, _config));
+                var newItem = new CollectionItem(created.Name, created.Description, created.Id, _authManager, _config);
+                CollectionItems.Add(newItem);
+                CollectionListView.SelectedItem = newItem;
+                OnCollectionItemSelected?.Invoke(newItem);
+
                 await _eventBus.Publish(new ToastNotificationEvent
                 {
                     Title = "LuxStudio",
                     Message = "Collection created successfully"
                 });
+
                 SetCreateMode(false);
             }
             else
@@ -218,6 +232,8 @@ public sealed partial class CollectionManagementView : Page, INotifyPropertyChan
                 if (index >= 0)
                 {
                     CollectionItems[index] = updatedItem;
+                    CollectionListView.SelectedItem = updatedItem;
+                    OnCollectionItemSelected?.Invoke(updatedItem);
                 }
 
                 _collectionBeingEdited = null;
@@ -260,7 +276,6 @@ public sealed partial class CollectionManagementView : Page, INotifyPropertyChan
                 _allowedEmails.Remove(itemToRemove);
         }
     }
-
 
     private static bool IsValidEmail(string email)
     {
@@ -329,6 +344,7 @@ public sealed partial class CollectionManagementView : Page, INotifyPropertyChan
         if (success)
         {
             CollectionItems.Remove(selected);
+            NoCollectionSelected.Invoke();
             await _eventBus.Publish(new ToastNotificationEvent
             {
                 Title = "LuxStudio",

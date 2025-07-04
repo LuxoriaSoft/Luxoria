@@ -9,9 +9,6 @@
     xmlns:controls="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     mc:Ignorable="d">
 
-    <Grid>
-        <controls:WebView2 x:Name="ChatWebView"
-        Source="" HorizontalAlignment="Stretch" 
-        VerticalAlignment="Stretch"/>
+    <Grid x:Name="WebViewHote">
     </Grid>
 </Page>

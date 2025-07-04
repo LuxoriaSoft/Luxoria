@@ -59,15 +59,23 @@ public class LuxStudio : IModule, IModuleUI
         _accManagementView = new AccManagementView(ref _authManager);
         _accManagementView.OnAuthenticated += AccManagementView_OnAuthenticated;
 
-        _collectionManagementView = new CollectionManagementView(_eventBus
-            );
+        _collectionManagementView = new CollectionManagementView(_eventBus);
+
         _collectionManagementView.OnAuthenticated += (authManager) =>
         {
             _authManager = authManager;
         };
-        _collectionManagementView.OnCollectionItemSelected += (item) =>
+
+        _collectionManagementView.OnCollectionItemSelected += async (item) =>
         {
             _selectedCollection = item;
+            _chat.ChatURLUpdated?.Invoke(new Uri(new Uri(item.Config?.Url), $"/collections/{item.Id}/chat") ?? new Uri(string.Empty), item.AuthManager);
+        };
+
+        _collectionManagementView.NoCollectionSelected += () =>
+        {
+            _chat.NoCollectionSelected?.Invoke();
+            _selectedCollection = null;
         };
 
         _chat = new Chat();
