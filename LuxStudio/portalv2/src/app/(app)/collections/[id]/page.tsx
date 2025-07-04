@@ -164,8 +164,7 @@ const handleSendMessage = async () => {
   } finally {
     setIsSending(false)  // <<==== Réactive le bouton quand fini
   }
-}
-
+}  
 
   // Invitation utilisateur
   const handleInvite = async () => {
@@ -333,7 +332,7 @@ const handleSendMessage = async () => {
       </div>
 
       {/* Zone chat */}
-      <div className="w-1/3 flex flex-col border rounded p-4 bg-zinc-900 max-h-[600px] overflow-hidden text-white">
+      <div className="w-1/3 flex flex-col border rounded p-4 bg-zinc-900 max-h-[600px] overflow-visible text-white">
         <Subheading className="text-white">Chat</Subheading>
 
         {/* Messages */}
@@ -400,27 +399,32 @@ const handleSendMessage = async () => {
 
     {/* Input + Bouton envoyer */}
     <div className="flex gap-3 mt-4">
-      <Input
-        placeholder="Your message..."
-        value={chatMessage}
-        onChange={(e) => setChatMessage(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-        className="w-full rounded border border-zinc-700 px-3 py-2 bg-zinc-800 text-white placeholder-zinc-500"
-        disabled={isSending}
-      />
+      {/* Wrapper relatif autour de l'input + popup, prend toute la largeur possible */}
+      <div className="relative flex-1">
+        <Input
+          placeholder="Your message..."
+          value={chatMessage}
+          onChange={(e) => setChatMessage(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+          className="w-full rounded border border-zinc-700 px-3 py-2 bg-zinc-800 text-white placeholder-zinc-500"
+          disabled={isSending}
+        />
         {mentionVisible && (
-    <ul className="absolute z-50 bg-zinc-800 border border-zinc-700 rounded mt-1 w-full max-h-40 overflow-y-auto text-white">
-      {filteredEmails.map((email) => (
-        <li
-          key={email}
-          className="px-3 py-1 cursor-pointer hover:bg-purple-700"
-          onClick={() => insertMention(email)}
-        >
-          {email}
-        </li>
-      ))}
-    </ul>
-  )}
+          <ul className="absolute z-50 bg-zinc-800 border border-zinc-700 rounded mt-1 max-w-xs max-h-40 overflow-y-auto text-white">
+            {filteredEmails.map((email) => (
+              <li
+                key={email}
+                className="px-3 py-1 cursor-pointer hover:bg-purple-700"
+                onClick={() => insertMention(email)}
+              >
+                {email}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Bouton Send reste à côté */}
       <Button
         onClick={handleSendMessage}
         disabled={isSending}

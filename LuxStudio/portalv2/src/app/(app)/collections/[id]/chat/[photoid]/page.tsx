@@ -150,7 +150,7 @@ export default function PhotoChatPage() {
             disabled={isSending}
           />
           {mentionVisible && (
-            <div className="absolute bottom-full mb-2 w-full max-h-40 overflow-y-auto rounded border bg-zinc-800 p-2 shadow z-50">
+            <div className="absolute bottom-full mb-2 max-w-md max-h-40 overflow-y-auto rounded border bg-zinc-800 p-2 shadow z-50">
               {filteredEmails.map(email => (
                 <div
                   key={email}
