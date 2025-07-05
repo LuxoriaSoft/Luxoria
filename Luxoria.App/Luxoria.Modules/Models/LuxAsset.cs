@@ -29,4 +29,9 @@ public class LuxAsset
     /// Contains the data of the asset.
     /// </summary>
     public required ImageData Data { get; init; }
+
+    /// <summary>
+    /// Contains a boolean indicating whether the asset is visible after filtering.
+    /// </summary>
+    public bool IsVisibleAfterFilter { get; init; } = true;
 }

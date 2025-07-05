@@ -392,6 +392,12 @@ public sealed partial class CollectionExplorer : Page
             }).ToList();
         }
 
+        foreach (var img in _allImages)
+            img.IsVisible = false;
+
+        foreach (var img in images)
+            img.IsVisible = true;
+
         _images = images;
 
         _imagePanel.Children.Clear();
@@ -424,8 +430,6 @@ public sealed partial class CollectionExplorer : Page
 
         AdjustImageSizes(new Size(_scrollViewer.ActualWidth, _scrollViewer.ActualHeight));
     }
-
-
 
     private void OnFiltersChanged(FilterBar.ActiveFilters f)
     {
