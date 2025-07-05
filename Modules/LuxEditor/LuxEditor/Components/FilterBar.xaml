@@ -1,0 +1,72 @@
+<UserControl
+    x:Class="LuxEditor.Components.FilterBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    FlowDirection="RightToLeft">
+
+    <StackPanel x:Name="HeaderBar"
+            FlowDirection="RightToLeft"
+            Orientation="Horizontal"
+            Padding="4,0"
+            Spacing="5"
+            Height="38">
+
+        <DropDownButton x:Name="FilterSelector"
+                Content="Filters…"
+                VerticalAlignment="Center">
+            <DropDownButton.Flyout>
+                <MenuFlyout>
+                    <ToggleMenuFlyoutItem x:Name="TogFlags"  Text="Flags"  Click="OnFilterTypeToggled"/>
+                    <ToggleMenuFlyoutItem x:Name="TogRating" Text="Rating" Click="OnFilterTypeToggled"/>
+                    <ToggleMenuFlyoutItem x:Name="TogScore"  Text="Score"  Click="OnFilterTypeToggled"/>
+                </MenuFlyout>
+            </DropDownButton.Flyout>
+        </DropDownButton>
+
+        <StackPanel x:Name="FlagsPanel" Orientation="Horizontal" Spacing="4" Visibility="Collapsed">
+            <ToggleButton x:Name="FlagKeep"  Content="Keep"      Click="OnFlagChanged"/>
+            <ToggleButton x:Name="FlagNone"  Content="Unmarked"  Click="OnFlagChanged"/>
+            <ToggleButton x:Name="FlagIgnore" Content="Ignore"   Click="OnFlagChanged"/>
+        </StackPanel>
+
+        <StackPanel x:Name="RatingPanel"
+            Orientation="Horizontal"
+            FlowDirection="LeftToRight"
+            Spacing="4"
+            Visibility="Collapsed">
+
+            <ComboBox x:Name="RatingOp" Width="60" SelectedIndex="0">
+                <ComboBoxItem Content="≥"/>
+                <ComboBoxItem Content="≤"/>
+                <ComboBoxItem Content="="/>
+                <ComboBoxItem Content="≠"/>
+            </ComboBox>
+
+            <ToggleButton Tag="1" Content="☆" Click="OnRatingStarClicked"/>
+            <ToggleButton Tag="2" Content="☆" Click="OnRatingStarClicked"/>
+            <ToggleButton Tag="3" Content="☆" Click="OnRatingStarClicked"/>
+            <ToggleButton Tag="4" Content="☆" Click="OnRatingStarClicked"/>
+            <ToggleButton Tag="5" Content="☆" Click="OnRatingStarClicked"/>
+        </StackPanel>
+        
+        <StackPanel x:Name="ScorePanel"
+            Orientation="Horizontal"
+            FlowDirection="LeftToRight"
+            Spacing="4"
+            Visibility="Collapsed">
+
+            <ComboBox x:Name="ScoreAlgo" Width="140"
+              SelectionChanged="OnScoreAlgoChanged"/>
+
+            <Slider   x:Name="ScoreThreshold"
+              Minimum="0" Maximum="1"
+              Width="120" Value="0.5"
+              ValueChanged="OnScoreThresholdChanged"/>
+        </StackPanel>
+        
+        <Button Content="Clear" Click="OnClearClicked"/>
+    </StackPanel>
+</UserControl>

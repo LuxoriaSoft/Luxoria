@@ -5,9 +5,26 @@
     xmlns:local="using:LuxEditor"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local1="using:LuxEditor.Components"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid x:Name="RootGrid" Background="Transparent"/>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel x:Name="HeaderBar"
+            FlowDirection="RightToLeft"
+            Orientation="Horizontal"
+            Padding="4"
+            Spacing="5"
+            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
+
+        </StackPanel>
+
+        <Grid Grid.Row="1" x:Name="RootGrid" Background="Transparent"/>
+    </Grid>
 
 </Page>

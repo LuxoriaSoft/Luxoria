@@ -37,6 +37,8 @@ namespace LuxEditor.Models
 
         private DateTime _lastUndoRedoSaveStateTime = DateTime.MinValue;
 
+        public bool IsVisible { get; set; } = true;
+
         public record EditableImageSnapshot
         {
             public required string FileName;
@@ -76,7 +78,7 @@ namespace LuxEditor.Models
             SaveState();
         }
 
-        public LuxAsset ToLuxAsset() => new() { MetaData = LuxCfg, FilterData = FilterData, Data = new ImageData(EditedBitmap, _fileExtension, Metadata.ToDictionary()) };
+        public LuxAsset ToLuxAsset() => new() { MetaData = LuxCfg, FilterData = FilterData, Data = new ImageData(EditedBitmap, _fileExtension, Metadata.ToDictionary()), IsVisibleAfterFilter = IsVisible };
 
         /// <summary>
         /// Saves the current state of the settings to the history stack.

@@ -65,4 +65,10 @@
 	<None Remove="ExternalLibs\Models\yolov5l.onnx" />
 	<EmbeddedResource Include="ExternalLibs\Models\yolov5l.onnx" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Components\FilterBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
 </Project>
