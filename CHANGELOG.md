@@ -1,3 +1,17 @@
+# [1.57.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.56.1...v1.57.0) (2025-07-05)
+
+
+### Bug Fixes
+
+* Clears filter controls when toggled off ([1d9ac50](https://github.com/LuxoriaSoft/Luxoria/commit/1d9ac500b6f9fd4ec7a2b5700c7f415c7cb65970))
+* Improves sort and filter behavior ([eb438f5](https://github.com/LuxoriaSoft/Luxoria/commit/eb438f522bffae7476bf6704fe7ff01d4ade1929))
+
+
+### Features
+
+* Adds asset filtering visibility property for export ([27b34c8](https://github.com/LuxoriaSoft/Luxoria/commit/27b34c889b76e1b4edca25c6f434567e3e38e326))
+* Filtering to collection explorer ([35c3938](https://github.com/LuxoriaSoft/Luxoria/commit/35c39389dc192b367d7ccd8d47065b9b8be96aea))
+
 ## [1.56.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.56.0...v1.56.1) (2025-07-05)
 
 
