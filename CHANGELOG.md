@@ -1,3 +1,13 @@
+## [1.56.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.56.0...v1.56.1) (2025-07-05)
+
+
+### Bug Fixes
+
+* Add folder for BTP scenario validations ([7188f8a](https://github.com/LuxoriaSoft/Luxoria/commit/7188f8aac73b25cfa5d8689eec7df24a87748c3e))
+* Add scenaria 5 ([4c45cbe](https://github.com/LuxoriaSoft/Luxoria/commit/4c45cbe4b930c15ce36b11f057585f6843e400cd))
+* Roadmap files (pdf & docx) ([d2a563c](https://github.com/LuxoriaSoft/Luxoria/commit/d2a563c50f004aa2b7e3cdee09a2b65012cdfaaa))
+* Roadmap integrates Dependency feature ([595326a](https://github.com/LuxoriaSoft/Luxoria/commit/595326abe95943069cb9a84eeead9021daf8bd10))
+
 # [1.56.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.55.0...v1.56.0) (2025-07-04)
 
 
