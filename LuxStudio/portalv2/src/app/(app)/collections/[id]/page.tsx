@@ -203,6 +203,8 @@ const handleSendMessage = async () => {
   }
 }  
 
+
+
   // Invitation utilisateur
   const handleInvite = async () => {
     if (!inviteEmail) return
@@ -367,7 +369,7 @@ const handleSendMessage = async () => {
 
           {/* Bouton statut */}
           <button
-            className="absolute top-2 right-2 bg-blue-600 text-white px-3 py-1 rounded hover:bg-purple-700"
+            className="absolute top-2 right-2 bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
             onClick={() => setShowStatusMenu(prev => !prev)}
             disabled={updatingStatus}
           >
@@ -380,8 +382,8 @@ const handleSendMessage = async () => {
               {statusOptions.map(({ label, value }) => (
                 <div
                   key={value}
-                  className={`cursor-pointer px-4 py-2 hover:bg-purple-700 ${
-                    selectedImage.status === value ? 'font-bold text-purple-400' : ''
+                  className={`cursor-pointer px-4 py-2 hover:bg-blue-600 ${
+                    selectedImage.status === value ? 'font-bold text-[#B91F1E]' : ''
                   }`}
                   onClick={() => updatePhotoStatus(value)}
                 >
@@ -391,11 +393,12 @@ const handleSendMessage = async () => {
             </div>
           )}
         </div>
-
-        <div className="mt-2 px-4">
-          <span className="text-sm text-gray-400">Current status : </span>
-          <span className="font-semibold text-white">{statusLabels[selectedImage.status]}</span>
-        </div>
+      <div className="mt-2 px-4 flex items-center gap-2">
+        <span className="text-sm font-semibold bg-gray-300 text-gray-900 px-2 py-1 rounded dark:bg-gray-700 dark:text-gray-100 flex items-center gap-1">
+          <span>Current status :</span>
+          <span>{statusLabels[selectedImage.status]}</span>
+        </span>
+      </div>
       </>
     )}
   </div>
@@ -479,7 +482,7 @@ const handleSendMessage = async () => {
             {filteredEmails.map((email) => (
               <li
                 key={email}
-                className="px-3 py-1 cursor-pointer hover:bg-purple-700"
+                className="px-3 py-1 cursor-pointer hover:bg-zinc-700"
                 onClick={() => insertMention(email)}
               >
                 {email}
@@ -493,7 +496,7 @@ const handleSendMessage = async () => {
       <Button
         onClick={handleSendMessage}
         disabled={isSending}
-        className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-1.5 rounded text-sm flex items-center justify-center"
+        className="bg-blue-700 hover:bg-blue-600 text-white font-semibold px-5 py-1.5 rounded text-sm flex items-center justify-center"
       >
         Send
       </Button>
@@ -507,7 +510,7 @@ const handleSendMessage = async () => {
       key={photo.id}
       onClick={() => setModalIndex(index)}
       className={`relative cursor-pointer border rounded overflow-hidden shadow-sm ${
-        modalIndex === index ? 'ring-2 ring-purple-600' : ''
+        modalIndex === index ? 'ring-2 ring-[#B91F1E]' : ''
       }`}
     >
       <img

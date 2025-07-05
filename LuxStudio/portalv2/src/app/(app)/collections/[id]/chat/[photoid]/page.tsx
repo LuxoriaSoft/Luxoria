@@ -145,7 +145,7 @@ const handleSendMessage = async () => {
             value={chatMessage}
             onChange={(e) => setChatMessage(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-            className="text-white bg-zinc-700 border-zinc-600 focus:border-purple-500 placeholder-zinc-400"
+            className="text-white bg-zinc-700 border-zinc-600 focus:border-blue-500 placeholder-zinc-400"
             disabled={isSending}
           />
           {mentionVisible && (
@@ -165,7 +165,7 @@ const handleSendMessage = async () => {
         <Button
           onClick={handleSendMessage}
           disabled={isSending}
-          className="bg-purple-600 hover:bg-purple-700 text-white font-bold"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
         >
           Chat
         </Button>
