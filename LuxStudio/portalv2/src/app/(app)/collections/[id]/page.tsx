@@ -41,10 +41,48 @@ export default function CollectionDetail() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
   const [isSending, setIsSending] = useState(false);
+  const [showStatusMenu, setShowStatusMenu] = useState(false)
+  const [updatingStatus, setUpdatingStatus] = useState(false)
+
+  const statusLabels: Record<number, string> = {
+    0: 'Pending',
+    1: 'ModificationReview',
+    2: 'Approved',
+    3: 'ToDelete',
+  };
+
+  const statusOptions: { label: string; value: number }[] = Object.entries(statusLabels).map(
+  ([key, label]) => ({
+    label,
+    value: parseInt(key, 10),
+  })
+);
 
 
   const { user } = useUser()
   const API_URL = process.env.NEXT_PUBLIC_API_URL
+
+  const updatePhotoStatus = async (newStatus: number) => {
+  if (!selectedImage) return
+  setUpdatingStatus(true)
+  try {
+    await CollectionService.updatePhotoStatus(selectedImage.id, newStatus)
+    setCollection(prev => {
+      if (!prev) return prev
+      const photosUpdated = prev.photos.map(photo =>
+        photo.id === selectedImage.id ? { ...photo, status: newStatus } : photo
+      )
+      return { ...prev, photos: photosUpdated }
+    })
+    setShowStatusMenu(false)
+  } catch (error) {
+    console.error('Error updating status:', error)
+    alert('Erreur lors de la mise à jour du statut')
+  } finally {
+    setUpdatingStatus(false)
+  }
+}
+
 
   // Gestion mentions
   useEffect(() => {
@@ -312,23 +350,59 @@ const handleSendMessage = async () => {
         </div>
       )}
 
-    {/* Photos + Chat */}
-    <div className="flex gap-6">
-      {/* Photo sélectionnée */}
-      <div className="flex-1 border rounded overflow-hidden">
-        {selectedImage && (
-    <div className="w-full h-[600px] flex items-center justify-center ">
-      <img
-        src={selectedImage.filePath}
-        alt="Current"
-        className="max-w-full max-h-full object-contain"
-        loading="lazy"
-        style={{ width: 'auto', height: '100%' }}
-      />
-    </div>
+{/* Photos + Chat */}
+<div className="flex gap-6">
+  {/* Photo sélectionnée */}
+  <div className="flex-1 border rounded overflow-hidden relative">
+    {selectedImage && (
+      <>
+        <div className="w-full h-[600px] flex items-center justify-center relative">
+          <img
+            src={selectedImage.filePath}
+            alt="Current"
+            className="max-w-full max-h-full object-contain"
+            loading="lazy"
+            style={{ width: 'auto', height: '100%' }}
+          />
 
-        )}
-      </div>
+          {/* Bouton statut */}
+          <button
+            className="absolute top-2 right-2 bg-blue-600 text-white px-3 py-1 rounded hover:bg-purple-700"
+            onClick={() => setShowStatusMenu(prev => !prev)}
+            disabled={updatingStatus}
+          >
+            {updatingStatus ? 'Updating...' : 'Change Status'}
+          </button>
+
+          {/* Menu déroulant */}
+          {showStatusMenu && (
+            <div className="absolute top-10 right-2 bg-zinc-800 border border-zinc-700 rounded shadow-lg z-50">
+              {statusOptions.map(({ label, value }) => (
+                <div
+                  key={value}
+                  className={`cursor-pointer px-4 py-2 hover:bg-purple-700 ${
+                    selectedImage.status === value ? 'font-bold text-purple-400' : ''
+                  }`}
+                  onClick={() => updatePhotoStatus(value)}
+                >
+                  {label}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="mt-2 px-4">
+          <span className="text-sm text-gray-400">Current status : </span>
+          <span className="font-semibold text-white">{statusLabels[selectedImage.status]}</span>
+        </div>
+      </>
+    )}
+  </div>
+
+  {/* Zone chat */}
+  {/* ...le reste de ta zone chat ici... */}
+
 
       {/* Zone chat */}
       <div className="w-1/3 flex flex-col border rounded p-4 bg-zinc-900 max-h-[600px] overflow-visible text-white">

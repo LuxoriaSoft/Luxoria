@@ -88,6 +88,20 @@ export class CollectionService {
     });
   }
 
+static async updatePhotoStatus(photoId: string, status: number) {
+  const token = localStorage.getItem('token')
+  if (!token) throw new Error('No token found')
+
+  const res = await api.patch(`/collection/photo/${photoId}/status`, { status }, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+
+  if (res.status < 200 || res.status >= 300) {
+    throw new Error('Failed to update photo status')
+  }
+  return res.data
+}
+
   static async reportUser(data: { collectionId: string; reportedUserEmail: string; reason: string }): Promise<void> {
     const token = localStorage.getItem('token');
     if (!token) throw new Error('No token found');
@@ -100,6 +114,7 @@ export class CollectionService {
       throw new Error(res.data?.message || 'Failed to report user');
     }
   }
+  
   
   static async sendMentionNotification(
     collectionId: string,
