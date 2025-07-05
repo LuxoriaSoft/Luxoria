@@ -220,7 +220,7 @@ namespace LuxExport
             //{
             var tcs = new TaskCompletionSource<ICollection<LuxAsset>>();
             await _eventBus.Publish(new RequestLatestCollection(handle => tcs.SetResult(handle)));
-            SetAssets(tcs.Task.GetAwaiter().GetResult().ToList());
+            SetAssets(tcs.Task.GetAwaiter().GetResult().Where(x => x.IsVisibleAfterFilter).ToList());
 
             _wmSvc.Save(_viewModel.Watermark);
 

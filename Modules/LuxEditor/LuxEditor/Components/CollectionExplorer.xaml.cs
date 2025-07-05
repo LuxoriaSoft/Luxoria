@@ -1,4 +1,4 @@
-using CommunityToolkit.WinUI.Controls;
+﻿using CommunityToolkit.WinUI.Controls;
 using LuxEditor.Models;
 using LuxEditor.Services;
 using Microsoft.UI.Xaml;
@@ -10,13 +10,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.Foundation;
 
 namespace LuxEditor.Components;
 
 public sealed partial class CollectionExplorer : Page
 {
+    private List<EditableImage> _allImages = [];
     private List<EditableImage> _images = [];
+
     private ScrollViewer _scrollViewer = new();
     private WrapPanel _imagePanel = new();
     private Border? _selectedBorder = new();
@@ -26,6 +29,12 @@ public sealed partial class CollectionExplorer : Page
     public event Action<EditableImage>? OnImageSelected;
     public event Action? ExportRequestedEvent;
 
+    private FilterBar.ActiveFilters _active = new(new(), null, 0, null, .5);
+
+    private IList<EditableImage> _sourceImages = new List<EditableImage>();
+
+    private FilterBar _filterBar;
+
     /// <summary>
     /// Constructor for the CollectionExplorer component
     /// </summary>
@@ -33,7 +42,6 @@ public sealed partial class CollectionExplorer : Page
     {
         InitializeComponent();
         BuildUI();
-        SizeChanged += (s, e) => AdjustImageSizes(e.NewSize);
     }
 
     /// <summary>
@@ -41,6 +49,15 @@ public sealed partial class CollectionExplorer : Page
     /// </summary>
     private void BuildUI()
     {
+        _filterBar = new FilterBar();
+        _filterBar.FlowDirection = FlowDirection.RightToLeft;
+        _filterBar.FiltersChanged += OnFiltersChanged;
+
+        HeaderBar.Children.Insert(0, _filterBar);
+
+        var algoNames = LuxFilterManager.Instance.AvailableAlgorithms;
+        _filterBar.SetAlgorithms(algoNames);
+
         _scrollViewer = new ScrollViewer
         {
             HorizontalScrollMode = ScrollMode.Enabled,
@@ -59,6 +76,7 @@ public sealed partial class CollectionExplorer : Page
         };
 
         _scrollViewer.Content = _imagePanel;
+        _scrollViewer.SizeChanged += (s, e) => AdjustImageSizes(new (e.NewSize.Width, e.NewSize.Height));
         RootGrid.Children.Add(_scrollViewer);
 
         _filterMenuFlyout = BuildFilterMenuFlyout([]);
@@ -79,12 +97,12 @@ public sealed partial class CollectionExplorer : Page
             Symbol newSymbol = item.Icon is SymbolIcon icon
                 ? icon.Symbol switch
                 {
-                    Symbol.Sort => Symbol.Up,
+                    Symbol.Sort => Symbol.Download,
                     Symbol.Up => Symbol.Download,
                     Symbol.Download => Symbol.Up,
-                    _ => Symbol.Up
+                    _ => Symbol.Download
                 }
-                : Symbol.Up;
+                : Symbol.Download;
 
             bool ascending = newSymbol == Symbol.Up;
 
@@ -101,8 +119,7 @@ public sealed partial class CollectionExplorer : Page
                         sibling.Icon = new SymbolIcon(Symbol.Sort);
                 }
             }
-
-            SetImages(new List<EditableImage>(_images));
+            ApplyFiltersAndRefresh();
         }
     }
 
@@ -206,7 +223,13 @@ public sealed partial class CollectionExplorer : Page
                     : images.OrderByDescending(img => img.FilterData.GetScores()[_filterBy.Algorithm]).ToList();
             }
 
-            _images = images.ToList();
+            _allImages = images.ToList();
+
+            LuxFilterManager.Instance.Clear();
+            LuxFilterManager.Instance.RegisterFromImages(images);
+            _filterBar.SetAlgorithms(LuxFilterManager.Instance.AvailableAlgorithms);
+
+            ApplyFiltersAndRefresh();
 
             for (int i = 0; i < _images.Count; i++)
             {
@@ -236,8 +259,14 @@ public sealed partial class CollectionExplorer : Page
                 _imagePanel.Children.Add(border);
             }
 
-            AdjustImageSizes(new Size(ActualWidth, ActualHeight));
+            if (_selectedBorder != null && !_imagePanel.Children.Contains(_selectedBorder))
+            {
+                _selectedBorder = null;
+                if (_imagePanel.Children.Count > 0)
+                    OnImageTapped((Border)_imagePanel.Children[0], 0);
+            }
         });
+
     }
 
     /// <summary>
@@ -319,4 +348,93 @@ public sealed partial class CollectionExplorer : Page
 
         OnImageSelected?.Invoke(_images[index]);
     }
+
+    private void ApplyFiltersAndRefresh()
+    {
+        var images = _allImages;
+
+        if (!string.IsNullOrEmpty(_filterBy.Algorithm))
+        {
+            images = images
+                .Where(img => img.FilterData.GetScores().ContainsKey(_filterBy.Algorithm))
+                .ToList();
+
+            images = _filterBy.Ascending
+                ? images.OrderBy(img => img.FilterData.GetScores()[_filterBy.Algorithm]).ToList()
+                : images.OrderByDescending(img => img.FilterData.GetScores()[_filterBy.Algorithm]).ToList();
+        }
+
+        if (_active.Flags.Count > 0)
+            images = images.Where(img => _active.Flags.Contains(img.FilterData.GetFlag())).ToList();
+
+        if (_active.RatingOp is char op && _active.RatingVal > 0)
+            images = images.Where(img =>
+                op switch
+                {
+                    '≥' => img.FilterData.Rating >= _active.RatingVal,
+                    '≤' => img.FilterData.Rating <= _active.RatingVal,
+                    '=' => Math.Abs(img.FilterData.Rating - _active.RatingVal) < .1,
+                    '≠' => Math.Abs(img.FilterData.Rating - _active.RatingVal) > .1,
+                    _ => true
+                }).ToList();
+
+        if (!string.IsNullOrEmpty(_active.ScoreAlgo))
+        {
+            images = images.Where(img =>
+            {
+                if (img.FilterData.GetScores()
+                      .TryGetValue(_active.ScoreAlgo!, out var raw))
+                {
+                    double norm = LuxFilterManager.Instance.Normalize(_active.ScoreAlgo!, raw);
+                    return norm >= _active.ScoreMin;
+                }
+                return false;
+            }).ToList();
+        }
+
+        foreach (var img in _allImages)
+            img.IsVisible = false;
+
+        foreach (var img in images)
+            img.IsVisible = true;
+
+        _images = images;
+
+        _imagePanel.Children.Clear();
+        _selectedBorder = null;
+
+        for (int i = 0; i < _images.Count; i++)
+        {
+            var image = _images[i];
+            var bitmap = image.ThumbnailBitmap ?? image.PreviewBitmap ?? image.OriginalBitmap;
+            var border = new Border
+            {
+                Margin = new Thickness(3),
+                CornerRadius = new CornerRadius(5),
+                BorderThickness = new Thickness(2),
+                BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0)),
+                Background = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0))
+            };
+
+            var canvas = new SKXamlCanvas { IgnorePixelScaling = true };
+            int idx = i;
+            canvas.PaintSurface += (s, e) => OnPaintSurface(s, e, idx);
+            border.Child = canvas;
+
+            border.PointerEntered += (s, e) => OnHover(border, true);
+            border.PointerExited += (s, e) => OnHover(border, false);
+            border.Tapped += (s, e) => OnImageTapped(border, idx);
+
+            _imagePanel.Children.Add(border);
+        }
+
+        AdjustImageSizes(new Size(_scrollViewer.ActualWidth, _scrollViewer.ActualHeight));
+    }
+
+    private void OnFiltersChanged(FilterBar.ActiveFilters f)
+    {
+        _active = f;
+        ApplyFiltersAndRefresh();
+    }
+
 }

@@ -18,7 +18,16 @@ public class FilterService
         { "Resolution", new Lazy<IFilterAlgorithm>(() => new ResolutionAlgo()) },
         { "Sharpness", new Lazy<IFilterAlgorithm>(() => new SharpnessAlgo()) },
         { "Brisque", new Lazy<IFilterAlgorithm>(() => new BrisqueAlgo()) },
-        { "CLIP", new Lazy<IFilterAlgorithm>(() => new CLIPAlgo()) }
+        { "CLIP", new Lazy<IFilterAlgorithm>(() => { 
+            try {
+                return new CLIPAlgo();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error initializing CLIPAlgo: {ex.Message}");
+                return new ResolutionAlgo();
+            }
+        }) },
     };
 
     public static ImmutableDictionary<string, IFilterAlgorithm> Catalog { get; } =

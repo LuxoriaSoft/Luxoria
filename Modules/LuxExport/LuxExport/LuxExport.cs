@@ -89,6 +89,7 @@ namespace LuxExport
 
             _eventBus.Subscribe<ExportRequestEvent>((e) =>
             {
+                e.Assets = e.Assets.Where(x => x.IsVisibleAfterFilter).ToList();
                 OnCollectionUpdated(e.Assets);
                 Export specificExport = new Export(_eventBus, _logger);
 
@@ -107,7 +108,7 @@ namespace LuxExport
             });
 
 
-            _eventBus.Subscribe<CollectionUpdatedEvent>((e) => { OnCollectionUpdated(e.Assets); });
+            _eventBus.Subscribe<CollectionUpdatedEvent>((e) => { OnCollectionUpdated(e.Assets.Where(x => x.IsVisibleAfterFilter).ToList()); });
 
             _logger?.Log($"{Name} initialized", "Mods/LuxExport", LogLevel.Info);
         }
