@@ -6,17 +6,20 @@ using LuxEditor.ViewModels;
 using Luxoria.App.Utils;
 using Luxoria.Modules;
 using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Models.Events;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.Web.WebView2.Core;
 using Sentry.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
 
@@ -34,6 +37,7 @@ namespace LuxEditor.Components
         public ObservableCollection<KeyValueStringPair> ExifData { get; } = new();
         public PresetsViewModel ViewModel { get; } = new();
         private IEventBus _eventBus;
+        public Action<Guid> OnWebCollectionSelected;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Infos"/> class.
@@ -58,6 +62,74 @@ namespace LuxEditor.Components
             PresetTree.ItemTemplateSelector = selector;
             _eventBus = eventBus;
             PresetTree.ItemInvoked += PresetTree_ItemInvoked;
+            OnWebCollectionSelected += async collectionId =>
+            {
+                var tcs = new TaskCompletionSource<string>();
+                await _eventBus.Publish(new RequestTokenEvent(h => tcs.SetResult(h)));
+                string accessToken = await tcs.Task;
+
+                if (ImageManager.Instance.SelectedImage == null)
+                {
+                    Debug.WriteLine("No image selected, cannot update chat URL.");
+                    return;
+                }
+                if (ImageManager.Instance.SelectedImage.LuxCfg == null)
+                {
+                    Debug.WriteLine("Selected image has no LuxCfg, cannot update chat URL.");
+                    return;
+                }
+                Uri url;
+                try
+                {
+                    url = new Uri($"{ImageManager.Instance.SelectedImage.LuxCfg.StudioUrl}/collections/{collectionId}/chat/{ImageManager.Instance.SelectedImage.LuxCfg.LastUploadId}");
+                }
+                catch (Exception ex)
+                {
+                    WebViewHote.Children.Clear();
+                    WebViewHote.Children.Add(new TextBlock
+                    {
+                        Text = "Please upload photo first",
+                        Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 0, 0)),
+                        FontWeight = FontWeights.Bold,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    });
+                    Debug.WriteLine($"Failed to create chat URL: {ex.Message}");
+                    return;
+                }
+
+                Debug.WriteLine($"LUX EDITOR Chat URL updated: {url}, Token: {accessToken}");
+
+                var chatWebView = new Microsoft.UI.Xaml.Controls.WebView2
+                {
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                    Source = new Uri("about:blank")
+                };
+
+                chatWebView.NavigationCompleted += async (s, e) =>
+                {
+                    if (chatWebView.CoreWebView2 == null)
+                        return;
+
+                    string script = $@"
+            document.cookie = 'token={accessToken}; path=/;';
+            localStorage.setItem('token', '{accessToken}');
+        ";
+
+                    await chatWebView.CoreWebView2.ExecuteScriptAsync(script);
+                    Debug.WriteLine("Token injected into localStorage and cookies.");
+
+                    if (chatWebView.Source != url)
+                    {
+                        await Task.Delay(50);
+                        chatWebView.Source = url;
+                    }
+                };
+
+                WebViewHote.Children.Clear();
+                WebViewHote.Children.Add(chatWebView);
+            };
         }
 
         /// <summary>

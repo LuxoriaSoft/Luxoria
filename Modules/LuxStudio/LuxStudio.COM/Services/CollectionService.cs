@@ -18,12 +18,15 @@ public class CollectionService
 {
     private readonly string _apiBaseUrl;
     private readonly IEventBus _eventBus;
+    private readonly string _fronUrl;
 
     public CollectionService(LuxStudioConfig config, IEventBus eventBus)
     {
         //_clientId = config?.Sso?.Params?.ClientId ?? throw new NullReferenceException();
         _apiBaseUrl = config?.ApiUrl ?? throw new NullReferenceException();
         _eventBus = eventBus;
+        _fronUrl = config?.Url ?? throw new NullReferenceException();
+        Debug.WriteLine("_fronUrl: " + _fronUrl);
         //_redirectUri = config?.Sso?.Params?.RedirectUrl ?? throw new NullReferenceException();
         //_ssoBaseUrl = config?.Sso?.Url ?? throw new NullReferenceException();
 
@@ -155,7 +158,7 @@ public class CollectionService
                 Debug.WriteLine(json);
 
                 await _eventBus.Publish(new SaveLastUpdatedIdEvent(
-                    _apiBaseUrl,
+                    _fronUrl,
                     json.Id,
                     collectionId,
                     assetId

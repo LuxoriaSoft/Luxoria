@@ -124,60 +124,69 @@ namespace LuxExport
                     exporter = ExporterFactory.CreateExporter(_viewModel.SelectedFormat);
                 }
 
-                    var settings = new ExportSettings
-                    {
-                        Quality = _viewModel.Quality,
-                        ColorSpace = _viewModel.SelectedColorSpace,
-                        LimitFileSize = _viewModel.LimitFileSize,
-                        MaxFileSizeKB = _viewModel.MaxFileSizeKB
-                    };
-
-                if (_viewModel.RenameFile)
+                var settings = new ExportSettings
                 {
-                    string nameWithoutExt = _viewModel.GenerateFileName(originalFileName, metadata, i);
-                    string ext = _viewModel.ExtensionCase == "a..z"
-                        ? _viewModel.GetExtensionFromFormat().ToLowerInvariant()
-                        : _viewModel.GetExtensionFromFormat().ToUpperInvariant();
+                    Quality = _viewModel.Quality,
+                    ColorSpace = _viewModel.SelectedColorSpace,
+                    LimitFileSize = _viewModel.LimitFileSize,
+                    MaxFileSizeKB = _viewModel.MaxFileSizeKB
+                };
 
-                    fileName = $"{nameWithoutExt}.{ext}";
+                if (!_viewModel.IsWebExport)
+                {
+                    if (_viewModel.RenameFile)
+                    {
+                        string nameWithoutExt = _viewModel.GenerateFileName(originalFileName, metadata, i);
+                        string ext = _viewModel.ExtensionCase == "a..z"
+                            ? _viewModel.GetExtensionFromFormat().ToLowerInvariant()
+                            : _viewModel.GetExtensionFromFormat().ToUpperInvariant();
+
+                        fileName = $"{nameWithoutExt}.{ext}";
+                    }
+                    else
+                    {
+                        fileName = originalFileName;
+                    }
+
+                    string exportPath = _viewModel.ExportFilePath;
+                    if (!Directory.Exists(exportPath))
+                    {
+                        Directory.CreateDirectory(exportPath);
+                    }
+
+                    string fullFilePath = Path.Combine(exportPath, fileName);
+
+
+                    switch (_viewModel.SelectedFileConflictResolution)
+                    {
+                        case "Overwrite":
+                            if (File.Exists(fullFilePath))
+                                File.Delete(fullFilePath);
+                            break;
+                        case "Rename":
+                            fullFilePath = GetUniqueFilePath(fullFilePath);
+                            break;
+                        case "Skip":
+                            if (File.Exists(fullFilePath))
+                            {
+                                continue;
+                            }
+                            break;
+                    }
+
+
+                    _viewModel.FilePath = fullFilePath;
                 }
                 else
                 {
-                    fileName = originalFileName;
+                    fileName = $"{asset.Id.ToString()}.{_viewModel.GetExtensionFromFormat()}";
                 }
-
-                string exportPath = _viewModel.ExportFilePath;
-                if (!Directory.Exists(exportPath))
-                {
-                    Directory.CreateDirectory(exportPath);
-                }
-
-                string fullFilePath = Path.Combine(exportPath, fileName);
-
-                switch (_viewModel.SelectedFileConflictResolution)
-                {
-                    case "Overwrite":
-                        if (File.Exists(fullFilePath))
-                            File.Delete(fullFilePath);
-                        break;
-                    case "Rename":
-                        fullFilePath = GetUniqueFilePath(fullFilePath);
-                        break;
-                    case "Skip":
-                        if (File.Exists(fullFilePath))
-                        {
-                            continue;
-                        }
-                        break;
-                }
-
-                _viewModel.FilePath = fullFilePath;
 
                 if (!_cts.IsCancellationRequested)
                 {
                     var colourConverted = ConvertColorSpace(bitmap, _viewModel.SelectedColorSpace);
                     var wmApplied = WatermarkApplier.Apply(colourConverted, _viewModel.Watermark);
-                    await exporter.Export(wmApplied, asset, fullFilePath, _viewModel.SelectedFormat, settings, _eventBus);
+                    await exporter.Export(wmApplied, asset, _viewModel.FilePath, _viewModel.SelectedFormat, settings, _eventBus);
                 }
 
                 int index = i;

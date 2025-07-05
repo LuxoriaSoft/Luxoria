@@ -1,6 +1,7 @@
 ﻿using Luxoria.GModules;
 using Luxoria.GModules.Interfaces;
 using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Models;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
@@ -13,6 +14,7 @@ using SkiaSharp;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using WinRT.Interop;
 
 namespace LuxStudio;
 
@@ -53,6 +55,7 @@ public class LuxStudio : IModule, IModuleUI
         _logger?.Log("LuxStudio initialized", "Mods/LuxStudio", LogLevel.Info);
         
         _eventBus.Subscribe<RequestExportOnlineEvent>(OnExportRequest);
+        _eventBus.Subscribe<RequestTokenEvent>(OnRequestToken);
 
         // Add a menu bar item to the main menu bar
         List<ISmartButton> smartButtons = [];
@@ -68,6 +71,7 @@ public class LuxStudio : IModule, IModuleUI
 
         _collectionManagementView.OnCollectionItemSelected += async (item) =>
         {
+            await _eventBus.Publish(new WebCollectionSelectedEvent(item.Id));
             _selectedCollection = item;
             _chat.ChatURLUpdated?.Invoke(new Uri(new Uri(item.Config?.Url), $"/collections/{item.Id}/chat") ?? new Uri(string.Empty), item.AuthManager);
         };
@@ -157,6 +161,13 @@ public class LuxStudio : IModule, IModuleUI
         return content;
     }
 
+    private string getFileExtension(string filePath)
+    {
+        if (string.IsNullOrEmpty(filePath))
+            return "jpg";
+        return Path.GetExtension(filePath).TrimStart('.').ToLowerInvariant();
+    }
+
     private async void OnExportRequest(RequestExportOnlineEvent evt)
     {
         Debug.WriteLine("Export request received for asset");
@@ -169,12 +180,24 @@ public class LuxStudio : IModule, IModuleUI
         {
             var cs = new CollectionService(_selectedCollection.Config ?? throw new InvalidOperationException("Configuration cannot be null. Ensure the config service is properly initialized."), _eventBus);
 
-            StreamContent strm = CreateStreamContent(evt.AssetPath, "image/jpeg");
+            var extension = getFileExtension(evt.AssetPath);
+
+            StreamContent strm = CreateStreamContent(evt.AssetPath, $"image/{extension}");
             var token = await _selectedCollection.AuthManager.GetAccessTokenAsync();
-            var response = await cs.UploadAssetAsync(evt.Asset.Id, token, _selectedCollection.Id, $"tbe{evt.Asset.Id}.jpeg", strm, evt.Asset.MetaData.LastUploadId);
+            var response = await cs.UploadAssetAsync(evt.Asset.Id, token, _selectedCollection.Id, $"tbe{evt.Asset.Id}.{extension}", strm, evt.Asset.MetaData.LastUploadId);
         }
         catch (Exception ex)
         {
         }
+    }
+
+    private async void OnRequestToken(RequestTokenEvent evt)
+    {
+        if (_authManager == null)
+        {
+            Debug.WriteLine("AuthManager is null, cannot get access token.");
+            return;
+        }
+        evt.OnHandleReceived?.Invoke(await _authManager.GetAccessTokenAsync());
     }
 }

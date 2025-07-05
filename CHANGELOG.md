@@ -1,3 +1,37 @@
+## [1.56.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.56.0...v1.56.1) (2025-07-05)
+
+
+### Bug Fixes
+
+* Add folder for BTP scenario validations ([7188f8a](https://github.com/LuxoriaSoft/Luxoria/commit/7188f8aac73b25cfa5d8689eec7df24a87748c3e))
+* Add scenaria 5 ([4c45cbe](https://github.com/LuxoriaSoft/Luxoria/commit/4c45cbe4b930c15ce36b11f057585f6843e400cd))
+* Roadmap files (pdf & docx) ([d2a563c](https://github.com/LuxoriaSoft/Luxoria/commit/d2a563c50f004aa2b7e3cdee09a2b65012cdfaaa))
+* Roadmap integrates Dependency feature ([595326a](https://github.com/LuxoriaSoft/Luxoria/commit/595326abe95943069cb9a84eeead9021daf8bd10))
+
+# [1.56.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.55.0...v1.56.0) (2025-07-04)
+
+
+### Bug Fixes
+
+* Hides UI elements for web export ([a9e40ad](https://github.com/LuxoriaSoft/Luxoria/commit/a9e40adf00c106475ece6d1063628df70f5783b7))
+
+
+### Features
+
+* Enables exporting assets in different formats (for web) ([a1b9930](https://github.com/LuxoriaSoft/Luxoria/commit/a1b9930bb745990fa654e16e419a8323af4a01e6))
+
+# [1.55.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.54.1...v1.55.0) (2025-07-04)
+
+
+### Bug Fixes
+
+* Missing image data for chat URL ([46df1fe](https://github.com/LuxoriaSoft/Luxoria/commit/46df1fe53cf7444765ef06d540660f37a060be72))
+
+
+### Features
+
+* Chat integration in LuxEditor ([17f44e4](https://github.com/LuxoriaSoft/Luxoria/commit/17f44e4d0c6093d6ed574134b13e4e615987ab2c))
+
 ## [1.54.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.54.0...v1.54.1) (2025-07-04)
 
 
