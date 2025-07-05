@@ -97,12 +97,12 @@ public sealed partial class CollectionExplorer : Page
             Symbol newSymbol = item.Icon is SymbolIcon icon
                 ? icon.Symbol switch
                 {
-                    Symbol.Sort => Symbol.Up,
+                    Symbol.Sort => Symbol.Download,
                     Symbol.Up => Symbol.Download,
                     Symbol.Download => Symbol.Up,
-                    _ => Symbol.Up
+                    _ => Symbol.Download
                 }
-                : Symbol.Up;
+                : Symbol.Download;
 
             bool ascending = newSymbol == Symbol.Up;
 

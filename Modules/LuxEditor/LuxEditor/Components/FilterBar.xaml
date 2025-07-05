@@ -45,16 +45,11 @@
                 <ComboBoxItem Content="≠"/>
             </ComboBox>
 
-            <ToggleButton Style="{StaticResource ButtonRevealStyle}"
-                  Tag="1" Content="☆" Click="OnRatingStarClicked"/>
-            <ToggleButton Style="{StaticResource ButtonRevealStyle}"
-                  Tag="2" Content="☆" Click="OnRatingStarClicked"/>
-            <ToggleButton Style="{StaticResource ButtonRevealStyle}"
-                  Tag="3" Content="☆" Click="OnRatingStarClicked"/>
-            <ToggleButton Style="{StaticResource ButtonRevealStyle}"
-                  Tag="4" Content="☆" Click="OnRatingStarClicked"/>
-            <ToggleButton Style="{StaticResource ButtonRevealStyle}"
-                  Tag="5" Content="☆" Click="OnRatingStarClicked"/>
+            <ToggleButton Tag="1" Content="☆" Click="OnRatingStarClicked"/>
+            <ToggleButton Tag="2" Content="☆" Click="OnRatingStarClicked"/>
+            <ToggleButton Tag="3" Content="☆" Click="OnRatingStarClicked"/>
+            <ToggleButton Tag="4" Content="☆" Click="OnRatingStarClicked"/>
+            <ToggleButton Tag="5" Content="☆" Click="OnRatingStarClicked"/>
         </StackPanel>
         
         <StackPanel x:Name="ScorePanel"
