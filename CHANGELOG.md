@@ -1,3 +1,10 @@
+# [1.58.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.57.2...v1.58.0) (2025-07-05)
+
+
+### Features
+
+* Add LuxStudio module configuration file ([36d3d99](https://github.com/LuxoriaSoft/Luxoria/commit/36d3d99dabf3d96c08ae44361f72c4d7121c37af))
+
 ## [1.57.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.57.1...v1.57.2) (2025-07-05)
 
 
