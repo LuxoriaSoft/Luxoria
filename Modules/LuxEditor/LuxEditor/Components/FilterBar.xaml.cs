@@ -135,10 +135,42 @@ public sealed partial class FilterBar : UserControl
             _scoreMin));
     }
 
-    private void OnFilterTypeToggled(object sender, RoutedEventArgs e)
+    private void OnFilterTypeToggled(object? sender, RoutedEventArgs e)
     {
-        FlagsPanel.Visibility = TogFlags.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
-        RatingPanel.Visibility = TogRating.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
-        ScorePanel.Visibility = TogScore.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+        if (TogFlags.IsChecked == true)
+            FlagsPanel.Visibility = Visibility.Visible;
+        else
+        {
+            FlagsPanel.Visibility = Visibility.Collapsed;
+            _flags.Clear();
+            FlagKeep.IsChecked = FlagNone.IsChecked = FlagIgnore.IsChecked = false;
+        }
+
+        if (TogRating.IsChecked == true)
+            RatingPanel.Visibility = Visibility.Visible;
+        else
+        {
+            RatingPanel.Visibility = Visibility.Collapsed;
+            _ratingValue = 0;
+            _ratingOp = null;
+            RatingOp.SelectedIndex = 0;
+            foreach (var star in RatingPanel.Children.OfType<ToggleButton>())
+            {
+                star.IsChecked = false;
+                star.Content = "☆";
+            }
+        }
+
+        if (TogScore.IsChecked == true)
+            ScorePanel.Visibility = Visibility.Visible;
+        else
+        {
+            ScorePanel.Visibility = Visibility.Collapsed;
+            _scoreAlgo = null;
+            ScoreAlgo.SelectedIndex = -1;
+            ScoreThreshold.Value = 0.5;
+        }
+
+        Push();
     }
 }
