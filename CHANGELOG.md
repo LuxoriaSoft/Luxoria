@@ -1,3 +1,10 @@
+## [1.57.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.57.1...v1.57.2) (2025-07-05)
+
+
+### Bug Fixes
+
+* Add Scenario 4 PDF to BTP Scenarios ([c2fdec4](https://github.com/LuxoriaSoft/Luxoria/commit/c2fdec4eeb4012c6ea7b2de9dcfd5ab1cb082d67))
+
 ## [1.57.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.57.0...v1.57.1) (2025-07-05)
 
 
