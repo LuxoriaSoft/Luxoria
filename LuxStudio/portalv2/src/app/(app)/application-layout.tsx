@@ -141,10 +141,10 @@ export function ApplicationLayout({
 
           <SidebarBody>
             <SidebarSection>
-              <SidebarItem href="/" current={pathname === '/'}>
+            {/*  <SidebarItem href="/" current={pathname === '/'}>
                 <HomeIcon />
                 <SidebarLabel>Home</SidebarLabel>
-              </SidebarItem>
+              </SidebarItem> */}
               <SidebarItem href="/collections" current={pathname.startsWith('/collections')}>
                 <Square2StackIcon />
                 <SidebarLabel>Collections</SidebarLabel>

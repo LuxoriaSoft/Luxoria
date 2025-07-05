@@ -11,7 +11,7 @@ export default function Home() {
   useEffect(() => {
     const timer = setTimeout(() => {
       router.replace('/collections')
-    }, 2000) // 3.5 secondes
+    }, 0)
 
     return () => clearTimeout(timer)
   }, [router])

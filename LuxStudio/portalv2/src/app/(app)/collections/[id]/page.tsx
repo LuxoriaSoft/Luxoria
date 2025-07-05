@@ -367,7 +367,7 @@ const handleSendMessage = async () => {
             style={{ width: 'auto', height: '100%' }}
           />
 
-          {/* Bouton statut */}
+          {/* Bouton statut
           <button
             className="absolute top-2 right-2 bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
             onClick={() => setShowStatusMenu(prev => !prev)}
@@ -376,7 +376,7 @@ const handleSendMessage = async () => {
             {updatingStatus ? 'Updating...' : 'Change Status'}
           </button>
 
-          {/* Menu déroulant */}
+          {/* Menu déroulant 
           {showStatusMenu && (
             <div className="absolute top-10 right-2 bg-zinc-800 border border-zinc-700 rounded shadow-lg z-50">
               {statusOptions.map(({ label, value }) => (
@@ -391,14 +391,14 @@ const handleSendMessage = async () => {
                 </div>
               ))}
             </div>
-          )}
+          )}*/}
         </div>
-      <div className="mt-2 px-4 flex items-center gap-2">
+     {/* <div className="mt-2 px-4 flex items-center gap-2">
         <span className="text-sm font-semibold bg-gray-300 text-gray-900 px-2 py-1 rounded dark:bg-gray-700 dark:text-gray-100 flex items-center gap-1">
           <span>Current status :</span>
           <span>{statusLabels[selectedImage.status]}</span>
         </span>
-      </div>
+      </div> */}
       </>
     )}
   </div>

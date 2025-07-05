@@ -119,7 +119,7 @@ export default function RegisterClient() {
               required
             />
           </Field>
-          <Field>
+        {/*  <Field>
             <Label>Avatar (optional)</Label>
             <Input
               type="file"
@@ -134,7 +134,7 @@ export default function RegisterClient() {
               alt="Avatar preview"
               className="w-20 h-20 rounded-full object-cover border"
             />
-          )}
+          )} */}
           <Field>
             <Label>Account Type</Label>
             <select

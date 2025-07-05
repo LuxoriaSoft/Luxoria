@@ -49,6 +49,55 @@ namespace LuxAPI.Services
             _logger.LogInformation("Mention email sent to {Email} from {FromEmail}", toEmail, fromEmail);
         }
 
+
+        public async Task SendResetPasswordEmailAsync(string toEmail, string resetLink)
+{
+    var subject = "Réinitialisation de votre mot de passe Luxoria";
+    var htmlBody = $@"
+    <!DOCTYPE html>
+    <html lang='fr'>
+    <head>
+    <meta charset='UTF-8' />
+    <title>Réinitialisation de mot de passe</title>
+    </head>
+    <body style='font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px;'>
+    <div style='max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>
+        <h2 style='color: #333;'>Bonjour,</h2>
+        <p>Vous avez demandé à réinitialiser votre mot de passe pour votre compte Luxoria.</p>
+        <p>Cliquez sur le bouton ci-dessous pour définir un nouveau mot de passe. Ce lien sera valide pendant 1 heure.</p>
+        <p style='text-align:center; margin: 30px 0;'>
+            <a href='{resetLink}' style='background-color: #B91F1E; color: white; padding: 12px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;'>
+                Réinitialiser mon mot de passe
+            </a>
+        </p>
+        <p>Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer ce message.</p>
+        <hr style='margin-top: 30px;' />
+        <p style='font-size: 12px; color: #999; text-align: center;'>© Luxoria {DateTime.UtcNow:yyyy} – Ne répondez pas à cet e-mail.</p>
+    </div>
+    </body>
+    </html>";
+
+    var mailMessage = new MailMessage
+    {
+        From = new MailAddress(_config["Smtp:From"], "Luxoria"),
+        Subject = subject,
+        Body = htmlBody,
+        IsBodyHtml = true
+    };
+
+    mailMessage.To.Add(toEmail);
+
+    using var smtp = new SmtpClient(_config["Smtp:Host"], int.Parse(_config["Smtp:Port"]))
+    {
+        Credentials = new NetworkCredential(_config["Smtp:Username"], _config["Smtp:Password"]),
+        EnableSsl = true
+    };
+
+    await smtp.SendMailAsync(mailMessage);
+    _logger.LogInformation("Reset password email sent to {Email}", toEmail);
+}
+
+
         public async Task SendVerificationCodeAsync(string toEmail, string toName, string code, Guid pendingId)
         {
             var confirmationUrl = $"{_frontEndUrl}/register/confirmation?id={pendingId}&code={code}";

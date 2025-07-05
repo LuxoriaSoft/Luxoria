@@ -89,6 +89,68 @@ namespace LuxAPI.Controllers
             return Ok("User registered successfully.");
         }
 
+
+        [HttpPost("forgot-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto request, [FromServices] EmailService emailService)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            if (user == null)
+            {
+                // Ne pas révéler que l'email n'existe pas pour des raisons de sécurité
+                return Ok(new { message = "If an account with that email exists, a reset link has been sent." });
+            }
+
+            var resetToken = TokenService.GenerateRefreshToken();
+
+            var passwordResetToken = new PasswordResetToken
+            {
+                UserId = user.Id,
+                Token = resetToken,
+                ExpiresAt = DateTime.UtcNow.AddHours(1)
+            };
+            _context.Add(passwordResetToken);
+            await _context.SaveChangesAsync();
+
+            var resetLink = $"{_configuration["URI:FrontEnd"]}/reset-password?token={Uri.EscapeDataString(resetToken)}";
+
+            await emailService.SendResetPasswordEmailAsync(user.Email, resetLink);
+
+            return Ok(new { message = "If an account with that email exists, a reset link has been sent." });
+        }
+
+        [HttpPost("reset-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            try
+            {
+                var resetEntry = await _context.Set<PasswordResetToken>()
+                    .FirstOrDefaultAsync(t => t.Token == dto.Token && t.ExpiresAt > DateTime.UtcNow);
+
+                if (resetEntry == null)
+                    return BadRequest("Invalid or expired token.");
+
+                var user = await _context.Users.FindAsync(resetEntry.UserId);
+                if (user == null)
+                    return NotFound("User not found.");
+
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+                await _context.SaveChangesAsync();
+
+                _context.Remove(resetEntry);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Password has been reset successfully." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error resetting password");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+
         /// <summary>
         /// Uploads a user's avatar image to MinIO and stores the filename in the database.
         /// Requires authentication.
