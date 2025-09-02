@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Luxoria"
-#define MyAppVersion "1.5"
+; #define MyAppVersion "1.5"
 #define MyAppPublisher "The Luxoria Project | LuxoriaSoft"
 #define MyAppURL "https://github.com/luxoriasoft/luxoria"
 #define MyAppExeName "Luxoria.App.exe"
