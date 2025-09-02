@@ -1,3 +1,10 @@
+## [1.59.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.59.1...v1.59.2) (2025-09-02)
+
+
+### Bug Fixes
+
+* Template file location, using vault service. Remove adobe icc color profile. ([46759f0](https://github.com/LuxoriaSoft/Luxoria/commit/46759f08b0093acf89e766001f082d194ea26154))
+
 ## [1.59.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.59.0...v1.59.1) (2025-09-02)
 
 
