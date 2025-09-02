@@ -230,41 +230,6 @@ public sealed partial class CollectionExplorer : Page
             _filterBar.SetAlgorithms(LuxFilterManager.Instance.AvailableAlgorithms);
 
             ApplyFiltersAndRefresh();
-
-            for (int i = 0; i < _images.Count; i++)
-            {
-                var image = _images[i];
-                var bitmap = image.ThumbnailBitmap ?? image.PreviewBitmap ?? image.OriginalBitmap;
-
-                var border = new Border
-                {
-                    Margin = new Thickness(3),
-                    CornerRadius = new CornerRadius(5),
-                    BorderThickness = new Thickness(2),
-                    BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0)),
-                    Background = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0))
-                };
-
-                var canvas = new SKXamlCanvas { IgnorePixelScaling = true };
-
-                int indexCopy = i;
-
-                canvas.PaintSurface += (s, e) => OnPaintSurface(s, e, indexCopy);
-                border.Child = canvas;
-
-                border.PointerEntered += (s, e) => OnHover(border, true);
-                border.PointerExited += (s, e) => OnHover(border, false);
-                border.Tapped += (s, e) => OnImageTapped(border, indexCopy);
-
-                _imagePanel.Children.Add(border);
-            }
-
-            if (_selectedBorder != null && !_imagePanel.Children.Contains(_selectedBorder))
-            {
-                _selectedBorder = null;
-                if (_imagePanel.Children.Count > 0)
-                    OnImageTapped((Border)_imagePanel.Children[0], 0);
-            }
         });
 
     }
