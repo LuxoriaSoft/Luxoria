@@ -6,6 +6,7 @@ on:
       - main
       - develop
       - release/*
+      - fix/ci/*
   pull_request:
     branches:
       - main
@@ -55,6 +56,26 @@ jobs:
           Configuration: ${{ matrix.configuration }}
           Platform: ${{ matrix.platform }}
         working-directory: ./Luxoria.App
+      
+      # Install Inno Setup
+      - name: Install Inno Setup Wizard
+        run: choco install innosetup --no-progress -y
+
+      # Build Inno Setup
+      - name: Create installer using Luxoria.App
+        run: |
+          if ("${{ matrix.platform }}" -eq "win-x86") {
+            $platformTarget = "x86"
+          } elseif ("${{ matrix.platform }}" -eq "win-x64") {
+            $platformTarget = "x64"
+          } elseif ("${{ matrix.platform }}" -eq "win-arm64") {
+            $platformTarget = "ARM64"
+          } else {
+            throw "Unknown platform: ${{ matrix.platform }}"
+          }
+          iscc build Luxoria.App/installer/$platformTarget/LuxInstall.iss
+        shell: pwsh
+
 
       # Upload the app as an artifact
       - name: Upload Luxoria.App as an artifact
