@@ -1,3 +1,15 @@
+# [1.61.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.60.0...v1.61.0) (2025-09-02)
+
+
+### Bug Fixes
+
+* Image duplicates in collection explorer ([60d13bb](https://github.com/LuxoriaSoft/Luxoria/commit/60d13bb343b033256d9a646e4a8fc6e8edf8d00b))
+
+
+### Features
+
+* Add curves to reset default button ([acb7465](https://github.com/LuxoriaSoft/Luxoria/commit/acb746556220e5f337b7d505622d57b2ea14a257))
+
 # [1.60.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.59.2...v1.60.0) (2025-09-02)
 
 
