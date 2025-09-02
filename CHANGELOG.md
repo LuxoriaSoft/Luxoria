@@ -1,3 +1,22 @@
+# [1.62.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.61.0...v1.62.0) (2025-09-02)
+
+
+### Bug Fixes
+
+* Add app_version input to workflows for versioning ([1835286](https://github.com/LuxoriaSoft/Luxoria/commit/1835286721a5d1ce2a4cbdba71ded124997f774d))
+* Change default version (1.0.0) by specifying 'dev' instead ([5804c74](https://github.com/LuxoriaSoft/Luxoria/commit/5804c7400bd70a287e547f7468467a42b56ef9fd))
+* Change platform environment var by using matrix.platform ([2fdc532](https://github.com/LuxoriaSoft/Luxoria/commit/2fdc532eb2cd7bed197db4f5ead1d86c738e1d22))
+* ISCC command only uses a single arg ([4b8111d](https://github.com/LuxoriaSoft/Luxoria/commit/4b8111d793eaef48ac60505b618e8d3ed7b912f3))
+* LicensePath inside LuxInstall.iss file ([e6f2648](https://github.com/LuxoriaSoft/Luxoria/commit/e6f26482f79a48d3e41f521be07fd8bc909739c9))
+* Remove default version on all installer config files ([635d599](https://github.com/LuxoriaSoft/Luxoria/commit/635d599bfaa902186fe3352cdbbe75eb8a65ae0c))
+* Source path (LuxInstall.iss) on x64, x86 and arm64 ([5ebbb80](https://github.com/LuxoriaSoft/Luxoria/commit/5ebbb8060cfbf38b196ea58bc81985f8dd839772))
+
+
+### Features
+
+* Append installer executable as an artifact ([63b348f](https://github.com/LuxoriaSoft/Luxoria/commit/63b348f80eaeef339b207a8904692913d5cb13d9))
+* Run Inno Wizard on build-upload-lda workflow ([243568f](https://github.com/LuxoriaSoft/Luxoria/commit/243568fd83015405fa1db24b5efdcf4634620971))
+
 # [1.61.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.60.0...v1.61.0) (2025-09-02)
 
 
