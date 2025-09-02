@@ -13,6 +13,10 @@ on:
       - develop
       - release/*
   workflow_call:
+    inputs:
+      app_version:
+        required: true
+        type: string
 
 jobs:
   build:
@@ -65,7 +69,7 @@ jobs:
       - name: Create installer using Luxoria.App
         run: |
           cd Luxoria.App/installer/${{ matrix.platform }}/
-          iscc LuxInstall.iss
+          iscc /dMyAppVersion="${{ inputs.app_version || '1.0.0' }}" LuxInstall.iss
         shell: pwsh
 
       # Upload the app as an artifact
