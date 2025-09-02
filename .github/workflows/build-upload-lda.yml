@@ -63,8 +63,7 @@ jobs:
 
       # Build Inno Setup
       - name: Create installer using Luxoria.App
-        run: iscc build Luxoria.App/installer/${{ matrix.platform }}/LuxInstall.iss
-
+        run: iscc Luxoria.App/installer/${{ matrix.platform }}/LuxInstall.iss
 
       # Upload the app as an artifact
       - name: Upload Luxoria.App as an artifact
