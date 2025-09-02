@@ -1,3 +1,17 @@
+## [1.59.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.59.0...v1.59.1) (2025-09-02)
+
+
+### Bug Fixes
+
+* Replace HintPath (static full path) with ProjectRef (dynamic config + path) for LuxStudio.COM ([13dec5f](https://github.com/LuxoriaSoft/Luxoria/commit/13dec5f6365991f11765f061200d8598327fb181))
+
+# [1.59.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.58.0...v1.59.0) (2025-09-02)
+
+
+### Features
+
+* Add LuxInstall.iss for x64, x86 and ARM64 ([c05d1b1](https://github.com/LuxoriaSoft/Luxoria/commit/c05d1b1281f2460a840b63479c42a0b5586d8927))
+
 # [1.58.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.57.2...v1.58.0) (2025-07-05)
 
 
