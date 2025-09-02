@@ -22,7 +22,7 @@ DefaultDirName={autopf}\{#MyAppName}
 UninstallDisplayIcon={app}\{#MyAppExeName}
 ArchitecturesAllowed=arm64
 DisableProgramGroupPage=yes
-LicenseFile=C:\Users\quentin\Code\Luxoria\LICENSE.md
+LicenseFile=..\..\..\LICENSE.md
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 PrivilegesRequired=lowest
 OutputBaseFilename=mysetup
