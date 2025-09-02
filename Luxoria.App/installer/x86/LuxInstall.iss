@@ -6,6 +6,7 @@
 #define MyAppPublisher "The Luxoria Project | LuxoriaSoft"
 #define MyAppURL "https://github.com/luxoriasoft/luxoria"
 #define MyAppExeName "Luxoria.App.exe"
+#define OutputFileName = "LuxoriaSetup.x86"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
@@ -25,7 +26,7 @@ DisableProgramGroupPage=yes
 LicenseFile=..\..\..\LICENSE.md
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 PrivilegesRequired=lowest
-OutputBaseFilename=mysetup
+OutputBaseFilename={#OutputFileName}
 SolidCompression=yes
 WizardStyle=modern
 
