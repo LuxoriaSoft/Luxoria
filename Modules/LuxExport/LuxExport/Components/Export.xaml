@@ -210,7 +210,6 @@
                                 <MenuFlyout Placement="Bottom">
                                     <MenuFlyoutItem Text="sRGB" Click="ColorSpace_Selected"/>
                                     <MenuFlyoutItem Text="LinearSRGB" Click="ColorSpace_Selected"/>
-                                    <MenuFlyoutItem Text="Adobe RGB" Click="ColorSpace_Selected"/>
                                 </MenuFlyout>
                             </DropDownButton.Flyout>
                         </DropDownButton>

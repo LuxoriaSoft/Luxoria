@@ -1,15 +1,10 @@
 using LuxExport.Logic;
-using Luxoria.Modules;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.UI;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -19,7 +14,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.Graphics;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.System;
@@ -44,24 +38,26 @@ namespace LuxExport
         /// <summary>
         /// Initializes the export dialog and loads the necessary presets for file naming.
         /// </summary>
-        public Export(IEventBus eventBus, ILoggerService logger)
+        public Export(IEventBus eventBus, ILoggerService logger, IStorageAPI storageAPI)
         {
             this.InitializeComponent();
             _eventBus = eventBus;
             _logger = logger; 
             _viewModel = new ExportViewModel();
-            _wmSvc = new WatermarkService(new VaultService(logger));
-            _viewModel.Watermark = _wmSvc.Load();
             _viewModel.RefreshLogoPreview();
 
-            _viewModel.LoadPresets(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\..\\..\\..\\..\\..\\assets\\Presets\\FileNamingPresets.json");
+            _wmSvc = new WatermarkService(storageAPI);
+            _viewModel.LoadPresets(storageAPI.Get<string>("fileNamingPresets"));
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+
+            _viewModel.Watermark = _wmSvc.Load();
             UpdateWebVisibility();
 
             RefreshPresetsMenu();
 
             RefreshWatermarkUI();
         }
+
 
         /// <summary>
         /// Refreshes the presets menu with the available presets loaded from the JSON file.

@@ -28,8 +28,11 @@
 		<ProjectReference Include="..\..\..\Luxoria.App\Luxoria.GModules\Luxoria.GModules.csproj" />
 		<ProjectReference Include="..\..\..\Luxoria.App\Luxoria.Modules\Luxoria.Modules.csproj" />
 	</ItemGroup>
-	
 
+	<ItemGroup>
+		<EmbeddedResource Include="Assets\Presets\FileNamingPresets.json" />
+	</ItemGroup>
+	
 	<ItemGroup>
 	  <Page Update="Export.xaml">
 	    <Generator>MSBuild:Compile</Generator>

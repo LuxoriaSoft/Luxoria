@@ -214,10 +214,6 @@ namespace LuxExport
                 case "LinearSRGB":
                     return SKColorSpace.CreateSrgbLinear();
 
-                case "AdobeRGB":
-                    byte[] adobeIcc = File.ReadAllBytes(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\..\\..\\..\\..\\..\\assets\\ColorProfile\\AdobeRGB1998.icc");
-                    return SKColorSpace.CreateIcc(adobeIcc);
-
                 default:
                     return SKColorSpace.CreateSrgb();
             }
