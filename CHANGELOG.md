@@ -1,3 +1,10 @@
+## [1.59.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.59.0...v1.59.1) (2025-09-02)
+
+
+### Bug Fixes
+
+* Replace HintPath (static full path) with ProjectRef (dynamic config + path) for LuxStudio.COM ([13dec5f](https://github.com/LuxoriaSoft/Luxoria/commit/13dec5f6365991f11765f061200d8598327fb181))
+
 # [1.59.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.58.0...v1.59.0) (2025-09-02)
 
 
