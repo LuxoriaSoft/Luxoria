@@ -6,12 +6,17 @@ on:
       - main
       - develop
       - release/*
+      - fix/ci/*
   pull_request:
     branches:
       - main
       - develop
       - release/*
   workflow_call:
+    inputs:
+      app_version:
+        required: true
+        type: string
 
 jobs:
   build:
@@ -55,6 +60,17 @@ jobs:
           Configuration: ${{ matrix.configuration }}
           Platform: ${{ matrix.platform }}
         working-directory: ./Luxoria.App
+      
+      # Install Inno Setup
+      - name: Install Inno Setup Wizard
+        run: choco install innosetup --no-progress -y
+
+      # Build Inno Setup
+      - name: Create installer using Luxoria.App
+        run: |
+          cd Luxoria.App/installer/${{ matrix.platform }}/
+          iscc /dMyAppVersion="${{ inputs.app_version || 'dev' }}" LuxInstall.iss
+        shell: pwsh
 
       # Upload the app as an artifact
       - name: Upload Luxoria.App as an artifact
@@ -62,3 +78,11 @@ jobs:
         with:
           name: Luxoria.App.${{ matrix.platform }}
           path: ./Luxoria.App/Luxoria.App/bin/${{ matrix.platform }}/${{ matrix.configuration }}/${{ matrix.framework }}/win-${{ matrix.platform }}/
+      
+      # Upload Lux installer
+      - name: Upload LuxInstall as an artifact  
+        uses: actions/upload-artifact@v4
+        with:
+          name: LuxoriaSetup.${{ matrix.platform }}.exe
+          path: ./Luxoria.App/installer/${{ matrix.platform }}/Output/
+      

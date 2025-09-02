@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Luxoria"
-#define MyAppVersion "1.5"
+; #define MyAppVersion "1.5"
 #define MyAppPublisher "The Luxoria Project | LuxoriaSoft"
 #define MyAppURL "https://github.com/luxoriasoft/luxoria"
 #define MyAppExeName "Luxoria.App.exe"
@@ -24,7 +24,7 @@ UninstallDisplayIcon={app}\{#MyAppExeName}
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 DisableProgramGroupPage=yes
-LicenseFile=C:\Users\quentin\Code\Luxoria\LICENSE.md
+LicenseFile=..\..\..\LICENSE.md
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 PrivilegesRequired=lowest
 OutputBaseFilename={#OutputFileName}
@@ -38,8 +38,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "..\..\Luxoria.App\bin\x64\Debug\net9.0-windows10.0.26100.0\win-x64\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\..\Luxoria.App\bin\x64\Debug\net9.0-windows10.0.26100.0\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\..\Luxoria.App\bin\x64\Release\net9.0-windows10.0.26100.0\win-x64\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\Luxoria.App\bin\x64\Release\net9.0-windows10.0.26100.0\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

@@ -7,6 +7,8 @@ on:
 jobs:
   exec-desktop-build:
     uses: ./.github/workflows/build-upload-lda.yml
+    with:
+      app_version: ${{ github.event.release.tag_name }}
   
   exec-modules-build:
     uses: ./.github/workflows/build-upload-standard-modules.yml
