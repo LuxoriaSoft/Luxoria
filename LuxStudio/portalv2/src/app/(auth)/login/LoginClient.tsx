@@ -20,19 +20,24 @@ export default function LoginClient() {
   const [captchaToken, setCaptchaToken] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-
-  const blocked = searchParams.get('blocked') === 'true';
+  const [isMounted, setIsMounted] = useState(false)
 
   const captchaRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (window.hcaptcha && captchaRef.current) {
+    setIsMounted(true)
+  }, [])
+
+  const blocked = isMounted ? searchParams.get('blocked') === 'true' : false
+
+  useEffect(() => {
+    if (isMounted && window.hcaptcha && captchaRef.current) {
       window.hcaptcha.render(captchaRef.current, {
         sitekey: '3406257c-d7d0-4ca2-93ec-dc3cf6346ac4',
         callback: (token: string) => setCaptchaToken(token),
       })
     }
-  }, [])
+  }, [isMounted])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,18 +46,42 @@ export default function LoginClient() {
 
     try {
       const token = await AuthService.login(username, password, captchaToken)
-      localStorage.setItem('token', token)
-      document.cookie = `token=${token}; path=/`
+      
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', token)
+        document.cookie = `token=${token}; path=/`
 
-      const query = window.location.search
-      const params = new URLSearchParams(query)
-      const redirectUrl = params.get('redirect')
-      router.push(redirectUrl || '/')
+        const query = window.location.search
+        const params = new URLSearchParams(query)
+        const redirectUrl = params.get('redirect')
+        router.push(redirectUrl || '/')
+      }
     } catch (error: any) {
       setErrorMessage(error.message || 'An unexpected error occurred.')
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (!isMounted) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-sm space-y-8">
+          <div className="flex justify-center">
+            <LuxoriaLogo className="h-12 w-auto" />
+          </div>
+          <Heading level={1} className="text-center">
+            Sign in to your account
+          </Heading>
+          <div className="animate-pulse space-y-6">
+            <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -111,7 +140,7 @@ export default function LoginClient() {
             <Text className="text-sm text-red-500">{errorMessage}</Text>
           )}
           <Text className="text-center">
-            Don’t have an account?{' '}
+            Don't have an account?{' '}
             <TextLink href="/register">
               <Strong>Sign up</Strong>
             </TextLink>
