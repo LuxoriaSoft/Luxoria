@@ -764,6 +764,7 @@ namespace LuxEditor.Components
                 sl.ResetToDefault();
                 if (CurrentImage != null) CurrentImage.Settings[sl.Key] = sl.DefaultValue;
             }
+            _toneGroup.ResetToDefaults();
             RequestFilterUpdate();
             UpdateResetButtonsVisibility();
         }

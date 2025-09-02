@@ -414,5 +414,14 @@ namespace LuxEditor.EditorUI.Controls
             UpdateCurve();
         }
 
+        public void ResetAllSliders()
+        {
+            _shadow.ResetToDefault();
+            _dark.ResetToDefault();
+            _light.ResetToDefault();
+            _high.ResetToDefault();
+            UpdateCurve();
+        }
+
     }
 }

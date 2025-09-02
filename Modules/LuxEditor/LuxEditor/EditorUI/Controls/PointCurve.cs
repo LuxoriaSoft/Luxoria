@@ -364,5 +364,18 @@ namespace LuxEditor.EditorUI.Controls
             _canvas.Invalidate();
             BuildLut();
         }
+
+        public void ResetPoints()
+        {
+            ControlPoints.Clear();
+            ControlPoints.AddRange(new[] { new SKPoint(0, 0), new SKPoint(1, 1) });
+            ImageManager.Instance.SelectedImage.Settings[SettingKey + "_Control_Points"] = ControlPoints.ConvertAll(p => new Dictionary<string, double>
+            {
+                { "X", p.X },
+                { "Y", p.Y }
+            });
+            Redraw();
+            BuildLut();
+        }
     }
 }
