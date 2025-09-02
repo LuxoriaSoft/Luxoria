@@ -1,3 +1,10 @@
+# [1.59.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.58.0...v1.59.0) (2025-09-02)
+
+
+### Features
+
+* Add LuxInstall.iss for x64, x86 and ARM64 ([c05d1b1](https://github.com/LuxoriaSoft/Luxoria/commit/c05d1b1281f2460a840b63479c42a0b5586d8927))
+
 # [1.58.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.57.2...v1.58.0) (2025-07-05)
 
 
