@@ -92,9 +92,14 @@ namespace LuxAPI.Controllers
 
 
 
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCollection(Guid id)
         {
+            var currentUserEmail = User?.Identity?.Name;
+            if (string.IsNullOrEmpty(currentUserEmail))
+                return Unauthorized("Utilisateur non authentifié.");
+
             var collection = await _context.Collections
                 .Include(c => c.Accesses)
                 .Include(c => c.ChatMessages)
@@ -104,7 +109,11 @@ namespace LuxAPI.Controllers
             if (collection == null)
                 return NotFound("Collection not found");
 
-            // Manuellement mapper les messages avec les avatars
+            // ✅ Vérifie que l’utilisateur a accès à la collection
+            if (!collection.Accesses.Any(a => a.Email.Equals(currentUserEmail, StringComparison.OrdinalIgnoreCase)))
+                return Forbid("Vous n'avez pas accès à cette collection.");
+
+            // Manuellement mapper les messages avec avatars
             var chatMessagesWithAvatars = collection.ChatMessages.Select(m => new
             {
                 m.SenderUsername,
@@ -308,7 +317,6 @@ namespace LuxAPI.Controllers
             if (stream == null) return NotFound("Fichier introuvable.");
             return File(stream, GetContentType(filename));
         }
-
         private static string GetContentType(string fileName)
         {
             var ext = Path.GetExtension(fileName).ToLowerInvariant();
@@ -400,14 +408,14 @@ namespace LuxAPI.Controllers
             public Guid? PhotoId { get; set; }
         }
 
-        [HttpPost("{collectionId}/upload")]public async Task<IActionResult> UploadPhoto(Guid collectionId, [FromForm] UploadPhotoDto dto)
+        [Authorize]
+        [HttpPost("{collectionId}/upload")]
+        public async Task<IActionResult> UploadPhoto(Guid collectionId, [FromForm] UploadPhotoDto dto)
         {
+
             Console.WriteLine($"photoId reçue : {dto.PhotoId}");
             var file = dto.File;
             var photoId = dto.PhotoId;
-            var collection = await _context.Collections.FindAsync(collectionId);
-            if (collection == null)
-                return NotFound("Collection not found");
 
             if (file == null || file.Length == 0)
                 return BadRequest("No file has been uploaded");
@@ -428,7 +436,9 @@ namespace LuxAPI.Controllers
 
             if (photoId.HasValue)
             {
-                var existingPhoto = await _context.Photos.FirstOrDefaultAsync(p => p.Id == photoId.Value && p.CollectionId == collectionId);
+                var existingPhoto = await _context.Photos
+                    .FirstOrDefaultAsync(p => p.Id == photoId.Value && p.CollectionId == collectionId);
+
                 if (existingPhoto != null)
                 {
                     var oldObjectName = Path.GetFileName(new Uri(existingPhoto.FilePath).AbsolutePath);
@@ -442,7 +452,7 @@ namespace LuxAPI.Controllers
                     return Ok(existingPhoto);
                 }
             }
-        
+
             var photo = new Photo
             {
                 CollectionId = collectionId,
@@ -456,21 +466,34 @@ namespace LuxAPI.Controllers
             return CreatedAtAction(nameof(GetCollection), new { id = collectionId }, photo);
         }
 
+        [Authorize]
         [HttpPost("{collectionId}/chat")]
         public async Task<IActionResult> AddChatMessage(Guid collectionId, [FromBody] CreateChatMessageDto dto)
         {
-            var collection = await _context.Collections.FindAsync(collectionId);
+            var currentUserEmail = User?.Identity?.Name;
+            if (string.IsNullOrEmpty(currentUserEmail))
+                return Unauthorized("Utilisateur non authentifié.");
+
+            var collection = await _context.Collections
+                .Include(c => c.Accesses)
+                .FirstOrDefaultAsync(c => c.Id == collectionId);
+
             if (collection == null)
                 return NotFound("Collection not found");
 
-            // Récupère l'utilisateur pour son avatar
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.SenderEmail);
+            if (!collection.Accesses.Any(a => 
+                    a.Email.Equals(currentUserEmail, StringComparison.OrdinalIgnoreCase)))
+                return Forbid("Vous n'avez pas accès à ce chat.");
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == currentUserEmail);
+
             var avatarFileName = user?.AvatarFileName ?? "default_avatar.jpg";
 
             var message = new ChatMessage
             {
                 CollectionId = collectionId,
-                SenderEmail = dto.SenderEmail,
+                SenderEmail = currentUserEmail,
                 SenderUsername = dto.SenderUsername,
                 Message = dto.Message,
                 SentAt = DateTime.UtcNow,
@@ -480,19 +503,36 @@ namespace LuxAPI.Controllers
             _context.ChatMessages.Add(message);
             await _context.SaveChangesAsync();
 
-            // ✅ Envoie le message avec avatar et date
             await _chatHub.Clients.Group(collectionId.ToString())
-                .SendAsync("ReceiveMessage", dto.SenderUsername, dto.Message, avatarFileName, message.SentAt, dto.PhotoId);
+                .SendAsync("ReceiveMessage", 
+                    message.SenderUsername, 
+                    message.Message, 
+                    avatarFileName, 
+                    message.SentAt, 
+                    message.PhotoId);
 
             return CreatedAtAction(nameof(GetCollection), new { id = collectionId }, message);
         }
 
-        [HttpPatch("photo/{photoId}/status")]
         [Authorize]
+        [HttpPatch("photo/{photoId}/status")]
         public async Task<IActionResult> UpdatePhotoStatus(Guid photoId, [FromBody] UpdatePhotoStatusDto dto)
         {
-            var photo = await _context.Photos.FindAsync(photoId);
-            if (photo == null) return NotFound("Asset not found");
+            var currentUserEmail = User?.Identity?.Name;
+            if (string.IsNullOrEmpty(currentUserEmail))
+                return Unauthorized();
+
+            var photo = await _context.Photos
+                .Include(p => p.Collection)
+                .ThenInclude(c => c.Accesses)
+                .FirstOrDefaultAsync(p => p.Id == photoId);
+
+            if (photo == null)
+                return NotFound("Photo not found");
+
+            if (!photo.Collection.Accesses.Any(a => 
+                    a.Email.Equals(currentUserEmail, StringComparison.OrdinalIgnoreCase)))
+                return Forbid("Vous n'avez pas accès à cette photo.");
 
             if (!Enum.IsDefined(typeof(PhotoStatus), dto.Status))
                 return BadRequest("Invalid status");
@@ -503,12 +543,25 @@ namespace LuxAPI.Controllers
             return Ok(new { message = "Status has been updated" });
         }
 
+        [Authorize]
         [HttpGet("photo/{photoId}/status")]
         public async Task<IActionResult> GetPhotoStatus(Guid photoId)
         {
-            var photo = await _context.Photos.FindAsync(photoId);
+            var currentUserEmail = User?.Identity?.Name;
+            if (string.IsNullOrEmpty(currentUserEmail))
+                return Unauthorized();
+
+            var photo = await _context.Photos
+                .Include(p => p.Collection)
+                .ThenInclude(c => c.Accesses)
+                .FirstOrDefaultAsync(p => p.Id == photoId);
+
             if (photo == null)
                 return NotFound("Photo not found");
+
+            if (!photo.Collection.Accesses.Any(a => 
+                    a.Email.Equals(currentUserEmail, StringComparison.OrdinalIgnoreCase)))
+                return Forbid("Vous n'avez pas accès à cette photo.");
 
             return Ok(new { photoId = photo.Id, status = photo.Status });
         }
