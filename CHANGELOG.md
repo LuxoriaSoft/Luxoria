@@ -1,3 +1,52 @@
+# [1.60.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.59.2...v1.60.0) (2025-09-02)
+
+
+### Bug Fixes
+
+* Add debug configuration of debug/testing environement ([15fb87d](https://github.com/LuxoriaSoft/Luxoria/commit/15fb87d8afd4c56a8298881a85512bd8cd68a7fe))
+* Add FrontEnd URI inside allowed Origin ([9f4e690](https://github.com/LuxoriaSoft/Luxoria/commit/9f4e69036b909993fe1d7134079703d0df6aa33f))
+* Adjust mention dropdown width and improve chat input layout ([6c925e9](https://github.com/LuxoriaSoft/Luxoria/commit/6c925e97033fee7c928c8c68ab5e3cfa5c80a66e))
+* Allow access to /config/api route even if the user is not logged in ([4f0d97e](https://github.com/LuxoriaSoft/Luxoria/commit/4f0d97e2b7cb9ee8381ac1d4fae752a90fddde3a))
+* Comment out dev front urls ([314b12d](https://github.com/LuxoriaSoft/Luxoria/commit/314b12db051a7f77c5c61c013a91aabdaf05c0fd))
+* Delete default value as BaseURL in internal helper api.ts ([0401edb](https://github.com/LuxoriaSoft/Luxoria/commit/0401edbd00691bd2590b3e73691ab9ac8e0eb0f5))
+* Disable send button during message sending to prevent duplicate submissions ([39b838d](https://github.com/LuxoriaSoft/Luxoria/commit/39b838d51eb841be7bb7824b5cd84b62b8a12a61))
+* Entrypoint url after 2FA at registration point ([4ea66fa](https://github.com/LuxoriaSoft/Luxoria/commit/4ea66fa852eae21b42cd51ab5c253f31aa5f9c2e))
+* Fix hydration error in login ([6bd3878](https://github.com/LuxoriaSoft/Luxoria/commit/6bd3878461a05e23c5f3f5dd86acf77006ccdf92))
+* Fix photo update logic in CollectionController ([9bdc830](https://github.com/LuxoriaSoft/Luxoria/commit/9bdc8307e524a0a74ccbe5371b6753875e3c38b1))
+* Ingress for Pluto env ([3f64f10](https://github.com/LuxoriaSoft/Luxoria/commit/3f64f106d8d93e7b142db6de6eedacdcb2037c1a))
+* Integrate ".webp" to accepted file formats ([c78e0a3](https://github.com/LuxoriaSoft/Luxoria/commit/c78e0a333d748a1b0ed5096727df64a86ecac7c2))
+* LuxStudio's website internal port from 3000 to 3000 ([fb7f6c0](https://github.com/LuxoriaSoft/Luxoria/commit/fb7f6c0985efba80df64fadc561c3dbdfc6a5915))
+* Remove unused utility function in register ([6d88522](https://github.com/LuxoriaSoft/Luxoria/commit/6d885224e2d4781357bb162322fb3d0feb2b28b8))
+* Request POST for request verify account ([acfc7a0](https://github.com/LuxoriaSoft/Luxoria/commit/acfc7a0dce7dec095940eecff793458f956cf012))
+* Update auto-scroll behavior in chat component to improve user experience ([0fc2a91](https://github.com/LuxoriaSoft/Luxoria/commit/0fc2a91f312f3b3af582684c52e99c0b7c8ca1af))
+* Update button colors and hover effects for improved UI consistency ([e12e2d5](https://github.com/LuxoriaSoft/Luxoria/commit/e12e2d577c86d67d967bcf60364da37845ada730))
+* Update Google Forms links for Sentry and Feedback access requests ([5b30c88](https://github.com/LuxoriaSoft/Luxoria/commit/5b30c8889ab5ecf11ad3e72720e7b8ca674c7a0c))
+* update role select input styling for better visibility ([ef3faa7](https://github.com/LuxoriaSoft/Luxoria/commit/ef3faa7a9fb32e8b5b16d657961f69dc60065f00))
+
+
+### Features
+
+* add '/forgot-password' to public paths in middleware for improved access ([84d5186](https://github.com/LuxoriaSoft/Luxoria/commit/84d518674f3050c64079478d38d3a51834bdbf2a))
+* Add authorization checks for collection and photo access in CollectionController ([296d479](https://github.com/LuxoriaSoft/Luxoria/commit/296d479fa68c6dcddc432321b7474b8113e44076))
+* add base of LuxStudio V2 ([0bbaf5e](https://github.com/LuxoriaSoft/Luxoria/commit/0bbaf5e2de331c11d39a3ce7419ea3391bf784f7))
+* add chat functionality for photo comments and implement file download feature ([3109839](https://github.com/LuxoriaSoft/Luxoria/commit/31098390033893c30e9e38970e40d1020bd46efc))
+* Add endpoint to retrieve photo status by ID ([e2d27ea](https://github.com/LuxoriaSoft/Luxoria/commit/e2d27ea12f5ac950b1a3491424d066730b79daf3))
+* Add GET API route to return SignalR URL ([3e4353d](https://github.com/LuxoriaSoft/Luxoria/commit/3e4353dc3ac5d36c923c7f9896725682e99546ed))
+* add mention notification feature with email alerts in chat functionality ([da47051](https://github.com/LuxoriaSoft/Luxoria/commit/da470512f114dc979507cf53c3789dc6f321592c))
+* Add migrations from LuxStudio v1 to v2 ([bec5f68](https://github.com/LuxoriaSoft/Luxoria/commit/bec5f6811bed147d824cb8a044d9559619261f9f))
+* Add photo status update functionality and enhance UI for status management ([bfeba8a](https://github.com/LuxoriaSoft/Luxoria/commit/bfeba8a6f5bef36c9d03cccdcea736881896749a))
+* Add PhotoId to ChatMessages and implement photo upload functionality in CollectionDetail ([d2d4198](https://github.com/LuxoriaSoft/Luxoria/commit/d2d4198be604e71e871592ee582f5d30169564c5))
+* Add user roles and enhance registration process ([b8eeb1e](https://github.com/LuxoriaSoft/Luxoria/commit/b8eeb1ecc14fcc9c20cffa06887cae24d6307362))
+* Enhance chat functionality by including photo ID in message handling and notifications ([317a4d9](https://github.com/LuxoriaSoft/Luxoria/commit/317a4d96232e4664525817aaa222a46036f32369))
+* Enhance CollectionsPage with create, update, and delete functionalities ([11fabae](https://github.com/LuxoriaSoft/Luxoria/commit/11fabae8ec70e4e2e48275bffe3070073609cbbd))
+* Implement Admin functionalities for user and collection management, including user blocking/unblocking and password reset, collections views and activity logs ([e9d5282](https://github.com/LuxoriaSoft/Luxoria/commit/e9d528277ea5d44c8d19a717b4da234116ffe844))
+* Implement password reset functionality ([7a6d491](https://github.com/LuxoriaSoft/Luxoria/commit/7a6d491a9a3349c59697e2e7e4e4392d3cad1f3d))
+* implement user invitation modal in CollectionDetail component ([67f7f76](https://github.com/LuxoriaSoft/Luxoria/commit/67f7f76c9826fba0a766253b9cf7070e6c2f383b))
+* Refactor authentication and admin pages to fix warning when build ([005ff8b](https://github.com/LuxoriaSoft/Luxoria/commit/005ff8b9ac478af31bef74e9ba0bcc0a784f8add))
+* refactor photo upload to take an additional parameter to override if modified ([0368bc1](https://github.com/LuxoriaSoft/Luxoria/commit/0368bc150103265dd5d06d3e9c602884dc617e75))
+* Update application layout and add user reporting features, improve admin management and reports ([05b9c17](https://github.com/LuxoriaSoft/Luxoria/commit/05b9c179fbcd09a9dcfc4235aa6d46354506e3cb))
+* update user role assignment logic during registration for admin user ([0ed207a](https://github.com/LuxoriaSoft/Luxoria/commit/0ed207a9f9bfd35fb0cc0a691f6312dc0a7832da))
+
 ## [1.59.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.59.1...v1.59.2) (2025-09-02)
 
 
