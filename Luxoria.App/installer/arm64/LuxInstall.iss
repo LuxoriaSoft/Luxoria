@@ -36,8 +36,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "..\..\Luxoria.App\bin\ARM64\Debug\net9.0-windows10.0.26100.0\win-arm64\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\..\Luxoria.App\bin\ARM64\Debug\net9.0-windows10.0.26100.0\win-arm64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\..\Luxoria.App\bin\arm64\Release\net9.0-windows10.0.26100.0\win-arm64\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\Luxoria.App\bin\arm64\Release\net9.0-windows10.0.26100.0\win-arm64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
