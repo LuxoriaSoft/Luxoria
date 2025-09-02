@@ -34,7 +34,7 @@ jobs:
           name: Build & Push LuxStudio Image
           command: |
             TAG=$(cat image_tag.txt)
-            docker build -t luxoria/luxstudio:$TAG -f LuxStudio/portal/Dockerfile LuxStudio/portal
+            docker build -t luxoria/luxstudio:$TAG -f LuxStudio/portalv2/Dockerfile LuxStudio/portalv2
             docker push luxoria/luxstudio:$TAG
 
       - persist_to_workspace:

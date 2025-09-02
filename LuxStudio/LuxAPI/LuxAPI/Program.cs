@@ -67,6 +67,8 @@ builder.Services.AddSingleton<IJwtService, JwtService>();
 builder.Services.AddSingleton<MinioService>();
 builder.Services.AddTransient<EmailService>();
 builder.Services.AddHostedService<CleanupExpiredRegistrations>();
+builder.Services.AddScoped<ActivityLogService>();
+builder.Services.AddHttpContextAccessor();
 
 
 // Configure JWT Authentication
@@ -112,12 +114,16 @@ builder.Services.AddSignalR();
 // Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(FRONT_URI) // Allow Frontend URL
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials(); // Allow credentials
+        policy.WithOrigins(
+            // "http://localhost:3000",
+            // "http://localhost:5173",
+            FRONT_URI
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
     });
 });
 
@@ -190,7 +196,7 @@ if (app.Environment.IsDevelopment())
 //app.UseHttpsRedirection();
 
 // Enable CORS
-app.UseCors();
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

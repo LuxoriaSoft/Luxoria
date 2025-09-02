@@ -27,10 +27,17 @@ namespace LuxAPI.Models.DTOs
 
         /// <summary>
         /// The password for the new user.
-        /// Must be at least 6 characters long for security purposes.
+        /// Must be at least 6 characters long for security reasons.
         /// </summary>
         [Required(ErrorMessage = "Password is required.")]
         [MinLength(6, ErrorMessage = "Password must be at least 6 characters long.")]
         public required string Password { get; set; }
+
+        /// <summary>
+        /// The role of the user (Client or Photographer).
+        /// Must be a valid value from the UserRole enum.
+        /// </summary>
+        [Required(ErrorMessage = "Role is required.")]
+        public required UserRole Role { get; set; }
     }
 }
