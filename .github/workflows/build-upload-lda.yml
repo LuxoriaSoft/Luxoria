@@ -63,18 +63,7 @@ jobs:
 
       # Build Inno Setup
       - name: Create installer using Luxoria.App
-        run: |
-          if ("${{ matrix.platform }}" -eq "win-x86") {
-            $platformTarget = "x86"
-          } elseif ("${{ matrix.platform }}" -eq "win-x64") {
-            $platformTarget = "x64"
-          } elseif ("${{ matrix.platform }}" -eq "win-arm64") {
-            $platformTarget = "ARM64"
-          } else {
-            throw "Unknown platform: ${{ matrix.platform }}"
-          }
-          iscc build Luxoria.App/installer/$platformTarget/LuxInstall.iss
-        shell: pwsh
+        run: iscc build Luxoria.App/installer/${{ matrix.platform }}/LuxInstall.iss
 
 
       # Upload the app as an artifact
