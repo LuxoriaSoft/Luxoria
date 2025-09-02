@@ -113,13 +113,6 @@
 //    }
 
 //    [TestMethod]
-//    public void SelectedColorSpace_SetValue_ShouldUpdate()
-//    {
-//        _viewModel.SelectedColorSpace = "AdobeRGB";
-//        Assert.AreEqual("AdobeRGB", _viewModel.SelectedColorSpace);
-//    }
-
-//    [TestMethod]
 //    public void SelectedFormat_Change_ShouldTriggerExtensionUpdate()
 //    {
 //        _viewModel.ExtensionCase = "a..z";

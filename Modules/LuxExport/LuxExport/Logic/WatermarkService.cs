@@ -18,9 +18,9 @@ namespace LuxExport.Logic
         /// <summary>
         /// Builds a WatermarkService bound to the LuxExport vault.
         /// </summary>
-        public WatermarkService(IVaultService vaultService)
+        public WatermarkService(IStorageAPI vault)
         {
-            _vault = vaultService.GetVault(VaultName);
+            _vault = vault;
         }
 
         /// <summary>

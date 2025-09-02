@@ -463,12 +463,9 @@ public class ExportViewModel : INotifyPropertyChanged
     /// <summary>
     /// Loads file naming presets from a JSON file.
     /// </summary>
-    public void LoadPresets(string path)
+    public void LoadPresets(string content)
     {
-        if (!File.Exists(path)) return;
-
-        string json = File.ReadAllText(path);
-        var list = JsonSerializer.Deserialize<List<FileNamingPreset>>(json);
+        var list = JsonSerializer.Deserialize<List<FileNamingPreset>>(content);
         Presets.Clear();
         foreach (var preset in list)
             Presets.Add(preset);
