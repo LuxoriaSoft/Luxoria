@@ -1,3 +1,10 @@
+## [1.63.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.2...v1.63.3) (2025-09-03)
+
+
+### Bug Fixes
+
+* Include all LuxoriaSetup before zipping the remaining file ([629b7f5](https://github.com/LuxoriaSoft/Luxoria/commit/629b7f5bec50f85465c73a91d8ec4fae0ed0c856))
+
 ## [1.63.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.1...v1.63.2) (2025-09-03)
 
 
