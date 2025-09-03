@@ -103,7 +103,7 @@ namespace LuxExport
 
             smartButtons.Add(smrtBtn);
 
-            Items.Add(new LuxMenuBarItem("LuxExport", false, new Guid(), smartButtons));
+            Items.Add(new LuxMenuBarItem("Export", false, new Guid(), smartButtons));
 
             _eventBus.Subscribe<ExportRequestEvent>((e) =>
             {

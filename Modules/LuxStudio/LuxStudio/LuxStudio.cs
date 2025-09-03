@@ -100,7 +100,7 @@ public class LuxStudio : IModule, IModuleUI
         smartButtons.Add(new SmartButton("Account", "Account Management", accountMgt));
         smartButtons.Add(new SmartButton("Collections", "View Collections", collectionMngt));
         smartButtons.Add(new SmartButton("Chat", "Open Chat", chat));
-        Items.Add(new LuxMenuBarItem("LuxStudio", false, new Guid(), smartButtons));
+        Items.Add(new LuxMenuBarItem("Studio", false, new Guid(), smartButtons));
     }
 
     private void AccManagementView_OnAuthenticated(LuxStudioConfig arg1, AuthManager arg2)
