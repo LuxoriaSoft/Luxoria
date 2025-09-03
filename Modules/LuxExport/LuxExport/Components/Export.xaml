@@ -7,6 +7,29 @@
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <!-- Save Preset Dialog -->
+        <ContentDialog x:Key="SavePresetDialog" x:Name="SavePresetDialog"
+                       Title="Save Export Preset"
+                       PrimaryButtonText="Save"
+                       SecondaryButtonText="Cancel"
+                       DefaultButton="Primary">
+            <StackPanel Spacing="10">
+                <TextBox x:Name="PresetNameTextBox"
+                         Header="Preset Name"
+                         PlaceholderText="Enter preset name..."
+                         MaxLength="50"/>
+                
+                <TextBox x:Name="PresetDescriptionTextBox"
+                         Header="Description (Optional)"
+                         PlaceholderText="Enter preset description..."
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         MaxHeight="60"/>
+            </StackPanel>
+        </ContentDialog>
+    </Page.Resources>
+
     <VisualStateManager.VisualStateGroups>
         <VisualStateGroup x:Name="AdaptiveStates">
             <VisualState x:Name="Narrow">
@@ -61,19 +84,48 @@
         </Border>
 
         <ScrollViewer x:Name="LeftPanel" Grid.Row="1" Grid.Column="0" HorizontalScrollMode="Disabled" VerticalScrollMode="Enabled" Padding="10" MinWidth="200" MaxWidth="280" MinHeight="500">
-            <StackPanel Orientation="Vertical">
-                <Expander Header="Luxoria Presets" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="5" IsExpanded="True">
-                    <ListView>
-                        <ListViewItem Content="PNG"/>
-                        <ListViewItem Content="JPEG HighQuality"/>
-                        <ListViewItem Content="JPEG MediumQuality"/>
-                        <ListViewItem Content="JPEG LowQuality"/>
-                    </ListView>
-                </Expander>
-                <Expander Header="User Presets" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="5" IsExpanded="True">
-                    <ListView>
-                        <ListViewItem Content="MyPreset1"/>
-                    </ListView>
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <!-- Preset Selection Section -->
+                <Expander Header="Export Presets" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="5" IsExpanded="True">
+                    <StackPanel Spacing="8">
+                        <!-- Preset Selection ComboBox -->
+                        <ComboBox x:Name="PresetComboBox" 
+                                  Header="Select Preset" 
+                                  HorizontalAlignment="Stretch"
+                                  DisplayMemberPath="Name"
+                                  SelectionChanged="PresetComboBox_SelectionChanged"/>
+                        
+                        <!-- Preset Description -->
+                        <TextBlock x:Name="PresetDescription" 
+                                   Text="Select a preset to see description"
+                                   FontStyle="Italic"
+                                   FontSize="12"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   TextWrapping="Wrap"/>
+                        
+                        <!-- Preset Management Buttons -->
+                        <Grid ColumnSpacing="5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <Button x:Name="SavePresetButton" 
+                                    Grid.Column="0"
+                                    Content="Save" 
+                                    HorizontalAlignment="Stretch"
+                                    Click="SavePresetButton_Click"
+                                    ToolTipService.ToolTip="Save current settings as new preset"/>
+                            
+                            <Button x:Name="DeletePresetButton" 
+                                    Grid.Column="1"
+                                    Content="Delete" 
+                                    HorizontalAlignment="Stretch"
+                                    Click="DeletePresetButton_Click"
+                                    IsEnabled="False"
+                                    ToolTipService.ToolTip="Delete selected preset"/>
+                        </Grid>
+                    </StackPanel>
                 </Expander>
             </StackPanel>
         </ScrollViewer>
@@ -255,7 +307,7 @@
                         <TextBox   x:Name="TxtWatermark"
                             Grid.Row="2" Grid.Column="1"
                             Text="{x:Bind _viewModel.WatermarkText, Mode=TwoWay}"
-                            PlaceholderText="Watermark text…"/>
+                            PlaceholderText="Watermark textâ€¦"/>
 
                         <Button    x:Name="BtnImportLogo"
                            Grid.Row="2" Grid.Column="1"
