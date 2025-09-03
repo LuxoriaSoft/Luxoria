@@ -20,13 +20,15 @@ jobs:
       contents: write
 
     steps:
-      - name: Download all artifacts
+      - name: Download only installer artifacts
         uses: actions/download-artifact@v4
         with:
-          path: ./artifacts
+          pattern: LuxoriaSetup.*.exe
+          path: ./artifacts_exe
+          merge-multiple: true
       
       - name: List downloaded artifacts
-        run: ls ./artifacts
+        run: ls ./artifacts_exe
     
       - name: Upload installer file to Github Release
         uses: softprops/action-gh-release@v1
@@ -34,11 +36,19 @@ jobs:
           tag_name: ${{ github.event.release.tag_name }}
           name: ${{ github.event.release.tag_name }}
           files: |
-            ./artifacts/LuxoriaSetup.x64.exe
-            ./artifacts/LuxoriaSetup.arm64.exe
-            ./artifacts/LuxoriaSetup.x86.exe
+            ./artifacts_exe/LuxoriaSetup.x64.exe
+            ./artifacts_exe/LuxoriaSetup.arm64.exe
+            ./artifacts_exe/LuxoriaSetup.x86.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+      
+      - name: List downloaded artifacts
+        run: ls ./artifacts
 
       - name: Create ZIP files for each artifact
         run: |
