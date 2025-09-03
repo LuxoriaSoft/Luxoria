@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace LuxAPI.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class CollectionController : ControllerBase
@@ -111,7 +112,7 @@ namespace LuxAPI.Controllers
 
             // ✅ Vérifie que l’utilisateur a accès à la collection
             if (!collection.Accesses.Any(a => a.Email.Equals(currentUserEmail, StringComparison.OrdinalIgnoreCase)))
-                return Forbid("Vous n'avez pas accès à cette collection.");
+                return Unauthorized();
 
             // Manuellement mapper les messages avec avatars
             var chatMessagesWithAvatars = collection.ChatMessages.Select(m => new
@@ -257,7 +258,7 @@ namespace LuxAPI.Controllers
                 return NotFound("Collection non trouvée.");
 
             if (!collection.Accesses.Any(a => a.Email.Equals(currentUserEmail, StringComparison.OrdinalIgnoreCase)))
-                return Forbid("Vous n'avez pas accès à cette collection.");
+                return Unauthorized();
 
             if (!new EmailAddressAttribute().IsValid(dto.Email))
                 return BadRequest("Format d'email invalide.");
@@ -313,8 +314,26 @@ namespace LuxAPI.Controllers
         [HttpGet("image/{filename}")]
         public async Task<IActionResult> GetImage(string filename)
         {
+            var photo = await _context.Photos
+                .Include(p => p.Collection)
+                .ThenInclude(c => c.Accesses)
+                .FirstOrDefaultAsync(p => p.FilePath.EndsWith(filename));
+
+            if (photo == null)
+                return NotFound("Fichier introuvable.");
+
+            var currentUserEmail = User?.Identity?.Name;
+            if (string.IsNullOrEmpty(currentUserEmail))
+                return Unauthorized();
+
+            var collection = await GetCollectionIfUserHasAccessAsync(photo.CollectionId, currentUserEmail);
+            if (collection == null)
+                return Unauthorized();
+
             var stream = await _minioService.GetFileAsync(_bucketName, filename);
-            if (stream == null) return NotFound("Fichier introuvable.");
+            if (stream == null)
+                return NotFound();
+
             return File(stream, GetContentType(filename));
         }
         private static string GetContentType(string fileName)
@@ -408,10 +427,18 @@ namespace LuxAPI.Controllers
             public Guid? PhotoId { get; set; }
         }
 
+
         [Authorize]
         [HttpPost("{collectionId}/upload")]
         public async Task<IActionResult> UploadPhoto(Guid collectionId, [FromForm] UploadPhotoDto dto)
         {
+            var currentUserEmail = User?.Identity?.Name;
+            if (string.IsNullOrEmpty(currentUserEmail))
+                return Unauthorized("Utilisateur non authentifié.");
+
+            var collection = await GetCollectionIfUserHasAccessAsync(collectionId, currentUserEmail);
+            if (collection == null)
+                return Unauthorized();
 
             Console.WriteLine($"photoId reçue : {dto.PhotoId}");
             var file = dto.File;
@@ -483,7 +510,7 @@ namespace LuxAPI.Controllers
 
             if (!collection.Accesses.Any(a => 
                     a.Email.Equals(currentUserEmail, StringComparison.OrdinalIgnoreCase)))
-                return Forbid("Vous n'avez pas accès à ce chat.");
+                return Unauthorized();
 
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Email == currentUserEmail);
@@ -514,6 +541,22 @@ namespace LuxAPI.Controllers
             return CreatedAtAction(nameof(GetCollection), new { id = collectionId }, message);
         }
 
+        #region Helper privé
+        private async Task<Collection?> GetCollectionIfUserHasAccessAsync(Guid collectionId, string userEmail)
+        {
+            var collection = await _context.Collections
+                .Include(c => c.Accesses)
+                .FirstOrDefaultAsync(c => c.Id == collectionId);
+
+            if (collection == null) return null;
+
+            if (!collection.Accesses.Any(a => a.Email.Equals(userEmail, StringComparison.OrdinalIgnoreCase)))
+                return null; // Pas d'accès
+
+            return collection;
+        }
+        #endregion
+
         [Authorize]
         [HttpPatch("photo/{photoId}/status")]
         public async Task<IActionResult> UpdatePhotoStatus(Guid photoId, [FromBody] UpdatePhotoStatusDto dto)
@@ -532,7 +575,7 @@ namespace LuxAPI.Controllers
 
             if (!photo.Collection.Accesses.Any(a => 
                     a.Email.Equals(currentUserEmail, StringComparison.OrdinalIgnoreCase)))
-                return Forbid("Vous n'avez pas accès à cette photo.");
+                return Unauthorized();
 
             if (!Enum.IsDefined(typeof(PhotoStatus), dto.Status))
                 return BadRequest("Invalid status");
@@ -561,7 +604,7 @@ namespace LuxAPI.Controllers
 
             if (!photo.Collection.Accesses.Any(a => 
                     a.Email.Equals(currentUserEmail, StringComparison.OrdinalIgnoreCase)))
-                return Forbid("Vous n'avez pas accès à cette photo.");
+                return Unauthorized();
 
             return Ok(new { photoId = photo.Id, status = photo.Status });
         }

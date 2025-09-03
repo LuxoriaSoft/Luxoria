@@ -14,6 +14,8 @@ import { useRouter } from 'next/navigation'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 
+const imageCache = new Map<string, string>()
+
 export default function CollectionDetail() {
   const {
     id,
@@ -238,6 +240,58 @@ const handleSendMessage = async () => {
   const selectedImage = collection.photos[modalIndex ?? 0]
   const filteredMessages = messages.filter(msg => msg.photoId === selectedImage?.id)
 
+  type Props = {
+    src: string
+    alt: string
+    className?: string
+  }
+
+  function ProtectedImage({ src, alt, className }: Props) {
+    const [blobUrl, setBlobUrl] = useState<string | null>(null)
+
+    useEffect(() => {
+      let active = true
+
+      // Vérifie si déjà en cache
+      if (imageCache.has(src)) {
+        setBlobUrl(imageCache.get(src)!)
+        return
+      }
+
+      const loadImage = async () => {
+        try {
+          const res = await fetch(src, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+            },
+          })
+          if (!res.ok) throw new Error("Failed to load image")
+
+          const blob = await res.blob()
+          const objectUrl = URL.createObjectURL(blob)
+
+          if (active) {
+            setBlobUrl(objectUrl)
+            imageCache.set(src, objectUrl) // met en cache
+          }
+        } catch (err) {
+          console.error("Error loading protected image:", err)
+        }
+      }
+
+      loadImage()
+      return () => {
+        active = false
+      }
+    }, [src])
+
+    if (!blobUrl) {
+      return <div className="flex items-center justify-center text-gray-400"></div>
+    }
+
+    return <img src={blobUrl} alt={alt} className={className} />
+  }
+
   return (
     <div className="p-6 max-w-screen-xl mx-auto space-y-10">
       {/* En-tête */}
@@ -359,12 +413,9 @@ const handleSendMessage = async () => {
     {selectedImage && (
       <>
         <div className="w-full h-[600px] flex items-center justify-center relative">
-          <img
+          <ProtectedImage
             src={selectedImage.filePath}
             alt="Current"
-            className="max-w-full max-h-full object-contain"
-            loading="lazy"
-            style={{ width: 'auto', height: '100%' }}
           />
 
           {/* Bouton statut
@@ -513,11 +564,9 @@ const handleSendMessage = async () => {
         modalIndex === index ? 'ring-2 ring-[#B91F1E]' : ''
       }`}
     >
-      <img
+      <ProtectedImage
         src={photo.filePath}
         alt={`Photo ${index + 1}`}
-        className="w-full h-24 object-cover"
-        loading="lazy"
       />
     </div>
   ))}
