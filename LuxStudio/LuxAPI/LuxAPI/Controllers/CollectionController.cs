@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace LuxAPI.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class CollectionController : ControllerBase
@@ -481,7 +482,7 @@ namespace LuxAPI.Controllers
             if (collection == null)
                 return NotFound("Collection not found");
 
-            if (!collection.Accesses.Any(a => 
+            if (!collection.Accesses.Any(a =>
                     a.Email.Equals(currentUserEmail, StringComparison.OrdinalIgnoreCase)))
                 return Forbid("Vous n'avez pas accès à ce chat.");
 
@@ -504,11 +505,11 @@ namespace LuxAPI.Controllers
             await _context.SaveChangesAsync();
 
             await _chatHub.Clients.Group(collectionId.ToString())
-                .SendAsync("ReceiveMessage", 
-                    message.SenderUsername, 
-                    message.Message, 
-                    avatarFileName, 
-                    message.SentAt, 
+                .SendAsync("ReceiveMessage",
+                    message.SenderUsername,
+                    message.Message,
+                    avatarFileName,
+                    message.SentAt,
                     message.PhotoId);
 
             return CreatedAtAction(nameof(GetCollection), new { id = collectionId }, message);
@@ -530,7 +531,7 @@ namespace LuxAPI.Controllers
             if (photo == null)
                 return NotFound("Photo not found");
 
-            if (!photo.Collection.Accesses.Any(a => 
+            if (!photo.Collection.Accesses.Any(a =>
                     a.Email.Equals(currentUserEmail, StringComparison.OrdinalIgnoreCase)))
                 return Forbid("Vous n'avez pas accès à cette photo.");
 
@@ -559,7 +560,7 @@ namespace LuxAPI.Controllers
             if (photo == null)
                 return NotFound("Photo not found");
 
-            if (!photo.Collection.Accesses.Any(a => 
+            if (!photo.Collection.Accesses.Any(a =>
                     a.Email.Equals(currentUserEmail, StringComparison.OrdinalIgnoreCase)))
                 return Forbid("Vous n'avez pas accès à cette photo.");
 
