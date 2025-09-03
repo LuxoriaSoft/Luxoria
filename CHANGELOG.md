@@ -1,3 +1,10 @@
+## [1.63.4](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.3...v1.63.4) (2025-09-03)
+
+
+### Bug Fixes
+
+* Specify artifact list instead of *.exe ([a0ab98e](https://github.com/LuxoriaSoft/Luxoria/commit/a0ab98ea1024caa623df21caff7501381d281b9c))
+
 ## [1.63.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.2...v1.63.3) (2025-09-03)
 
 
