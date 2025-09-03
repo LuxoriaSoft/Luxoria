@@ -1,3 +1,10 @@
+## [1.63.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.0...v1.63.1) (2025-09-03)
+
+
+### Bug Fixes
+
+* Upload exe as artifacts unzipped (version) ([0d57297](https://github.com/LuxoriaSoft/Luxoria/commit/0d57297b8cd765d96ef8272f9b2e6d1e469ae484))
+
 # [1.63.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.62.0...v1.63.0) (2025-09-03)
 
 
