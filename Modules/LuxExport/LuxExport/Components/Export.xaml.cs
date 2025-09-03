@@ -36,6 +36,7 @@ namespace LuxExport
 
         private WatermarkService _wmSvc;
         private ExportPresetService _presetSvc;
+        private IStorageAPI _storageAPI;
 
         /// <summary>
         /// Initializes the export dialog and loads the necessary presets for file naming.
@@ -45,6 +46,7 @@ namespace LuxExport
             this.InitializeComponent();
             _eventBus = eventBus;
             _logger = logger; 
+            _storageAPI = storageAPI;
             _viewModel = new ExportViewModel();
             this.DataContext = _viewModel;
             _viewModel.RefreshLogoPreview();
@@ -284,7 +286,7 @@ namespace LuxExport
 
             DispatcherQueue.TryEnqueue(() =>
             {
-                var progressWindow = new ExportProgressWindow(_assets, _viewModel, _logger, _eventBus);
+                var progressWindow = new ExportProgressWindow(_assets, _viewModel, _logger, _eventBus, _storageAPI);
                 progressWindow.Activate();
             });
             //}

@@ -42,7 +42,7 @@ public class ExportViewModel : INotifyPropertyChanged
     private int _quality = 100;
     private string _selectedColorSpace = "sRGB";
     private bool _limitFileSize = false;
-    private int _maxFileSizeKB = 0;
+    private int _maxFileSizeKB = 1000; // Default to 1MB
     public string SelectedFormatText => SelectedFormat.ToString(); // Exposes the format name as a string
 
     // File Naming
