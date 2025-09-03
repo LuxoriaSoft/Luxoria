@@ -1,3 +1,10 @@
+## [1.63.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.1...v1.63.2) (2025-09-03)
+
+
+### Bug Fixes
+
+* Upload exe before zipping the remaining part ([f15a70e](https://github.com/LuxoriaSoft/Luxoria/commit/f15a70ef89b3f5d9b5c088ccc0e2254066bbce0e))
+
 ## [1.63.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.0...v1.63.1) (2025-09-03)
 
 
