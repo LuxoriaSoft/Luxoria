@@ -37,6 +37,8 @@ jobs:
             ./artifacts/LuxoriaSetup.x64.exe
             ./artifacts/LuxoriaSetup.arm64.exe
             ./artifacts/LuxoriaSetup.x86.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create ZIP files for each artifact
         run: |
@@ -52,6 +54,5 @@ jobs:
           tag_name: ${{ github.event.release.tag_name }}
           name: ${{ github.event.release.tag_name }}
           files: ./artifacts/*.zip
-
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
