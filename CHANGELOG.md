@@ -1,3 +1,10 @@
+# [1.63.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.62.0...v1.63.0) (2025-09-03)
+
+
+### Features
+
+* Fix names of modules in navigation bar ([688ee23](https://github.com/LuxoriaSoft/Luxoria/commit/688ee23069395b95e074c1b16d03699cdd02e4ce))
+
 # [1.62.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.61.0...v1.62.0) (2025-09-02)
 
 
