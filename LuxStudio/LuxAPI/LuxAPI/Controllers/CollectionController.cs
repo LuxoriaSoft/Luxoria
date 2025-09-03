@@ -110,11 +110,9 @@ namespace LuxAPI.Controllers
             if (collection == null)
                 return NotFound("Collection not found");
 
-            // ✅ Vérifie que l’utilisateur a accès à la collection
             if (!collection.Accesses.Any(a => a.Email.Equals(currentUserEmail, StringComparison.OrdinalIgnoreCase)))
                 return Unauthorized();
 
-            // Manuellement mapper les messages avec avatars
             var chatMessagesWithAvatars = collection.ChatMessages.Select(m => new
             {
                 m.SenderUsername,
@@ -412,13 +410,18 @@ namespace LuxAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCollection(Guid id)
         {
-            var collection = await _context.Collections.FindAsync(id);
+            var currentUserEmail = User?.Identity?.Name;
+            if (string.IsNullOrEmpty(currentUserEmail))
+                return Unauthorized("Utilisateur non authentifié.");
+
+            // Vérifie si l'utilisateur a accès à la collection
+            var collection = await GetCollectionIfUserHasAccessAsync(id, currentUserEmail);
             if (collection == null)
-                return NotFound("Collection non trouvée.");
+                return Unauthorized("Vous n'avez pas accès à cette collection.");
 
             _context.Collections.Remove(collection);
             await _context.SaveChangesAsync();
-            return NoContent();
+            return Ok();
         }
 
         public class UploadPhotoDto
