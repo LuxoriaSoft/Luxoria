@@ -1,3 +1,10 @@
+## [1.63.5](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.4...v1.63.5) (2025-09-03)
+
+
+### Bug Fixes
+
+* Necessary env. variable known as GITHUB_TOKEN for retreiving and attaching artifacts ([5cfd81f](https://github.com/LuxoriaSoft/Luxoria/commit/5cfd81fd7b61cc781402545daae293acdd5b1065))
+
 ## [1.63.4](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.3...v1.63.4) (2025-09-03)
 
 
