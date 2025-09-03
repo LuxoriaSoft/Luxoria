@@ -128,7 +128,7 @@ namespace LuxEditor
             mainPage.Add(SmartButtonType.LeftPanel, _infos);
 
             smartButtons.Add(new SmartButton("Editor", "Editor module", mainPage));
-            Items.Add(new LuxMenuBarItem("LuxEditor", false, Guid.NewGuid(), smartButtons));
+            Items.Add(new LuxMenuBarItem("Editor", false, Guid.NewGuid(), smartButtons));
 
             _eventBus.Subscribe<CollectionUpdatedEvent>(OnCollectionUpdated);
             _eventBus?.Subscribe<RequestLatestCollection>(e =>
