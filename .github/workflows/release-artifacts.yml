@@ -27,6 +27,13 @@ jobs:
       
       - name: List downloaded artifacts
         run: ls ./artifacts
+    
+      - name: Upload installer file to Github Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          name: ${{ github.event.release.tag_name }}
+          files: ./artifacts/*.exe
       
       - name: Create ZIP files for each artifact
         run: |
@@ -42,14 +49,6 @@ jobs:
           tag_name: ${{ github.event.release.tag_name }}
           name: ${{ github.event.release.tag_name }}
           files: ./artifacts/*.zip
-      
-      - name: Upload installer file to Github Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ github.event.release.tag_name }}
-          name: ${{ github.event.release.tag_name }}
-          files: ./artifacts/*.exe
-      
 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
