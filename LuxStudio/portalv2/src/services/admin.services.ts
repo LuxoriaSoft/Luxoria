@@ -15,137 +15,85 @@ export interface AdminCollection {
 }
 
 export interface ActivityLog {
-    id: string;
-    action: string;
-    performedBy: string;
-    details: string;
-    timestamp: string;
+    id: string
+    action: string
+    performedBy: string
+    details: string
+    timestamp: string
 }
 
 export interface CollectionReport {
-  id: string
-  collectionId: string
-  collectionName: string
-  reportedBy: string
-  reason: string
-  createdAt: string
+    id: string
+    collectionId: string
+    collectionName: string
+    reportedBy: string
+    reason: string
+    createdAt: string
 }
 
 export interface UserReport {
-  id: string
-  collectionId: string
-  collectionName: string
-  reportedUserEmail: string
-  reportedBy: string
-  reason: string
-  createdAt: string
+    id: string
+    collectionId: string
+    collectionName: string
+    reportedUserEmail: string
+    reportedBy: string
+    reason: string
+    createdAt: string
 }
 
 export class AdminService {
+    // === Users ===
     static async getUsers(search?: string): Promise<User[]> {
-        const token = localStorage.getItem('token')
-        if (!token) throw new Error('No token found')
-        const res = await api.get(`/admin/users${search ? `?search=${encodeURIComponent(search)}` : ''}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        })
+        const res = await api.get(`/admin/users${search ? `?search=${encodeURIComponent(search)}` : ''}`)
         return res.data
     }
 
     static async resetPassword(userId: string): Promise<void> {
-        const token = localStorage.getItem('token')
-        await api.post(`/admin/users/reset-password/${userId}`, null, {
-            headers: { Authorization: `Bearer ${token}` },
-        })
+        await api.post(`/admin/users/reset-password/${userId}`)
     }
 
     static async blockUser(userId: string): Promise<void> {
-        const token = localStorage.getItem('token')
-        await api.post(`/admin/users/block/${userId}`, null, {
-            headers: { Authorization: `Bearer ${token}` },
-        })
+        await api.post(`/admin/users/block/${userId}`)
+    }
+
+    static async unblockUser(userId: string): Promise<void> {
+        await api.post(`/admin/users/unblock/${userId}`)
     }
 
     static async inviteUser(email: string, role: number): Promise<void> {
-        const token = localStorage.getItem('token')
-        if (!token) throw new Error('No token found')
-
-        const res = await api.post('/admin/users/invite', { email, role }, {
-            headers: { Authorization: `Bearer ${token}` },
-        })
-
+        const res = await api.post('/admin/users/invite', { email, role })
         if (res.status < 200 || res.status >= 300) {
             throw new Error(res.data?.message || 'Failed to invite user')
         }
     }
 
+    // === Reports ===
     static async deleteUserReport(reportId: string): Promise<void> {
-        const token = localStorage.getItem('token')
-        if (!token) throw new Error('No token found')
-        await api.delete(`/admin/reports/users/${reportId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        })
+        await api.delete(`/admin/reports/users/${reportId}`)
     }
 
     static async getActivityLogs(): Promise<ActivityLog[]> {
-        const token = localStorage.getItem('token')
-        if (!token) throw new Error('No token found')
-
-        const res = await api.get('/admin/logs', {
-            headers: { Authorization: `Bearer ${token}` },
-        })
-
+        const res = await api.get('/admin/logs')
         return res.data
     }
 
     static async getCollectionReports(): Promise<CollectionReport[]> {
-        const token = localStorage.getItem('token')
-        if (!token) throw new Error('No token found')
-
-        const res = await api.get('/admin/reports/collections', {
-            headers: { Authorization: `Bearer ${token}` },
-        })
-
+        const res = await api.get('/admin/reports/collections')
         return res.data
-        }
-
-        static async getUserReports(): Promise<UserReport[]> {
-    const token = localStorage.getItem('token')
-    if (!token) throw new Error('No token found')
-
-    const res = await api.get('/admin/reports/users', {
-        headers: { Authorization: `Bearer ${token}` },
-    })
-
-    return res.data
     }
 
-    static async unblockUser(userId: string): Promise<void> {
-        const token = localStorage.getItem('token')
-        await api.post(`/admin/users/unblock/${userId}`, null, {
-            headers: { Authorization: `Bearer ${token}` },
-        })
+    static async getUserReports(): Promise<UserReport[]> {
+        const res = await api.get('/admin/reports/users')
+        return res.data
     }
-    static async getCollections(search: string): Promise<AdminCollection[]> {
-        const token = localStorage.getItem('token')
-        if (!token) throw new Error('No token found')
 
-        const res = await api.get(`/admin/collections?search=${encodeURIComponent(search)}`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        })
-
+    // === Collections ===
+    static async getCollections(search?: string): Promise<AdminCollection[]> {
+        const res = await api.get(`/admin/collections${search ? `?search=${encodeURIComponent(search)}` : ''}`)
         return res.data
     }
 
     static async deleteCollection(collectionId: string): Promise<void> {
-        const token = localStorage.getItem('token')
-        if (!token) throw new Error('No token found')
-
-        await api.delete(`/admin/collections/${collectionId}`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        })
+        await api.delete(`/admin/collections/${collectionId}`)
     }
 }
