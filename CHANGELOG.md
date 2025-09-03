@@ -1,3 +1,10 @@
+## [1.63.6](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.5...v1.63.6) (2025-09-03)
+
+
+### Bug Fixes
+
+* Enable Flatten when downloads artifacts ([41f5875](https://github.com/LuxoriaSoft/Luxoria/commit/41f58751559c9d1782ee49b5026f802016e45de7))
+
 ## [1.63.5](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.4...v1.63.5) (2025-09-03)
 
 
