@@ -1,3 +1,11 @@
+# [1.64.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.6...v1.64.0) (2025-09-03)
+
+
+### Features
+
+* Implements file size optimization for export ([7417a36](https://github.com/LuxoriaSoft/Luxoria/commit/7417a36ddf53869a0fb17bf26bcad20f002e17df))
+* Presets for web export ([e423c75](https://github.com/LuxoriaSoft/Luxoria/commit/e423c75aa26cb21735041d923e1dd66fc20a7bd8))
+
 ## [1.63.6](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.5...v1.63.6) (2025-09-03)
 
 
