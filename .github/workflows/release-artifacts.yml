@@ -33,7 +33,7 @@ jobs:
         with:
           tag_name: ${{ github.event.release.tag_name }}
           name: ${{ github.event.release.tag_name }}
-          files: ./artifacts/*.exe
+          files: ./artifacts/LuxoriaSetup.*.exe
       
       - name: Create ZIP files for each artifact
         run: |
