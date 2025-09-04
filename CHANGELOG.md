@@ -1,3 +1,10 @@
+## [1.65.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.0...v1.65.1) (2025-09-04)
+
+
+### Bug Fixes
+
+* Specify TypeInfoResolver (fixing crashes on x86) ([a4d8c95](https://github.com/LuxoriaSoft/Luxoria/commit/a4d8c95720559baab6eb5235fe964a108ff5ae2f))
+
 # [1.65.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.64.2...v1.65.0) (2025-09-04)
 
 
