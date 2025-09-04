@@ -1,7 +1,7 @@
 # LuxExport  
 The Standard Export Module  
 
-![M](docs/luxexport.mainview.png)
+![PIC1](https://raw.githubusercontent.com/LuxoriaSoft/Luxoria/e045553ed22d8de0359f165e2554348032a5a5b9/Modules/LuxExport/docs/luxexport.mainview.png)
 
 ---
 
@@ -11,7 +11,7 @@ The Standard Export Module
 
 - **Flexible Export Destinations**  
   Choose between **Hard Drive** and **Web** export modes, each with tailored options.  
-  ![M](docs/luxexport.webexportview.png)
+  ![PIC2](https://raw.githubusercontent.com/LuxoriaSoft/Luxoria/e045553ed22d8de0359f165e2554348032a5a5b9/Modules/LuxExport/docs/luxexport.webexportview.png)
 
 - **Custom File Naming**  
   Define filename patterns with dynamic tags like `{name}`, `{date}`, `{counter}`, and metadata fields. Preview filenames instantly before export.
