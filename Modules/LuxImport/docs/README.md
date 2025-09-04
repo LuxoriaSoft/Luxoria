@@ -2,7 +2,7 @@
 <p align="center"><b>The Standard Importation Module</b></p>
 
 <p align="center">
-  <img src="luximport.mainview.png" alt="LuxImport MainView" width="600"/>
+  <img src="https://raw.githubusercontent.com/LuxoriaSoft/Luxoria/7fd4110af73ea82102e51019ca288c48e9dd01d4/Modules/LuxImport/docs/luximport.mainview.png" alt="LuxImport MainView" width="600"/>
 </p>
 
 ---
