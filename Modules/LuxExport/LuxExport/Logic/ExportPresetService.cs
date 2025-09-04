@@ -3,6 +3,7 @@ using Luxoria.Modules.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 namespace LuxExport.Logic
 {
@@ -37,7 +38,9 @@ namespace LuxExport.Logic
             }
 
             var presetsJson = _vault.Get<string>(PresetsKey);
-            return JsonSerializer.Deserialize<List<ExportPreset>>(presetsJson) ?? CreateDefaultPresets();
+            var options = new JsonSerializerOptions { TypeInfoResolver = new DefaultJsonTypeInfoResolver() };
+
+            return JsonSerializer.Deserialize<List<ExportPreset>>(presetsJson, options) ?? CreateDefaultPresets();
         }
 
         /// <summary>
@@ -45,7 +48,7 @@ namespace LuxExport.Logic
         /// </summary>
         public void SavePresets(List<ExportPreset> presets)
         {
-            var json = JsonSerializer.Serialize(presets, new JsonSerializerOptions { WriteIndented = true });
+            var json = JsonSerializer.Serialize(presets, new JsonSerializerOptions { WriteIndented = true, TypeInfoResolver = new DefaultJsonTypeInfoResolver() });
             _vault.Save(PresetsKey, json);
         }
 
