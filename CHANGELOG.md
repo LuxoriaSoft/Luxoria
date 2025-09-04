@@ -1,3 +1,10 @@
+## [1.64.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.64.1...v1.64.2) (2025-09-04)
+
+
+### Bug Fixes
+
+* Upload to marketplace python script by specifying branch_src in upload_dirs param list ([3b39127](https://github.com/LuxoriaSoft/Luxoria/commit/3b39127632c2f94c12b265efc518581219514f74))
+
 ## [1.64.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.64.0...v1.64.1) (2025-09-04)
 
 
