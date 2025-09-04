@@ -1,3 +1,19 @@
+# [1.65.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.64.2...v1.65.0) (2025-09-04)
+
+
+### Bug Fixes
+
+* LuxImport's brochure, excluding HTML rendering not supporting by CommunityToolkKit MD renderer ([bbd1b1a](https://github.com/LuxoriaSoft/Luxoria/commit/bbd1b1a459fcdf619362f39296c4c50833ac0454))
+* Move README.md for both LuxEditor and LuxExport to proper folders ([cfd57c3](https://github.com/LuxoriaSoft/Luxoria/commit/cfd57c3d9fa0516af041b3036e767c67bac40292))
+* Using permalink for displaying PNG inside MD file ([e2ccdb5](https://github.com/LuxoriaSoft/Luxoria/commit/e2ccdb52960d7c71a7c7ba531544176e80810b70))
+
+
+### Features
+
+* Add graphical view of LuxFilter UI ([f44d91f](https://github.com/LuxoriaSoft/Luxoria/commit/f44d91f6e1b4123c2182f8b11ab1587cac11f602))
+* Enhance brochure of LuxEditor by adding pictures, etc ([a2ff75f](https://github.com/LuxoriaSoft/Luxoria/commit/a2ff75fdb3aed6a784b2d662bba4eb316d124ffd))
+* Enhance marketplace installing process with info modal ([a8c2eb3](https://github.com/LuxoriaSoft/Luxoria/commit/a8c2eb3e766db1b8fcd4429152ee32b36990e60e))
+
 ## [1.64.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.64.1...v1.64.2) (2025-09-04)
 
 
