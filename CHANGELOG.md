@@ -1,3 +1,11 @@
+## [1.64.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.64.0...v1.64.1) (2025-09-04)
+
+
+### Bug Fixes
+
+* LuxImport brochure's main picture with Github permalink to avoid issue if deleted ([f1f18fd](https://github.com/LuxoriaSoft/Luxoria/commit/f1f18fd3d326ee71846f276fc034ac57e498cbad))
+* LuxMarketplace takes a src_branch_name instead of "main" ([7fd4110](https://github.com/LuxoriaSoft/Luxoria/commit/7fd4110af73ea82102e51019ca288c48e9dd01d4))
+
 # [1.64.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.6...v1.64.0) (2025-09-03)
 
 
