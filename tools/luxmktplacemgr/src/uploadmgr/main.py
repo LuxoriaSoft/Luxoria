@@ -108,7 +108,7 @@ def main(args=sys.argv):
 
     repo_from, src_branch_name, repo_to, branch_name = args[1], args[2], args[3], args[4]
     # Start uploading
-    upload_dirs(repo_src=repo_from, src_branch_name, repo_dst=repo_to, branch_dst=branch_name, repo_token=GH_TOKEN)
+    upload_dirs(repo_src=repo_from, branch_src=src_branch_name, repo_dst=repo_to, branch_dst=branch_name, repo_token=GH_TOKEN)
 
 if __name__ == '__main__':
     main()
