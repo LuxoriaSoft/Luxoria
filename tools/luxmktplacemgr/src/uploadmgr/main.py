@@ -97,7 +97,7 @@ def main(args=sys.argv):
     print("Upload Manager is running...")
     
     # Check arguments
-    if len(args[1:]) != 3:
+    if len(args[1:]) != 4:
         exit(ERR_RET_CODE)
     
     # Retreive token from env var
@@ -106,9 +106,9 @@ def main(args=sys.argv):
     if GH_TOKEN == None or len(GH_TOKEN) == 0:
         exit(ERR_REP_GH_NOT_FOUND)
 
-    repo_from, repo_to, branch_name = args[1], args[2], args[3]
+    repo_from, src_branch_name, repo_to, branch_name = args[1], args[2], args[3], args[4]
     # Start uploading
-    upload_dirs(repo_src=repo_from, branch_src="main", repo_dst=repo_to, branch_dst=branch_name, repo_token=GH_TOKEN)
+    upload_dirs(repo_src=repo_from, src_branch_name, repo_dst=repo_to, branch_dst=branch_name, repo_token=GH_TOKEN)
 
 if __name__ == '__main__':
     main()
