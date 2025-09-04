@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 using CommunityToolkit.WinUI;
 using LuxExport.Logic;
@@ -468,7 +469,13 @@ public class ExportViewModel : INotifyPropertyChanged
     /// </summary>
     public void LoadPresets(string content)
     {
-        var list = JsonSerializer.Deserialize<List<FileNamingPreset>>(content);
+        var options = new JsonSerializerOptions
+        {
+            // Explicitly opt in to reflection-based serialization
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+        };
+
+        var list = JsonSerializer.Deserialize<List<FileNamingPreset>>(content, options) ?? new List<FileNamingPreset>();
         Presets.Clear();
         foreach (var preset in list)
             Presets.Add(preset);
