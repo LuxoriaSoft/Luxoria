@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { Avatar } from '@/components/avatar'
 import { Button } from '@/components/button'
 import { Heading, Subheading } from '@/components/heading'
@@ -15,6 +15,61 @@ import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 
 const imageCache = new Map<string, string>()
+
+type Props = {
+  src: string
+  alt: string
+  className?: string
+}
+
+function ProtectedImageComponent({ src, alt, className }: Props) {
+  const [blobUrl, setBlobUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    let active = true
+
+    if (imageCache.has(src)) {
+      setBlobUrl(imageCache.get(src)!)
+      return
+    }
+
+    const loadImage = async () => {
+      try {
+        const res = await fetch(src, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          },
+        })
+        if (!res.ok) throw new Error("Failed to load image")
+
+        const blob = await res.blob()
+        const objectUrl = URL.createObjectURL(blob)
+
+        if (active) {
+          setBlobUrl(objectUrl)
+          imageCache.set(src, objectUrl)
+        }
+      } catch (err) {
+        console.error("Error loading protected image:", err)
+      }
+    }
+
+    loadImage()
+    return () => {
+      active = false
+    }
+  }, [src])
+
+  if (!blobUrl) {
+    return <div className="flex items-center justify-center text-gray-400"></div>
+  }
+
+  return <img src={blobUrl} alt={alt} className={className} />
+}
+
+// ✅ On l’exporte en memo pour éviter les rerenders inutiles
+export const ProtectedImage = React.memo(ProtectedImageComponent)
+
 
 export default function CollectionDetail() {
   const {
@@ -240,57 +295,6 @@ const handleSendMessage = async () => {
   const selectedImage = collection.photos[modalIndex ?? 0]
   const filteredMessages = messages.filter(msg => msg.photoId === selectedImage?.id)
 
-  type Props = {
-    src: string
-    alt: string
-    className?: string
-  }
-
-  function ProtectedImage({ src, alt, className }: Props) {
-    const [blobUrl, setBlobUrl] = useState<string | null>(null)
-
-    useEffect(() => {
-      let active = true
-
-      // Vérifie si déjà en cache
-      if (imageCache.has(src)) {
-        setBlobUrl(imageCache.get(src)!)
-        return
-      }
-
-      const loadImage = async () => {
-        try {
-          const res = await fetch(src, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
-            },
-          })
-          if (!res.ok) throw new Error("Failed to load image")
-
-          const blob = await res.blob()
-          const objectUrl = URL.createObjectURL(blob)
-
-          if (active) {
-            setBlobUrl(objectUrl)
-            imageCache.set(src, objectUrl) // met en cache
-          }
-        } catch (err) {
-          console.error("Error loading protected image:", err)
-        }
-      }
-
-      loadImage()
-      return () => {
-        active = false
-      }
-    }, [src])
-
-    if (!blobUrl) {
-      return <div className="flex items-center justify-center text-gray-400"></div>
-    }
-
-    return <img src={blobUrl} alt={alt} className={className} />
-  }
 
   return (
     <div className="p-6 max-w-screen-xl mx-auto space-y-10">
@@ -416,6 +420,7 @@ const handleSendMessage = async () => {
           <ProtectedImage
             src={selectedImage.filePath}
             alt="Current"
+            className="w-full h-full object-contain"
           />
 
           {/* Bouton statut
@@ -560,13 +565,14 @@ const handleSendMessage = async () => {
     <div
       key={photo.id}
       onClick={() => setModalIndex(index)}
-      className={`relative cursor-pointer border rounded overflow-hidden shadow-sm ${
+      className={`relative cursor-pointer border rounded overflow-hidden shadow-sm aspect-square ${
         modalIndex === index ? 'ring-2 ring-[#B91F1E]' : ''
       }`}
     >
       <ProtectedImage
         src={photo.filePath}
         alt={`Photo ${index + 1}`}
+        className="w-full h-full object-cover"
       />
     </div>
   ))}
