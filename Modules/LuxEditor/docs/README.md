@@ -1,13 +1,15 @@
 # LuxEditor  
 The Standard Editing Module  
 
-![M](luxeditor.mainview.png)
+![PIC1](https://raw.githubusercontent.com/LuxoriaSoft/Luxoria/a2ff75fdb3aed6a784b2d662bba4eb316d124ffd/Modules/LuxEditor/docs/luxeditor.mainview.png)
+
+![PIC2](https://raw.githubusercontent.com/LuxoriaSoft/Luxoria/a2ff75fdb3aed6a784b2d662bba4eb316d124ffd/Modules/LuxEditor/docs/luxeditor.view2.png)
 
 ---
 
 ## ✨ Features
 - **Non-Destructive Editing**  
-  Every change is stored as adjustments/layers—your originals stay untouched.
+  Every change is stored as adjustments/layers, your originals stay untouched.
 
 - **Core Adjustments**  
   White balance (Temperature/Tint), Exposure, Contrast, Highlights/Shadows, Whites/Blacks.
@@ -28,15 +30,13 @@ The Standard Editing Module
   One-click looks, star/flag tools, and a film-strip for rapid review.
 
 - **Inline EXIF/Metadata Viewer**  
-  See camera data while you edit—no context switching.
+  See camera data while you edit, no context switching.
 
 - **Reset & Compare, Undo/Redo**  
   Confidence to experiment, with instant safety nets.
 
 - **Clean, Focused UI**  
-  Editor, Crop, Layers, Export tabs—everything where you expect it.
-
-![M](luxeditor.view2.png)
+  Editor, Crop, Layers, Export tabs, everything where you expect it.
 
 ---
 
