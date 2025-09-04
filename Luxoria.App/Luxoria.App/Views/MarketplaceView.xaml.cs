@@ -9,8 +9,10 @@ using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Luxoria.App.Views
@@ -22,23 +24,21 @@ namespace Luxoria.App.Views
         private readonly IEventBus _eventBus;
         private readonly HttpClient _httpClient = new();
 
-        // All releases loaded from service
         private ICollection<LuxRelease> _allReleases;
-
-        // Currently selected module
         private LuxRelease.LuxMod _selectedModule;
+
+        private ContentDialog _installDialog;
+        private ProgressBar _installProgressBar;
+        private TextBlock _installStatusText;
+        private TextBlock _installDetailsText;
+        private bool _allowDialogClose;
 
         public MarketplaceView(IMarketplaceService marketplaceSvc, IStorageAPI cacheSvc, IEventBus eventBus)
         {
-            Debug.Write("Initializing View...");
             this.InitializeComponent();
-            Debug.WriteLine(" OK!");
-            Debug.Write("Retrieving services...");
             _mktSvc = marketplaceSvc;
             _cacheSvc = cacheSvc;
             _eventBus = eventBus;
-            Debug.WriteLine(" OK!");
-            Debug.Write("Loading marketplace...");
 
             _ = Task.Run(async () =>
             {
@@ -50,7 +50,6 @@ namespace Luxoria.App.Views
                     try
                     {
                         _allReleases = await dataTask;
-                        Debug.WriteLine(" Marketplace data loaded, dispatching UI update...");
 
                         DispatcherQueue.TryEnqueue(() =>
                         {
@@ -69,7 +68,6 @@ namespace Luxoria.App.Views
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($" Error loading data: {ex.Message}");
                         DispatcherQueue.TryEnqueue(() =>
                         {
                             NavView.MenuItems.Clear();
@@ -82,7 +80,6 @@ namespace Luxoria.App.Views
                 }
                 else
                 {
-                    Debug.WriteLine(" LoadMarketplaceDataAsync timed out after 30 s.");
                     DispatcherQueue.TryEnqueue(() =>
                     {
                         NavView.MenuItems.Clear();
@@ -102,12 +99,10 @@ namespace Luxoria.App.Views
         {
             if (_cacheSvc.Contains("releases"))
             {
-                Debug.WriteLine("Loading releases from cache");
                 return _cacheSvc.Get<ICollection<LuxRelease>>("releases");
             }
             else
             {
-                Debug.WriteLine("Loading releases from service");
                 var releases = await _mktSvc.GetReleases();
                 _cacheSvc.Save("releases", DateTime.Now.AddHours(6), releases);
                 return releases;
@@ -125,16 +120,13 @@ namespace Luxoria.App.Views
 
             if (args.InvokedItemContainer.Tag is LuxRelease release)
             {
-                Debug.WriteLine($"Selected release: [{release.Id}] / {release.Name}");
                 ICollection<LuxRelease.LuxMod> modules;
                 if (_cacheSvc.Contains(release.Id.ToString()))
                 {
-                    Debug.WriteLine("Fetching release from cache...");
                     modules = _cacheSvc.Get<ICollection<LuxRelease.LuxMod>>(release.Id.ToString());
                 }
                 else
                 {
-                    Debug.WriteLine("Fetching release from distant...");
                     modules = await _mktSvc.GetRelease(release.Id);
                     _cacheSvc.Save(release.Id.ToString(), DateTime.Now.AddHours(24), modules);
                 }
@@ -187,15 +179,43 @@ namespace Luxoria.App.Views
             try
             {
                 string arch = ModuleInstaller.GetShortArch();
-                InstallButton.Content = "Installing...";
 
                 var selectedModuleToBeInstalled = _selectedModule.AttachedModulesByArch
                     .Where(x => x.Name.EndsWith($".{arch}.zip"))
                     .Select(x => (Name: x.Name.Replace($".{arch}.zip", ""), Url: x.DownloadUrl))
                     .First();
 
-                Debug.WriteLine($"Downloading module from: {selectedModuleToBeInstalled.Url}");
-                await ModuleInstaller.InstallFromUrlAsync(selectedModuleToBeInstalled.Name, selectedModuleToBeInstalled.Url);
+                BuildInstallDialog();
+
+                InstallButton.Content = "Installing...";
+                _installStatusText.Text = $"Downloading {selectedModuleToBeInstalled.Name}...";
+                _installProgressBar.IsIndeterminate = true;
+                _installDetailsText.Text = "Starting...";
+
+                var _ = _installDialog.ShowAsync();
+
+                var progress = new Progress<DownloadProgress>(p =>
+                {
+                    if (p.TotalBytes.HasValue)
+                    {
+                        _installProgressBar.IsIndeterminate = false;
+                        _installProgressBar.Minimum = 0;
+                        _installProgressBar.Maximum = 100;
+                        _installProgressBar.Value = p.Percent ?? 0;
+                    }
+
+                    string received = FormatBytes(p.BytesReceived);
+                    string total = p.TotalBytes.HasValue ? FormatBytes(p.TotalBytes.Value) : "?";
+                    string speed = $"{FormatBytes(p.BytesPerSecond)}/s";
+                    _installDetailsText.Text = $"{received} of {total} — {speed}";
+                });
+
+                string zipPath = await DownloadFileWithProgressAsync(selectedModuleToBeInstalled.Url, progress);
+
+                _installStatusText.Text = "Installing...";
+                _installProgressBar.IsIndeterminate = true;
+
+                ModuleInstaller.InstallFromZip(selectedModuleToBeInstalled.Name, zipPath);
 
                 await _eventBus.Publish(new ToastNotificationEvent
                 {
@@ -203,18 +223,127 @@ namespace Luxoria.App.Views
                     Message = "Please restart Luxoria to load the new module.",
                 });
 
+                _allowDialogClose = true;
+                _installDialog.Hide();
+
                 InstallButton.Content = "Installed";
                 InstallButton.IsEnabled = false;
+
+                TryDeleteFile(zipPath);
             }
             catch (Exception ex)
             {
+                _allowDialogClose = true;
+                _installDialog?.Hide();
+
                 var dlg = new ContentDialog
                 {
                     Title = "Installation failed",
                     Content = ex.Message,
-                    CloseButtonText = "OK"
+                    CloseButtonText = "OK",
+                    XamlRoot = this.Content.XamlRoot
                 };
                 await dlg.ShowAsync();
+            }
+        }
+
+        private void BuildInstallDialog()
+        {
+            _allowDialogClose = false;
+
+            _installProgressBar = new ProgressBar { IsIndeterminate = true };
+            _installStatusText = new TextBlock { Text = "Preparing..." };
+            _installDetailsText = new TextBlock { Text = "0 B of 0 B — 0 B/s" };
+
+            var panel = new StackPanel { Spacing = 12, MinWidth = 420 };
+            panel.Children.Add(_installStatusText);
+            panel.Children.Add(_installProgressBar);
+            panel.Children.Add(_installDetailsText);
+
+            _installDialog = new ContentDialog
+            {
+                Title = "Installing module...",
+                Content = panel,
+                XamlRoot = this.Content.XamlRoot,
+                PrimaryButtonText = null,
+                SecondaryButtonText = null,
+                CloseButtonText = null
+            };
+
+            _installDialog.Closing += (s, e) =>
+            {
+                if (!_allowDialogClose)
+                {
+                    e.Cancel = true;
+                }
+            };
+        }
+
+        private sealed class DownloadProgress
+        {
+            public long BytesReceived { get; init; }
+            public long? TotalBytes { get; init; }
+            public double? Percent => TotalBytes is > 0 ? (double)BytesReceived / TotalBytes.Value * 100.0 : null;
+            public double BytesPerSecond { get; init; }
+        }
+
+        private static string FormatBytes(double bytes)
+        {
+            string[] units = { "B", "KB", "MB", "GB", "TB" };
+            int order = 0;
+            while (bytes >= 1024 && order < units.Length - 1)
+            {
+                bytes /= 1024;
+                order++;
+            }
+            return $"{bytes:0.##} {units[order]}";
+        }
+
+        private async Task<string> DownloadFileWithProgressAsync(string url, IProgress<DownloadProgress> progress, CancellationToken ct = default)
+        {
+            using var req = new HttpRequestMessage(HttpMethod.Get, url);
+            using var resp = await _httpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
+            resp.EnsureSuccessStatusCode();
+
+            var total = resp.Content.Headers.ContentLength;
+            var tmpPath = Path.Combine(Path.GetTempPath(), $"luxoria_{Guid.NewGuid():N}.zip");
+
+            var sw = Stopwatch.StartNew();
+            long received = 0;
+
+            using (var src = await resp.Content.ReadAsStreamAsync(ct))
+            using (var dst = File.Create(tmpPath))
+            {
+                var buffer = new byte[81920]; // Buffer defined as 80 Kb fixed size
+                int read;
+                long lastReported = 0;
+                var lastReportTime = TimeSpan.Zero;
+
+                while ((read = await src.ReadAsync(buffer.AsMemory(0, buffer.Length), ct)) > 0)
+                {
+                    await dst.WriteAsync(buffer.AsMemory(0, read), ct);
+                    received += read;
+
+                    if (sw.Elapsed - lastReportTime > TimeSpan.FromMilliseconds(100) || received - lastReported > 256 * 1024)
+                    {
+                        var bps = received / Math.Max(1, sw.Elapsed.TotalSeconds);
+                        progress?.Report(new DownloadProgress { BytesReceived = received, TotalBytes = total, BytesPerSecond = bps });
+                        lastReportTime = sw.Elapsed;
+                        lastReported = received;
+                    }
+                }
+            }
+
+            var finalBps = (double)received / Math.Max(1, sw.Elapsed.TotalSeconds);
+            progress?.Report(new DownloadProgress { BytesReceived = received, TotalBytes = total, BytesPerSecond = finalBps });
+
+            return tmpPath;
+        }
+
+        private static void TryDeleteFile(string path)
+        {
+            try { if (File.Exists(path)) File.Delete(path); }
+            catch {
             }
         }
     }

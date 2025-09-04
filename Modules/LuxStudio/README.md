@@ -1,82 +1,59 @@
-# LuxImport
-
-LuxImport is a image collection management system designed for efficient indexing, asset organization, and metadata handling. It provides capabilities for importing, processing, and managing image datasets, making it an ideal solution for large-scale photography and media applications.
-
-## Architecture
-
-LuxImport follows a modular architecture to ensure scalability, maintainability, and high performance. The key components are:
-
-### 1. Core Components
-- **ImportService**: Handles the import process, including asset hashing, metadata extraction, and database initialization.
-- **Manifest Repository**: Manages the manifest file that keeps track of indexed assets.
-- **LuxConfig Repository**: Stores configuration settings related to collections and assets.
-- **FileHasherService**: Computes unique hashes for images to prevent duplication.
-- **SkiaSharp Integration**: Used for image processing, including metadata extraction and transformations.
-
-### 2. Data Flow
-1. **Initialization**: The system checks whether the target collection exists and initializes it if necessary.
-2. **Indexing**: Images are scanned, hashed, and added to the database with relevant metadata.
-3. **Storage & Retrieval**: Indexed assets are stored with reference to their respective manifest files.
-4. **Loading Assets**: Assets are loaded from storage and processed based on application requirements.
-
-### 3. Technologies Used
-- **.NET 9**: Primary Framework.
-- **BenchmarkDotNet**: Used for performance benchmarking.
-- **System.Threading.Tasks**: Ensures efficient async processing.
-- **Concurrent Collections**: Optimizes parallel data processing.
-- **SkiaSharp**: Handles image processing operations such as metadata extraction and transformations.
+# LuxStudio  
+The Collaboration & Delivery Module
 
 ---
 
-## Testing
+## ✨ Features
+- **Real-Time Client Collaboration**  
+  Share galleries instantly and receive feedback, or comments in one web-enabled space.
 
-LuxImport includes a robust testing strategy to ensure stability and correctness.
+- **Seamless Image Sharing**  
+  Send selections to clients via LuxStudio, no manual exports or separate uploads needed.
 
-### 1. Unit Tests
-- Covers core functionalities such as:
-  - Initialization of import service.
-  - Manifest file creation and retrieval.
-  - File hashing and metadata extraction.
-- Uses **xUnit** for testing.
+- **Integrated Feedback Loop**  
+  Clients can flag favorites, leave notes, or approve images directly in the app, streamlining the review process.
 
-### 2. Integration Tests
-- Verifies the interaction between different modules.
-- Tests how the ImportService handles large datasets.
+- **Support for Multiple Formats**  
+  Share and export in JPEG, PNG, TIFF, RAW, and more, all configured from within the platform.
 
-### 3. Performance Tests
-- Uses **BenchmarkDotNet** to measure execution time, memory allocation, and threading behavior.
-- Ensures that asset indexing, loading, and retrieval are optimized for large datasets.
+- **Unified Workflow Ecosystem**  
+  Works hand-in-hand with LuxImport, LuxEditor, LuxFilter, and LuxExport to provide a full, end-to-end photo workflow, in one app.
 
-### 4. Edge Case Handling
-- Ensures stability with:
-  - Empty folders
-  - Corrupt image files
-  - Large-scale imports
+- **Client-Centered UI**  
+  Designed for intuitive use, clients don’t need training; they simply open, comment, and approve.
+
+- **Cross-Platform Desktop App**  
+  Works on your preferred OS, ensuring both editors and clients get a smooth native experience.
 
 ---
 
-## Benchmarking
+## 📂 How It Works
+1. **Collaborate**  
+   After editing, initiate a client gallery in LuxStudio and share a link or invite directly.
 
-Performance is a key focus of LuxImport. The system is benchmarked to analyze indexing and retrieval efficiency.
+2. **Review & Comment**  
+   Clients open the gallery in their web interface, indicate favorites, add comments, or approve.
 
-### 1. Benchmark Strategy
-- Uses **BenchmarkDotNet** to measure:
-  - Execution time per operation.
-  - Memory allocations and garbage collection pressure.
-  - Threading efficiency and lock contention.
+3. **Sync Feedback**  
+   Responses sync back into Luxoria, allowing you to incorporate revisions or finalize selections.
 
-### 2. Benchmark Scenarios
-- **Initialization**: Measures the time required to set up a new collection.
-- **Indexing**: Evaluates performance when scanning and hashing assets.
-- **Database Operations**: Tests manifest file read/write performance.
-- **Asset Loading**: Benchmarks retrieval times for indexed images.
+4. **Finalize & Export**  
+   Confirm approved images and send them to Export module for batch export or delivery in desired formats.
 
-### 3. Sample Benchmark Results
-Result is in microseconds (`μs`).  
-You can find detailed benchmark results in the `LuxImport.Benchmark/BenchmarkDotNet.Artifacts` folder.  
-The provided benchmark results are for reference only and may vary based on the system configuration.  
-It has been tested on an Apple Silicon M2 chip on Parallels Desktop.  
+---
 
-With 3 different collections, 50, 100, and 200 images, the benchmark results are as follows:  
+## 📌 Coming Soon
+- Detailed permission controls (viewer vs. editor)  
+- Branding options for client-facing gallery pages
 
-Go to the [Benchmark Report](./LuxImport.Benchmark/results/ImportServiceBenchmark-report-github.md) for more details.
+---
+
+## 📄 License
+`Luxoria and all standard modules are licensed` under the `Apache 2.0` License.  
+See the [LICENSE](https://docs.luxoria.bluepelicansoft.com/LICENSE) for full details.
+
+[Source Code](https://github.com/LuxoriaSoft/Luxoria/tree/main/Modules/LuxStudio)
+
+---
+
+Experience a frictionless creative-to-client loop, LuxStudio brings collaboration to the heart of your photo workflow.

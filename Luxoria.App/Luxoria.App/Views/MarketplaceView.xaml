@@ -41,14 +41,15 @@
                             <toolkit:MarkdownTextBlock
                                 x:Name="MdViewer"
                                 TextWrapping="WrapWholeWords"
-                                FontSize="14"/>
+                                FontSize="14"
+                                Padding="12" />
                         </ScrollViewer>
 
                         <StackPanel
-                        Grid.Row="1"
-                        Orientation="Horizontal"
-                        HorizontalAlignment="Right"
-                        Spacing="8">
+                            Grid.Row="1"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            Spacing="8">
                             <TextBlock
                                 x:Name="DownloadCount"
                                 VerticalAlignment="Center"/>
@@ -57,7 +58,7 @@
                                 Content="Install"
                                 Click="InstallButton_Click"
                                 IsEnabled="False"/>
-                            </StackPanel>
+                        </StackPanel>
                     </Grid>
 
                 </Grid>
