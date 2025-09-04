@@ -23,7 +23,7 @@
         "Fondation",
         "Edition"
     ],
-    "brochure": "README.md",
+    "brochure": "docs/README.md",
     "build": {
         "config": "Release",
         "csproj": "LuxEditor\\LuxEditor.csproj",
