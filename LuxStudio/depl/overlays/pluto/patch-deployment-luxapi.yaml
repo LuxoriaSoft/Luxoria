@@ -22,12 +22,12 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: luxapi-secrets
-                key: smtp-user 
+                key: SMTP_USER 
           - name: SMTP__Password
             valueFrom:
               secretKeyRef:
                 name: luxapi-secrets
-                key: smtp-password    
+                key: SMTP_PASSWORD    
           - name: Minio__Endpoint
             value: minio:9000
           - name: Minio__AccessKey
