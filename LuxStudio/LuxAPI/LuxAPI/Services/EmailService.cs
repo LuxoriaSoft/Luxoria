@@ -122,9 +122,6 @@ namespace LuxAPI.Services
 
             <hr style='margin: 30px 0;' />
 
-            <p style='font-size: 14px; color: #888;'>Si le bouton ne fonctionne pas, copiez-collez ce lien dans votre navigateur :</p>
-            <p style='font-size: 12px; color: #555; word-break: break-all;'>{confirmationUrl}</p>
-
             <hr style='margin: 30px 0;' />
             <p style='font-size: 12px; color: #999; text-align: center;'>© Luxoria {DateTime.UtcNow:yyyy} – Ne répondez pas à cet e-mail.</p>
         </div>
