@@ -18,7 +18,7 @@ spec:
             value: smtp.gmail.com
           - name: SMTP__Port
             value: "587"
-          - name: SMTP__User
+          - name: SMTP__Username
             valueFrom:
               secretKeyRef:
                 name: luxapi-secrets
