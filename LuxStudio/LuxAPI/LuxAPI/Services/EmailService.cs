@@ -39,7 +39,7 @@ namespace LuxAPI.Services
 
             mailMessage.To.Add(toEmail);
 
-            _logger.LogInformation($"Using host={_config["Smtp:Host"]} port:{_config["Smtp:Port"]}");
+            _logger.LogInformation($"Using host={_config["Smtp:Host"]} port:{_config["Smtp:Port"]} username='{_config["Smtp:Username"]}'");
 
             using var smtp = new SmtpClient(_config["Smtp:Host"], int.Parse(_config["Smtp:Port"]))
             {
