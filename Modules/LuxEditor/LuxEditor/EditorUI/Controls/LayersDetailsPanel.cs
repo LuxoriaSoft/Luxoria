@@ -232,10 +232,6 @@ namespace LuxEditor.Controls
                     Strength = _currentLayer.Strength;
                     _strengthSlider.SetValue((float)Strength);
                     break;
-
-                case nameof(Layer.Filters):
-                    BuildSliders();
-                    break;
             }
         }
 
