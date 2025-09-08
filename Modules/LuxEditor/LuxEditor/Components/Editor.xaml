@@ -32,50 +32,84 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0" Orientation="Vertical" Spacing="8" Padding="8">
-                    <ToggleSwitch x:Name="LockAspectToggle" Header="Lock Aspect Ratio"/>
+                <StackPanel Grid.Row="0" Orientation="Vertical" Spacing="12" Padding="12">
+                    <!-- Aspect Ratio Controls -->
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <ComboBox x:Name="AspectPresetCombo" 
+                                  Grid.Row="0"
+                                  Header="Aspect Ratio" 
+                                  SelectedIndex="0" 
+                                  HorizontalAlignment="Stretch">
+                            <ComboBoxItem>Original</ComboBoxItem>
+                            <ComboBoxItem>4:3</ComboBoxItem>
+                            <ComboBoxItem>16:9</ComboBoxItem>
+                            <ComboBoxItem>16:10</ComboBoxItem>
+                            <ComboBoxItem>Instagram 1:1</ComboBoxItem>
+                            <ComboBoxItem>Instagram 4:5</ComboBoxItem>
+                            <ComboBoxItem>Custom</ComboBoxItem>
+                        </ComboBox>
+                        
+                        <ToggleSwitch x:Name="LockAspectToggle" 
+                                      Grid.Row="1"
+                                      Header="Lock Aspect Ratio" 
+                                      IsOn="True"
+                                      Margin="0,8,0,0"/>
+                    </Grid>
 
-                    <ComboBox x:Name="AspectPresetCombo" Header="Aspect Ratio" SelectedIndex="0">
-                        <ComboBoxItem>Original</ComboBoxItem>
-                        <ComboBoxItem>4:3</ComboBoxItem>
-                        <ComboBoxItem>16:9</ComboBoxItem>
-                        <ComboBoxItem>16:10</ComboBoxItem>
-                        <ComboBoxItem>Instagram 1:1</ComboBoxItem>
-                        <ComboBoxItem>Instagram 4:5</ComboBoxItem>
-                        <ComboBoxItem>Custom</ComboBoxItem>
-                    </ComboBox>
+                    <!-- Size Controls -->
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Text="Dimensions" 
+                                   Grid.Row="0" 
+                                   Grid.ColumnSpan="3" 
+                                   FontWeight="SemiBold" 
+                                   Margin="0,0,0,4"/>
+                        
+                        <controls:NumberBox x:Name="CustomWidthInput"
+                                            Grid.Row="1"
+                                            Grid.Column="0"
+                                            Header="Width"
+                                            Minimum="1"
+                                            Value="100"
+                                            SmallChange="1"/>
+                        
+                        <controls:NumberBox x:Name="CustomHeightInput"
+                                            Grid.Row="1"
+                                            Grid.Column="2"
+                                            Header="Height"
+                                            Minimum="1"
+                                            Value="100"
+                                            SmallChange="1"/>
+                    </Grid>
 
-                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                        <TextBlock Text="Width" VerticalAlignment="Center"/>
-                        <controls:NumberBox
-                            x:Name="CustomWidthInput"
-                            Minimum="1"
-                            Value="100"
-                            SmallChange="1"
-                            Width="80"/>
-                        <TextBlock Text="Height" VerticalAlignment="Center" Margin="12,0,0,0"/>
-                        <controls:NumberBox
-                            x:Name="CustomHeightInput"
-                            Minimum="1"
-                            Value="100"
-                            SmallChange="1"
-                            Width="80"/>
-                    </StackPanel>
+                    <!-- Rotation Controls -->
+                    <controls:NumberBox x:Name="RotateAngleInput"
+                                        Header="Rotation Angle"
+                                        Minimum="0"
+                                        Maximum="360"
+                                        Value="0"
+                                        SmallChange="1"
+                                        HorizontalAlignment="Stretch"/>
 
-                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                        <TextBlock Text="Angle" VerticalAlignment="Center"/>
-                        <controls:NumberBox
-                            x:Name="RotateAngleInput"
-                            Minimum="0"
-                            Maximum="360"
-                            Value="0"
-                            SmallChange="1"
-                            Width="80"/>
-                    </StackPanel>
-
+                    <!-- Action Button -->
                     <Button x:Name="ResetCropButton"
-                        Content="Reset Crop"
-                        HorizontalAlignment="Left"/>
+                            Content="Reset Crop"
+                            HorizontalAlignment="Stretch"
+                            Margin="0,4,0,0"/>
                 </StackPanel>
                 <ContentControl x:Name="CropPanelHost" Grid.Row="1"/>
             </Grid>
