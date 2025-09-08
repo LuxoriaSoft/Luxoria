@@ -16,7 +16,7 @@ jobs:
       
       # Install node.js 20.X.X
       - name: Install Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
       
