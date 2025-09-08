@@ -1,3 +1,10 @@
+## [1.65.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.1...v1.65.2) (2025-09-08)
+
+
+### Bug Fixes
+
+* Sliders not sliding smoothly in Layers ([6f78f41](https://github.com/LuxoriaSoft/Luxoria/commit/6f78f41e133174cb2b4a3d6082b938dba3e1213d))
+
 ## [1.65.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.0...v1.65.1) (2025-09-04)
 
 
