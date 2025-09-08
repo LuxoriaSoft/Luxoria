@@ -45,6 +45,10 @@ namespace Luxoria.App
             this.InitializeComponent();
             _startup = new Startup();
             _host = CreateHostBuilder(_startup).Build();
+
+            // Enable reflection for System.Text.Json
+            AppContext.SetSwitch("System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault", true);
+            
             _moduleService = _host.Services.GetRequiredService<IModuleService>();
             _logger = _host.Services.GetRequiredService<ILoggerService>();
 
