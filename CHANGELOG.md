@@ -1,3 +1,10 @@
+## [1.65.4](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.3...v1.65.4) (2025-09-08)
+
+
+### Bug Fixes
+
+* Add debug message for chat debugging purpose ([1eb67ce](https://github.com/LuxoriaSoft/Luxoria/commit/1eb67ce82b55a5f97add7c2fa52ac969d80d0878))
+
 ## [1.65.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.2...v1.65.3) (2025-09-08)
 
 
