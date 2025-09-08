@@ -1,3 +1,10 @@
+## [1.65.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.2...v1.65.3) (2025-09-08)
+
+
+### Bug Fixes
+
+* Enable Reflection inside Luxoria.App (fixes bugs on x86 & ARM64) ([7b491f4](https://github.com/LuxoriaSoft/Luxoria/commit/7b491f4f8c4d2a3218ff2e99e130a3a6497205a0))
+
 ## [1.65.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.1...v1.65.2) (2025-09-08)
 
 
