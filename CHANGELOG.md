@@ -1,3 +1,10 @@
+## [1.65.5](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.4...v1.65.5) (2025-09-08)
+
+
+### Bug Fixes
+
+* Enhances crop editor with aspect ratio controls ([25f4aa6](https://github.com/LuxoriaSoft/Luxoria/commit/25f4aa69bcad34f407f902c1c4385f1e47718128))
+
 ## [1.65.4](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.3...v1.65.4) (2025-09-08)
 
 
