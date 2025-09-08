@@ -47,15 +47,15 @@ print(f"Current architecture: {current_arch} targetting /bin/{short_arch}...")
 LUX_DLL_NAME = "LuxFilter.dll"
 LUX_FINAL_NAME = "LuxFilter.Lux.dll"
 LUX_MOD_FOLDER = "LuxFilter"
-SOURCE_DIR = "./LuxFilter/bin/Debug/net9.0-windows10.0.26100.0/" + current_arch + "/publish"
-DEST_DIR = "../../Luxoria.App/Luxoria.App/bin/" + short_arch + "/Debug/net9.0-windows10.0.26100.0/" + current_arch + "/modules/" + LUX_MOD_FOLDER
-MODULE_SOURCE_DIR = "./LuxFilter/bin/Debug/net9.0-windows10.0.26100.0/" + current_arch + "/LuxFilter"
-MODULE_DEST_DIR = "../../Luxoria.App/Luxoria.App/bin/" + short_arch + "/Debug/net9.0-windows10.0.26100.0/" + current_arch + "/LuxFilter"
+SOURCE_DIR = "./LuxFilter/bin/Release/net9.0-windows10.0.26100.0/" + current_arch + "/publish"
+DEST_DIR = "../../Luxoria.App/Luxoria.App/bin/" + short_arch + "/Release/net9.0-windows10.0.26100.0/" + current_arch + "/modules/" + LUX_MOD_FOLDER
+MODULE_SOURCE_DIR = "./LuxFilter/bin/Release/net9.0-windows10.0.26100.0/" + current_arch + "/LuxFilter"
+MODULE_DEST_DIR = "../../Luxoria.App/Luxoria.App/bin/" + short_arch + "/Release/net9.0-windows10.0.26100.0/" + current_arch + "/LuxFilter"
 
 # Function to build the project
 def build_project():
     print(f"Building the project for {current_arch} targetting /bin/{short_arch}...")
-    os.system(f"dotnet publish -c Debug -r {current_arch}")
+    os.system(f"dotnet publish -c Release -r {current_arch}")
 
 # Function to copy the published files to the destination directory
 def copy_files():

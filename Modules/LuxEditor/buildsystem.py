@@ -1,20 +1,61 @@
 import os
+import sys
 import shutil
+import platform
 
+# Define ARCH x64, x86, ARM, ARM64
+def get_short_architecture():
+    arch = platform.machine().lower()
+    if arch == 'amd64' or arch == 'x86_64':
+        return 'x64'
+    elif arch == 'x86':
+        return 'x86'
+    elif 'arm' in arch:
+        if '64' in arch:
+            return 'ARM64'
+        else:
+            return 'ARM'
+    else:
+        raise ValueError(f"Unsupported architecture: {arch}")
+
+# Define ARCH win-x64, win-x86, win-arm, win-arm64
+def get_architecture():
+    arch = platform.machine().lower()
+    if arch == 'amd64' or arch == 'x86_64':
+        return 'win-x64'
+    elif arch == 'x86':
+        return 'win-x86'
+    elif 'arm' in arch:
+        if '64' in arch:
+            return 'win-arm64'
+        else:
+            return 'win-arm'
+    else:
+        raise ValueError(f"Unsupported architecture: {arch}")
+
+short_arch = get_short_architecture()
+current_arch = get_architecture()
+
+## Check overriden architecture
+if len(sys.argv) > 1:
+    short_arch = sys.argv[1]
+    current_arch = sys.argv[2]
+
+print(f"Current architecture: {current_arch} targetting /bin/{short_arch}...")
 
 # Constants
 LUX_DLL_NAME = "LuxEditor.dll"
 LUX_FINAL_NAME = "LuxEditor.Lux.dll"
 LUX_MOD_FOLDER = "LuxEditor"
-SOURCE_DIR = "./LuxEditor/bin/Debug/net9.0-windows10.0.26100.0/publish"
-DEST_DIR = "../../Luxoria.App/Luxoria.App/bin/x64/Debug/net9.0-windows10.0.26100.0/win-x64/modules/" + LUX_MOD_FOLDER
-MODULE_SOURCE_DIR = "./LuxEditor/bin/Debug/net9.0-windows10.0.26100.0/LuxEditor"
-MODULE_DEST_DIR = "../../Luxoria.App/Luxoria.App/bin/x64/Debug/net9.0-windows10.0.26100.0/win-x64/LuxEditor"
+SOURCE_DIR = "./LuxEditor/bin/Release/net9.0-windows10.0.26100.0/" + current_arch + "/publish"
+DEST_DIR = "../../Luxoria.App/Luxoria.App/bin/" + short_arch + "/Release/net9.0-windows10.0.26100.0/" + current_arch + "/modules/" + LUX_MOD_FOLDER
+MODULE_SOURCE_DIR = "./LuxEditor/bin/Release/net9.0-windows10.0.26100.0/" + current_arch + "/LuxEditor"
+MODULE_DEST_DIR = "../../Luxoria.App/Luxoria.App/bin/" + short_arch + "/Release/net9.0-windows10.0.26100.0/" + current_arch + "/LuxEditor"
 
 # Function to build the project
 def build_project():
-    print("Building the project...")
-    os.system("dotnet publish -c Debug")
+    print(f"Building the project for {current_arch} targetting /bin/{short_arch}...")
+    os.system(f"dotnet publish -c Release -r {current_arch}")
 
 # Function to copy the published files to the destination directory
 def copy_files():
