@@ -9,8 +9,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -112,9 +114,35 @@ namespace Luxoria.App
 
             // Finalize module initialization and update the splash screen
             await UpdateSplashScreenAsync(splashScreen, "Initializing modules...");
-            _moduleService.InitializeModules(new ModuleContext());
 
-            await _logger.LogAsync("All modules loaded successfully.", LOG_SECTION, LogLevel.Info);
+            IList<IModule> failed = [];
+
+            var progress = new Progress<(IModule, bool)>(tuple =>
+            {
+                var (module, isSuccess) = tuple;
+
+                if (!isSuccess)
+                {
+                    failed.Add(module);
+                }
+            });
+
+            _moduleService.InitializeModules(new ModuleContext(), progress);
+
+            if (failed.Any())
+            {
+                await UpdateSplashScreenAsync(splashScreen, $"{failed.Count} module(s) failed to intialize");
+                foreach (var module in failed)
+                {
+                    await UpdateSplashScreenAsync(splashScreen, $"Module {module.Name} failed to initialize.");
+                    await Task.Delay(1000);
+                }
+            }
+            else
+            {
+                await UpdateSplashScreenAsync(splashScreen, "All modules initialized successfully.");
+            }
+
             await UpdateSplashScreenAsync(splashScreen, "Launching...");
         }
 

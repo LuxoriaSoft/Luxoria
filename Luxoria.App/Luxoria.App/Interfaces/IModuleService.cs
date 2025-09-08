@@ -1,4 +1,5 @@
 ﻿using Luxoria.Modules.Interfaces;
+using System;
 using System.Collections.Generic;
 
 namespace Luxoria.App.Interfaces
@@ -11,6 +12,6 @@ namespace Luxoria.App.Interfaces
 
         List<IModule> GetModules();
 
-        void InitializeModules(IModuleContext context);
+        void InitializeModules(IModuleContext context, IProgress<(IModule, bool)> progress);
     }
 }

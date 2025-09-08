@@ -42,7 +42,14 @@ namespace Luxoria.App.Services
 
         public List<IModule> GetModules() => _modules;
 
-        public void InitializeModules(IModuleContext context)
+        /// <summary>
+        /// Initializes all registered modules with the provided context.
+        /// Progress is reported via the IProgress interface, indicating the (Module, IsInitializedWithSuccess).
+        /// </summary>
+        /// <param name="context">Context to be passes through the initialisation process</param>
+        /// <param name="progress">Indicating (Module, IsInitializedWithSuccess)</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public void InitializeModules(IModuleContext context, IProgress<(IModule, bool)> progress)
         {
             _logger.Log("Initializing Modules...", "ModuleService", LogLevel.Info);
             if (context == null)
@@ -53,7 +60,18 @@ namespace Luxoria.App.Services
             foreach (IModule module in _modules)
             {
                 _logger.Log($"[+] Initializing Module: {module.Name}...", "ModuleService", LogLevel.Info);
-                module.Initialize(_eventBus, context, _logger);
+
+                try
+                {
+                    module.Initialize(_eventBus, context, _logger);
+                    progress?.Report((module, true));
+                }
+                catch (Exception ex)
+                {
+                    _logger.Log($"[!!]: Error Initializing Module: {module.Name} - Exception: {ex.Message}", "ModuleService", LogLevel.Error);
+                    progress?.Report((module, false));
+                }
+
                 if (module is IModuleUI)
                 {
                     _logger.Log($"[->]: UI Module Detected: {module.Name}...", "ModuleService", LogLevel.Info);
