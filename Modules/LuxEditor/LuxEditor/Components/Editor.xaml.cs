@@ -45,6 +45,7 @@ namespace LuxEditor.Components
         private CropController _crop;
         public event Action<CropController.CropBox>? CropBoxChanged;
         private bool _isCropEditing;
+        private bool _updatingCropInputs;
 
         public bool LockAspectToggleIsOn => LockAspectToggle.IsOn;
 
@@ -113,6 +114,7 @@ namespace LuxEditor.Components
         {
             if (_isCropEditing) return;
             _isCropEditing = true;
+            // Force update to show uncropped image for crop editing
             RequestFilterUpdate();
         }
 
@@ -121,6 +123,7 @@ namespace LuxEditor.Components
         {
             if (!_isCropEditing) return;
             _isCropEditing = false;
+            // When exiting crop mode, update the image with the applied crop
             RequestFilterUpdate();
         }
 
@@ -128,65 +131,214 @@ namespace LuxEditor.Components
         {
             LockAspectToggle.Toggled += (_, __) =>
             {
+                if (_updatingCropInputs) return;
+                
                 _crop.LockAspectRatio = LockAspectToggle.IsOn;
-                CropChanged();
+                // Notify external components
+                CropBoxChanged?.Invoke(_crop.Box);
             };
 
             AspectPresetCombo.SelectionChanged += (_, __) =>
             {
-                switch (AspectPresetCombo.SelectedIndex)
+                // Temporarily disable box changed events to prevent infinite loops
+                _crop.BoxChanged -= OnCropBoxChanged;
+                try
                 {
-                    case 0: _crop.Reset(); break;
-                    case 1: _crop.ApplyPresetRatio(4f / 3f); break;
-                    case 2: _crop.ApplyPresetRatio(16f / 9f); break;
-                    case 3: _crop.ApplyPresetRatio(16f / 10f); break;
-                    case 4: _crop.ApplyPresetRatio(1f); break;
-                    case 5: _crop.ApplyPresetRatio(4f / 5f); break;
-                    case 6: EnableCustomInputs(true); return;
+                    switch (AspectPresetCombo.SelectedIndex)
+                    {
+                        case 0: _crop.Reset(); break;
+                        case 1: _crop.ApplyPresetRatio(4f / 3f); break;
+                        case 2: _crop.ApplyPresetRatio(16f / 9f); break;
+                        case 3: _crop.ApplyPresetRatio(16f / 10f); break;
+                        case 4: _crop.ApplyPresetRatio(1f); break;
+                        case 5: _crop.ApplyPresetRatio(4f / 5f); break;
+                        case 6: 
+                            EnableCustomInputs(true); 
+                            _crop.LockAspectRatio = LockAspectToggle.IsOn;
+                            break;
+                    }
+                    
+                    if (AspectPresetCombo.SelectedIndex != 6)
+                    {
+                        EnableCustomInputs(false);
+                        _crop.LockAspectRatio = true;
+                    }
+                    
+                    // Manually update all inputs
+                    _updatingCropInputs = true;
+                    CustomWidthInput.Value = Math.Round(_crop.Box.Width);
+                    CustomHeightInput.Value = Math.Round(_crop.Box.Height);
+                    RotateAngleInput.Value = Math.Round(_crop.Box.Angle, 1);
+                    LockAspectToggle.IsOn = _crop.LockAspectRatio;
+                    _updatingCropInputs = false;
                 }
-                EnableCustomInputs(false);
-                CropChanged();
+                finally
+                {
+                    _crop.BoxChanged += OnCropBoxChanged;
+                }
+                
+                // Notify external components
+                CropBoxChanged?.Invoke(_crop.Box);
             };
 
             CustomWidthInput.ValueChanged += (_, e) =>
-                _crop.SetSize((float)e.NewValue,
-                              _crop.LockAspectRatio ? _crop.Box.Height
-                                                    : (float)CustomHeightInput.Value);
+            {
+                if (_updatingCropInputs) return;
+                
+                // Temporarily disable box changed events to prevent infinite loops
+                _crop.BoxChanged -= OnCropBoxChanged;
+                try
+                {
+                    if (_crop.LockAspectRatio)
+                    {
+                        // When aspect ratio is locked, calculate height from width
+                        var newWidth = (float)e.NewValue;
+                        var newHeight = _crop.Box.Height; // SetSize will recalculate based on ratio
+                        _crop.SetSize(newWidth, newHeight);
+                    }
+                    else
+                    {
+                        // Custom mode: use both values as entered
+                        _crop.SetSize((float)e.NewValue, (float)CustomHeightInput.Value);
+                    }
+                    
+                    // Manually update the other input if needed
+                    _updatingCropInputs = true;
+                    CustomHeightInput.Value = Math.Round(_crop.Box.Height);
+                    _updatingCropInputs = false;
+                }
+                finally
+                {
+                    _crop.BoxChanged += OnCropBoxChanged;
+                }
+                
+                // Notify external components
+                CropBoxChanged?.Invoke(_crop.Box);
+            };
 
             CustomHeightInput.ValueChanged += (_, e) =>
             {
-                if (!_crop.LockAspectRatio)
-                    _crop.SetSize((float)CustomWidthInput.Value, (float)e.NewValue);
+                if (_updatingCropInputs) return;
+                
+                // Temporarily disable box changed events to prevent infinite loops
+                _crop.BoxChanged -= OnCropBoxChanged;
+                try
+                {
+                    if (_crop.LockAspectRatio)
+                    {
+                        // When aspect ratio is locked, calculate width from height
+                        var newHeight = (float)e.NewValue;
+                        if (_crop.Box.Height > 0)
+                        {
+                            var ratio = _crop.Box.Width / _crop.Box.Height;
+                            var newWidth = newHeight * ratio;
+                            _crop.SetSize(newWidth, newHeight);
+                        }
+                    }
+                    else
+                    {
+                        // Custom mode: use both values as entered
+                        _crop.SetSize((float)CustomWidthInput.Value, (float)e.NewValue);
+                    }
+                    
+                    // Manually update the other input if needed
+                    _updatingCropInputs = true;
+                    CustomWidthInput.Value = Math.Round(_crop.Box.Width);
+                    _updatingCropInputs = false;
+                }
+                finally
+                {
+                    _crop.BoxChanged += OnCropBoxChanged;
+                }
+                
+                // Notify external components
+                CropBoxChanged?.Invoke(_crop.Box);
             };
 
             RotateAngleInput.ValueChanged += (_, e) =>
-            { _crop.SetAngle((float)e.NewValue); CropChanged(); };
+            {
+                if (_updatingCropInputs) return;
+                
+                // Temporarily disable box changed events to prevent infinite loops
+                _crop.BoxChanged -= OnCropBoxChanged;
+                try
+                {
+                    _crop.SetAngle((float)e.NewValue);
+                }
+                finally
+                {
+                    _crop.BoxChanged += OnCropBoxChanged;
+                }
+                
+                // Notify external components
+                CropBoxChanged?.Invoke(_crop.Box);
+            };
+
+            ResetCropButton.Click += (_, __) =>
+            {
+                // Temporarily disable box changed events to prevent infinite loops
+                _crop.BoxChanged -= OnCropBoxChanged;
+                try
+                {
+                    _crop.Reset();
+                    AspectPresetCombo.SelectedIndex = 0; // Set back to "Original"
+                    
+                    // Manually update all inputs
+                    _updatingCropInputs = true;
+                    CustomWidthInput.Value = Math.Round(_crop.Box.Width);
+                    CustomHeightInput.Value = Math.Round(_crop.Box.Height);
+                    RotateAngleInput.Value = Math.Round(_crop.Box.Angle, 1);
+                    LockAspectToggle.IsOn = _crop.LockAspectRatio;
+                    _updatingCropInputs = false;
+                }
+                finally
+                {
+                    _crop.BoxChanged += OnCropBoxChanged;
+                }
+                
+                // Notify external components
+                CropBoxChanged?.Invoke(_crop.Box);
+            };
         }
 
-        private void EnableCustomInputs(bool on)
+        private void EnableCustomInputs(bool isCustomMode)
         {
-            CustomWidthInput.IsEnabled = on;
-            CustomHeightInput.IsEnabled = on;
+            // Always enable inputs, but behavior changes based on mode
+            CustomWidthInput.IsEnabled = true;
+            CustomHeightInput.IsEnabled = true;
         }
 
-        private void CropChanged()
-        {
-            RefreshCropInputs();
-            CropBoxChanged?.Invoke(_crop.Box);
-        }
 
         private void RefreshCropInputs()
         {
-            CustomWidthInput.Value = _crop.Box.Width;
-            CustomHeightInput.Value = _crop.Box.Height;
-            RotateAngleInput.Value = _crop.Box.Angle;
-            LockAspectToggle.IsOn = _crop.LockAspectRatio;
+            _updatingCropInputs = true;
+            try
+            {
+                CustomWidthInput.Value = Math.Round(_crop.Box.Width);
+                CustomHeightInput.Value = Math.Round(_crop.Box.Height);
+                RotateAngleInput.Value = Math.Round(_crop.Box.Angle, 1);
+                LockAspectToggle.IsOn = _crop.LockAspectRatio;
+            }
+            finally
+            {
+                _updatingCropInputs = false;
+            }
         }
 
         public void AttachCropController(CropController ctl)
         {
             _crop = ctl;
-            _crop.BoxChanged += RefreshCropInputs;
+            _crop.BoxChanged += OnCropBoxChanged;
+        }
+
+        private void OnCropBoxChanged()
+        {
+            RefreshCropInputs();
+            // Only notify external components if we're not updating inputs internally
+            if (!_updatingCropInputs)
+            {
+                CropBoxChanged?.Invoke(_crop.Box);
+            }
         }
 
 
@@ -859,7 +1011,9 @@ namespace LuxEditor.Components
                     return outBmp;
                 }
 
-                if (CurrentImage.PreviewBitmap != null)
+                // In crop editing mode, skip preview rendering to avoid flickering
+                // and render directly with full quality
+                if (!_isCropEditing && CurrentImage.PreviewBitmap != null)
                 {
                     var prev = await RenderAsync(CurrentImage.PreviewBitmap);
                     CurrentImage.EditedPreviewBitmap = prev;

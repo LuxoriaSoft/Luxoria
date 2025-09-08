@@ -34,6 +34,7 @@ namespace LuxEditor
         private Infos? _infos;
         private Editor? _editor;
         private Guid? _collectionId;
+        private bool _updatingCropControllers;
 
         /// <summary>
         /// Initializes the module and sets up the UI panels and event handlers.
@@ -88,11 +89,20 @@ namespace LuxEditor
 
             _editor.CropBoxChanged += box =>
             {
-                var ctl = _photoViewer.CropController;
-                ctl.SetSize(box.Width, box.Height);
-                ctl.SetAngle(box.Angle);
-                ctl.LockAspectRatio = _editor.LockAspectToggleIsOn;
-                _photoViewer.InvalidateCrop();
+                if (_updatingCropControllers) return;
+                _updatingCropControllers = true;
+                try
+                {
+                    var ctl = _photoViewer.CropController;
+                    ctl.SetSize(box.Width, box.Height);
+                    ctl.SetAngle(box.Angle);
+                    ctl.LockAspectRatio = _editor.LockAspectToggleIsOn;
+                    _photoViewer.InvalidateCrop();
+                }
+                finally
+                {
+                    _updatingCropControllers = false;
+                }
             };
 
             _cExplorer.OnImageSelected += (img) =>
