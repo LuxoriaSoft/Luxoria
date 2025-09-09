@@ -74,14 +74,7 @@ public class LuxStudio : IModule, IModuleUI
         _collectionManagementView.OnCollectionItemSelected += async (item) =>
         {
             await _eventBus.Publish(new WebCollectionSelectedEvent(item.Id));
-            logger.Log($"Collection selected: {item.Name}, notifying chat component", "Mods/LuxStudio", LogLevel.Info);
             _selectedCollection = item;
-            logger.Log($"Constructed Chat URL: {new Uri(new Uri(item.Config?.Url), $"/collections/{item.Id}/chat")}", "Mods/LuxStudio", LogLevel.Info);
-            logger.Log($"AuthManager is null: {item.AuthManager == null}", "Mods/LuxStudio", LogLevel.Info);
-            logger.Log($"Config is null: {item.Config == null}", "Mods/LuxStudio", LogLevel.Info);
-            logger.Log($"Base URL is null: {item.Config?.Url == null}", "Mods/LuxStudio", LogLevel.Info);
-            logger.Log($"Collection ID: {item.Id}", "Mods/LuxStudio", LogLevel.Info);
-            logger.Log($"Is Chat null: {_chat == null}", "Mods/LuxStudio", LogLevel.Info);
             _chat.ChatURLUpdated?.Invoke(new Uri(new Uri(item.Config?.Url), $"/collections/{item.Id}/chat") ?? new Uri(string.Empty), item.AuthManager);
         };
 
