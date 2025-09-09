@@ -176,7 +176,16 @@ export default function CollectionDetail() {
     // Télécharge chaque image en blob et l'ajoute au zip
     await Promise.all(
       collection.photos.map(async (photo) => {
-        const response = await fetch(photo.filePath)
+        const response = await fetch(photo.filePath, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          },
+        })
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch ${photo.filePath}: ${response.status}`)
+        }
+
         const blob = await response.blob()
         const fileName = photo.filePath.split('/').pop() || `photo_${photo.id}.jpg`
         folder.file(fileName, blob)
