@@ -1,3 +1,10 @@
+## [1.65.6](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.5...v1.65.6) (2025-09-09)
+
+
+### Bug Fixes
+
+* Remove debug messages ([85ff917](https://github.com/LuxoriaSoft/Luxoria/commit/85ff9178e462a637de0a87deec2cd37dc8e07e82))
+
 ## [1.65.5](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.4...v1.65.5) (2025-09-08)
 
 
