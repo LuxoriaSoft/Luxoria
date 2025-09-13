@@ -1,8 +1,17 @@
 resources:
-  - namespace.yaml
   - ../../base
+  - namespace.yaml
+  - configmap-luxdb-init.yaml
+  - ingress.yaml
 
 namespace: luxstudio-saturn
 
-patchesStrategicMerge:
-  - patch-ingress.yaml
+patches:
+  - path: patch-deployment-luxstudio.yaml
+  - path: patch-deployment-luxapi.yaml
+
+images:
+  - name: luxoria/luxapi
+    newTag: dev
+  - name: luxoria/luxstudio
+    newTag: dev
