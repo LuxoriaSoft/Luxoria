@@ -134,8 +134,8 @@ jobs:
           name: Plan a release
           command: |
             TAG=$(cat image_tag.txt)
-            circleci run release plan --target-version=$TAG --environment-name=saturn --namespace=saturn
-            circleci run release update --status=running
+            # circleci run release plan --target-version=$TAG --environment-name=saturn --namespace=saturn
+            # circleci run release update --status=running
       - run:
           name: Inject tag for API and Studio images
           command: |
