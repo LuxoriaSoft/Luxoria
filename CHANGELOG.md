@@ -1,3 +1,16 @@
+# [1.66.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.6...v1.66.0) (2025-09-13)
+
+
+### Bug Fixes
+
+* Comment out plan release phase for debugging purpose ([8b3178f](https://github.com/LuxoriaSoft/Luxoria/commit/8b3178f477f8cb0bc64152b555b05346dd75e29b))
+
+
+### Features
+
+* Add deploy to saturn environment inside CircleCI ([634696d](https://github.com/LuxoriaSoft/Luxoria/commit/634696dee3507698355b2b2a23125a9c05043732))
+* Add proper kube config for saturn env ([0b7305e](https://github.com/LuxoriaSoft/Luxoria/commit/0b7305e50a78cf3c5d5607b5575a1037afc9984c))
+
 ## [1.65.6](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.5...v1.65.6) (2025-09-09)
 
 
