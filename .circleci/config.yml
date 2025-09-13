@@ -125,9 +125,35 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
+      - kubernetes/install_kubectl
+      - attach_workspace:
+          at: .
+      - kubernetes/install_kubeconfig:
+          kubeconfig: KUBECONFIG_DATA
       - run:
-          name: Deploy to Saturn
-          command: echo "Deploying Docker images tagged 'latest' to Saturn (Production environment)"
+          name: Plan a release
+          command: |
+            TAG=$(cat image_tag.txt)
+            # circleci run release plan --target-version=$TAG --environment-name=saturn --namespace=saturn
+            # circleci run release update --status=running
+      - run:
+          name: Inject tag for API and Studio images
+          command: |
+            TAG=$(cat image_tag.txt)
+            sed -i "s|newTag:.*|newTag: \"$TAG\"|" LuxStudio/depl/overlays/saturn/kustomization.yaml
+      - run:
+          name: Debug Kustomization
+          command: |
+            echo "Debugging Kustomization"
+            cat LuxStudio/depl/overlays/saturn/kustomization.yaml
+      - kubernetes/create_or_update_resource:
+          resource_file_path: ./LuxStudio/depl/overlays/saturn
+          show_kubectl_command: true
+          kustomize: true
+      - run:
+          name: Update a release
+          command: |
+            circleci run release update --status=SUCCESS
 
 workflows:
   version: 2
