@@ -1,3 +1,18 @@
+# [1.67.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.66.2...v1.67.0) (2025-09-18)
+
+
+### Bug Fixes
+
+* Add develop version if app_version is null or not defined ([d95ddfa](https://github.com/LuxoriaSoft/Luxoria/commit/d95ddfa7f079ed7e8adacfb346e54fc326784a6d))
+* Add pre-step for masking the first char (v) of app_version envvar ([72bc330](https://github.com/LuxoriaSoft/Luxoria/commit/72bc330db68504aa39677feb7573935f2a0ebb7f))
+* Replace Version by $env:Version ([72bf975](https://github.com/LuxoriaSoft/Luxoria/commit/72bf975f1d8cddfa64bf0b6d82ac4e95511bc63d))
+* Specify AppVersion on msbuild command ([d42bdc9](https://github.com/LuxoriaSoft/Luxoria/commit/d42bdc918c39edadf0c7e80473c388d8b53c7fd1))
+
+
+### Features
+
+* Add AppVersion environment variable into Luxoria.App.csproj file ([df19121](https://github.com/LuxoriaSoft/Luxoria/commit/df19121ef9ec493170e76975478e67a41eeb2432))
+
 ## [1.66.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.66.1...v1.66.2) (2025-09-18)
 
 
