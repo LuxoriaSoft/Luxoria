@@ -55,12 +55,19 @@ jobs:
 
       # Create the app by building and publishing the project
       - name: Build Luxoria.App
-        run: msbuild $env:Solution_Name /t:Publish /p:Configuration=$env:Configuration /p:Platform=$env:Platform /p:AppVersion=$env:Version
+        run: |
+          $rawVersion = "${{ inputs.app_version || '999.999.999.999' }}"
+          if ($rawVersion -like 'v*') { $rawVersion = $rawVersion.Substring(1) }
+          msbuild $env:Solution_Name `
+            /t:Publish `
+            /p:Configuration=$env:Configuration `
+            /p:Platform=$env:Platform `
+            /p:AppVersion=$rawVersion
         env:
           Configuration: ${{ matrix.configuration }}
           Platform: ${{ matrix.platform }}
-          Version: ${{ inputs.app_version || '999.999.999.999' }}
         working-directory: ./Luxoria.App
+
       
       # Install Inno Setup
       - name: Install Inno Setup Wizard
