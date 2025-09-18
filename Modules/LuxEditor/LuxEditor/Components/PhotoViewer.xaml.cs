@@ -4,6 +4,7 @@ using LuxEditor.EditorUI.Controls.ToolControls;
 using LuxEditor.Logic;
 using LuxEditor.Models;
 using LuxEditor.Services;
+using LuxEditor.Utils;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -18,8 +19,8 @@ namespace LuxEditor.Components
 {
     public sealed partial class PhotoViewer : Page
     {
-        private readonly SKXamlCanvas _mainCanvas;
-        private readonly SKXamlCanvas _overlayCanvas;
+        private readonly DpiCanvas _mainCanvas;
+        private readonly DpiCanvas _overlayCanvas;
 
         private SKImage? _currentGpu;
         private SKBitmap? _currentCpu;
@@ -42,7 +43,7 @@ namespace LuxEditor.Components
         private CropController _cropController;
         public CropController CropController => _cropController;
 
-        private readonly SKXamlCanvas _cropCanvas;
+        private readonly DpiCanvas _cropCanvas;
         private bool _isCropMode;
         public bool IsCropMode { get => _isCropMode; set
             {
@@ -67,9 +68,11 @@ namespace LuxEditor.Components
         public PhotoViewer()
         {
             InitializeComponent();
+            
+            this.Loaded += OnPhotoViewerLoaded;
 
-            _mainCanvas = new SKXamlCanvas();
-            _overlayCanvas = new SKXamlCanvas();
+            _mainCanvas = new DpiCanvas();
+            _overlayCanvas = new DpiCanvas();
             CanvasHost.Children.Add(_mainCanvas);
             CanvasHost.Children.Add(_overlayCanvas);
 
@@ -96,7 +99,7 @@ namespace LuxEditor.Components
                 _cropCanvas.Invalidate();
             };
 
-            _cropCanvas = new SKXamlCanvas { IsHitTestVisible = false };
+            _cropCanvas = new DpiCanvas { IsHitTestVisible = false };
             CanvasHost.Children.Add(_cropCanvas);
 
             _cropController = new CropController((float)ActualWidth, (float)ActualHeight);
@@ -112,7 +115,7 @@ namespace LuxEditor.Components
             {
                 HandlePointer(e, _cropController.OnPointerMoved);
 
-                var pt = e.GetCurrentPoint(_cropCanvas).Position;
+                var pt = DpiHelper.GetCorrectedPosition(e, _cropCanvas);
                 _cropController.UpdateHover(pt.X, pt.Y);
             };
 
@@ -172,12 +175,13 @@ namespace LuxEditor.Components
         private void HandlePointer(PointerRoutedEventArgs e, Action<double, double> action)
         {
             if (!IsCropMode) return;
-            var pt = e.GetCurrentPoint(_cropCanvas).Position;
+            var pt = DpiHelper.GetCorrectedPosition(e, _cropCanvas);
             action(pt.X, pt.Y);
             InvalidateCrop();
         }
 
         public void InvalidateCrop() => _cropCanvas.Invalidate();
+
 
         public void SetEditableImage(EditableImage image)
         {
@@ -320,8 +324,11 @@ namespace LuxEditor.Components
         public void ResetOverlay()
         {
             RefreshAction();
-            _currentTool?.ResizeCanvas((int)_mainCanvas.Width,
-                                       (int)_mainCanvas.Height);
+            var image = _currentGpu ?? (_currentCpu != null ? SKImage.FromBitmap(_currentCpu) : null);
+            if (image != null)
+            {
+                _currentTool?.ResizeCanvas(image.Width, image.Height);
+            }
         }
 
         private void RefreshAction()
@@ -350,24 +357,71 @@ namespace LuxEditor.Components
         {
             var canvas = e.Surface.Canvas;
             canvas.Clear(SKColors.Transparent);
+            
+            
             if (_currentGpu != null) canvas.DrawImage(_currentGpu, 0, 0);
             else if (_currentCpu != null) canvas.DrawBitmap(_currentCpu, 0, 0);
         }
 
         private void ResizeCanvases(int width, int height)
         {
-            _mainCanvas.Width = width;
-            _mainCanvas.Height = height;
-            _overlayCanvas.Width = width;
-            _overlayCanvas.Height = height;
+            var dpiScale = GetDpiScale();
+            
+            var adjustedWidth = width / dpiScale;
+            var adjustedHeight = height / dpiScale;
+            
+            _mainCanvas.Width = adjustedWidth;
+            _mainCanvas.Height = adjustedHeight;
+            _mainCanvas.HorizontalAlignment = HorizontalAlignment.Center;
+            _mainCanvas.VerticalAlignment = VerticalAlignment.Center;
+            
+            _overlayCanvas.Width = adjustedWidth;
+            _overlayCanvas.Height = adjustedHeight;
+            _overlayCanvas.HorizontalAlignment = HorizontalAlignment.Center;
+            _overlayCanvas.VerticalAlignment = VerticalAlignment.Center;
+            _overlayCanvas.Margin = _mainCanvas.Margin;
 
-            _cropCanvas.Width = width;
-            _cropCanvas.Height = height;
+            _cropCanvas.Width = adjustedWidth;
+            _cropCanvas.Height = adjustedHeight;
+            _cropCanvas.HorizontalAlignment = HorizontalAlignment.Center;
+            _cropCanvas.VerticalAlignment = VerticalAlignment.Center;
+            _cropCanvas.Margin = _mainCanvas.Margin;
 
             _mainCanvas.Invalidate();
+            _overlayCanvas.Invalidate();
+            _cropCanvas.Invalidate();
+            
+            _mainCanvas.UpdateLayout();
+            _overlayCanvas.UpdateLayout();
+            _cropCanvas.UpdateLayout();
+            
             RefreshAction();
 
             _currentTool?.ResizeCanvas(width, height);
+        }
+
+        private void OnPhotoViewerLoaded(object sender, RoutedEventArgs e)
+        {
+            if (_currentGpu != null)
+            {
+                ResizeCanvases(_currentGpu.Width, _currentGpu.Height);
+            }
+            else if (_currentCpu != null)
+            {
+                ResizeCanvases(_currentCpu.Width, _currentCpu.Height);
+            }
+        }
+
+        private double GetDpiScale()
+        {
+            try
+            {
+                return this.XamlRoot?.RasterizationScale ?? 1.0;
+            }
+            catch
+            {
+                return 1.0;
+            }
         }
 
 
@@ -454,6 +508,12 @@ namespace LuxEditor.Components
 
             var canvas = e.Surface.Canvas;
             canvas.Clear(SKColors.Transparent);
+            
+            var dpiScale = GetDpiScale();
+            if (Math.Abs(dpiScale - 1.0) > 0.001)
+            {
+                canvas.Scale((float)dpiScale);
+            }
 
             if (_currentImage == null || _currentImage.LayerManager.SelectedLayer == null || (_currentImage.LayerManager.SelectedLayer.HasActiveFilters() && !_isOperationSelected) )
                 return;
@@ -481,7 +541,7 @@ namespace LuxEditor.Components
             _isDragging = e.GetCurrentPoint(ScrollViewerImage).Properties.IsMiddleButtonPressed;
             if (_isDragging)
             {
-                _lastPoint = e.GetCurrentPoint(ScrollViewerImage).Position;
+                _lastPoint = DpiHelper.GetCorrectedPosition(e, ScrollViewerImage);
                 (sender as UIElement)?.CapturePointer(e.Pointer);
             }
         }
@@ -489,7 +549,7 @@ namespace LuxEditor.Components
         private void ScrollViewerImage_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             if (!_isDragging) return;
-            var current = e.GetCurrentPoint(ScrollViewerImage).Position;
+            var current = DpiHelper.GetCorrectedPosition(e, ScrollViewerImage);
             ScrollViewerImage.ChangeView(
                 ScrollViewerImage.HorizontalOffset - (current.X - _lastPoint.X),
                 ScrollViewerImage.VerticalOffset - (current.Y - _lastPoint.Y),
