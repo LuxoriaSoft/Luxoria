@@ -261,9 +261,7 @@ namespace Luxoria.App
         private void OnRequestStorageAPIHandle(RequestStorageAPIEvent e)
         {
             Debug.WriteLine("On Request Storage API Handle !");
-            IStorageAPI storageAPI = (Application.Current as App)?.GetHost().Services.GetRequiredService<IVaultService>().GetVault(e.VaultName);
-            Debug.WriteLine($"Request Storage API HANDLE {storageAPI.ToString()} ");
-            e.OnHandleReceived?.Invoke(storageAPI);
+            e.OnHandleReceived?.Invoke((Luxoria.Modules.Interfaces.IStorageAPI)(Application.Current as App)?.GetHost().Services.GetRequiredService<IVaultService>().GetVault(e.VaultName));
         }
     }
 }
