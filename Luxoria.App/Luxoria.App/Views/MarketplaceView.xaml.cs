@@ -343,7 +343,8 @@ namespace Luxoria.App.Views
         private static void TryDeleteFile(string path)
         {
             try { if (File.Exists(path)) File.Delete(path); }
-            catch {
+            catch
+            {
             }
         }
     }

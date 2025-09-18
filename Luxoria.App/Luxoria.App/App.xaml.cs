@@ -1,5 +1,6 @@
 ﻿using Luxoria.App.Interfaces;
 using Luxoria.App.Logics;
+using Luxoria.Core.Interfaces;
 using Luxoria.Modules;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
@@ -48,7 +49,7 @@ namespace Luxoria.App
 
             // Enable reflection for System.Text.Json
             AppContext.SetSwitch("System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault", true);
-            
+
             _moduleService = _host.Services.GetRequiredService<IModuleService>();
             _logger = _host.Services.GetRequiredService<ILoggerService>();
 
