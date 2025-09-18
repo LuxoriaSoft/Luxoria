@@ -88,10 +88,10 @@ namespace LuxImport.Tests
         /// Tests whether <see cref="ImportService.LoadAssets"/> returns assets when initialized properly.
         /// </summary>
         [Fact]
-        public void LoadAssets_ShouldReturnAssets()
+        public async Task LoadAssets_ShouldReturnAssets()
         {
             _importService.InitializeDatabase();
-            var assets = _importService.LoadAssets();
+            var assets = await _importService.LoadAssetsAsync();
             Assert.NotNull(assets);
         }
 

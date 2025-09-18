@@ -25,30 +25,30 @@ namespace LuxImport.Tests
         /// Tests that LoadFromPath throws an ArgumentException when given an empty path.
         /// </summary>
         [Fact]
-        public void LoadFromPath_ShouldThrowArgumentException_ForEmptyPath()
+        public async Task LoadFromPath_ShouldThrowArgumentException_ForEmptyPath()
         {
-            Assert.Throws<ArgumentException>(() => ImageDataHelper.LoadFromPath(""));
+            await Assert.ThrowsAsync<ArgumentException>(async () => await ImageDataHelper.LoadFromPathAsync(""));
         }
 
         /// <summary>
         /// Tests that LoadFromPath throws a FileNotFoundException when given a nonexistent file path.
         /// </summary>
         [Fact]
-        public void LoadFromPath_ShouldThrowFileNotFoundException_ForInvalidPath()
+        public async Task LoadFromPath_ShouldThrowFileNotFoundException_ForInvalidPath()
         {
             string invalidPath = Path.Combine(Path.GetTempPath(), "non_existent_image.png");
-            Assert.Throws<FileNotFoundException>(() => ImageDataHelper.LoadFromPath(invalidPath));
+            await Assert.ThrowsAsync<FileNotFoundException>(async () => await ImageDataHelper.LoadFromPathAsync(invalidPath));
         }
 
         /// <summary>
         /// Tests that LoadFromPath throws a NotSupportedException when given an unsupported file format.
         /// </summary>
         [Fact]
-        public void LoadFromPath_ShouldThrowNotSupportedException_ForUnsupportedFormat()
+        public async Task LoadFromPath_ShouldThrowNotSupportedException_ForUnsupportedFormat()
         {
             string unsupportedFile = Path.Combine(Path.GetTempPath(), "unsupported.txt");
             File.WriteAllText(unsupportedFile, "This is not an image.");
-            Assert.Throws<NotSupportedException>(() => ImageDataHelper.LoadFromPath(unsupportedFile));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await ImageDataHelper.LoadFromPathAsync(unsupportedFile));
             File.Delete(unsupportedFile);
         }
 
@@ -56,11 +56,11 @@ namespace LuxImport.Tests
         /// Tests that LoadFromPath throws an InvalidOperationException when given an empty file.
         /// </summary>
         [Fact]
-        public void LoadFromPath_ShouldThrowInvalidOperationException_ForEmptyFile()
+        public async Task LoadFromPath_ShouldThrowInvalidOperationException_ForEmptyFile()
         {
             string emptyFile = Path.Combine(Path.GetTempPath(), "empty.png");
             File.WriteAllBytes(emptyFile, new byte[0]);
-            Assert.Throws<InvalidOperationException>(() => ImageDataHelper.LoadFromPath(emptyFile));
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await ImageDataHelper.LoadFromPathAsync(emptyFile));
             File.Delete(emptyFile);
         }
 
@@ -68,9 +68,9 @@ namespace LuxImport.Tests
         /// Tests that LoadFromPath successfully returns valid image data for a properly formatted image file.
         /// </summary>
         [Fact]
-        public void LoadFromPath_ShouldReturnValidImageData_ForValidImage()
+        public async Task LoadFromPath_ShouldReturnValidImageData_ForValidImage()
         {
-            var imageData = ImageDataHelper.LoadFromPath(_testImagePath);
+            var imageData = await ImageDataHelper.LoadFromPathAsync(_testImagePath);
             Assert.NotNull(imageData);
             Assert.IsType<ImageData>(imageData);
             Assert.NotNull(imageData.Bitmap);

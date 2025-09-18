@@ -14,16 +14,15 @@ public static class ImageDataHelper
     /// </summary>
     /// <param name="path">The path to the image file</param>
     /// <returns>An ImageData object containing the loaded image and its metadata</returns>
-    public static ImageData LoadFromPath(string path)
+    public static async Task<ImageData> LoadFromPathAsync(string path)
     {
-        // Validate path
         if (string.IsNullOrWhiteSpace(path))
             throw new ArgumentException("Path cannot be null or empty.", nameof(path));
 
         if (!File.Exists(path))
             throw new FileNotFoundException("The specified file does not exist.", path);
 
-        // Extract file extension and validate it
+        // Extract file extension
         string extension = Path.GetExtension(path);
         FileExtension ext = FileExtensionHelper.ConvertToEnum(extension);
         if (ext == FileExtension.UNKNOWN)
@@ -33,10 +32,17 @@ public static class ImageDataHelper
         {
             Debug.WriteLine($"Attempting to load image from path: {path}");
 
-            // Read the file bytes
-            byte[] fileBytes = File.ReadAllBytes(path);
-            Debug.WriteLine($"Loaded {fileBytes.Length} bytes from {path}");
+            // Read file
+            byte[] fileBytes;
+            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true))
+            {
+                fileBytes = new byte[fs.Length];
+                int bytesRead = await fs.ReadAsync(fileBytes, 0, fileBytes.Length);
+                if (bytesRead != fs.Length)
+                    throw new IOException($"Failed to read entire file: {path}");
+            }
 
+            Debug.WriteLine($"Loaded {fileBytes.Length} bytes from {path}");
             if (fileBytes.Length == 0)
                 throw new InvalidOperationException($"The file at '{path}' is empty.");
 
@@ -44,19 +50,18 @@ public static class ImageDataHelper
             var metadata = ImageMetadataReader.ReadMetadata(path);
             var exifData = ExtractExif(metadata);
 
-            // Load the image using SkiaSharp
-            using var stream = new MemoryStream(fileBytes);
-            using var codec = SKCodec.Create(stream);
-            SKBitmap bitmap = SKBitmap.Decode(codec);
+            SKBitmap bitmap = await Task.Run(() =>
+            {
+                using var stream = new MemoryStream(fileBytes);
+                using var codec = SKCodec.Create(stream);
+                SKBitmap bmp = SKBitmap.Decode(codec);
+                if (bmp == null)
+                    throw new InvalidOperationException($"Failed to decode image at '{path}'.");
 
-            if (bitmap == null)
-                throw new InvalidOperationException($"Failed to load image at '{path}'.");
+                // Apply EXIF orientation
+                return ApplyExifOrientation(bmp, GetExifOrientation(metadata));
+            });
 
-            // Get orientation from EXIF metadata
-            // Apply EXIF orientation correction
-            bitmap = ApplyExifOrientation(bitmap, GetExifOrientation(metadata));
-
-            // Create ImageData object containing both image and EXIF metadata
             return new ImageData(bitmap, ext, exifData);
         }
         catch (Exception ex)
@@ -66,6 +71,7 @@ public static class ImageDataHelper
             throw new InvalidOperationException($"An error occurred while loading the image at '{path}': {ex.Message}", ex);
         }
     }
+
 
     /// <summary>
     /// Extracts relevant EXIF metadata from the image.
