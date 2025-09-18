@@ -1,3 +1,10 @@
+## [1.66.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.66.1...v1.66.2) (2025-09-18)
+
+
+### Bug Fixes
+
+* Missing IStorageAPI interface in Luxoria.Modules namespace ([32e029c](https://github.com/LuxoriaSoft/Luxoria/commit/32e029c47a35a2ba868183804ba82606fb2d33f9))
+
 ## [1.66.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.66.0...v1.66.1) (2025-09-18)
 
 
