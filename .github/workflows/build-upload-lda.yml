@@ -59,7 +59,7 @@ jobs:
         env:
           Configuration: ${{ matrix.configuration }}
           Platform: ${{ matrix.platform }}
-          Version: ${{ inputs.app_version }}
+          Version: ${{ inputs.app_version || '999.999.999.999' }}
         working-directory: ./Luxoria.App
       
       # Install Inno Setup
