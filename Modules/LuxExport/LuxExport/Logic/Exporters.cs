@@ -27,8 +27,7 @@ namespace LuxExport.Logic
             {
                 throw new ArgumentNullException(nameof(path), "Path cannot be null for JpegExporter.");
             }
-            using var stream = new FileStream(path, FileMode.Create);
-            image.Encode(SKEncodedImageFormat.Jpeg, settings.Quality).SaveTo(stream);
+            FileSizeOptimizer.ExportWithSizeLimit(image, path, ExportFormat.JPEG, settings);
         }
     }
 
@@ -46,10 +45,7 @@ namespace LuxExport.Logic
             {
                 throw new ArgumentNullException(nameof(path), "Path cannot be null for PngExporter.");
             }
-            using (var stream = new FileStream(path, FileMode.Create))
-            {
-                image.Encode(SKEncodedImageFormat.Png, settings.Quality).SaveTo(stream);
-            }
+            FileSizeOptimizer.ExportWithSizeLimit(image, path, ExportFormat.PNG, settings);
         }
     }
 
@@ -68,10 +64,7 @@ namespace LuxExport.Logic
             {
                 throw new ArgumentNullException(nameof(path), "Path cannot be null for WebpExporter.");
             }
-            using (var stream = new FileStream(path, FileMode.Create))
-            {
-                image.Encode(SKEncodedImageFormat.Webp, settings.Quality).SaveTo(stream);
-            }
+            FileSizeOptimizer.ExportWithSizeLimit(image, path, ExportFormat.WEBP, settings);
         }
     }
 
@@ -94,7 +87,7 @@ namespace LuxExport.Logic
         public async Task Export(SKBitmap image, LuxAsset asset, string? path, ExportFormat format, ExportSettings settings, IEventBus eventBus)
         {
             string outputPath = Path.Combine(Path.GetTempPath(), $"tbe{asset.Id.ToString()}.{format.ToString().ToLower()}");
-            using (var data = image.Encode(GetMimeType(format), settings.Quality))
+            using (var data = FileSizeOptimizer.ExportToMemoryWithSizeLimit(image, format, settings))
             {
                 if (data == null)
                     throw new InvalidOperationException($"Failed to encode bitmap as {format.ToString().ToLower()}");

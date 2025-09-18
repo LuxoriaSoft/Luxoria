@@ -1,3 +1,4 @@
+using Luxoria.SDK.Interfaces;
 using LuxStudio.COM.Auth;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -32,7 +33,7 @@ namespace LuxStudio.Components
         private AuthManager? _authManager;
         private Uri? _lastUrl;
 
-        public Chat()
+        public Chat(ILoggerService logger)
         {
             this.InitializeComponent();
 
@@ -55,7 +56,7 @@ namespace LuxStudio.Components
             {
                 _authManager = authManager;
                 string accessToken = await _authManager.GetAccessTokenAsync();
-                Debug.WriteLine($"Chat URL updated: {url}, Token: {accessToken}");
+                logger.Log($"Chat URL updated: {url}, Token: {accessToken}", "LuxStudio");
                 _lastUrl = url;
 
                 WebView2 chatWebView = new WebView2

@@ -7,6 +7,8 @@ on:
 jobs:
   exec-desktop-build:
     uses: ./.github/workflows/build-upload-lda.yml
+    with:
+      app_version: ${{ github.event.release.tag_name }}
   
   exec-modules-build:
     uses: ./.github/workflows/build-upload-standard-modules.yml
@@ -18,6 +20,28 @@ jobs:
       contents: write
 
     steps:
+      - name: Download only installer artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: LuxoriaSetup.*.exe
+          path: ./artifacts_exe
+          merge-multiple: true
+      
+      - name: List downloaded artifacts
+        run: ls ./artifacts_exe
+    
+      - name: Upload installer file to Github Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          name: ${{ github.event.release.tag_name }}
+          files: |
+            ./artifacts_exe/LuxoriaSetup.x64.exe
+            ./artifacts_exe/LuxoriaSetup.arm64.exe
+            ./artifacts_exe/LuxoriaSetup.x86.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -25,7 +49,7 @@ jobs:
       
       - name: List downloaded artifacts
         run: ls ./artifacts
-      
+
       - name: Create ZIP files for each artifact
         run: |
           for dir in ./artifacts/*; do
@@ -40,6 +64,5 @@ jobs:
           tag_name: ${{ github.event.release.tag_name }}
           name: ${{ github.event.release.tag_name }}
           files: ./artifacts/*.zip
-
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

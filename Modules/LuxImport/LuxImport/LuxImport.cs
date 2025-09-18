@@ -95,10 +95,10 @@ public class LuxImport : IModule, IModuleUI
             // Initialize the import service with the collection name and path
             _logger?.Log("Initializing ImportService...", "Mods/LuxImport", LogLevel.Info);
             _importService = new ImportService(@event.CollectionName, @event.CollectionPath);
-            _importService.ProgressMessageSent += (messageTuple) =>
+            var importProgress = new Progress<(string message, int progress)>(x =>
             {
-                SendProgressMessage(@event, messageTuple.message, messageTuple.progress);
-            };
+                SendProgressMessage(@event, x.message, x.progress);
+            });
 
             stepStopwatch.Stop();
             _logger?.Log($"ImportService initialized in {stepStopwatch.ElapsedMilliseconds} ms", "Mods/LuxImport", LogLevel.Debug);
@@ -125,8 +125,7 @@ public class LuxImport : IModule, IModuleUI
 
             // Update indexing files
             SendProgressMessage(@event, "Updating indexing files...", 25);
-            _importService.BaseProgressPercent = 25;
-            await _importService.IndexCollectionAsync();
+            await _importService.IndexCollectionAsync(importProgress);
 
             stepStopwatch.Stop();
             _logger?.Log($"Indexing completed in {stepStopwatch.ElapsedMilliseconds} ms", "Mods/LuxImport", LogLevel.Debug);
@@ -137,7 +136,7 @@ public class LuxImport : IModule, IModuleUI
 
             // Load assets into memory
             _logger?.Log("Loading assets into memory...", "Mods/LuxImport", LogLevel.Info);
-            var assets = _importService.LoadAssets();
+            var assets = await _importService.LoadAssetsAsync(importProgress);
 
             stepStopwatch.Stop();
             _logger?.Log($"Loaded {assets.Count} assets into memory in {stepStopwatch.ElapsedMilliseconds} ms", "Mods/LuxImport", LogLevel.Debug);

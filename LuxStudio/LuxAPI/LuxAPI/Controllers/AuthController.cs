@@ -15,7 +15,7 @@ namespace LuxAPI.Controllers
     /// Provides JWT token-based authentication.
     /// </summary>
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly ILogger<AuthController> _logger;
@@ -76,17 +76,80 @@ namespace LuxAPI.Controllers
             {
                 Username = registration.Username,
                 Email = registration.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(registration.Password), // Hash password securely
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(registration.Password),
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                Role = registration.Role
             };
 
             _context.Users.Add(user);
             _context.SaveChanges();
 
-            _logger.LogInformation("User registered successfully: {Username}", registration.Username);
+            _logger.LogInformation("User registered successfully: {Username} ({Role})", registration.Username, registration.Role);
             return Ok("User registered successfully.");
         }
+
+
+        [HttpPost("forgot-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto request, [FromServices] EmailService emailService)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            if (user == null)
+            {
+                // Ne pas révéler que l'email n'existe pas pour des raisons de sécurité
+                return Ok(new { message = "If an account with that email exists, a reset link has been sent." });
+            }
+
+            var resetToken = TokenService.GenerateRefreshToken();
+
+            var passwordResetToken = new PasswordResetToken
+            {
+                UserId = user.Id,
+                Token = resetToken,
+                ExpiresAt = DateTime.UtcNow.AddHours(1)
+            };
+            _context.Add(passwordResetToken);
+            await _context.SaveChangesAsync();
+
+            var resetLink = $"{_configuration["URI:FrontEnd"]}/reset-password?token={Uri.EscapeDataString(resetToken)}";
+
+            await emailService.SendResetPasswordEmailAsync(user.Email, resetLink);
+
+            return Ok(new { message = "If an account with that email exists, a reset link has been sent." });
+        }
+
+        [HttpPost("reset-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            try
+            {
+                var resetEntry = await _context.Set<PasswordResetToken>()
+                    .FirstOrDefaultAsync(t => t.Token == dto.Token && t.ExpiresAt > DateTime.UtcNow);
+
+                if (resetEntry == null)
+                    return BadRequest("Invalid or expired token.");
+
+                var user = await _context.Users.FindAsync(resetEntry.UserId);
+                if (user == null)
+                    return NotFound("User not found.");
+
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+                await _context.SaveChangesAsync();
+
+                _context.Remove(resetEntry);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Password has been reset successfully." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error resetting password");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
 
         /// <summary>
         /// Uploads a user's avatar image to MinIO and stores the filename in the database.
@@ -171,6 +234,7 @@ namespace LuxAPI.Controllers
         /// <param name="login">User login data (username, password).</param>
         /// <returns>JWT token if authentication is successful, otherwise an error.</returns>
         [HttpPost("login")]
+        [AllowAnonymous]
         public IActionResult Login([FromBody] UserLoginModelDto login)
         {
             if (!ModelState.IsValid)
@@ -179,11 +243,20 @@ namespace LuxAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user = _context.Users.FirstOrDefault(u => u.Username == login.Username);
+            var user = _context.Users.FirstOrDefault(u =>
+                u.Username == login.Username || u.Email == login.Username);
+
             if (user == null)
             {
                 _logger.LogWarning("User not found: {Username}", login.Username);
                 return Unauthorized("Invalid username or password.");
+            }
+
+            // ✅ Vérifie si le compte est bloqué AVANT de vérifier le mot de passe
+            if (user.IsBlocked)
+            {
+                _logger.LogWarning("Blocked user tried to log in: {Username}", login.Username);
+                return StatusCode(403, "Your account has been blocked. Please contact an administrator.");
             }
 
             var isPasswordValid = BCrypt.Net.BCrypt.Verify(login.Password, user.PasswordHash);
@@ -193,11 +266,11 @@ namespace LuxAPI.Controllers
                 return Unauthorized("Invalid username or password.");
             }
 
-            // Generate a JWT token for the authenticated user
-            var token = _jwtService.GenerateJwtToken(user.Id, user.Username, user.Email);
+            // ✅ Générer le token si tout est bon
+            var token = _jwtService.GenerateJwtToken(user.Id, user.Username, user.Email, user.Role);
 
             _logger.LogInformation("User logged in successfully: {Username}", login.Username);
-            return Ok(new { token }); // Return the JWT token
+            return Ok(new { token });
         }
 
         [HttpPost("request-verification")]
@@ -220,10 +293,10 @@ namespace LuxAPI.Controllers
                 Email = data.Email,
                 Username = data.Username,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(data.Password),
+                Role = data.Role,
                 Code = code,
                 ExpiresAt = expiresAt
             };
-
             _context.PendingRegistrations.Add(pending);
             await _context.SaveChangesAsync();
 
@@ -261,7 +334,9 @@ namespace LuxAPI.Controllers
                 Email = entry.Email,
                 PasswordHash = entry.PasswordHash,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                //Role = entry.Role
+                Role = string.Equals(entry.Email, "luxoria.adm@gmail.com", StringComparison.OrdinalIgnoreCase) ? UserRole.Admin : entry.Role
             };
 
             _context.Users.Add(user);
@@ -294,25 +369,36 @@ namespace LuxAPI.Controllers
         /// Returns information about the currently authenticated user.
         /// This route requires a valid JWT token.
         /// </summary>
-        /// <returns>User ID and username of the authenticated user.</returns>
+        /// <returns>User info if authenticated.</returns>
         [HttpGet("whoami")]
         [Authorize] // Requires a valid JWT token
         public IActionResult WhoAmI()
         {
-            // http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("User not authenticated.");
-            
+
             var user = _context.Users.FirstOrDefault(u => u.Id == Guid.Parse(userId));
-            
+
             if (user == null)
                 return Unauthorized("User not found.");
-            
-            // Mask sensitive information
+
+            if (user.IsBlocked)
+            {
+                _logger.LogWarning("Blocked user tried to access WhoAmI: {Username}", user.Username);
+                return Unauthorized("Your account has been blocked. Please contact an administrator.");
+            }
+
             user.PasswordHash = string.Empty;
-            
-            return Ok(user);
+
+            return Ok(new
+            {
+                user.Id,
+                user.Username,
+                user.Email,
+                user.Role,
+                user.AvatarFileName
+            });
         }
 
         /// <summary>

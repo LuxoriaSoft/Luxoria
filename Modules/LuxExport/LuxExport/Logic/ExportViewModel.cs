@@ -5,9 +5,11 @@ using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 using CommunityToolkit.WinUI;
 using LuxExport.Logic;
+using LuxExport.Models;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -27,6 +29,7 @@ public class ExportViewModel : INotifyPropertyChanged
             if (_selectedExportTarget != value)
             {
                 _selectedExportTarget = value;
+                OnPropertyChanged(nameof(SelectedExportTarget));
                 OnPropertyChanged(nameof(IsWebExport));
             }
         }
@@ -40,7 +43,7 @@ public class ExportViewModel : INotifyPropertyChanged
     private int _quality = 100;
     private string _selectedColorSpace = "sRGB";
     private bool _limitFileSize = false;
-    private int _maxFileSizeKB = 0;
+    private int _maxFileSizeKB = 1000; // Default to 1MB
     public string SelectedFormatText => SelectedFormat.ToString(); // Exposes the format name as a string
 
     // File Naming
@@ -53,6 +56,7 @@ public class ExportViewModel : INotifyPropertyChanged
 
     // Presets
     public ObservableCollection<FileNamingPreset> Presets { get; } = new();
+    public ObservableCollection<ExportPreset> ExportPresets { get; } = new();
 
     // Path
     private string _selectedExportLocation = "Desktop";
@@ -463,15 +467,106 @@ public class ExportViewModel : INotifyPropertyChanged
     /// <summary>
     /// Loads file naming presets from a JSON file.
     /// </summary>
-    public void LoadPresets(string path)
+    public void LoadPresets(string content)
     {
-        if (!File.Exists(path)) return;
+        var options = new JsonSerializerOptions
+        {
+            // Explicitly opt in to reflection-based serialization
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+        };
 
-        string json = File.ReadAllText(path);
-        var list = JsonSerializer.Deserialize<List<FileNamingPreset>>(json);
+        var list = JsonSerializer.Deserialize<List<FileNamingPreset>>(content, options) ?? new List<FileNamingPreset>();
         Presets.Clear();
         foreach (var preset in list)
             Presets.Add(preset);
+    }
+
+    /// <summary>
+    /// Loads export presets from a list.
+    /// </summary>
+    public void LoadExportPresets(List<ExportPreset> presets)
+    {
+        ExportPresets.Clear();
+        foreach (var preset in presets)
+            ExportPresets.Add(preset);
+    }
+
+    /// <summary>
+    /// Applies an export preset to the current settings.
+    /// </summary>
+    public void ApplyExportPreset(ExportPreset preset)
+    {
+        // Format & Export Settings
+        SelectedFormat = preset.Format;
+        Quality = preset.Quality;
+        SelectedColorSpace = preset.ColorSpace;
+        LimitFileSize = preset.LimitFileSize;
+        MaxFileSizeKB = preset.MaxFileSizeKB;
+
+        // File Naming Settings
+        RenameFile = preset.RenameFile;
+        FileNamingMode = preset.FileNamingMode;
+        CustomFileFormat = preset.CustomFileFormat;
+        ExtensionCase = preset.ExtensionCase;
+
+        // Export Location Settings
+        if (preset.ExportLocation?.ToLowerInvariant() == "web")
+        {
+            SelectedExportTarget = "Web";
+        }
+        else
+        {
+            SelectedExportTarget = "HardDrive";
+            SelectedExportLocation = preset.ExportLocation ?? "Desktop";
+        }
+        SelectedFileConflictResolution = preset.FileConflictResolution;
+        CreateSubfolder = preset.CreateSubfolder;
+        SubfolderName = preset.SubfolderName;
+        
+        // Update export path after changing location settings
+        UpdateExportPath();
+
+        // Watermark Settings
+        WatermarkEnabled = preset.WatermarkEnabled;
+        Watermark.Type = preset.WatermarkType;
+        WatermarkText = preset.WatermarkText;
+        // Note: Logo and other watermark properties would need to be handled separately
+    }
+
+    /// <summary>
+    /// Creates an export preset from the current settings.
+    /// </summary>
+    public ExportPreset CreatePresetFromCurrentSettings(string name, string? description = null)
+    {
+        return new ExportPreset
+        {
+            Name = name,
+            Description = description,
+            
+            // Format & Export Settings
+            Format = SelectedFormat,
+            Quality = Quality,
+            ColorSpace = SelectedColorSpace,
+            LimitFileSize = LimitFileSize,
+            MaxFileSizeKB = MaxFileSizeKB,
+            
+            // File Naming Settings
+            RenameFile = RenameFile,
+            FileNamingMode = FileNamingMode,
+            CustomFileFormat = CustomFileFormat,
+            ExtensionCase = ExtensionCase,
+            
+            // Export Location Settings
+            ExportLocation = IsWebExport ? "Web" : SelectedExportLocation,
+            FileConflictResolution = SelectedFileConflictResolution,
+            CreateSubfolder = CreateSubfolder,
+            SubfolderName = SubfolderName,
+            
+            // Watermark Settings
+            WatermarkEnabled = WatermarkEnabled,
+            WatermarkType = Watermark.Type,
+            WatermarkText = WatermarkText
+        };
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

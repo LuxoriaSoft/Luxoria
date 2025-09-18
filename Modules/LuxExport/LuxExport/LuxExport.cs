@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using LuxExport.Logic;
 using Luxoria.GModules;
 using Luxoria.GModules.Interfaces;
 using Luxoria.Modules;
@@ -17,6 +11,15 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using SkiaSharp;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -55,6 +58,9 @@ namespace LuxExport
 
         private Export? _export;
 
+        private IStorageAPI? _storageAPI;
+        private static string VAULT_NAME = "LuxExport";
+
         /// <summary>
         /// Initializes the LuxExport module.
         /// </summary>
@@ -74,7 +80,19 @@ namespace LuxExport
 
             Dictionary<SmartButtonType, Object> mainPage = new Dictionary<SmartButtonType, Object>();
 
-            _export = new Export(_eventBus, _logger);
+            _storageAPI = Task.Run(async () =>
+            {
+                var tcs = new TaskCompletionSource<IStorageAPI>();
+
+                await eventBus.Publish(new RequestStorageAPIEvent(VAULT_NAME, handle => tcs.SetResult(handle)));
+
+                return await tcs.Task;
+            }).GetAwaiter().GetResult();
+
+            if (!_storageAPI.Contains("fileNamingPresets"))
+                _storageAPI.Save("fileNamingPresets", File.ReadAllText(ExtractEmbeddedResource("LuxExport.Assets.Presets.FileNamingPresets.json")));
+
+            _export = new Export(_eventBus, _logger, _storageAPI);
             mainPage.Add(SmartButtonType.Window, _export);
 
             var smrtBtn = new SmartButton("Export", "Export module", mainPage);
@@ -85,13 +103,13 @@ namespace LuxExport
 
             smartButtons.Add(smrtBtn);
 
-            Items.Add(new LuxMenuBarItem("LuxExport", false, new Guid(), smartButtons));
+            Items.Add(new LuxMenuBarItem("Export", false, new Guid(), smartButtons));
 
             _eventBus.Subscribe<ExportRequestEvent>((e) =>
             {
                 e.Assets = e.Assets.Where(x => x.IsVisibleAfterFilter).ToList();
                 OnCollectionUpdated(e.Assets);
-                Export specificExport = new Export(_eventBus, _logger);
+                Export specificExport = new Export(_eventBus, _logger, _storageAPI);
 
                 specificExport?.SetAssets(e.Assets);
 
@@ -152,6 +170,25 @@ namespace LuxExport
             //Debug.WriteLine(lst);
 
             _export?.SetAssets(assets);
+        }
+
+        /// <summary>
+        /// Extracts an embedded resource and writes it to a temporary file.
+        /// </summary>
+        /// <param name="resourceName">The resource name</param>
+        /// <returns>Path to the extracted file</returns>
+        private string ExtractEmbeddedResource(string resourceName)
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            using Stream? stream = assembly.GetManifestResourceStream(resourceName);
+            if (stream == null)
+                throw new FileNotFoundException($"Embedded resource {resourceName} not found");
+
+            string tempFile = Path.Combine(Path.GetTempPath(), Path.GetFileName(resourceName));
+            using FileStream fileStream = new FileStream(tempFile, FileMode.Create, FileAccess.Write);
+            stream.CopyTo(fileStream);
+
+            return tempFile;
         }
     }
 }

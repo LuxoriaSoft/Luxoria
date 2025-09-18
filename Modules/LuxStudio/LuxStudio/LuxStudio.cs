@@ -69,6 +69,8 @@ public class LuxStudio : IModule, IModuleUI
             _authManager = authManager;
         };
 
+        _chat = new Chat(logger);
+
         _collectionManagementView.OnCollectionItemSelected += async (item) =>
         {
             await _eventBus.Publish(new WebCollectionSelectedEvent(item.Id));
@@ -78,11 +80,10 @@ public class LuxStudio : IModule, IModuleUI
 
         _collectionManagementView.NoCollectionSelected += () =>
         {
+            logger.Log("No collection selected, notifying chat component", "Mods/LuxStudio", LogLevel.Info);
             _chat.NoCollectionSelected?.Invoke();
             _selectedCollection = null;
         };
-
-        _chat = new Chat();
 
         Dictionary<SmartButtonType, Object> accountMgt = new()
         {
@@ -100,7 +101,7 @@ public class LuxStudio : IModule, IModuleUI
         smartButtons.Add(new SmartButton("Account", "Account Management", accountMgt));
         smartButtons.Add(new SmartButton("Collections", "View Collections", collectionMngt));
         smartButtons.Add(new SmartButton("Chat", "Open Chat", chat));
-        Items.Add(new LuxMenuBarItem("LuxStudio", false, new Guid(), smartButtons));
+        Items.Add(new LuxMenuBarItem("Studio", false, new Guid(), smartButtons));
     }
 
     private void AccManagementView_OnAuthenticated(LuxStudioConfig arg1, AuthManager arg2)

@@ -1,0 +1,56 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: luxstudio-ingress
+  namespace: luxstudio-saturn
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/router.tls.certresolver: cloudflare
+spec:
+  rules:
+    - host: bucket.saturn.luxoria.bluepelicansoft.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: minio
+                port:
+                  number: 9000
+    - host: console.bucket.saturn.luxoria.bluepelicansoft.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: minio
+                port:
+                  number: 9001
+    - host: studio.saturn.luxoria.bluepelicansoft.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: luxstudio-service
+                port:
+                  number: 3000
+    - host: api.studio.saturn.luxoria.bluepelicansoft.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: luxapi-service
+                port:
+                  number: 8080
+  tls:
+    - hosts:
+        - bucket.saturn.luxoria.bluepelicansoft.com
+        - console.bucket.saturn.luxoria.bluepelicansoft.com
+        - studio.saturn.luxoria.bluepelicansoft.com
+        - api.studio.saturn.luxoria.bluepelicansoft.com

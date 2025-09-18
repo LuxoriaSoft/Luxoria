@@ -37,19 +37,24 @@ namespace LuxExport
 
         private readonly IEventBus _eventBus;
 
+        private readonly IStorageAPI _storageAPI;
+
         /// <summary>
         /// Constructs the export progress window with the given bitmaps and view model.
         /// </summary>
-        /// <param name="bitmaps"> Bitmaps with Metadata </param>
+        /// <param name="assets"> Assets with Metadata </param>
         /// <param name="viewModel"></param>
-        public ExportProgressWindow(ICollection<LuxAsset> assets, ExportViewModel viewModel, ILoggerService logger, IEventBus eventBus)
+        /// <param name="logger"></param>
+        /// <param name="eventBus"></param>
+        /// <param name="storageAPI"></param>
+        public ExportProgressWindow(ICollection<LuxAsset> assets, ExportViewModel viewModel, ILoggerService logger, IEventBus eventBus, IStorageAPI storageAPI)
         {
             InitializeComponent();
             _logger = logger;
             _assets = assets;
             _viewModel = viewModel;
-
             _eventBus = eventBus;
+            _storageAPI = storageAPI;
 
             this.AppWindow.Resize(new SizeInt32(400, 300));
 
@@ -95,7 +100,7 @@ namespace LuxExport
         private async Task DoExportLoopAsync()
         {
             int total = _assets.Count;
-            var wmService = new WatermarkService(new VaultService(_logger));
+            var wmService = new WatermarkService(_storageAPI);
             var wm = wmService.Load();
             var i = 0;
 
@@ -213,10 +218,6 @@ namespace LuxExport
 
                 case "LinearSRGB":
                     return SKColorSpace.CreateSrgbLinear();
-
-                case "AdobeRGB":
-                    byte[] adobeIcc = File.ReadAllBytes(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\..\\..\\..\\..\\..\\assets\\ColorProfile\\AdobeRGB1998.icc");
-                    return SKColorSpace.CreateIcc(adobeIcc);
 
                 default:
                     return SKColorSpace.CreateSrgb();

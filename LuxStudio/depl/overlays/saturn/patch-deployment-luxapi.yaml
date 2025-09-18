@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: luxapi-deployment
+spec:
+  template:
+    spec:
+      containers:
+        - name: luxapi-container
+          image: luxoria/luxapi
+          imagePullPolicy: Always
+          env:
+          - name: URI__FrontEnd
+            value: https://studio.saturn.luxoria.bluepelicansoft.com
+          - name: URI__Backend
+            value: https://api.studio.saturn.luxoria.bluepelicansoft.com
+          - name: SMTP__Host
+            value: smtp.gmail.com
+          - name: SMTP__Port
+            value: "587"
+          - name: SMTP__User
+            valueFrom:
+              secretKeyRef:
+                name: luxapi-secrets
+                key: smtp-user 
+          - name: SMTP__Password
+            valueFrom:
+              secretKeyRef:
+                name: luxapi-secrets
+                key: smtp-password    
+          - name: Minio__Endpoint
+            value: minio:9000
+          - name: Minio__AccessKey
+            valueFrom:
+              secretKeyRef:
+                name: minio-secret
+                key: MINIO_ROOT_USER
+          - name: Minio__SecretKey
+            valueFrom:
+              secretKeyRef:
+                name: minio-secret
+                key: MINIO_ROOT_PASSWORD

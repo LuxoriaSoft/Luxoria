@@ -76,6 +76,7 @@ namespace LuxEditor.EditorUI.Controls
         {
             _lockedRatio = ratio;
             SetSize(_box.Width, _box.Width / ratio);
+            BoxChanged?.Invoke();
         }
 
         /// <summary>Sets the absolute angle of the crop box.</summary>
@@ -97,6 +98,7 @@ namespace LuxEditor.EditorUI.Controls
             _box.X = cx - w * 0.5f;
             _box.Y = cy - h * 0.5f;
             Clamp();
+            BoxChanged?.Invoke();
         }
 
         /// <summary>Starts an interaction when the pointer is pressed.</summary>
@@ -152,6 +154,7 @@ namespace LuxEditor.EditorUI.Controls
             }
 
             Clamp();
+            BoxChanged?.Invoke();
         }
 
         /// <summary>Ends the current interaction.</summary>

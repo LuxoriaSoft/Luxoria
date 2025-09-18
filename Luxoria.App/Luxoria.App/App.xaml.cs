@@ -1,13 +1,16 @@
 ﻿using Luxoria.App.Interfaces;
 using Luxoria.App.Logics;
+using Luxoria.Core.Interfaces;
 using Luxoria.Modules;
 using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -43,8 +46,14 @@ namespace Luxoria.App
             this.InitializeComponent();
             _startup = new Startup();
             _host = CreateHostBuilder(_startup).Build();
+
+            // Enable reflection for System.Text.Json
+            AppContext.SetSwitch("System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault", true);
+
             _moduleService = _host.Services.GetRequiredService<IModuleService>();
             _logger = _host.Services.GetRequiredService<ILoggerService>();
+
+            _host.Services.GetRequiredService<IEventBus>().Subscribe<RequestStorageAPIEvent>(OnRequestStorageAPIHandle);
         }
 
         public static IHostBuilder CreateHostBuilder(Startup startup)
@@ -243,6 +252,18 @@ namespace Luxoria.App
         private void LogError(string message)
         {
             _logger.Log(message, LOG_SECTION, LogLevel.Error);
+        }
+
+        /// <summary>
+        /// Handle the request for the storage api and return it via the event.
+        /// </summary>
+        /// <param name="e"></param>
+        private void OnRequestStorageAPIHandle(RequestStorageAPIEvent e)
+        {
+            Debug.WriteLine("On Request Storage API Handle !");
+            IStorageAPI storageAPI = (Application.Current as App)?.GetHost().Services.GetRequiredService<IVaultService>().GetVault(e.VaultName);
+            Debug.WriteLine($"Request Storage API HANDLE {storageAPI.ToString()} ");
+            e.OnHandleReceived?.Invoke(storageAPI);
         }
     }
 }

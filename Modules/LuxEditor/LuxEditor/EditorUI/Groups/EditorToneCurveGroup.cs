@@ -63,5 +63,27 @@ namespace LuxEditor.EditorUI.Groups
                 curve.RefreshCurve(settings);
             }
         }
+
+        public void ResetToDefaults()
+        {
+            if (_curves == null)
+                return;
+                
+            foreach (var curve in _curves)
+            {
+                if (curve is ParametricCurve parametricCurve)
+                {
+                    parametricCurve.ResetAllSliders();
+                }
+                else if (curve is PointCurve pointCurve)
+                {
+                    pointCurve.ResetPoints();
+                }
+                else if (curve is ColorChannelCurve colorCurve)
+                {
+                    colorCurve.ResetPoints();
+                }
+            }
+        }
     }
 }

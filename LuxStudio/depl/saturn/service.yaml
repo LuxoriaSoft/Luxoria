@@ -1,18 +1,3 @@
-# LuxStudio Service
-apiVersion: v1
-kind: Service
-metadata:
-  name: luxstudio-service
-  namespace: saturn
-spec:
-  selector:
-    app: luxstudio-app
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 80
-
----
 # MinIO Service
 apiVersion: v1
 kind: Service
@@ -29,3 +14,19 @@ spec:
     - name: console
       port: 9001
       targetPort: 9001
+
+---
+
+# LuxStudio App Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: luxstudio-service
+  namespace: saturn
+spec:
+  selector:
+    app: luxstudio-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

@@ -21,12 +21,6 @@ namespace LuxImport.Services
         private readonly ILuxConfigRepository _luxCfgRepository;
         private readonly IFileHasherService _fileHasherService;
 
-        // Event declaration for sending progress messages
-        public event Action<(string message, int? progress)> ProgressMessageSent;
-
-        // Base progress percent for the import service
-        public int BaseProgressPercent { get; set; }
-
         /// <summary>
         /// Initializes a new instance of the ImportService.
         /// </summary>
@@ -35,8 +29,6 @@ namespace LuxImport.Services
             _collectionName = collectionName;
             _collectionPath = collectionPath;
 
-            // Initialize the event with a default handler
-            ProgressMessageSent += (message) => { }; // This prevents null reference issues
 
             _manifestRepository = new ManifestRepository(_collectionName, _collectionPath);
             _fileHasherService = new Sha256Service();
@@ -112,7 +104,7 @@ namespace LuxImport.Services
         /// <summary>
         /// Processes to the indexing of the collection.
         /// </summary>
-        public async Task IndexCollectionAsync()
+        public async Task IndexCollectionAsync(IProgress<(string, int)>? progress = null)
         {
             // Ensure the collection is initialized
             if (!IsInitialized())
@@ -121,11 +113,11 @@ namespace LuxImport.Services
             }
 
             // Notify progress: Retrieving the manifest
-            ProgressMessageSent?.Invoke(("Retrieving manifest file...", BaseProgressPercent + 5));
+            progress?.Report(("Retrieving manifest file...", 0));
             Manifest manifest = _manifestRepository.ReadManifest();
 
             // Notify progress: Updating indexing files
-            ProgressMessageSent?.Invoke(("Updating indexing files...", BaseProgressPercent + 10));
+            progress?.Report(("Updating indexing files...", 0));
 
             // Image extensions allowed in the collection, if extension is not in this list, it will be ignored
             var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp", ".arw", ".raw" };
@@ -142,7 +134,7 @@ namespace LuxImport.Services
             // Handle empty collections early
             if (totalFiles == 0)
             {
-                ProgressMessageSent?.Invoke(("No files found to index.", 100));
+                progress?.Report(("No files found to index.", 100));
                 return;
             }
 
@@ -165,8 +157,8 @@ namespace LuxImport.Services
                 }
 
                 // Update progress
-                int progressPercent = BaseProgressPercent + 10 + (int)Math.Min(MaxProgressPercent, progressIncrement * (fcount + 1));
-                ProgressMessageSent?.Invoke(($"Processing file: {filename}... ({fcount + 1}/{totalFiles})", progressPercent));
+                int progressPercent = (int)Math.Min(MaxProgressPercent, progressIncrement * (fcount + 1));
+                progress?.Report(($"Processing file: {filename}... ({fcount + 1}/{totalFiles})", progressPercent));
 
                 // Compute hash and handle assets
                 string hash256 = _fileHasherService.ComputeFileHash(file);
@@ -176,7 +168,7 @@ namespace LuxImport.Services
             // Finalize indexing process
             await FinalizeIndexingAsync(manifest, files);
 
-            ProgressMessageSent?.Invoke(("Manifest file saved.", BaseProgressPercent + 10 + MaxProgressPercent + 10));
+            progress?.Report(("Manifest file saved.", 100));
         }
 
         /// <summary>
@@ -236,10 +228,12 @@ namespace LuxImport.Services
         {
             var luxCfgTobeModified = _luxCfgRepository.Load(assetId);
 
+            if (luxCfgTobeModified == null) throw new Exception($"Cannot load {assetId}, whether it does not exist or it might be corrupted.");
+
             luxCfgTobeModified.StudioUrl = url;
             luxCfgTobeModified.LastUploadId = lastUploadedId;
             luxCfgTobeModified.CollectionId = collectionid;
-            
+
             _luxCfgRepository.Save(luxCfgTobeModified);
         }
 
@@ -248,9 +242,6 @@ namespace LuxImport.Services
         /// </summary>
         private async Task FinalizeIndexingAsync(Manifest manifest, string[] files)
         {
-            // Notify progress: Cleaning up unused assets
-            ProgressMessageSent?.Invoke(($"Cleaning up... (base: {manifest.Assets.Count} assets)", BaseProgressPercent + 67));
-
             // Convert ICollection to List for filtering
             var assetsList = manifest.Assets.ToList();
 
@@ -265,69 +256,70 @@ namespace LuxImport.Services
                 manifest.Assets.Add(asset);
             }
 
-            ProgressMessageSent?.Invoke(($"Cleanup complete. (final: {manifest.Assets.Count} assets)", BaseProgressPercent + 72));
-            await Task.Delay(200);
-
             // Save the updated manifest
             _manifestRepository.SaveManifest(manifest);
         }
 
         /// <summary>
-        /// Loads the collection into memory.
+        /// Load the collection into memory.
         /// </summary>
-        public ICollection<LuxAsset> LoadAssets()
+        /// <returns>Collection of assets</returns>
+        public async Task<ICollection<LuxAsset>> LoadAssetsAsync(IProgress<(string, int)>? progress = null)
         {
-            // Retrieve the manifest file
+            progress?.Report(("Loading assets into memory...", 0));
+            // Retrieve the manifest
             Manifest manifest = _manifestRepository.ReadManifest();
 
-            // Use a thread-safe collection to store results
             ConcurrentBag<LuxAsset> concurrentAssets = new ConcurrentBag<LuxAsset>();
+            List<Task> tasks = new List<Task>();
 
-            // Run indexication process in parallel
-            Parallel.ForEach(manifest.Assets, asset =>
+            foreach (var asset in manifest.Assets)
             {
-                // Load the LuxCfg model
-                LuxCfg? luxCfg = _luxCfgRepository.Load(asset.LuxCfgId);
+                tasks.Add(ProcessAssetAsync(asset, concurrentAssets, progress));
+            }
 
-                // If LuxCfg model is null, throw an exception
-                if (luxCfg == null)
-                {
-                    throw new InvalidOperationException($"LuxCfg model with ID {asset.LuxCfgId} not found.");
-                }
+            // Wait all tasks
+            await Task.WhenAll(tasks);
+            return [.. concurrentAssets];
+        }
 
-                // Load the image data
-                ImageData imageData;
+        /// <summary>
+        /// Process a single asset asynchronously.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        private async Task ProcessAssetAsync(LuxCfg.AssetInterface asset, ConcurrentBag<LuxAsset> concurrentAssets, IProgress<(string, int)>? progress = null)
+        {
+            // Load LuxCfg model
+            LuxCfg? luxCfg = _luxCfgRepository.Load(asset.LuxCfgId);
+            if (luxCfg == null)
+                throw new InvalidOperationException($"LuxCfg model with ID {asset.LuxCfgId} not found.");
 
-                // Ensure the relative path does not start with a directory separator
-                string sanitizedRelativePath = asset.RelativeFilePath.TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            // Sanitize path
+            string sanitizedRelativePath = asset.RelativeFilePath.TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            string filePath = Path.Combine(_collectionPath, sanitizedRelativePath);
 
-                // Construct the full file path
-                string filePath = Path.Combine(_collectionPath, sanitizedRelativePath);
+            ImageData imageData;
+            try
+            {
+                // Load image data
+                imageData = await ImageDataHelper.LoadFromPathAsync(filePath);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to load image '{asset.FileName}' from path '{filePath}': {ex.Message}", ex);
+            }
 
-                try
-                {
-                    // Load the image data using the helper
-                    imageData = ImageDataHelper.LoadFromPath(filePath);
-                }
-                catch (Exception ex)
-                {
-                    // Handle errors and include meaningful context in the exception message
-                    throw new InvalidOperationException($"Failed to load image '{asset.FileName}' from path '{filePath}': {ex.Message}", ex);
-                }
+            // Create LuxAsset
+            LuxAsset newAsset = new LuxAsset
+            {
+                MetaData = luxCfg,
+                Data = imageData
+            };
 
-                // Create a new LuxAsset object
-                LuxAsset newAsset = new LuxAsset
-                {
-                    MetaData = luxCfg,
-                    Data = imageData
-                };
+            progress?.Report(($"Loaded asset: {asset.FileName}", 50));
 
-                // Add the new asset to the list
-                concurrentAssets.Add(newAsset);
-            });
-
-            // Return the list of assets
-            return concurrentAssets.ToList();
+            concurrentAssets.Add(newAsset);
         }
 
         /// <summary>

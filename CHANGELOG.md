@@ -1,3 +1,240 @@
+## [1.66.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.66.0...v1.66.1) (2025-09-18)
+
+
+### Bug Fixes
+
+* Concurrency when import service initialises and loads assets into collection ([1b9ff0c](https://github.com/LuxoriaSoft/Luxoria/commit/1b9ff0c006ab86114a406927345fd9f6dedc736c))
+
+# [1.66.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.6...v1.66.0) (2025-09-13)
+
+
+### Bug Fixes
+
+* Comment out plan release phase for debugging purpose ([8b3178f](https://github.com/LuxoriaSoft/Luxoria/commit/8b3178f477f8cb0bc64152b555b05346dd75e29b))
+
+
+### Features
+
+* Add deploy to saturn environment inside CircleCI ([634696d](https://github.com/LuxoriaSoft/Luxoria/commit/634696dee3507698355b2b2a23125a9c05043732))
+* Add proper kube config for saturn env ([0b7305e](https://github.com/LuxoriaSoft/Luxoria/commit/0b7305e50a78cf3c5d5607b5575a1037afc9984c))
+
+## [1.65.6](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.5...v1.65.6) (2025-09-09)
+
+
+### Bug Fixes
+
+* Remove debug messages ([85ff917](https://github.com/LuxoriaSoft/Luxoria/commit/85ff9178e462a637de0a87deec2cd37dc8e07e82))
+
+## [1.65.5](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.4...v1.65.5) (2025-09-08)
+
+
+### Bug Fixes
+
+* Enhances crop editor with aspect ratio controls ([25f4aa6](https://github.com/LuxoriaSoft/Luxoria/commit/25f4aa69bcad34f407f902c1c4385f1e47718128))
+
+## [1.65.4](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.3...v1.65.4) (2025-09-08)
+
+
+### Bug Fixes
+
+* Add debug message for chat debugging purpose ([1eb67ce](https://github.com/LuxoriaSoft/Luxoria/commit/1eb67ce82b55a5f97add7c2fa52ac969d80d0878))
+
+## [1.65.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.2...v1.65.3) (2025-09-08)
+
+
+### Bug Fixes
+
+* Enable Reflection inside Luxoria.App (fixes bugs on x86 & ARM64) ([7b491f4](https://github.com/LuxoriaSoft/Luxoria/commit/7b491f4f8c4d2a3218ff2e99e130a3a6497205a0))
+
+## [1.65.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.1...v1.65.2) (2025-09-08)
+
+
+### Bug Fixes
+
+* Sliders not sliding smoothly in Layers ([6f78f41](https://github.com/LuxoriaSoft/Luxoria/commit/6f78f41e133174cb2b4a3d6082b938dba3e1213d))
+
+## [1.65.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.0...v1.65.1) (2025-09-04)
+
+
+### Bug Fixes
+
+* Specify TypeInfoResolver (fixing crashes on x86) ([a4d8c95](https://github.com/LuxoriaSoft/Luxoria/commit/a4d8c95720559baab6eb5235fe964a108ff5ae2f))
+
+# [1.65.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.64.2...v1.65.0) (2025-09-04)
+
+
+### Bug Fixes
+
+* LuxImport's brochure, excluding HTML rendering not supporting by CommunityToolkKit MD renderer ([bbd1b1a](https://github.com/LuxoriaSoft/Luxoria/commit/bbd1b1a459fcdf619362f39296c4c50833ac0454))
+* Move README.md for both LuxEditor and LuxExport to proper folders ([cfd57c3](https://github.com/LuxoriaSoft/Luxoria/commit/cfd57c3d9fa0516af041b3036e767c67bac40292))
+* Using permalink for displaying PNG inside MD file ([e2ccdb5](https://github.com/LuxoriaSoft/Luxoria/commit/e2ccdb52960d7c71a7c7ba531544176e80810b70))
+
+
+### Features
+
+* Add graphical view of LuxFilter UI ([f44d91f](https://github.com/LuxoriaSoft/Luxoria/commit/f44d91f6e1b4123c2182f8b11ab1587cac11f602))
+* Enhance brochure of LuxEditor by adding pictures, etc ([a2ff75f](https://github.com/LuxoriaSoft/Luxoria/commit/a2ff75fdb3aed6a784b2d662bba4eb316d124ffd))
+* Enhance marketplace installing process with info modal ([a8c2eb3](https://github.com/LuxoriaSoft/Luxoria/commit/a8c2eb3e766db1b8fcd4429152ee32b36990e60e))
+
+## [1.64.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.64.1...v1.64.2) (2025-09-04)
+
+
+### Bug Fixes
+
+* Upload to marketplace python script by specifying branch_src in upload_dirs param list ([3b39127](https://github.com/LuxoriaSoft/Luxoria/commit/3b39127632c2f94c12b265efc518581219514f74))
+
+## [1.64.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.64.0...v1.64.1) (2025-09-04)
+
+
+### Bug Fixes
+
+* LuxImport brochure's main picture with Github permalink to avoid issue if deleted ([f1f18fd](https://github.com/LuxoriaSoft/Luxoria/commit/f1f18fd3d326ee71846f276fc034ac57e498cbad))
+* LuxMarketplace takes a src_branch_name instead of "main" ([7fd4110](https://github.com/LuxoriaSoft/Luxoria/commit/7fd4110af73ea82102e51019ca288c48e9dd01d4))
+
+# [1.64.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.6...v1.64.0) (2025-09-03)
+
+
+### Features
+
+* Implements file size optimization for export ([7417a36](https://github.com/LuxoriaSoft/Luxoria/commit/7417a36ddf53869a0fb17bf26bcad20f002e17df))
+* Presets for web export ([e423c75](https://github.com/LuxoriaSoft/Luxoria/commit/e423c75aa26cb21735041d923e1dd66fc20a7bd8))
+
+## [1.63.6](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.5...v1.63.6) (2025-09-03)
+
+
+### Bug Fixes
+
+* Enable Flatten when downloads artifacts ([41f5875](https://github.com/LuxoriaSoft/Luxoria/commit/41f58751559c9d1782ee49b5026f802016e45de7))
+
+## [1.63.5](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.4...v1.63.5) (2025-09-03)
+
+
+### Bug Fixes
+
+* Necessary env. variable known as GITHUB_TOKEN for retreiving and attaching artifacts ([5cfd81f](https://github.com/LuxoriaSoft/Luxoria/commit/5cfd81fd7b61cc781402545daae293acdd5b1065))
+
+## [1.63.4](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.3...v1.63.4) (2025-09-03)
+
+
+### Bug Fixes
+
+* Specify artifact list instead of *.exe ([a0ab98e](https://github.com/LuxoriaSoft/Luxoria/commit/a0ab98ea1024caa623df21caff7501381d281b9c))
+
+## [1.63.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.2...v1.63.3) (2025-09-03)
+
+
+### Bug Fixes
+
+* Include all LuxoriaSetup before zipping the remaining file ([629b7f5](https://github.com/LuxoriaSoft/Luxoria/commit/629b7f5bec50f85465c73a91d8ec4fae0ed0c856))
+
+## [1.63.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.1...v1.63.2) (2025-09-03)
+
+
+### Bug Fixes
+
+* Upload exe before zipping the remaining part ([f15a70e](https://github.com/LuxoriaSoft/Luxoria/commit/f15a70ef89b3f5d9b5c088ccc0e2254066bbce0e))
+
+## [1.63.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.63.0...v1.63.1) (2025-09-03)
+
+
+### Bug Fixes
+
+* Upload exe as artifacts unzipped (version) ([0d57297](https://github.com/LuxoriaSoft/Luxoria/commit/0d57297b8cd765d96ef8272f9b2e6d1e469ae484))
+
+# [1.63.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.62.0...v1.63.0) (2025-09-03)
+
+
+### Features
+
+* Fix names of modules in navigation bar ([688ee23](https://github.com/LuxoriaSoft/Luxoria/commit/688ee23069395b95e074c1b16d03699cdd02e4ce))
+
+# [1.62.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.61.0...v1.62.0) (2025-09-02)
+
+
+### Bug Fixes
+
+* Add app_version input to workflows for versioning ([1835286](https://github.com/LuxoriaSoft/Luxoria/commit/1835286721a5d1ce2a4cbdba71ded124997f774d))
+* Change default version (1.0.0) by specifying 'dev' instead ([5804c74](https://github.com/LuxoriaSoft/Luxoria/commit/5804c7400bd70a287e547f7468467a42b56ef9fd))
+* Change platform environment var by using matrix.platform ([2fdc532](https://github.com/LuxoriaSoft/Luxoria/commit/2fdc532eb2cd7bed197db4f5ead1d86c738e1d22))
+* ISCC command only uses a single arg ([4b8111d](https://github.com/LuxoriaSoft/Luxoria/commit/4b8111d793eaef48ac60505b618e8d3ed7b912f3))
+* LicensePath inside LuxInstall.iss file ([e6f2648](https://github.com/LuxoriaSoft/Luxoria/commit/e6f26482f79a48d3e41f521be07fd8bc909739c9))
+* Remove default version on all installer config files ([635d599](https://github.com/LuxoriaSoft/Luxoria/commit/635d599bfaa902186fe3352cdbbe75eb8a65ae0c))
+* Source path (LuxInstall.iss) on x64, x86 and arm64 ([5ebbb80](https://github.com/LuxoriaSoft/Luxoria/commit/5ebbb8060cfbf38b196ea58bc81985f8dd839772))
+
+
+### Features
+
+* Append installer executable as an artifact ([63b348f](https://github.com/LuxoriaSoft/Luxoria/commit/63b348f80eaeef339b207a8904692913d5cb13d9))
+* Run Inno Wizard on build-upload-lda workflow ([243568f](https://github.com/LuxoriaSoft/Luxoria/commit/243568fd83015405fa1db24b5efdcf4634620971))
+
+# [1.61.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.60.0...v1.61.0) (2025-09-02)
+
+
+### Bug Fixes
+
+* Image duplicates in collection explorer ([60d13bb](https://github.com/LuxoriaSoft/Luxoria/commit/60d13bb343b033256d9a646e4a8fc6e8edf8d00b))
+
+
+### Features
+
+* Add curves to reset default button ([acb7465](https://github.com/LuxoriaSoft/Luxoria/commit/acb746556220e5f337b7d505622d57b2ea14a257))
+
+# [1.60.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.59.2...v1.60.0) (2025-09-02)
+
+
+### Bug Fixes
+
+* Add debug configuration of debug/testing environement ([15fb87d](https://github.com/LuxoriaSoft/Luxoria/commit/15fb87d8afd4c56a8298881a85512bd8cd68a7fe))
+* Add FrontEnd URI inside allowed Origin ([9f4e690](https://github.com/LuxoriaSoft/Luxoria/commit/9f4e69036b909993fe1d7134079703d0df6aa33f))
+* Adjust mention dropdown width and improve chat input layout ([6c925e9](https://github.com/LuxoriaSoft/Luxoria/commit/6c925e97033fee7c928c8c68ab5e3cfa5c80a66e))
+* Allow access to /config/api route even if the user is not logged in ([4f0d97e](https://github.com/LuxoriaSoft/Luxoria/commit/4f0d97e2b7cb9ee8381ac1d4fae752a90fddde3a))
+* Comment out dev front urls ([314b12d](https://github.com/LuxoriaSoft/Luxoria/commit/314b12db051a7f77c5c61c013a91aabdaf05c0fd))
+* Delete default value as BaseURL in internal helper api.ts ([0401edb](https://github.com/LuxoriaSoft/Luxoria/commit/0401edbd00691bd2590b3e73691ab9ac8e0eb0f5))
+* Disable send button during message sending to prevent duplicate submissions ([39b838d](https://github.com/LuxoriaSoft/Luxoria/commit/39b838d51eb841be7bb7824b5cd84b62b8a12a61))
+* Entrypoint url after 2FA at registration point ([4ea66fa](https://github.com/LuxoriaSoft/Luxoria/commit/4ea66fa852eae21b42cd51ab5c253f31aa5f9c2e))
+* Fix hydration error in login ([6bd3878](https://github.com/LuxoriaSoft/Luxoria/commit/6bd3878461a05e23c5f3f5dd86acf77006ccdf92))
+* Fix photo update logic in CollectionController ([9bdc830](https://github.com/LuxoriaSoft/Luxoria/commit/9bdc8307e524a0a74ccbe5371b6753875e3c38b1))
+* Ingress for Pluto env ([3f64f10](https://github.com/LuxoriaSoft/Luxoria/commit/3f64f106d8d93e7b142db6de6eedacdcb2037c1a))
+* Integrate ".webp" to accepted file formats ([c78e0a3](https://github.com/LuxoriaSoft/Luxoria/commit/c78e0a333d748a1b0ed5096727df64a86ecac7c2))
+* LuxStudio's website internal port from 3000 to 3000 ([fb7f6c0](https://github.com/LuxoriaSoft/Luxoria/commit/fb7f6c0985efba80df64fadc561c3dbdfc6a5915))
+* Remove unused utility function in register ([6d88522](https://github.com/LuxoriaSoft/Luxoria/commit/6d885224e2d4781357bb162322fb3d0feb2b28b8))
+* Request POST for request verify account ([acfc7a0](https://github.com/LuxoriaSoft/Luxoria/commit/acfc7a0dce7dec095940eecff793458f956cf012))
+* Update auto-scroll behavior in chat component to improve user experience ([0fc2a91](https://github.com/LuxoriaSoft/Luxoria/commit/0fc2a91f312f3b3af582684c52e99c0b7c8ca1af))
+* Update button colors and hover effects for improved UI consistency ([e12e2d5](https://github.com/LuxoriaSoft/Luxoria/commit/e12e2d577c86d67d967bcf60364da37845ada730))
+* Update Google Forms links for Sentry and Feedback access requests ([5b30c88](https://github.com/LuxoriaSoft/Luxoria/commit/5b30c8889ab5ecf11ad3e72720e7b8ca674c7a0c))
+* update role select input styling for better visibility ([ef3faa7](https://github.com/LuxoriaSoft/Luxoria/commit/ef3faa7a9fb32e8b5b16d657961f69dc60065f00))
+
+
+### Features
+
+* add '/forgot-password' to public paths in middleware for improved access ([84d5186](https://github.com/LuxoriaSoft/Luxoria/commit/84d518674f3050c64079478d38d3a51834bdbf2a))
+* Add authorization checks for collection and photo access in CollectionController ([296d479](https://github.com/LuxoriaSoft/Luxoria/commit/296d479fa68c6dcddc432321b7474b8113e44076))
+* add base of LuxStudio V2 ([0bbaf5e](https://github.com/LuxoriaSoft/Luxoria/commit/0bbaf5e2de331c11d39a3ce7419ea3391bf784f7))
+* add chat functionality for photo comments and implement file download feature ([3109839](https://github.com/LuxoriaSoft/Luxoria/commit/31098390033893c30e9e38970e40d1020bd46efc))
+* Add endpoint to retrieve photo status by ID ([e2d27ea](https://github.com/LuxoriaSoft/Luxoria/commit/e2d27ea12f5ac950b1a3491424d066730b79daf3))
+* Add GET API route to return SignalR URL ([3e4353d](https://github.com/LuxoriaSoft/Luxoria/commit/3e4353dc3ac5d36c923c7f9896725682e99546ed))
+* add mention notification feature with email alerts in chat functionality ([da47051](https://github.com/LuxoriaSoft/Luxoria/commit/da470512f114dc979507cf53c3789dc6f321592c))
+* Add migrations from LuxStudio v1 to v2 ([bec5f68](https://github.com/LuxoriaSoft/Luxoria/commit/bec5f6811bed147d824cb8a044d9559619261f9f))
+* Add photo status update functionality and enhance UI for status management ([bfeba8a](https://github.com/LuxoriaSoft/Luxoria/commit/bfeba8a6f5bef36c9d03cccdcea736881896749a))
+* Add PhotoId to ChatMessages and implement photo upload functionality in CollectionDetail ([d2d4198](https://github.com/LuxoriaSoft/Luxoria/commit/d2d4198be604e71e871592ee582f5d30169564c5))
+* Add user roles and enhance registration process ([b8eeb1e](https://github.com/LuxoriaSoft/Luxoria/commit/b8eeb1ecc14fcc9c20cffa06887cae24d6307362))
+* Enhance chat functionality by including photo ID in message handling and notifications ([317a4d9](https://github.com/LuxoriaSoft/Luxoria/commit/317a4d96232e4664525817aaa222a46036f32369))
+* Enhance CollectionsPage with create, update, and delete functionalities ([11fabae](https://github.com/LuxoriaSoft/Luxoria/commit/11fabae8ec70e4e2e48275bffe3070073609cbbd))
+* Implement Admin functionalities for user and collection management, including user blocking/unblocking and password reset, collections views and activity logs ([e9d5282](https://github.com/LuxoriaSoft/Luxoria/commit/e9d528277ea5d44c8d19a717b4da234116ffe844))
+* Implement password reset functionality ([7a6d491](https://github.com/LuxoriaSoft/Luxoria/commit/7a6d491a9a3349c59697e2e7e4e4392d3cad1f3d))
+* implement user invitation modal in CollectionDetail component ([67f7f76](https://github.com/LuxoriaSoft/Luxoria/commit/67f7f76c9826fba0a766253b9cf7070e6c2f383b))
+* Refactor authentication and admin pages to fix warning when build ([005ff8b](https://github.com/LuxoriaSoft/Luxoria/commit/005ff8b9ac478af31bef74e9ba0bcc0a784f8add))
+* refactor photo upload to take an additional parameter to override if modified ([0368bc1](https://github.com/LuxoriaSoft/Luxoria/commit/0368bc150103265dd5d06d3e9c602884dc617e75))
+* Update application layout and add user reporting features, improve admin management and reports ([05b9c17](https://github.com/LuxoriaSoft/Luxoria/commit/05b9c179fbcd09a9dcfc4235aa6d46354506e3cb))
+* update user role assignment logic during registration for admin user ([0ed207a](https://github.com/LuxoriaSoft/Luxoria/commit/0ed207a9f9bfd35fb0cc0a691f6312dc0a7832da))
+
+## [1.59.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.59.1...v1.59.2) (2025-09-02)
+
+
+### Bug Fixes
+
+* Template file location, using vault service. Remove adobe icc color profile. ([46759f0](https://github.com/LuxoriaSoft/Luxoria/commit/46759f08b0093acf89e766001f082d194ea26154))
+
 ## [1.59.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.59.0...v1.59.1) (2025-09-02)
 
 

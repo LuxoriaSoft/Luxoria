@@ -18,22 +18,12 @@ namespace LuxImport.Interfaces
         /// <summary>
         /// Processes to the indexing of the collection.
         /// </summary>
-        Task IndexCollectionAsync();
-
-        /// <summary>
-        /// Event triggered when a progress message is sent.
-        /// </summary>
-        event Action<(string message, int? progress)> ProgressMessageSent;
-
-        /// <summary>
-        /// Base progress percent for the import service.
-        /// </summary>
-        int BaseProgressPercent { get; set; }
+        Task IndexCollectionAsync(IProgress<(string, int)>? progress = null);
 
         /// <summary>
         /// Loads the collection into memory.
         /// </summary>
-        ICollection<LuxAsset> LoadAssets();
+        Task<ICollection<LuxAsset>> LoadAssetsAsync(IProgress<(string, int)>? progress = null);
 
 
         public void UpdateLastUploadId(Guid assetId, string url, Guid collectionid, Guid lastUploadedId);

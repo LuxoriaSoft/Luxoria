@@ -1,15 +1,11 @@
 using LuxExport.Logic;
-using Luxoria.Modules;
+using LuxExport.Models;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models;
 using Luxoria.Modules.Models.Events;
 using Luxoria.SDK.Interfaces;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.UI;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -19,7 +15,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.Graphics;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.System;
@@ -40,28 +35,43 @@ namespace LuxExport
         private ILoggerService _logger;
 
         private WatermarkService _wmSvc;
+        private ExportPresetService _presetSvc;
+        private IStorageAPI _storageAPI;
 
         /// <summary>
         /// Initializes the export dialog and loads the necessary presets for file naming.
         /// </summary>
-        public Export(IEventBus eventBus, ILoggerService logger)
+        public Export(IEventBus eventBus, ILoggerService logger, IStorageAPI storageAPI)
         {
             this.InitializeComponent();
             _eventBus = eventBus;
             _logger = logger; 
+            _storageAPI = storageAPI;
             _viewModel = new ExportViewModel();
-            _wmSvc = new WatermarkService(new VaultService(logger));
-            _viewModel.Watermark = _wmSvc.Load();
+            this.DataContext = _viewModel;
             _viewModel.RefreshLogoPreview();
 
-            _viewModel.LoadPresets(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\..\\..\\..\\..\\..\\assets\\Presets\\FileNamingPresets.json");
+            _wmSvc = new WatermarkService(storageAPI);
+            _presetSvc = new ExportPresetService(storageAPI);
+            
+            // Load file naming presets (legacy support)
+            if (storageAPI.Contains("fileNamingPresets"))
+                _viewModel.LoadPresets(storageAPI.Get<string>("fileNamingPresets"));
+            
+            // Load export presets
+            _viewModel.LoadExportPresets(_presetSvc.GetPresets());
+            
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+
+            _viewModel.Watermark = _wmSvc.Load();
             UpdateWebVisibility();
 
             RefreshPresetsMenu();
+            RefreshExportPresetsMenu();
 
             RefreshWatermarkUI();
         }
+
 
         /// <summary>
         /// Refreshes the presets menu with the available presets loaded from the JSON file.
@@ -79,6 +89,54 @@ namespace LuxExport
                     _viewModel.CustomFileFormat = preset.Pattern;
                 };
                 PresetsFlyout.Items.Add(item);
+            }
+        }
+
+        /// <summary>
+        /// Refreshes the export presets menu with available export presets.
+        /// </summary>
+        private void RefreshExportPresetsMenu()
+        {
+            PresetComboBox.ItemsSource = _viewModel.ExportPresets;
+            PresetComboBox.SelectedIndex = -1;
+            PresetDescription.Text = "Select a preset to see description";
+            DeletePresetButton.IsEnabled = false;
+        }
+
+        /// <summary>
+        /// Applies the selected export preset to current settings.
+        /// </summary>
+        public void ApplyExportPreset(string presetName)
+        {
+            var preset = _presetSvc.GetPreset(presetName);
+            if (preset != null)
+            {
+                _viewModel.ApplyExportPreset(preset);
+                // Update export path after applying location settings
+                _viewModel.UpdateExportPath();
+            }
+        }
+
+        /// <summary>
+        /// Saves current settings as a new export preset.
+        /// </summary>
+        public void SaveCurrentSettingsAsPreset(string presetName, string? description = null)
+        {
+            var preset = _viewModel.CreatePresetFromCurrentSettings(presetName, description);
+            _presetSvc.AddPreset(preset);
+            _viewModel.LoadExportPresets(_presetSvc.GetPresets());
+            RefreshExportPresetsMenu();
+        }
+
+        /// <summary>
+        /// Removes an export preset by name.
+        /// </summary>
+        public void RemoveExportPreset(string presetName)
+        {
+            if (_presetSvc.RemovePreset(presetName))
+            {
+                _viewModel.LoadExportPresets(_presetSvc.GetPresets());
+                RefreshExportPresetsMenu();
             }
         }
 
@@ -228,7 +286,7 @@ namespace LuxExport
 
             DispatcherQueue.TryEnqueue(() =>
             {
-                var progressWindow = new ExportProgressWindow(_assets, _viewModel, _logger, _eventBus);
+                var progressWindow = new ExportProgressWindow(_assets, _viewModel, _logger, _eventBus, _storageAPI);
                 progressWindow.Activate();
             });
             //}
@@ -357,7 +415,7 @@ namespace LuxExport
             if (sender is MenuFlyoutItem item)
             {
                 _viewModel.SelectedExportTarget = item.Text;
-                ExportTargetDropDown.Content = item.Text;
+                // Remove manual Content update - let data binding handle it
             }
         }
 
@@ -378,5 +436,124 @@ namespace LuxExport
                 ? Visibility.Collapsed
                 : Visibility.Visible;
         }
+
+        /// <summary>
+        /// Handles preset selection changes in the ComboBox.
+        /// </summary>
+        private void PresetComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is ComboBox comboBox && comboBox.SelectedItem is ExportPreset selectedPreset)
+            {
+                // Update description
+                PresetDescription.Text = string.IsNullOrWhiteSpace(selectedPreset.Description) 
+                    ? "No description available" 
+                    : selectedPreset.Description;
+                
+                // Enable delete button for custom presets (not default ones)
+                var defaultPresetNames = new[] { "High Quality JPEG", "Web Optimized", "Social Media", "PNG Lossless", "HEIF Modern", "Print Ready", "Portfolio", "Archive Copy" };
+                DeletePresetButton.IsEnabled = !defaultPresetNames.Contains(selectedPreset.Name);
+                
+                // Apply the preset
+                ApplyExportPreset(selectedPreset.Name);
+            }
+            else
+            {
+                PresetDescription.Text = "Select a preset to see description";
+                DeletePresetButton.IsEnabled = false;
+            }
+        }
+
+        /// <summary>
+        /// Handles the Save Preset button click.
+        /// </summary>
+        private async void SavePresetButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new ContentDialog()
+            {
+                Title = "Save Export Preset",
+                PrimaryButtonText = "Save",
+                SecondaryButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = this.XamlRoot
+            };
+
+            var stackPanel = new StackPanel { Spacing = 10 };
+            
+            var nameTextBox = new TextBox
+            {
+                Header = "Preset Name",
+                PlaceholderText = "Enter preset name...",
+                MaxLength = 50
+            };
+            
+            var descriptionTextBox = new TextBox
+            {
+                Header = "Description (Optional)",
+                PlaceholderText = "Enter preset description...",
+                TextWrapping = TextWrapping.Wrap,
+                AcceptsReturn = true,
+                MaxHeight = 60
+            };
+
+            stackPanel.Children.Add(nameTextBox);
+            stackPanel.Children.Add(descriptionTextBox);
+            dialog.Content = stackPanel;
+
+            var result = await dialog.ShowAsync();
+            
+            if (result == ContentDialogResult.Primary && !string.IsNullOrWhiteSpace(nameTextBox.Text))
+            {
+                try
+                {
+                    SaveCurrentSettingsAsPreset(nameTextBox.Text.Trim(), 
+                        string.IsNullOrWhiteSpace(descriptionTextBox.Text) ? null : descriptionTextBox.Text.Trim());
+                    
+                    // Select the newly created preset
+                    var newPreset = _viewModel.ExportPresets.FirstOrDefault(p => p.Name == nameTextBox.Text.Trim());
+                    if (newPreset != null)
+                    {
+                        PresetComboBox.SelectedItem = newPreset;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Log($"Failed to save preset: {ex.Message}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Delete Preset button click.
+        /// </summary>
+        private async void DeletePresetButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (PresetComboBox.SelectedItem is not ExportPreset selectedPreset)
+                return;
+
+            var dialog = new ContentDialog()
+            {
+                Title = "Delete Preset",
+                Content = $"Are you sure you want to delete the preset '{selectedPreset.Name}'?\n\nThis action cannot be undone.",
+                PrimaryButtonText = "Delete",
+                SecondaryButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Secondary,
+                XamlRoot = this.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    RemoveExportPreset(selectedPreset.Name);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Log($"Failed to delete preset: {ex.Message}");
+                }
+            }
+        }
+
     }
 }
