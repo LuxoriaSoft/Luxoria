@@ -78,7 +78,7 @@ namespace LuxImport.Views
                 });
             };
 
-            _eventBus.Publish(openCollectionEvent);
+            Task.Run(() => _eventBus.Publish(openCollectionEvent));
         }
 
         /// <summary>

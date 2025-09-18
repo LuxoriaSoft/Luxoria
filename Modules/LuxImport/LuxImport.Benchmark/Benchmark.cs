@@ -86,8 +86,8 @@ public class ImportServiceBenchmark
     /// </summary>
     [Benchmark]
     [BenchmarkCategory("Loading")] // Categorizes benchmarks
-    public void BenchmarkLoadAssets()
+    public async Task BenchmarkLoadAssets()
     {
-        _importService.LoadAssets();
+        await _importService.LoadAssetsAsync();
     }
 }
