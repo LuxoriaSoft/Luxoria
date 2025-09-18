@@ -1,5 +1,4 @@
 ﻿using Luxoria.Core.Interfaces;
-using Luxoria.Core.Models;
 using Luxoria.Core.Services;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
@@ -14,6 +13,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Luxoria.Core.Models;
+
+using IStorageAPI = Luxoria.Core.Interfaces.IStorageAPI;
 
 namespace Luxoria.App.Views
 {
