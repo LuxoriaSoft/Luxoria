@@ -55,10 +55,11 @@ jobs:
 
       # Create the app by building and publishing the project
       - name: Build Luxoria.App
-        run: msbuild $env:Solution_Name /t:Publish /p:Configuration=$env:Configuration /p:Platform=$env:Platform
+        run: msbuild $env:Solution_Name /t:Publish /p:Configuration=$env:Configuration /p:Platform=$env:Platform /p:AppVersion=Version
         env:
           Configuration: ${{ matrix.configuration }}
           Platform: ${{ matrix.platform }}
+          Version: ${{ inputs.app_version }}
         working-directory: ./Luxoria.App
       
       # Install Inno Setup
