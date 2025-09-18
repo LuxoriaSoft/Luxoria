@@ -1,3 +1,10 @@
+## [1.66.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.66.0...v1.66.1) (2025-09-18)
+
+
+### Bug Fixes
+
+* Concurrency when import service initialises and loads assets into collection ([1b9ff0c](https://github.com/LuxoriaSoft/Luxoria/commit/1b9ff0c006ab86114a406927345fd9f6dedc736c))
+
 # [1.66.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.65.6...v1.66.0) (2025-09-13)
 
 
