@@ -1,3 +1,10 @@
+## [1.67.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.67.1...v1.67.2) (2025-09-19)
+
+
+### Bug Fixes
+
+* Restore old implementation method for importation (for working with LuxEditor) ([890861d](https://github.com/LuxoriaSoft/Luxoria/commit/890861d3248c89653a4aa4c793f19d98ba8d8778))
+
 ## [1.67.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.67.0...v1.67.1) (2025-09-19)
 
 
