@@ -78,7 +78,8 @@ namespace LuxImport.Views
                 });
             };
 
-            Task.Run(() => _eventBus.Publish(openCollectionEvent));
+            _eventBus.Publish(openCollectionEvent); // To be changed when LuxExport handler function will be async
+            // Task.Run(() => _eventBus.Publish(openCollectionEvent));
         }
 
         /// <summary>
