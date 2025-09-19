@@ -1,3 +1,11 @@
+## [1.67.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.67.0...v1.67.1) (2025-09-19)
+
+
+### Bug Fixes
+
+* dpi scale issue ([86135c8](https://github.com/LuxoriaSoft/Luxoria/commit/86135c88e3c391310ea7f726465d26fe7f799bf3))
+* Simplifies DPI handling in PhotoViewer ([88bbbbc](https://github.com/LuxoriaSoft/Luxoria/commit/88bbbbc3ac9ab3c7f6838ebb16a213a8b7cd6e85))
+
 # [1.67.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.66.2...v1.67.0) (2025-09-18)
 
 
