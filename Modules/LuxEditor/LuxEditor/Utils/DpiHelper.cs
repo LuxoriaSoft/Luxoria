@@ -101,34 +101,37 @@ namespace LuxEditor.Utils
 
         /// <summary>
         /// Gets a DPI-corrected position from a pointer event.
-        /// Simple approach: try different correction methods.
+        /// For DpiCanvas (with IgnorePixelScaling = true), coordinates are already correct.
+        /// For other elements, applies manual DPI correction.
         /// </summary>
         /// <param name="e">The pointer event args</param>
         /// <param name="relativeTo">The element the position should be relative to</param>
         /// <returns>DPI-corrected position</returns>
         public static Windows.Foundation.Point GetCorrectedPosition(Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e, UIElement relativeTo)
         {
-            // Si c'est un DpiCanvas, utiliser sa méthode de correction
+            // If it's a DpiCanvas, coordinates are already correct thanks to IgnorePixelScaling = true
             if (relativeTo is DpiCanvas dpiCanvas)
             {
                 return dpiCanvas.GetDpiCorrectedPosition(e);
             }
 
-            // Sinon, appliquer la correction DPI manuellement
+            // For other elements, apply manual DPI correction
             var pointerPoint = e.GetCurrentPoint(relativeTo);
-            return pointerPoint.Position;
+            return AdjustForDpi(pointerPoint.Position, relativeTo);
         }
 
         /// <summary>
         /// Applies DPI compensation transform to a canvas for proper rendering.
-        /// This ensures that drawing operations work correctly regardless of DPI scaling.
+        /// Note: With IgnorePixelScaling = true on DpiCanvas, this transform is usually not needed.
         /// </summary>
         /// <param name="canvas">The SkiaSharp canvas to transform</param>
         /// <param name="element">The UI element to get DPI scale from</param>
         public static void ApplyDpiTransform(SkiaSharp.SKCanvas canvas, UIElement element)
         {
+            // With IgnorePixelScaling = true on DpiCanvas, this transformation is generally not necessary
+            // Kept for compatibility with other canvas types
             var scale = GetDpiScale(element);
-            
+
             // If scale is 1.0 (100%), no transform needed
             if (Math.Abs(scale - 1.0) < 0.001)
             {

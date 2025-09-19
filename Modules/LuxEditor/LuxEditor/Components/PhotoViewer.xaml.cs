@@ -365,24 +365,20 @@ namespace LuxEditor.Components
 
         private void ResizeCanvases(int width, int height)
         {
-            var dpiScale = GetDpiScale();
-            
-            var adjustedWidth = width / dpiScale;
-            var adjustedHeight = height / dpiScale;
-            
-            _mainCanvas.Width = adjustedWidth;
-            _mainCanvas.Height = adjustedHeight;
+            // With IgnorePixelScaling = true on DpiCanvas, no DPI adjustment needed for canvas size
+            _mainCanvas.Width = width;
+            _mainCanvas.Height = height;
             _mainCanvas.HorizontalAlignment = HorizontalAlignment.Center;
             _mainCanvas.VerticalAlignment = VerticalAlignment.Center;
-            
-            _overlayCanvas.Width = adjustedWidth;
-            _overlayCanvas.Height = adjustedHeight;
+
+            _overlayCanvas.Width = width;
+            _overlayCanvas.Height = height;
             _overlayCanvas.HorizontalAlignment = HorizontalAlignment.Center;
             _overlayCanvas.VerticalAlignment = VerticalAlignment.Center;
             _overlayCanvas.Margin = _mainCanvas.Margin;
 
-            _cropCanvas.Width = adjustedWidth;
-            _cropCanvas.Height = adjustedHeight;
+            _cropCanvas.Width = width;
+            _cropCanvas.Height = height;
             _cropCanvas.HorizontalAlignment = HorizontalAlignment.Center;
             _cropCanvas.VerticalAlignment = VerticalAlignment.Center;
             _cropCanvas.Margin = _mainCanvas.Margin;
@@ -411,19 +407,6 @@ namespace LuxEditor.Components
                 ResizeCanvases(_currentCpu.Width, _currentCpu.Height);
             }
         }
-
-        private double GetDpiScale()
-        {
-            try
-            {
-                return this.XamlRoot?.RasterizationScale ?? 1.0;
-            }
-            catch
-            {
-                return 1.0;
-            }
-        }
-
 
         private void SubscribeTool(ATool tool)
         {
@@ -508,12 +491,8 @@ namespace LuxEditor.Components
 
             var canvas = e.Surface.Canvas;
             canvas.Clear(SKColors.Transparent);
-            
-            var dpiScale = GetDpiScale();
-            if (Math.Abs(dpiScale - 1.0) > 0.001)
-            {
-                canvas.Scale((float)dpiScale);
-            }
+
+            // With IgnorePixelScaling = true on DpiCanvas, no DPI scaling needed
 
             if (_currentImage == null || _currentImage.LayerManager.SelectedLayer == null || (_currentImage.LayerManager.SelectedLayer.HasActiveFilters() && !_isOperationSelected) )
                 return;

@@ -14,32 +14,7 @@ namespace LuxEditor.Utils
     {
         public DpiCanvas()
         {
-            this.Loaded += OnLoaded;
-            this.SizeChanged += OnSizeChanged;
-            this.LayoutUpdated += OnLayoutUpdated;
-        }
-
-        private void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            ApplyDpiTransform();
-        }
-
-        private void OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            ApplyDpiTransform();
-        }
-
-        private void OnLayoutUpdated(object sender, object e)
-        {
-            ApplyDpiTransform();
-        }
-
-        /// <summary>
-        /// Applies DPI scaling transformation to the canvas.
-        /// Called automatically when the canvas is loaded, resized, or layout is updated.
-        /// </summary>
-        private void ApplyDpiTransform()
-        {
+            this.IgnorePixelScaling = true;
         }
 
         /// <summary>
@@ -60,28 +35,23 @@ namespace LuxEditor.Utils
 
         /// <summary>
         /// Gets the DPI-corrected position from a pointer event.
+        /// With IgnorePixelScaling = true, coordinates are already correct.
         /// </summary>
         /// <param name="e">The pointer event arguments containing the position information.</param>
-        /// <returns>The corrected position accounting for DPI scaling.</returns>
+        /// <returns>The position from the pointer event.</returns>
         public Windows.Foundation.Point GetDpiCorrectedPosition(Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-            var pos = e.GetCurrentPoint(this).Position;
-
-            return pos;
+            return e.GetCurrentPoint(this).Position;
         }
         
         /// <summary>
         /// Corrects a SkiaSharp point position to account for DPI scaling when used with overlays.
+        /// With IgnorePixelScaling = true, no correction is needed.
         /// </summary>
-        /// <param name="position">The original position to correct.</param>
-        /// <returns>The position adjusted for DPI scaling, or the original position if no scaling is needed.</returns>
+        /// <param name="position">The original position.</param>
+        /// <returns>The position unchanged.</returns>
         public SKPoint CorrectPositionForOverlay(SKPoint position)
         {
-            var scale = GetDpiScale();
-            if (Math.Abs(scale - 1.0) > 0.001)
-            {
-                return new SKPoint(position.X / (float)scale, position.Y / (float)scale);
-            }
             return position;
         }
 

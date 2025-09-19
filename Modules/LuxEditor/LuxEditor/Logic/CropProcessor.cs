@@ -12,6 +12,9 @@ namespace LuxEditor.Logic
         /// Return a new bitmap containing only the pixels inside <paramref name="box"/>,
         /// correctly deskewed by its rotation angle.
         /// </summary>
+        /// <param name="src">The source bitmap to crop.</param>
+        /// <param name="box">The crop box defining the area to extract.</param>
+        /// <returns>A new bitmap containing the cropped and rotated image.</returns>
         public static SKBitmap Apply(SKBitmap src, CropController.CropBox box)
         {
             int w = (int)MathF.Round(box.Width);
@@ -51,6 +54,10 @@ namespace LuxEditor.Logic
         /// <summary>
         /// Return a copy of <paramref name="box"/> scaled by <paramref name="sx"/> and <paramref name="sy"/>.
         /// </summary>
+        /// <param name="box">The crop box to scale.</param>
+        /// <param name="sx">The horizontal scale factor.</param>
+        /// <param name="sy">The vertical scale factor.</param>
+        /// <returns>A new crop box with scaled dimensions and position.</returns>
         public static CropController.CropBox Scale(CropController.CropBox box, float sx, float sy) => new()
         {
             X = box.X * sx,
