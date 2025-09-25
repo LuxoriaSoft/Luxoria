@@ -1,0 +1,3 @@
+[submodule "luxcli"]
+	path = luxcli
+	url = https://github.com/LuxoriaSoft/luxcli.git
