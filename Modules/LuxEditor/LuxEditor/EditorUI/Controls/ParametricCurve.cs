@@ -1,5 +1,6 @@
 using LuxEditor.EditorUI.Controls;
 using LuxEditor.Services;
+using LuxEditor.Utils;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -47,7 +48,7 @@ namespace LuxEditor.EditorUI.Controls
             _canvas.PointerPressed += GridDown;
             _canvas.PointerMoved += GridMove;
             _canvas.PointerReleased += GridUp;
-            _canvas.PointerEntered += (s, e) => UpdateHover(e.GetCurrentPoint(_canvas).Position.X);
+            _canvas.PointerEntered += (s, e) => UpdateHover(DpiHelper.GetCorrectedPosition(e, _canvas).X);
             _canvas.PointerExited += (s, e) => SetHover(-1);
             root.Children.Add(_canvas);
 
@@ -104,7 +105,7 @@ namespace LuxEditor.EditorUI.Controls
         private void GridDown(object sender, PointerRoutedEventArgs e)
         {
             var now = DateTime.UtcNow;
-            var pt = e.GetCurrentPoint(_canvas).Position;
+            var pt = DpiHelper.GetCorrectedPosition(e, _canvas);
             _activeRegion = RegionFromX(pt.X);
 
             if ((now - _lastTap).TotalMilliseconds < 350)
@@ -128,11 +129,11 @@ namespace LuxEditor.EditorUI.Controls
         {
             if (!_dragging)
             {
-                UpdateHover(e.GetCurrentPoint(_canvas).Position.X);
+                UpdateHover(DpiHelper.GetCorrectedPosition(e, _canvas).X);
                 return;
             }
 
-            double y = e.GetCurrentPoint(_canvas).Position.Y;
+            double y = DpiHelper.GetCorrectedPosition(e, _canvas).Y;
             double delta = (_startY - y) / _canvas.Height * 200;
             var sldr = GetSlider(_activeRegion);
             sldr.SetValue(Math.Clamp(sldr.GetValue() + (float)delta, -100, 100));

@@ -3,8 +3,15 @@ using SkiaSharp;
 
 namespace LuxEditor.EditorUI.Controls
 {
+    /// <summary>
+    /// Controller for managing crop box interactions including moving, rotating, and resizing.
+    /// Handles user input and provides proper clamping to canvas boundaries.
+    /// </summary>
     public sealed class CropController
     {
+        /// <summary>
+        /// Represents the type of interaction being performed on the crop box.
+        /// </summary>
         public enum Interaction
         {
             None,
@@ -16,6 +23,9 @@ namespace LuxEditor.EditorUI.Controls
             ResizeSE
         }
 
+        /// <summary>
+        /// Represents a crop box with position, size, and rotation.
+        /// </summary>
         public struct CropBox
         {
             public float X;
@@ -26,8 +36,11 @@ namespace LuxEditor.EditorUI.Controls
         }
 
         public CropBox Box { get => _box; set => _box = value; }
+
         public bool LockAspectRatio { get => _lockedRatio.HasValue; set => _lockedRatio = value ? _box.Width / _box.Height : null; }
+
         public Interaction ActiveInteraction { get; private set; } = Interaction.None;
+
         public Interaction HoverInteraction { get; private set; } = Interaction.None;
 
         public event Action? BoxChanged;

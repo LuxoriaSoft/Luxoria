@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using LuxEditor.Utils;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using SkiaSharp;
@@ -42,7 +43,7 @@ namespace LuxEditor.EditorUI.Controls
         /// </summary>
         private void Down(object s, PointerRoutedEventArgs e)
         {
-            float x = (float)e.GetCurrentPoint(_canvas).Position.X / (float)_canvas.ActualWidth;
+            float x = (float)DpiHelper.GetCorrectedPosition(e, _canvas).X / (float)_canvas.ActualWidth;
             float d1 = MathF.Abs(x - _t1);
             float d2 = MathF.Abs(x - _t2);
             float d3 = MathF.Abs(x - _t3);
@@ -57,7 +58,7 @@ namespace LuxEditor.EditorUI.Controls
         {
             if (_drag == -1) return;
 
-            float x = (float)e.GetCurrentPoint(_canvas).Position.X / (float)_canvas.ActualWidth;
+            float x = (float)DpiHelper.GetCorrectedPosition(e, _canvas).X / (float)_canvas.ActualWidth;
             x = Math.Clamp(x, 0f, 1f);
 
             switch (_drag)

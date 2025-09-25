@@ -1,4 +1,5 @@
 ﻿using LuxEditor.Models;
+using LuxEditor.Utils;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using SkiaSharp;
@@ -67,8 +68,8 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
 
         public override void OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var cvs = (SKXamlCanvas)sender;
-            var pos = e.GetCurrentPoint(cvs).Position;
+            var cvs = (UIElement)sender;
+            var pos = DpiHelper.GetCorrectedPosition(e, cvs);
             var sk = new SKPoint((float)pos.X, (float)pos.Y);
             _lastMouse = sk;
             _subtract = e.KeyModifiers.HasFlag(VirtualKeyModifiers.Menu);
@@ -89,8 +90,8 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
 
         public override void OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            var cvs = (SKXamlCanvas)sender;
-            var pos = e.GetCurrentPoint(cvs).Position;
+            var cvs = (UIElement)sender;
+            var pos = DpiHelper.GetCorrectedPosition(e, cvs);
             var sk = new SKPoint((float)pos.X, (float)pos.Y);
             _lastMouse = sk;
             _subtract = e.KeyModifiers.HasFlag(VirtualKeyModifiers.Menu);

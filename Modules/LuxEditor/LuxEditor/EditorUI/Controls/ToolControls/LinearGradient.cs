@@ -1,4 +1,5 @@
 ﻿using LuxEditor.Models;
+using LuxEditor.Utils;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using SkiaSharp;
@@ -63,7 +64,7 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
         public override void OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             var cvs = (SKXamlCanvas)sender;
-            var pos = e.GetCurrentPoint(cvs).Position;
+            var pos = DpiHelper.GetCorrectedPosition(e, cvs);
             var p = new SKPoint((float)pos.X, (float)pos.Y);
             var pr = e.GetCurrentPoint(cvs).Properties;
 
@@ -93,7 +94,7 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
         {
             if (_mode == DragMode.None || _gradient == null) return;
             var cvs = (SKXamlCanvas)sender;
-            var pos = e.GetCurrentPoint(cvs).Position;
+            var pos = DpiHelper.GetCorrectedPosition(e, cvs);
             var p = new SKPoint((float)pos.X, (float)pos.Y);
             var g = _gradient;
 

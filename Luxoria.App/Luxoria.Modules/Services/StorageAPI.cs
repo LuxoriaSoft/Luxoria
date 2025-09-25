@@ -1,9 +1,9 @@
-﻿using Luxoria.Core.Interfaces;
+﻿using Luxoria.Modules.Interfaces;
 using Luxoria.SDK.Interfaces;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 
-namespace Luxoria.Core.Services;
+namespace Luxoria.Modules.Services;
 
 public class StorageAPI : IStorageAPI
 {

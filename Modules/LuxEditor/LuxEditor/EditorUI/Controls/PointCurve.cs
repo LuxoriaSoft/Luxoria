@@ -1,4 +1,5 @@
 ﻿using LuxEditor.Services;
+using LuxEditor.Utils;
 using Microsoft.UI.Xaml.Input;
 using SkiaSharp;
 using SkiaSharp.Views.Windows;
@@ -72,7 +73,7 @@ namespace LuxEditor.EditorUI.Controls
         private void Down(object s, PointerRoutedEventArgs e)
         {
             var now = DateTime.UtcNow;
-            var p = ToCurve(e.GetCurrentPoint(_canvas).Position);
+            var p = ToCurve(DpiHelper.GetCorrectedPosition(e, _canvas));
             int hit = HitIndex(p);
 
             if (e.GetCurrentPoint(_canvas).Properties.IsRightButtonPressed)
@@ -136,7 +137,7 @@ namespace LuxEditor.EditorUI.Controls
         {
             if (_drag is null) return;
 
-            var p = ToCurve(e.GetCurrentPoint(_canvas).Position);
+            var p = ToCurve(DpiHelper.GetCorrectedPosition(e, _canvas));
             var pt = ControlPoints[_drag.Value];
 
             pt.X = Math.Clamp(p.X, 0, 1);

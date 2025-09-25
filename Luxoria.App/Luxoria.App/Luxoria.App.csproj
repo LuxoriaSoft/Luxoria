@@ -30,6 +30,10 @@
 https://docs.luxoria.bluepelicansoft.com</Description>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(AppVersion)'!=''">
+	<Version>$(AppVersion)</Version>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="Models\**" />
     <EmbeddedResource Remove="Models\**" />
