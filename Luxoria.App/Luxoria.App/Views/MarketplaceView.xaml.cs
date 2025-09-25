@@ -15,8 +15,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Luxoria.Core.Models;
 
-using IStorageAPI = Luxoria.Core.Interfaces.IStorageAPI;
-
 namespace Luxoria.App.Views
 {
     public sealed partial class MarketplaceView : Window

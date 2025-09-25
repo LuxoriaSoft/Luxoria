@@ -1,5 +1,6 @@
-﻿using Luxoria.Core.Interfaces;
-using Luxoria.Core.Services;
+﻿using Luxoria.Core.Services;
+using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Services;
 using Luxoria.SDK.Interfaces;
 using Moq;
 using Newtonsoft.Json;
