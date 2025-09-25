@@ -1,3 +1,10 @@
+## [1.67.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.67.2...v1.67.3) (2025-09-25)
+
+
+### Bug Fixes
+
+* Compilation issue when using IStorageAPI (should have required importation of Luxoria.Core) ([c29ad7e](https://github.com/LuxoriaSoft/Luxoria/commit/c29ad7eacaeb339539687d64c574743a54a1ee74))
+
 ## [1.67.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.67.1...v1.67.2) (2025-09-19)
 
 
