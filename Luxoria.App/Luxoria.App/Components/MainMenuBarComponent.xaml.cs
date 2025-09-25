@@ -36,7 +36,7 @@ namespace Luxoria.App.Components
         private void Marketplace_Click(object sender, RoutedEventArgs e)
         {
             IMarketplaceService mkplaceSvc = (Application.Current as App)?.GetHost().Services.GetRequiredService<IMarketplaceService>();
-            Luxoria.Core.Interfaces.IStorageAPI cacheSvc = (Application.Current as App)?.GetHost().Services.GetRequiredService<IVaultService>().GetVault(VAULT_NAME);
+            IStorageAPI cacheSvc = (Application.Current as App)?.GetHost().Services.GetRequiredService<IVaultService>().GetVault(VAULT_NAME);
             IEventBus eventBus = (Application.Current as App)?.GetHost().Services.GetRequiredService<IEventBus>();
             Window window = new MarketplaceView(mkplaceSvc, cacheSvc, eventBus);
             window.Activate();

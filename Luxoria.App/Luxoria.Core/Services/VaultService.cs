@@ -1,4 +1,6 @@
 ﻿using Luxoria.Core.Interfaces;
+using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Services;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
 using Newtonsoft.Json;

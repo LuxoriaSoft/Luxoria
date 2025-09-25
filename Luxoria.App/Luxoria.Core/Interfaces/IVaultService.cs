@@ -1,4 +1,6 @@
-﻿namespace Luxoria.Core.Interfaces;
+﻿using Luxoria.Modules.Interfaces;
+
+namespace Luxoria.Core.Interfaces;
 
 public interface IVaultService
 {
