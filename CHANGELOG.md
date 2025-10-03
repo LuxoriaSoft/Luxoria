@@ -1,3 +1,10 @@
+# [1.68.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.67.3...v1.68.0) (2025-10-03)
+
+
+### Features
+
+* Allow failure on module intialisation process ([770de6e](https://github.com/LuxoriaSoft/Luxoria/commit/770de6e08fb3847032f150834b8d395e4c458e13))
+
 ## [1.67.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.67.2...v1.67.3) (2025-09-25)
 
 
