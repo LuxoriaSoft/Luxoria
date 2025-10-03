@@ -55,7 +55,7 @@ namespace Luxoria.App
             _moduleService = _host.Services.GetRequiredService<IModuleService>();
             _logger = _host.Services.GetRequiredService<ILoggerService>();
 
-            _host.Services.GetRequiredService<IEventBus>().Subscribe<RequestStorageAPIEvent>(OnRequestStorageAPIHandle);
+            EventsHandlerInit();
         }
 
         public static IHostBuilder CreateHostBuilder(Startup startup)
@@ -93,6 +93,18 @@ namespace Luxoria.App
 
             m_window = new MainWindow(eventBus, loggerService, _moduleService, iModuleUIService);
             m_window.Activate();
+        }
+
+        /// <summary>
+        /// Initialise standard events
+        /// This subscribes and publishes standard events after starting up
+        /// </summary>
+        private void EventsHandlerInit()
+        {
+            IEventBus evtbus = _host.Services.GetRequiredService<IEventBus>();
+            
+            // Subscription
+            evtbus.Subscribe<RequestStorageAPIEvent>(OnRequestStorageAPIHandle);
         }
 
         /// <summary>
