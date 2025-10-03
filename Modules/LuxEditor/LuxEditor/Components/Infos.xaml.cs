@@ -51,7 +51,7 @@ namespace LuxEditor.Components
             ImageManager.Instance.OnSelectionChanged += (image) =>
             {
                 DisplayExifData(image.Metadata);
-                PresetTree.SelectedItem = null;
+                DispatcherQueue.TryEnqueue(() => PresetTree.SelectedItem = null);
             };
 
             var selector = new PresetTemplateSelector
@@ -135,22 +135,24 @@ namespace LuxEditor.Components
         /// <summary>
         /// Sets the EXIF data into the ListView for viewing.
         /// </summary>
-        public void DisplayExifData(
-            System.Collections.ObjectModel.ReadOnlyDictionary<string, string> metadata)
+        public void DisplayExifData(ReadOnlyDictionary<string, string> metadata)
         {
-            ExifData.Clear();
-
-            foreach (var entry in metadata)
+            DispatcherQueue.TryEnqueue(() =>
             {
-                if (entry.Key != null && !entry.Key.ToLower().StartsWith("unknown"))
+                ExifData.Clear();
+
+                foreach (var entry in metadata)
                 {
-                    ExifData.Add(new KeyValueStringPair
+                    if (entry.Key != null && !entry.Key.ToLower().StartsWith("unknown"))
                     {
-                        Key = entry.Key,
-                        Value = entry.Value
-                    });
+                        ExifData.Add(new KeyValueStringPair
+                        {
+                            Key = entry.Key,
+                            Value = entry.Value
+                        });
+                    }
                 }
-            }
+            });
         }
 
         private void PresetTree_ItemInvoked(TreeView sender, TreeViewItemInvokedEventArgs args)

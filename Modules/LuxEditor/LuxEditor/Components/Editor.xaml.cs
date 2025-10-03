@@ -706,14 +706,17 @@ namespace LuxEditor.Components
             CurrentImage = image;
 
             foreach (var l in _observedLayers) l.PropertyChanged -= OnLayerModified;
+
             _observedLayers.Clear();
             image.LayerManager.OnOperationChanged += RequestFilterUpdate;
             image.LayerManager.OnLayerChanged += RequestFilterUpdate;
+
             foreach (var l in image.LayerManager.Layers)
             {
                 l.PropertyChanged += OnLayerModified;
                 _observedLayers.Add(l);
             }
+
             image.LayerManager.Layers.CollectionChanged += (_, __) =>
             {
                 foreach (var lay in _observedLayers)
@@ -727,18 +730,24 @@ namespace LuxEditor.Components
                 RequestFilterUpdate();
             };
 
-            EditorStackPanel.Children.Clear();
+            DispatcherQueue.TryEnqueue(() => EditorStackPanel.Children.Clear());
             _categories.Clear();
             _sliderCache.Clear();
-            _subjectRecognition = new(_yoloDetectionAPI);
-            _subjectRecognition.BlurAppliedEvent += OnBlurAppliedEventHandler;
-            _subjectRecognition.SetImage(image);
-            BuildEditorUI();
-            UpdateSliderUI();
-            _toneGroup.RefreshCurves(CurrentImage.Settings);
+
+            DispatcherQueue.TryEnqueue(() => {
+                _subjectRecognition = new(_yoloDetectionAPI);
+                _subjectRecognition.BlurAppliedEvent += OnBlurAppliedEventHandler;
+                _subjectRecognition.SetImage(image);
+            });
+
+            DispatcherQueue.TryEnqueue(BuildEditorUI);
+            DispatcherQueue.TryEnqueue(UpdateSliderUI);
+
+            DispatcherQueue.TryEnqueue(() => _toneGroup.RefreshCurves(CurrentImage.Settings));
+
             RequestFilterUpdate();
-            UpdateResetButtonsVisibility();
-            RefreshLayerTree();
+            DispatcherQueue.TryEnqueue(UpdateResetButtonsVisibility);
+            DispatcherQueue.TryEnqueue(RefreshLayerTree);
         }
 
         private void OnLayerModified(object? s, PropertyChangedEventArgs e) => RequestFilterUpdate();
