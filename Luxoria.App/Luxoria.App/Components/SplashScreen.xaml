@@ -12,7 +12,10 @@
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <Image Source="/Assets/Luxoria_logo.svg" Width="70" />
             <TextBlock Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}" x:Name="CurrentModuleText" Text="Loading modules..." HorizontalAlignment="Center"/>
-            <ProgressBar IsIndeterminate="True" Width="300" Margin="0,20,0,0"/>
+            <ProgressBar IsIndeterminate="True" Width="300" Margin="0,20,0,20"/>
+
+            <TextBlock Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}" x:Name="VersionInfoText" FontSize="10" HorizontalAlignment="Center"/>
+            <TextBlock Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}" Text="Licensed under Apache-2.0 " FontSize="8" HorizontalAlignment="Center"/>
         </StackPanel>
     </Grid>
 </Window>
