@@ -9,8 +9,10 @@ import { Heading } from '@/components/heading'
 import { Divider } from '@/components/divider'
 import { ApplicationLayout } from '@/app/(app)/application-layout' // ✅ Import du layout global
 import { getEvents } from '@/data'
+import { useRouter } from 'next/navigation'
 
 export default function AdminUsersPage() {
+  const router = useRouter()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -42,10 +44,21 @@ export default function AdminUsersPage() {
 
 
   const fetchUsers = useCallback(async () => {
-    const data = await AdminService.getUsers(search)
-    setUsers(data)
-    setLoading(false)
-  }, [search])
+    setLoading(true)
+    try {
+      const data = await AdminService.getUsers(search)
+      setUsers(data)
+    } catch (error: any) {
+      // Si l’erreur vient de l’interceptor et qu’on a un 403
+      if (error.isForbidden) {
+        router.replace('/forbidden')
+      } else {
+        console.error(error)
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [search, router])
 
   useEffect(() => {
     fetchUsers()

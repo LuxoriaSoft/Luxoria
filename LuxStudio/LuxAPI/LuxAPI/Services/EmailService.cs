@@ -39,6 +39,8 @@ namespace LuxAPI.Services
 
             mailMessage.To.Add(toEmail);
 
+            _logger.LogInformation($"Using host={_config["Smtp:Host"]} port:{_config["Smtp:Port"]} username='{_config["Smtp:Username"]}'");
+
             using var smtp = new SmtpClient(_config["Smtp:Host"], int.Parse(_config["Smtp:Port"]))
             {
                 Credentials = new NetworkCredential(_config["Smtp:Username"], _config["Smtp:Password"]),
@@ -119,16 +121,6 @@ namespace LuxAPI.Services
             <p style='font-size: 14px; color: #666; text-align: center;'>Ce code est valable pendant <strong>10 minutes</strong>.</p>
 
             <hr style='margin: 30px 0;' />
-
-            <p style='font-size: 16px;'>Cliquez ici pour confirmer automatiquement :</p>
-            <p style='margin: 20px 0; text-align: center;'>
-            <a href='{confirmationUrl}' style='background-color: #2d89ef; color: #ffffff; padding: 12px 20px; border-radius: 6px; text-decoration: none; font-size: 16px;'>
-                ✅ Confirmer mon compte
-            </a>
-            </p>
-
-            <p style='font-size: 14px; color: #888;'>Si le bouton ne fonctionne pas, copiez-collez ce lien dans votre navigateur :</p>
-            <p style='font-size: 12px; color: #555; word-break: break-all;'>{confirmationUrl}</p>
 
             <hr style='margin: 30px 0;' />
             <p style='font-size: 12px; color: #999; text-align: center;'>© Luxoria {DateTime.UtcNow:yyyy} – Ne répondez pas à cet e-mail.</p>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { Avatar } from '@/components/avatar'
 import { Button } from '@/components/button'
 import { Heading, Subheading } from '@/components/heading'
@@ -13,6 +13,63 @@ import { CollectionService, ChatMessage } from '@/services/collection.services'
 import { useRouter } from 'next/navigation'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
+
+const imageCache = new Map<string, string>()
+
+type Props = {
+  src: string
+  alt: string
+  className?: string
+}
+
+function ProtectedImageComponent({ src, alt, className }: Props) {
+  const [blobUrl, setBlobUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    let active = true
+
+    if (imageCache.has(src)) {
+      setBlobUrl(imageCache.get(src)!)
+      return
+    }
+
+    const loadImage = async () => {
+      try {
+        const res = await fetch(src, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          },
+        })
+        if (!res.ok) throw new Error("Failed to load image")
+
+        const blob = await res.blob()
+        const objectUrl = URL.createObjectURL(blob)
+
+        if (active) {
+          setBlobUrl(objectUrl)
+          imageCache.set(src, objectUrl)
+        }
+      } catch (err) {
+        console.error("Error loading protected image:", err)
+      }
+    }
+
+    loadImage()
+    return () => {
+      active = false
+    }
+  }, [src])
+
+  if (!blobUrl) {
+    return <div className="flex items-center justify-center text-gray-400"></div>
+  }
+
+  return <img src={blobUrl} alt={alt} className={className} />
+}
+
+// ✅ On l’exporte en memo pour éviter les rerenders inutiles
+export const ProtectedImage = React.memo(ProtectedImageComponent)
+
 
 export default function CollectionDetail() {
   const {
@@ -119,7 +176,16 @@ export default function CollectionDetail() {
     // Télécharge chaque image en blob et l'ajoute au zip
     await Promise.all(
       collection.photos.map(async (photo) => {
-        const response = await fetch(photo.filePath)
+        const response = await fetch(photo.filePath, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          },
+        })
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch ${photo.filePath}: ${response.status}`)
+        }
+
         const blob = await response.blob()
         const fileName = photo.filePath.split('/').pop() || `photo_${photo.id}.jpg`
         folder.file(fileName, blob)
@@ -237,6 +303,7 @@ const handleSendMessage = async () => {
 
   const selectedImage = collection.photos[modalIndex ?? 0]
   const filteredMessages = messages.filter(msg => msg.photoId === selectedImage?.id)
+
 
   return (
     <div className="p-6 max-w-screen-xl mx-auto space-y-10">
@@ -359,12 +426,10 @@ const handleSendMessage = async () => {
     {selectedImage && (
       <>
         <div className="w-full h-[600px] flex items-center justify-center relative">
-          <img
+          <ProtectedImage
             src={selectedImage.filePath}
             alt="Current"
-            className="max-w-full max-h-full object-contain"
-            loading="lazy"
-            style={{ width: 'auto', height: '100%' }}
+            className="w-full h-full object-contain"
           />
 
           {/* Bouton statut
@@ -509,15 +574,14 @@ const handleSendMessage = async () => {
     <div
       key={photo.id}
       onClick={() => setModalIndex(index)}
-      className={`relative cursor-pointer border rounded overflow-hidden shadow-sm ${
+      className={`relative cursor-pointer border rounded overflow-hidden shadow-sm aspect-square ${
         modalIndex === index ? 'ring-2 ring-[#B91F1E]' : ''
       }`}
     >
-      <img
+      <ProtectedImage
         src={photo.filePath}
         alt={`Photo ${index + 1}`}
-        className="w-full h-24 object-cover"
-        loading="lazy"
+        className="w-full h-full object-cover"
       />
     </div>
   ))}

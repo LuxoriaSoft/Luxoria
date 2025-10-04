@@ -349,6 +349,7 @@ namespace LuxAPI.Controllers
         /// <summary>
         /// Retrieve the email of a user by ID. Used for email confirmation flow.
         /// </summary>
+        #region PROTEGER
         [HttpGet("user/{id}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetUserEmailById(Guid id)
@@ -363,7 +364,7 @@ namespace LuxAPI.Controllers
 
             return Ok(user); // returns: { "email": "..." }
         }
-
+        #endregion
 
         /// <summary>
         /// Returns information about the currently authenticated user.

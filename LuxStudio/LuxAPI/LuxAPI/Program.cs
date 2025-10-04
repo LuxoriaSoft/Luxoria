@@ -68,6 +68,7 @@ builder.Services.AddSingleton<MinioService>();
 builder.Services.AddTransient<EmailService>();
 builder.Services.AddHostedService<CleanupExpiredRegistrations>();
 builder.Services.AddScoped<ActivityLogService>();
+builder.Services.AddScoped<AdminOnlyFilter>();
 builder.Services.AddHttpContextAccessor();
 
 
