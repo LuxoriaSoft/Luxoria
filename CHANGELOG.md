@@ -1,3 +1,27 @@
+# [1.69.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.68.0...v1.69.0) (2025-10-04)
+
+
+### Bug Fixes
+
+* Add authorization header to photo fetch requests and handle fetch errors ([d6e6797](https://github.com/LuxoriaSoft/Luxoria/commit/d6e6797dd3cf9fa5d086bf37fd54b7def21f854f))
+* Add debug information when sending mail ([de9d3f7](https://github.com/LuxoriaSoft/Luxoria/commit/de9d3f72d2e19ca98f9ac49dae29daff7e49a443))
+* Add debug information when SendMention ([9657cd2](https://github.com/LuxoriaSoft/Luxoria/commit/9657cd29055dfecc1b14b7cf50f0751567c4c139))
+* Brings authorization in CollectionController ([abe9109](https://github.com/LuxoriaSoft/Luxoria/commit/abe9109e63a5a15d0b96237a378c68f2a3c41cbc))
+* Change SMTP__User to SMTP__Username ([c4f40d1](https://github.com/LuxoriaSoft/Luxoria/commit/c4f40d10fa04ae3bfbcc15c1fc7895c8b93c6477))
+* Correct secret key references for SMTP user and password in deployment configuration ([3b8934f](https://github.com/LuxoriaSoft/Luxoria/commit/3b8934f0a8ffe8d3618b2a5658c29613bc2a1d94))
+* Improve access control checks in CollectionController and update response messages ([274c366](https://github.com/LuxoriaSoft/Luxoria/commit/274c366a09a4e46c26370a81bc1bda2210ded04b))
+* Improve user access checks in controllers ([ab10a3f](https://github.com/LuxoriaSoft/Luxoria/commit/ab10a3fdae561e5685c620888241b9b6b5c5707e))
+* Remove placeholder in Get Status method ([75bcb29](https://github.com/LuxoriaSoft/Luxoria/commit/75bcb29776ecc75db99083136a1724e6bee630eb))
+* Remove unnecessary confirmation URL from email template ([b5de9c4](https://github.com/LuxoriaSoft/Luxoria/commit/b5de9c46c1507c4780254e57b219c2ad37f54475))
+* Update hCaptcha SecretKey and SMTP configuration in appsettings ([e27de2a](https://github.com/LuxoriaSoft/Luxoria/commit/e27de2a82f2dd3f80dd9de15c199b2c2b5958611))
+
+
+### Features
+
+* Enhance image loading with ProtectedImage component and caching mechanism ([28b9108](https://github.com/LuxoriaSoft/Luxoria/commit/28b910879ae8a4e951b7063e6a4636fbda2ede57))
+* Implement AdminOnlyFilter and restrict access to admin routes; add 403 Forbidden page ([a8f3e43](https://github.com/LuxoriaSoft/Luxoria/commit/a8f3e437e1763928cc30dda316ba905d39daa8b4))
+* Refactor ProtectedImage component for improved image loading and caching ([78c3e4c](https://github.com/LuxoriaSoft/Luxoria/commit/78c3e4c602f338b50de6a26c01576e3f405977bc))
+
 # [1.68.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.67.3...v1.68.0) (2025-10-03)
 
 
