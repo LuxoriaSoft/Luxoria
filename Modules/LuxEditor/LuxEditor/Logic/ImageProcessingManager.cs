@@ -55,11 +55,14 @@ namespace LuxEditor.Logic
         /// </summary>
         /// <param name="source"></param>
         /// <param name="filters"></param>
+        /// <param name="ct"></param>
+        /// <param name="sigmaScale">Scale factor for blur sigma (for preview consistency). 1.0 = full resolution, <1.0 = preview</param>
         /// <returns></returns>
         public static Task<SKBitmap> ApplyFiltersAsync(
             SKBitmap source,
             Dictionary<string, object> filters,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            float sigmaScale = 1.0f)
         {
             return Task.Run(() =>
             {
@@ -78,7 +81,7 @@ namespace LuxEditor.Logic
                     ImageFilter = CreateTextureFilter(filters)
                 };
 
-                canvas.DrawBitmap(BlurBackground(source, filters), 0, 0, paint);
+                canvas.DrawBitmap(BlurBackground(source, filters, sigmaScale), 0, 0, paint);
                 canvas.Flush();
 
                 ct.ThrowIfCancellationRequested();
@@ -144,9 +147,10 @@ namespace LuxEditor.Logic
         /// </summary>
         /// <param name="source">Bitmap source to be blurred</param>
         /// <param name="filters">Filters dictionnary</param>
+        /// <param name="sigmaScale">Scale factor for blur sigma (for preview consistency). 1.0 = full resolution, <1.0 = preview</param>
         /// <returns>The original bitmap with a blurred background</returns>
         /// <exception cref="ArgumentNullException">If source is null</exception>
-        private static SKBitmap BlurBackground(SKBitmap source, Dictionary<string, object> filters)
+        private static SKBitmap BlurBackground(SKBitmap source, Dictionary<string, object> filters, float sigmaScale = 1.0f)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (filters == null) return source;
@@ -161,14 +165,27 @@ namespace LuxEditor.Logic
             if (!blurSettings.TryGetValue("Mask", out var maskObj) || maskObj is not SKBitmap mask)
                 return source;
 
-            if (mask.Width != source.Width || mask.Height != source.Height)
+            // Check if mask is empty (no blur applied yet)
+            if (mask.Width == 0 || mask.Height == 0)
                 return source;
+
+            // Resize mask to match source dimensions if needed
+            SKBitmap workingMask = mask;
+            if (mask.Width != source.Width || mask.Height != source.Height)
+            {
+                workingMask = ResizeBitmap(mask, source.Width, source.Height);
+            }
 
             float sigma = 5f;
             if (blurSettings.TryGetValue("Sigma", out var sigmaObj))
             {
                 try { sigma = Convert.ToSingle(sigmaObj); } catch { }
             }
+
+            // Apply sigma scaling for preview consistency
+            float effectiveSigma = sigma * sigmaScale;
+            // Ensure minimum blur to avoid no visible effect
+            effectiveSigma = Math.Max(effectiveSigma, 0.5f);
 
             int width = source.Width;
             int height = source.Height;
@@ -178,7 +195,7 @@ namespace LuxEditor.Logic
             using (var paint = new SKPaint
             {
                 IsAntialias = true,
-                ImageFilter = SKImageFilter.CreateBlur(sigma, sigma)
+                ImageFilter = SKImageFilter.CreateBlur(effectiveSigma, effectiveSigma)
             })
             {
                 canvas.Clear();
@@ -189,7 +206,7 @@ namespace LuxEditor.Logic
 
             var sourceSpan = source.PeekPixels().GetPixelSpan<SKColor>();
             var blurredSpan = blurred.PeekPixels().GetPixelSpan<SKColor>();
-            var maskSpan = mask.PeekPixels().GetPixelSpan<SKColor>();
+            var maskSpan = workingMask.PeekPixels().GetPixelSpan<SKColor>();
             var resultSpan = result.PeekPixels().GetPixelSpan<SKColor>();
 
             for (int i = 0; i < sourceSpan.Length; i++)
@@ -198,6 +215,10 @@ namespace LuxEditor.Logic
                 bool isForeground = maskPixel.Red > 128;
                 resultSpan[i] = isForeground ? sourceSpan[i] : blurredSpan[i];
             }
+
+            // Cleanup if we resized the mask
+            if (workingMask != mask)
+                workingMask.Dispose();
 
             return result;
         }
@@ -593,7 +614,7 @@ namespace LuxEditor.Logic
         /// <returns></returns>
         public static Task<SKBitmap> ApplyFiltersAsync(
             SKBitmap source, Dictionary<string, object> filters)
-            => ApplyFiltersAsync(source, filters, CancellationToken.None);
+            => ApplyFiltersAsync(source, filters, CancellationToken.None, 1.0f);
 
         /// <summary>
         /// Creates a tone curve filter based on the provided parameters.

@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media.Animation;
 using SkiaSharp;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -26,12 +27,18 @@ namespace LuxEditor.EditorUI.Groups
 
         private StackPanel _ROIPanel;
         private ListView _ROIView;
-        
+
+        private StackPanel _blurControlsPanel;
+        private ToggleSwitch _blurToggle;
+        private Slider _blurIntensitySlider;
+        private TextBlock _blurIntensityLabel;
+
         private EditableImage? _selectedImage;
         private Lazy<YoLoDetectModelAPI>? _detectionAPI;
         private Lazy<GrabCut> _grabCut => new(() => new GrabCut());
 
         public event Action<SKBitmap> BlurAppliedEvent;
+        public event Action FilterUpdateRequested;
 
         public SubjectRecognition(Lazy<YoLoDetectModelAPI> detectionAPI)
         {
@@ -92,9 +99,46 @@ namespace LuxEditor.EditorUI.Groups
                 Visibility = Visibility.Collapsed
             };
 
+            // Blur controls
+            _blurToggle = new ToggleSwitch
+            {
+                Header = "Enable Blur",
+                IsOn = false,
+                Margin = new Thickness(0, 8, 0, 0)
+            };
+            _blurToggle.Toggled += OnBlurToggled;
+
+            _blurIntensityLabel = new TextBlock
+            {
+                Text = "Blur Intensity: 7",
+                Margin = new Thickness(0, 8, 0, 4)
+            };
+
+            _blurIntensitySlider = new Slider
+            {
+                Minimum = 1,
+                Maximum = 50,
+                Value = 7,
+                StepFrequency = 1,
+                TickFrequency = 5,
+                TickPlacement = TickPlacement.BottomRight,
+                Margin = new Thickness(0, 0, 0, 8)
+            };
+            _blurIntensitySlider.ValueChanged += OnBlurIntensityChanged;
+
+            _blurControlsPanel = new StackPanel
+            {
+                Orientation = Orientation.Vertical,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                Margin = new Thickness(0, 12, 0, 0),
+                Children = { _blurToggle, _blurIntensityLabel, _blurIntensitySlider },
+                Visibility = Visibility.Collapsed
+            };
+
             _root.Children.Add(_startButton);
             _root.Children.Add(_progressPanel);
             _root.Children.Add(_ROIPanel);
+            _root.Children.Add(_blurControlsPanel);
         }
 
         private async void OnStartClicked(object sender, RoutedEventArgs e)
@@ -151,6 +195,8 @@ namespace LuxEditor.EditorUI.Groups
                 _progressPanel.Visibility = Visibility.Collapsed;
                 _startButton.Visibility = Visibility.Collapsed;
                 _ROIPanel.Visibility = Visibility.Visible;
+                // Show blur controls after detection completes
+                _blurControlsPanel.Visibility = Visibility.Visible;
             });
 
             foreach (var roi in result ?? [])
@@ -240,7 +286,64 @@ namespace LuxEditor.EditorUI.Groups
             return _root;
         }
 
-        public void SetImage(EditableImage image) => _selectedImage = image;
+        public void SetImage(EditableImage image)
+        {
+            _selectedImage = image;
+
+            // Sync UI with current blur settings
+            if (_selectedImage?.Settings != null && _selectedImage.Settings.TryGetValue("Blur", out var blurObj) && blurObj is Dictionary<string, object> blurSettings)
+            {
+                if (blurSettings.TryGetValue("State", out var stateObj) && stateObj is bool state)
+                {
+                    _blurToggle.IsOn = state;
+                }
+
+                if (blurSettings.TryGetValue("Sigma", out var sigmaObj))
+                {
+                    try
+                    {
+                        float sigma = Convert.ToSingle(sigmaObj);
+                        _blurIntensitySlider.Value = sigma;
+                        _blurIntensityLabel.Text = $"Blur Intensity: {(int)sigma}";
+                    }
+                    catch { }
+                }
+
+                if (blurSettings.TryGetValue("Mask", out var maskObj) && maskObj is SKBitmap mask)
+                {
+                    // Show blur controls if a mask exists
+                    if (mask.Width > 0 && mask.Height > 0)
+                    {
+                        _blurControlsPanel.Visibility = Visibility.Visible;
+                    }
+                }
+            }
+        }
+
+        private void OnBlurToggled(object sender, RoutedEventArgs e)
+        {
+            if (_selectedImage?.Settings == null) return;
+
+            if (_selectedImage.Settings.TryGetValue("Blur", out var blurObj) && blurObj is Dictionary<string, object> blurSettings)
+            {
+                blurSettings["State"] = _blurToggle.IsOn;
+                FilterUpdateRequested?.Invoke();
+            }
+        }
+
+        private void OnBlurIntensityChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (_selectedImage?.Settings == null) return;
+
+            float sigma = (float)e.NewValue;
+            _blurIntensityLabel.Text = $"Blur Intensity: {(int)sigma}";
+
+            if (_selectedImage.Settings.TryGetValue("Blur", out var blurObj) && blurObj is Dictionary<string, object> blurSettings)
+            {
+                blurSettings["Sigma"] = sigma;
+                FilterUpdateRequested?.Invoke();
+            }
+        }
 
         /// <summary>
         /// Extracts an embedded resource and writes it to a temporary file.
