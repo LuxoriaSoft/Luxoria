@@ -686,18 +686,51 @@ namespace LuxEditor.Components
             ResetAllButton.Visibility = (idx == 0) ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        /// <summary>
+        /// Handles the blur mask application from subject detection
+        /// </summary>
         private void OnBlurAppliedEventHandler(SKBitmap mask)
         {
-            Debug.WriteLine("Applying new bitmap on orginal");
             if (CurrentImage?.Settings == null) return;
-            Dictionary<string, object>? blurSettings = (Dictionary<string, object>?)CurrentImage?.Settings?["Blur"];
 
-            if (blurSettings == null) return;
-            blurSettings["State"] = true;
-            blurSettings["Mask"] = mask;
-            if (CurrentImage?.Settings == null)
-                return;
-            CurrentImage!.Settings["Blur"] = blurSettings;
+            Debug.WriteLine("Applying blur mask from subject detection");
+
+            // Get or create blur settings dictionary
+            if (!CurrentImage.Settings.TryGetValue("Blur", out var blurObj) || blurObj is not Dictionary<string, object> blurSettings)
+            {
+                blurSettings = new Dictionary<string, object>
+                {
+                    ["State"] = true,
+                    ["Mask"] = mask,
+                    ["Sigma"] = 7f
+                };
+                CurrentImage.Settings["Blur"] = blurSettings;
+            }
+            else
+            {
+                // Update existing blur settings
+                blurSettings["State"] = true;
+                blurSettings["Mask"] = mask;
+            }
+
+            // Save state for undo/redo support
+            CurrentImage.SaveState(true);
+
+            // Trigger rendering update
+            RequestFilterUpdate();
+        }
+
+        /// <summary>
+        /// Handles filter update requests from blur controls
+        /// </summary>
+        private void OnBlurFilterUpdateRequested()
+        {
+            if (CurrentImage == null) return;
+
+            // Save state for undo/redo support
+            CurrentImage.SaveState(true);
+
+            // Trigger rendering update
             RequestFilterUpdate();
         }
 
@@ -985,12 +1018,12 @@ namespace LuxEditor.Components
             {
                 if (CurrentImage == null) return;
 
-                async Task<SKBitmap> RenderAsync(SKBitmap src)
+                async Task<SKBitmap> RenderAsync(SKBitmap src, float blurSigmaScale = 1.0f)
                 {
                     var srcForFilters = _isCropEditing ? src : ApplyCrop(src);
 
                     var baseBmp = await ImageProcessingManager
-                                         .ApplyFiltersAsync(srcForFilters, CurrentImage.Settings, token);
+                                         .ApplyFiltersAsync(srcForFilters, CurrentImage.Settings, token, blurSigmaScale);
 
                     using var surf = SKSurface.Create(new SKImageInfo(baseBmp.Width, baseBmp.Height));
                     var can = surf.Canvas;
@@ -1008,7 +1041,7 @@ namespace LuxEditor.Components
                         if (layer.HasActiveFilters())
                         {
                             using var filtered = await ImageProcessingManager
-                                                       .ApplyFiltersAsync(result, layer.Filters, token);
+                                                       .ApplyFiltersAsync(result, layer.Filters, token, blurSigmaScale);
                             DrawMasked(can, filtered, mask, layer);
                         }
                         can.Flush();
@@ -1024,7 +1057,10 @@ namespace LuxEditor.Components
                 // and render directly with full quality
                 if (!_isCropEditing && CurrentImage.PreviewBitmap != null)
                 {
-                    var prev = await RenderAsync(CurrentImage.PreviewBitmap);
+                    // Calculate blur sigma scale based on preview vs original dimensions
+                    float previewScale = (float)CurrentImage.PreviewBitmap.Height / CurrentImage.OriginalBitmap.Height;
+
+                    var prev = await RenderAsync(CurrentImage.PreviewBitmap, previewScale);
                     CurrentImage.EditedPreviewBitmap = prev;
                     var upscaled = ImageProcessingManager.Upscale(prev,
                                                                   (int)CurrentImage.Crop.Height,
@@ -1032,7 +1068,7 @@ namespace LuxEditor.Components
                     OnEditorImageUpdated?.Invoke(upscaled);
                 }
 
-                var full = await RenderAsync(CurrentImage.OriginalBitmap);
+                var full = await RenderAsync(CurrentImage.OriginalBitmap, 1.0f);
                 CurrentImage.EditedBitmap = full;
                 OnEditorImageUpdated?.Invoke(SKImage.FromBitmap(full));
             }

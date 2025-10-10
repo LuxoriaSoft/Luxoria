@@ -204,9 +204,50 @@ namespace LuxEditor.Models
             foreach (var kv in src)
             {
                 if (kv.Value is List<float> list)
+                {
                     copy[kv.Key] = new List<float>(list);
+                }
+                else if (kv.Value is Dictionary<string, object> dict)
+                {
+                    // Deep copy nested dictionaries (like Blur settings)
+                    copy[kv.Key] = CloneNestedDictionary(dict);
+                }
+                else if (kv.Value is byte[] byteArray)
+                {
+                    // Deep copy byte arrays (like ToneCurve LUTs)
+                    copy[kv.Key] = (byte[])byteArray.Clone();
+                }
                 else
+                {
                     copy[kv.Key] = kv.Value;
+                }
+            }
+            return copy;
+        }
+
+        /// <summary>
+        /// Deep clones a nested dictionary, handling special types like SKBitmap
+        /// </summary>
+        private static Dictionary<string, object> CloneNestedDictionary(Dictionary<string, object> src)
+        {
+            var copy = new Dictionary<string, object>(src.Count);
+            foreach (var kv in src)
+            {
+                if (kv.Value is SKBitmap bitmap)
+                {
+                    // Deep copy SKBitmap
+                    copy[kv.Key] = bitmap.Copy();
+                }
+                else if (kv.Value is Dictionary<string, object> nestedDict)
+                {
+                    // Recursive deep copy for further nested dictionaries
+                    copy[kv.Key] = CloneNestedDictionary(nestedDict);
+                }
+                else
+                {
+                    // Primitive types (bool, float, string, etc.)
+                    copy[kv.Key] = kv.Value;
+                }
             }
             return copy;
         }

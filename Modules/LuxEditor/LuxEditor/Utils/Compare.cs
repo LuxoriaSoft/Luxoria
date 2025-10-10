@@ -148,11 +148,65 @@ namespace LuxEditor.Utils
                     if (listA.Count != listB.Count || !listA.SequenceEqual(listB))
                         return false;
                 }
+                else if (kv.Value is Dictionary<string, object> dictA && valB is Dictionary<string, object> dictB)
+                {
+                    // Recursively compare nested dictionaries (like Blur settings)
+                    if (!CompareNestedDictionary(dictA, dictB))
+                        return false;
+                }
+                else if (kv.Value is byte[] bytesA && valB is byte[] bytesB)
+                {
+                    // Compare byte arrays (like ToneCurve LUTs)
+                    if (bytesA.Length != bytesB.Length || !bytesA.SequenceEqual(bytesB))
+                        return false;
+                }
                 else if (!Equals(kv.Value, valB))
                 {
                     return false;
                 }
             }
+            return true;
+        }
+
+        /// <summary>
+        /// Compares nested dictionaries, handling special types like SKBitmap
+        /// </summary>
+        private static bool CompareNestedDictionary(Dictionary<string, object> a, Dictionary<string, object> b)
+        {
+            if (a.Count != b.Count)
+                return false;
+
+            foreach (var kv in a)
+            {
+                if (!b.TryGetValue(kv.Key, out var valB))
+                    return false;
+
+                if (kv.Value is SKBitmap bitmapA && valB is SKBitmap bitmapB)
+                {
+                    // Compare SKBitmap by dimensions (comparing pixels would be too expensive)
+                    if (bitmapA.Width != bitmapB.Width ||
+                        bitmapA.Height != bitmapB.Height ||
+                        bitmapA.ByteCount != bitmapB.ByteCount)
+                        return false;
+                }
+                else if (kv.Value is Dictionary<string, object> dictA && valB is Dictionary<string, object> dictB)
+                {
+                    // Recursive comparison for further nested dictionaries
+                    if (!CompareNestedDictionary(dictA, dictB))
+                        return false;
+                }
+                else if (kv.Value is float floatA && valB is float floatB)
+                {
+                    // Compare floats with tolerance
+                    if (Math.Abs(floatA - floatB) > 1e-3)
+                        return false;
+                }
+                else if (!Equals(kv.Value, valB))
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
 
