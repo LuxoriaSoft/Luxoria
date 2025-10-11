@@ -1,3 +1,10 @@
+## [1.69.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.69.0...v1.69.1) (2025-10-11)
+
+
+### Bug Fixes
+
+* Optimisation of LuxEditor concurrencies ([9c87a32](https://github.com/LuxoriaSoft/Luxoria/commit/9c87a32d53e1e1a712573f1e47b1335d95a4d60d))
+
 # [1.69.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.68.0...v1.69.0) (2025-10-04)
 
 
