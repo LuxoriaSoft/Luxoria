@@ -17,7 +17,10 @@ namespace Luxoria.App
             WindowHelper.SetSize(AppWindow, 800, 450);
         }
 
-        // Expose the TextBlock so the main app can update it during module loading
+        // Expose publicly CurrentModuleText 
         public TextBlock CurrentModuleTextBlock => CurrentModuleText;
+
+        // Expose publicly VersionInfoText
+        public TextBlock VersionInfoTextBlock => VersionInfoText;
     }
 }

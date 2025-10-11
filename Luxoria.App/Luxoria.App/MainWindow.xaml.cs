@@ -57,6 +57,9 @@ namespace Luxoria.App
 
             InitializeEventBus();
             LoadComponents();
+
+            // Publish final event, at this very moment this application has started and is ready
+            _eventBus.Publish(new ApplicationReadyEvent());
         }
 
         /// <summary>
@@ -67,6 +70,21 @@ namespace Luxoria.App
             _eventBus.Subscribe<CollectionUpdatedEvent>(_collectionUpdatedHandler.OnCollectionUpdated);
             _eventBus.Subscribe<RequestWindowHandleEvent>(OnRequestWindowHandle);
             _eventBus.Subscribe<ToastNotificationEvent>(OnToastNotificationHandle);
+            _eventBus.Subscribe<ApplicationReadyEvent>(OnApplicationReadyHandle);
+        }
+
+        /// <summary>
+        /// Application Ready Handler Function
+        /// Pop up a toast notification, displaying that the application has been started up
+        /// </summary>
+        /// <param name="e"></param>
+        private void OnApplicationReadyHandle(ApplicationReadyEvent e)
+        {
+            _eventBus.Publish(new ToastNotificationEvent
+            {
+                Title = "Ready",
+                Message = "Application has started!"
+            });
         }
 
         /// <summary>
