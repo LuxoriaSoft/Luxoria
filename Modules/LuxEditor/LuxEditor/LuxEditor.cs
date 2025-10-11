@@ -13,7 +13,9 @@ using Luxoria.SDK.Models;
 using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace LuxEditor
 {
@@ -126,10 +128,11 @@ namespace LuxEditor
 
             ImageManager.Instance.OnSelectionChanged += (img) =>
             {
-                _editor?.SetEditableImage(img);
-                _photoViewer?.SetImage(img.PreviewBitmap ?? img.EditedBitmap ?? img.OriginalBitmap);
-                _infos?.DisplayExifData(img.Metadata);
-                _photoViewer?.SetEditableImage(img);
+                Debug.WriteLine($"Image selected: {img.FileName}");
+                _infos.DisplayExifData(img.Metadata);
+                _editor.SetEditableImage(img);
+                _photoViewer.SetImage(img.PreviewBitmap ?? img.EditedBitmap ?? img.OriginalBitmap);
+                _photoViewer.SetEditableImage(img);
             };
 
             mainPage.Add(SmartButtonType.MainPanel, _photoViewer);
@@ -159,23 +162,26 @@ namespace LuxEditor
         /// </summary>
         private void OnCollectionUpdated(CollectionUpdatedEvent body)
         {
-            _logger?.Log($"Collection updated: {body.CollectionName}", "LuxEditor", LogLevel.Info);
-
-            var editableImages = new List<EditableImage>();
-
-            foreach (var asset in body.Assets)
+            Task.Run(() =>
             {
-                editableImages.Add(
-                    new(asset)
-                    {
-                        ThumbnailBitmap = ImageProcessingManager.GeneratePreview(asset.Data.Bitmap, 200),
-                        PreviewBitmap = ImageProcessingManager.GeneratePreview(asset.Data.Bitmap, 500),
-                    }
-                );
-            }
+                _logger?.Log($"Collection updated: {body.CollectionName}", "LuxEditor", LogLevel.Info);
 
-            ImageManager.Instance.LoadImages(editableImages);
-            _cExplorer?.SetImages(editableImages);            
+                var editableImages = new List<EditableImage>();
+
+                foreach (var asset in body.Assets)
+                {
+                    editableImages.Add(
+                        new(asset)
+                        {
+                            ThumbnailBitmap = ImageProcessingManager.GeneratePreview(asset.Data.Bitmap, 200),
+                            PreviewBitmap = ImageProcessingManager.GeneratePreview(asset.Data.Bitmap, 500),
+                        }
+                    );
+                }
+
+                ImageManager.Instance.LoadImages(editableImages);
+                _cExplorer?.SetImages(editableImages);
+            });
         }
 
         private void OnWebCollectionSelected(WebCollectionSelectedEvent body)

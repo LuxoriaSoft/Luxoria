@@ -27,10 +27,10 @@ namespace LuxImport.Views
             _collectionPath = collectionPath;
 
             this.InitializeComponent();
-            LoadCollection();
+            Task.Run(() => LoadCollectionAsync());
         }
 
-        private void LoadCollection()
+        private async Task LoadCollectionAsync()
         {
             OpenCollectionEvent openCollectionEvent = new OpenCollectionEvent(_collectionName, _collectionPath);
 
@@ -78,7 +78,7 @@ namespace LuxImport.Views
                 });
             };
 
-            _eventBus.Publish(openCollectionEvent); // To be changed when LuxExport handler function will be async
+            await _eventBus.Publish(openCollectionEvent); // To be changed when LuxExport handler function will be async
             // Task.Run(() => _eventBus.Publish(openCollectionEvent));
         }
 

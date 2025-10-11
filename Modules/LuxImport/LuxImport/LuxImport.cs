@@ -142,11 +142,15 @@ public class LuxImport : IModule, IModuleUI
             _logger?.Log($"Loaded {assets.Count} assets into memory in {stepStopwatch.ElapsedMilliseconds} ms", "Mods/LuxImport", LogLevel.Debug);
 
             SendProgressMessage(@event, "Assets loaded into memory.", 100);
-            _eventBus?.Publish(new CollectionUpdatedEvent(@event.CollectionName, @event.CollectionPath, assets));
 
             // Mark the collection as imported
             SendProgressMessage(@event, "Collection imported successfully.", 100);
-            @event.CompleteSuccessfully();
+
+            _ = Task.Run(() =>
+            {
+                _eventBus?.Publish(new CollectionUpdatedEvent(@event.CollectionName, @event.CollectionPath, assets));
+                @event.CompleteSuccessfully();
+            });
         }
         catch (Exception ex)
         {

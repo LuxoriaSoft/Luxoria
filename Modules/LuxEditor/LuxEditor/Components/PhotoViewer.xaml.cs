@@ -13,6 +13,7 @@ using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 
 
 namespace LuxEditor.Components
@@ -92,10 +93,16 @@ namespace LuxEditor.Components
                 else if (img.OriginalBitmap != null) SetImage(img.OriginalBitmap);
 
                 var prev = img.PreviewBitmap ?? img.EditedBitmap ?? img.OriginalBitmap;
+                if (prev == null) return;
                 SetImage(prev);
 
-                _cropController.ResizeCanvas(img.OriginalBitmap.Width, img.OriginalBitmap.Height);
+                if (_cropController == null || img.OriginalBitmap == null) return;
+
+                DispatcherQueue.TryEnqueue(() => _cropController.ResizeCanvas(img.OriginalBitmap.Width, img.OriginalBitmap.Height));
+
                 _cropController.Box = img.Crop;
+
+                if (_cropCanvas == null) throw new Exception("CropCanvas is null");
                 _cropCanvas.Invalidate();
             };
 
@@ -194,7 +201,8 @@ namespace LuxEditor.Components
             _currentImage = image;
             image.LayerManager.OnOperationChanged += OperationSelected;
             image.LayerManager.OnLayerChanged += LayerSelected;
-            _cropController.ResizeCanvas(image.OriginalBitmap.Width, image.OriginalBitmap.Height);
+            DispatcherQueue.TryEnqueue(() => _cropController.ResizeCanvas(image.OriginalBitmap.Width, image.OriginalBitmap.Height));
+
             _cropController.Box = image.Crop;
         }
 
@@ -366,34 +374,47 @@ namespace LuxEditor.Components
         private void ResizeCanvases(int width, int height)
         {
             // With IgnorePixelScaling = true on DpiCanvas, no DPI adjustment needed for canvas size
-            _mainCanvas.Width = width;
-            _mainCanvas.Height = height;
-            _mainCanvas.HorizontalAlignment = HorizontalAlignment.Center;
-            _mainCanvas.VerticalAlignment = VerticalAlignment.Center;
+            DispatcherQueue.EnqueueAsync(() => {
+                _mainCanvas.Width = width;
+                _mainCanvas.Height = height;
+                _mainCanvas.HorizontalAlignment = HorizontalAlignment.Center;
+                _mainCanvas.VerticalAlignment = VerticalAlignment.Center;
+            });
 
-            _overlayCanvas.Width = width;
-            _overlayCanvas.Height = height;
-            _overlayCanvas.HorizontalAlignment = HorizontalAlignment.Center;
-            _overlayCanvas.VerticalAlignment = VerticalAlignment.Center;
-            _overlayCanvas.Margin = _mainCanvas.Margin;
+            DispatcherQueue.EnqueueAsync(() =>
+            {
+                _overlayCanvas.Width = width;
+                _overlayCanvas.Height = height;
+                _overlayCanvas.HorizontalAlignment = HorizontalAlignment.Center;
+                _overlayCanvas.VerticalAlignment = VerticalAlignment.Center;
+                _overlayCanvas.Margin = _mainCanvas.Margin;
+            });
 
-            _cropCanvas.Width = width;
-            _cropCanvas.Height = height;
-            _cropCanvas.HorizontalAlignment = HorizontalAlignment.Center;
-            _cropCanvas.VerticalAlignment = VerticalAlignment.Center;
-            _cropCanvas.Margin = _mainCanvas.Margin;
+            DispatcherQueue.EnqueueAsync(() =>
+            {
+                _cropCanvas.Width = width;
+                _cropCanvas.Height = height;
+                _cropCanvas.HorizontalAlignment = HorizontalAlignment.Center;
+                _cropCanvas.VerticalAlignment = VerticalAlignment.Center;
+                _cropCanvas.Margin = _mainCanvas.Margin;
+            });
 
-            _mainCanvas.Invalidate();
-            _overlayCanvas.Invalidate();
-            _cropCanvas.Invalidate();
-            
-            _mainCanvas.UpdateLayout();
-            _overlayCanvas.UpdateLayout();
-            _cropCanvas.UpdateLayout();
-            
-            RefreshAction();
+            DispatcherQueue.EnqueueAsync(() => {
+                _mainCanvas.Invalidate();
+                _overlayCanvas.Invalidate();
+                _cropCanvas.Invalidate();
+            });
 
-            _currentTool?.ResizeCanvas(width, height);
+            DispatcherQueue.EnqueueAsync(() =>
+            {
+                _mainCanvas.UpdateLayout();
+                _overlayCanvas.UpdateLayout();
+                _cropCanvas.UpdateLayout();
+            });
+
+            DispatcherQueue.EnqueueAsync(RefreshAction);
+
+            DispatcherQueue.EnqueueAsync(() => _currentTool?.ResizeCanvas(width, height));
         }
 
         private void OnPhotoViewerLoaded(object sender, RoutedEventArgs e)
