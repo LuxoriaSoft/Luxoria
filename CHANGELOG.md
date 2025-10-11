@@ -1,3 +1,11 @@
+# [1.70.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.69.1...v1.70.0) (2025-10-11)
+
+
+### Features
+
+* Add ApplicationReady event, being published after launching the app ([6dac5f6](https://github.com/LuxoriaSoft/Luxoria/commit/6dac5f6d0b1844d72b5697525b5c94ab05f753d2))
+* Integrate AppVersion on launching splash screen ([34542e0](https://github.com/LuxoriaSoft/Luxoria/commit/34542e03ef2e79c6a4a4c7c07655463579b0f782))
+
 ## [1.69.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.69.0...v1.69.1) (2025-10-11)
 
 
