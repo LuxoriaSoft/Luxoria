@@ -9,7 +9,7 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
 
-namespace LuxImport.Views
+namespace LuxImport.Views.Legacy
 {
     public sealed partial class ImportView : Page
     {

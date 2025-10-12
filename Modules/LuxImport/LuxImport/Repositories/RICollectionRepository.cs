@@ -1,4 +1,5 @@
 ﻿using LuxImport.Interfaces;
+using Luxoria.Modules.Interfaces;
 using Microsoft.Data.Sqlite;
 
 namespace LuxImport.Repositories
@@ -8,14 +9,19 @@ namespace LuxImport.Repositories
     /// </summary>
     public class RICollectionRepository : IRICollectionRepository
     {
+        private static readonly string DB_KEY_PATH = "RIC_DB_PATH";
+        private static readonly string DB_ROOT_PATH = "Luxoria/LuxImport/";
         private readonly string _dbPath;
 
         /// <summary>
         /// Constructor for the RICollectionRepository
         /// </summary>
-        public RICollectionRepository()
+        public RICollectionRepository(IStorageAPI storageAPI)
         {
-            _dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Luxoria", "LuxImport", "RIC.db");
+            if (!storageAPI.Contains(DB_KEY_PATH))
+                storageAPI.Save(DB_KEY_PATH, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), DB_ROOT_PATH, Path.GetRandomFileName()));
+
+            _dbPath = storageAPI.Get<string>(DB_KEY_PATH);
             InitializeDatabase();
         }
 

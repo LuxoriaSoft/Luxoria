@@ -1,12 +1,13 @@
 using LuxImport.Interfaces;
 using LuxImport.Repositories;
 using Luxoria.Modules.Interfaces;
+using Luxoria.Modules.Services;
 using Microsoft.UI.Xaml.Controls;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace LuxImport.Views
+namespace LuxImport.Views.Legacy
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
@@ -27,10 +28,10 @@ namespace LuxImport.Views
         /// Constructor for the MainImportView
         /// </summary>
         /// <param name="eventBus">Communication system (IPC)</param>
-        public MainImportView(IEventBus eventBus)
+        public MainImportView(IEventBus eventBus, IStorageAPI storageAPI)
         {
             _eventBus = eventBus;
-            RICollectionRepository = new RICollectionRepository();
+            RICollectionRepository = new RICollectionRepository(storageAPI);
 
             this.InitializeComponent();
 
