@@ -187,8 +187,8 @@ namespace LuxEditor.Models
                 ["Blur"] = new Dictionary<string, object>
                 {
                     ["State"] = false,
-                    ["Mask"] = new SKBitmap(),
-                    ["Sigma"] = 7f
+                    ["Sigma"] = 7f,
+                    ["Subjects"] = new List<Dictionary<string, object>>() // List of subject masks
                 }
             };
         }
@@ -226,7 +226,7 @@ namespace LuxEditor.Models
         }
 
         /// <summary>
-        /// Deep clones a nested dictionary, handling special types like SKBitmap
+        /// Deep clones a nested dictionary, handling special types like SKBitmap and Lists
         /// </summary>
         private static Dictionary<string, object> CloneNestedDictionary(Dictionary<string, object> src)
         {
@@ -243,9 +243,19 @@ namespace LuxEditor.Models
                     // Recursive deep copy for further nested dictionaries
                     copy[kv.Key] = CloneNestedDictionary(nestedDict);
                 }
+                else if (kv.Value is List<Dictionary<string, object>> listOfDicts)
+                {
+                    // Deep copy list of dictionaries (e.g., Blur Subjects)
+                    var clonedList = new List<Dictionary<string, object>>();
+                    foreach (var dict in listOfDicts)
+                    {
+                        clonedList.Add(CloneNestedDictionary(dict));
+                    }
+                    copy[kv.Key] = clonedList;
+                }
                 else
                 {
-                    // Primitive types (bool, float, string, etc.)
+                    // Primitive types (bool, float, string, Guid, etc.)
                     copy[kv.Key] = kv.Value;
                 }
             }

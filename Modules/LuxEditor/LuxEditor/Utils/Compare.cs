@@ -169,7 +169,7 @@ namespace LuxEditor.Utils
         }
 
         /// <summary>
-        /// Compares nested dictionaries, handling special types like SKBitmap
+        /// Compares nested dictionaries, handling special types like SKBitmap and Lists
         /// </summary>
         private static bool CompareNestedDictionary(Dictionary<string, object> a, Dictionary<string, object> b)
         {
@@ -194,6 +194,18 @@ namespace LuxEditor.Utils
                     // Recursive comparison for further nested dictionaries
                     if (!CompareNestedDictionary(dictA, dictB))
                         return false;
+                }
+                else if (kv.Value is List<Dictionary<string, object>> listA && valB is List<Dictionary<string, object>> listB)
+                {
+                    // Compare lists of dictionaries (e.g., Blur Subjects)
+                    if (listA.Count != listB.Count)
+                        return false;
+
+                    for (int i = 0; i < listA.Count; i++)
+                    {
+                        if (!CompareNestedDictionary(listA[i], listB[i]))
+                            return false;
+                    }
                 }
                 else if (kv.Value is float floatA && valB is float floatB)
                 {
