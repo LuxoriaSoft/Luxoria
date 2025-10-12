@@ -121,8 +121,8 @@ public sealed class PresetManager
                     newSettings["Blur"] = new Dictionary<string, object>
                     {
                         ["State"] = false,
-                        ["Mask"] = new SKBitmap(),
-                        ["Sigma"] = 7f
+                        ["Sigma"] = 7f,
+                        ["Subjects"] = new List<Dictionary<string, object>>()
                     };
                 }
 
@@ -184,7 +184,11 @@ public sealed class PresetManager
                     "Sigma" => propValue.ValueKind == JsonValueKind.Number
                         ? (float)propValue.GetDouble()
                         : 7f,
-                    "Mask" => new SKBitmap(), // Masks are not serialized in presets, always start with empty
+                    "Subjects" => propValue.ValueKind == JsonValueKind.Array
+                        ? ParseBlurSubjects(propValue)
+                        : new List<Dictionary<string, object>>(),
+                    // Legacy support for single "Mask" key (convert to Subjects list)
+                    "Mask" => null, // Ignore legacy Mask, will be migrated
                     _ => null
                 };
 
@@ -194,8 +198,8 @@ public sealed class PresetManager
 
             // Ensure all required keys exist
             if (!blurDict.ContainsKey("State")) blurDict["State"] = false;
-            if (!blurDict.ContainsKey("Mask")) blurDict["Mask"] = new SKBitmap();
             if (!blurDict.ContainsKey("Sigma")) blurDict["Sigma"] = 7f;
+            if (!blurDict.ContainsKey("Subjects")) blurDict["Subjects"] = new List<Dictionary<string, object>>();
 
             return blurDict;
         }
@@ -207,6 +211,48 @@ public sealed class PresetManager
                 ? (object)(float)kv.Value.GetDouble()
                 : kv.Value.GetString() ?? ""
         );
+    }
+
+    /// <summary>
+    /// Parses the "Subjects" array from Blur settings
+    /// </summary>
+    private static List<Dictionary<string, object>> ParseBlurSubjects(JsonElement array)
+    {
+        var subjects = new List<Dictionary<string, object>>();
+
+        foreach (var item in array.EnumerateArray())
+        {
+            if (item.ValueKind != JsonValueKind.Object) continue;
+
+            var subject = new Dictionary<string, object>();
+
+            foreach (var prop in item.EnumerateObject())
+            {
+                object? value = prop.Name switch
+                {
+                    "SubjectId" => prop.Value.ValueKind == JsonValueKind.String
+                        ? Guid.Parse(prop.Value.GetString()!)
+                        : Guid.NewGuid(),
+                    "IsActive" => prop.Value.ValueKind == JsonValueKind.True || prop.Value.ValueKind == JsonValueKind.False
+                        ? prop.Value.GetBoolean()
+                        : true,
+                    "Mask" => new SKBitmap(), // Masks are not serialized in presets
+                    _ => null
+                };
+
+                if (value != null)
+                    subject[prop.Name] = value;
+            }
+
+            // Ensure all required keys
+            if (!subject.ContainsKey("SubjectId")) subject["SubjectId"] = Guid.NewGuid();
+            if (!subject.ContainsKey("IsActive")) subject["IsActive"] = true;
+            if (!subject.ContainsKey("Mask")) subject["Mask"] = new SKBitmap();
+
+            subjects.Add(subject);
+        }
+
+        return subjects;
     }
 
     private object DecodeStringSetting(string key, string str)

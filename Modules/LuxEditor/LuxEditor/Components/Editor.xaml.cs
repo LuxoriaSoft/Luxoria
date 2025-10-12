@@ -47,6 +47,9 @@ namespace LuxEditor.Components
         private bool _isCropEditing;
         private bool _updatingCropInputs;
 
+        public event Action<List<DetectedSubject>>? SubjectsDetected;
+        public event Action<bool>? ShowSubjectsOverlayToggled;
+
         public bool LockAspectToggleIsOn => LockAspectToggle.IsOn;
 
         private readonly Dictionary<TreeViewNode, object> _nodeMap = new();
@@ -57,6 +60,8 @@ namespace LuxEditor.Components
         private Lazy<YoLoDetectModelAPI> _yoloDetectionAPI = new(() =>
             new YoLoDetectModelAPI(SubjectRecognition.ExtractEmbeddedResource("LuxEditor.ExternalLibs.Models.yolov5l.onnx")));
         private SubjectRecognition _subjectRecognition;
+
+        public SubjectRecognition SubjectRecognition => _subjectRecognition;
 
         /// <summary>
         /// Style for the temperature slider.
@@ -687,47 +692,91 @@ namespace LuxEditor.Components
         }
 
         /// <summary>
-        /// Handles the blur mask application from subject detection
+        /// Handles subject selection from PhotoViewer - extracts mask and adds to Blur settings
         /// </summary>
-        private void OnBlurAppliedEventHandler(SKBitmap mask)
+        public async void OnSubjectSelected(DetectedSubject subject)
         {
             if (CurrentImage?.Settings == null) return;
 
-            Debug.WriteLine("Applying blur mask from subject detection");
+            Debug.WriteLine($"Subject selected: {subject.Label}, extracting mask...");
 
-            // Get or create blur settings dictionary
+            // Extract mask using GrabCut
+            var mask = await _subjectRecognition.ExtractSubjectMask(subject);
+            if (mask == null)
+            {
+                Debug.WriteLine("Failed to extract mask");
+                return;
+            }
+
+            Debug.WriteLine($"Mask extracted: {mask.Width}x{mask.Height}");
+
+            // Get or create blur settings
             if (!CurrentImage.Settings.TryGetValue("Blur", out var blurObj) || blurObj is not Dictionary<string, object> blurSettings)
             {
                 blurSettings = new Dictionary<string, object>
                 {
                     ["State"] = true,
-                    ["Mask"] = mask,
-                    ["Sigma"] = 7f
+                    ["Sigma"] = 7f,
+                    ["Subjects"] = new List<Dictionary<string, object>>()
                 };
                 CurrentImage.Settings["Blur"] = blurSettings;
             }
-            else
+
+            // Get subjects list
+            if (!blurSettings.TryGetValue("Subjects", out var subjectsObj) || subjectsObj is not List<Dictionary<string, object>> subjects)
             {
-                // Update existing blur settings
-                blurSettings["State"] = true;
-                blurSettings["Mask"] = mask;
+                subjects = new List<Dictionary<string, object>>();
+                blurSettings["Subjects"] = subjects;
             }
 
-            // Save state for undo/redo support
-            CurrentImage.SaveState(true);
+            // Find existing subject or create new one
+            Dictionary<string, object>? existingSubject = null;
+            foreach (var subj in subjects)
+            {
+                if (subj.TryGetValue("SubjectId", out var idObj) && idObj is Guid id && id == subject.Id)
+                {
+                    existingSubject = subj;
+                    break;
+                }
+            }
 
-            // Trigger rendering update
-            RequestFilterUpdate();
-        }
+            if (existingSubject != null)
+            {
+                // Update existing subject
+                existingSubject["Mask"] = mask;
+                existingSubject["IsActive"] = subject.IsSelected;
+                Debug.WriteLine($"  → Updated existing subject {subject.Id}: IsActive={subject.IsSelected}");
+            }
+            else
+            {
+                // Add new subject
+                var newSubject = new Dictionary<string, object>
+                {
+                    ["SubjectId"] = subject.Id,
+                    ["Mask"] = mask,
+                    ["IsActive"] = subject.IsSelected
+                };
+                subjects.Add(newSubject);
+                Debug.WriteLine($"  → Added new subject {subject.Id}: IsActive={subject.IsSelected}");
+            }
 
-        /// <summary>
-        /// Handles filter update requests from blur controls
-        /// </summary>
-        private void OnBlurFilterUpdateRequested()
-        {
-            if (CurrentImage == null) return;
+            // Debug: Log all subjects states
+            Debug.WriteLine($"=== Current Blur/Subjects state (total: {subjects.Count}) ===");
+            foreach (var subj in subjects)
+            {
+                var sid = subj.TryGetValue("SubjectId", out var sidObj) ? sidObj : "unknown";
+                var isActive = subj.TryGetValue("IsActive", out var activeObj) && activeObj is bool a && a;
+                var hasMask = subj.TryGetValue("Mask", out var maskObj) && maskObj is SKBitmap;
+                Debug.WriteLine($"  - Subject {sid}: IsActive={isActive}, HasMask={hasMask}");
+            }
 
-            // Save state for undo/redo support
+            // Only enable blur state if any subject is active AND blur toggle is on
+            bool anyActive = subjects.Any(s => s.TryGetValue("IsActive", out var a) && a is bool active && active);
+            // Don't auto-enable blur, just track if subjects are active
+            // The user controls blur via the toggle
+            Debug.WriteLine($"Active subjects: {anyActive}, current blur state: {blurSettings["State"]}");
+
+            // Save state for undo/redo
             CurrentImage.SaveState(true);
 
             // Trigger rendering update
@@ -769,8 +818,20 @@ namespace LuxEditor.Components
 
             DispatcherQueue.TryEnqueue(() => {
                 _subjectRecognition = new(_yoloDetectionAPI);
-                _subjectRecognition.BlurAppliedEvent += OnBlurAppliedEventHandler;
                 _subjectRecognition.SetImage(image);
+
+                // Wire subject detection events
+                _subjectRecognition.SubjectsDetectedEvent += (subjects) =>
+                {
+                    SubjectsDetected?.Invoke(subjects);
+                };
+
+                _subjectRecognition.ShowOverlayToggled += (isVisible) =>
+                {
+                    ShowSubjectsOverlayToggled?.Invoke(isVisible);
+                };
+
+                _subjectRecognition.FilterUpdateRequested += RequestFilterUpdate;
             });
 
             DispatcherQueue.TryEnqueue(BuildEditorUI);

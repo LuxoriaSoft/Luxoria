@@ -135,6 +135,22 @@ namespace LuxEditor
                 _photoViewer.SetEditableImage(img);
             };
 
+            // Wire subject detection workflow
+            _editor.SubjectsDetected += subjects =>
+            {
+                _photoViewer.SetDetectedSubjects(subjects);
+            };
+
+            _editor.ShowSubjectsOverlayToggled += isVisible =>
+            {
+                _photoViewer.SetSubjectsOverlayVisible(isVisible);
+            };
+
+            _photoViewer.SubjectSelected += subject =>
+            {
+                _editor.OnSubjectSelected(subject);
+            };
+
             mainPage.Add(SmartButtonType.MainPanel, _photoViewer);
             mainPage.Add(SmartButtonType.BottomPanel, _cExplorer);
             mainPage.Add(SmartButtonType.RightPanel, _editor);

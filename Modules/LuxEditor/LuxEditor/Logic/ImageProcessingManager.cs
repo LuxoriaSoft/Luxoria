@@ -1,6 +1,7 @@
 ﻿using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -162,25 +163,24 @@ namespace LuxEditor.Logic
             if (!blurSettings.TryGetValue("State", out var stateObj) || !(stateObj is bool state) || !state)
                 return source;
 
-            if (!blurSettings.TryGetValue("Mask", out var maskObj) || maskObj is not SKBitmap mask)
-                return source;
-
-            // Check if mask is empty (no blur applied yet)
-            if (mask.Width == 0 || mask.Height == 0)
-                return source;
-
-            // Resize mask to match source dimensions if needed
-            SKBitmap workingMask = mask;
-            if (mask.Width != source.Width || mask.Height != source.Height)
-            {
-                workingMask = ResizeBitmap(mask, source.Width, source.Height);
-            }
-
+            // Get sigma
             float sigma = 5f;
             if (blurSettings.TryGetValue("Sigma", out var sigmaObj))
             {
                 try { sigma = Convert.ToSingle(sigmaObj); } catch { }
             }
+
+            // Extract and merge subject masks
+            SKBitmap? compositeMask = null;
+
+            if (blurSettings.TryGetValue("Subjects", out var subjectsObj) && subjectsObj is List<Dictionary<string, object>> subjects)
+            {
+                compositeMask = MergeSubjectMasks(subjects, source.Width, source.Height);
+            }
+
+            // Check if we have a composite mask
+            if (compositeMask == null || compositeMask.Width == 0 || compositeMask.Height == 0)
+                return source;
 
             // Apply sigma scaling for preview consistency
             float effectiveSigma = sigma * sigmaScale;
@@ -206,7 +206,7 @@ namespace LuxEditor.Logic
 
             var sourceSpan = source.PeekPixels().GetPixelSpan<SKColor>();
             var blurredSpan = blurred.PeekPixels().GetPixelSpan<SKColor>();
-            var maskSpan = workingMask.PeekPixels().GetPixelSpan<SKColor>();
+            var maskSpan = compositeMask.PeekPixels().GetPixelSpan<SKColor>();
             var resultSpan = result.PeekPixels().GetPixelSpan<SKColor>();
 
             for (int i = 0; i < sourceSpan.Length; i++)
@@ -216,11 +216,77 @@ namespace LuxEditor.Logic
                 resultSpan[i] = isForeground ? sourceSpan[i] : blurredSpan[i];
             }
 
-            // Cleanup if we resized the mask
-            if (workingMask != mask)
-                workingMask.Dispose();
+            // Cleanup
+            compositeMask.Dispose();
 
             return result;
+        }
+
+        /// <summary>
+        /// Merges multiple subject masks into a single composite mask
+        /// </summary>
+        private static SKBitmap? MergeSubjectMasks(List<Dictionary<string, object>> subjects, int targetWidth, int targetHeight)
+        {
+            // Filter only active subjects with valid masks
+            var activeMasks = new List<SKBitmap>();
+
+            foreach (var subject in subjects)
+            {
+                if (!subject.TryGetValue("IsActive", out var isActiveObj) || !(isActiveObj is bool isActive) || !isActive)
+                    continue;
+
+                if (!subject.TryGetValue("Mask", out var maskObj) || maskObj is not SKBitmap mask)
+                    continue;
+
+                if (mask.Width == 0 || mask.Height == 0)
+                    continue;
+
+                // Resize if needed
+                if (mask.Width != targetWidth || mask.Height != targetHeight)
+                {
+                    activeMasks.Add(ResizeBitmap(mask, targetWidth, targetHeight));
+                }
+                else
+                {
+                    activeMasks.Add(mask);
+                }
+            }
+
+            if (activeMasks.Count == 0)
+                return null;
+
+            // Create composite mask
+            var composite = new SKBitmap(targetWidth, targetHeight, SKColorType.Rgba8888, SKAlphaType.Premul);
+
+            using var surface = SKSurface.Create(composite.Info);
+            var canvas = surface.Canvas;
+            canvas.Clear(SKColors.Black); // Black = background (will be blurred)
+
+            // Draw all active masks in white (foreground = keep sharp)
+            // Use Lighten blend mode to combine white pixels without black overwriting
+            using var paint = new SKPaint
+            {
+                BlendMode = SKBlendMode.Lighten  // Only keeps the lighter pixel (white over black)
+            };
+
+            foreach (var mask in activeMasks)
+            {
+                canvas.DrawBitmap(mask, 0, 0, paint);
+            }
+
+            canvas.Flush();
+            surface.ReadPixels(composite.Info, composite.GetPixels(), composite.RowBytes, 0, 0);
+
+            // Cleanup resized masks
+            // Note: Don't dispose original masks as they're still referenced in Settings
+            foreach (var mask in activeMasks)
+            {
+                bool isOriginal = subjects.Any(s => s.TryGetValue("Mask", out var m) && ReferenceEquals(m, mask));
+                if (!isOriginal)
+                    mask.Dispose();
+            }
+
+            return composite;
         }
 
 
