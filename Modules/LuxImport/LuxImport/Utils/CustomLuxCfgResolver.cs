@@ -22,10 +22,9 @@ public class CustomLuxCfgResolver : DefaultContractResolver
     {
         var prop = base.CreateProperty(member, memberSerialization);
 
-        // Target the "Id" property specifically
         if (prop.PropertyName == "Id")
         {
-            prop.Writable = true; // Ensure the property can be written to
+            prop.Writable = true;
         }
 
         return prop;

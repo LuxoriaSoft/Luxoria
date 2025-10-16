@@ -9,6 +9,29 @@
     mc:Ignorable="d">
 
     <Grid>
-
+        <TreeView x:Name="ExplorerTree"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  Expanding="ExplorerTree_Expanding"
+                  SelectionMode="Single"
+                  IsDoubleTapEnabled="True"
+                  DoubleTapped="ExplorerTree_DoubleTapped"
+                  Collapsed="ExplorerTree_Collapsed"
+        >
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="TreeViewItem">
+                    <Setter Property="HasUnrealizedChildren" Value="True" />
+                </Style>
+            </TreeView.ItemContainerStyle>
+            <TreeView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{Binding BitmapImage}" Height="24" Width="24" />
+                        <TextBlock Margin="0,0,10,0" />
+                        <TextBlock Text="{Binding DisplayText}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                    </StackPanel>
+                </DataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
     </Grid>
 </Page>

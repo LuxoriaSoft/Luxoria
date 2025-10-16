@@ -17,9 +17,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="ImportView.xaml" />
-    <None Remove="Views\IndexicationView.xaml" />
-    <None Remove="Views\PropertiesView.xaml" />
+    <None Remove="Views\legacy\ImportView.xaml" />
+    <None Remove="Views\legacy\IndexicationView.xaml" />
+    <None Remove="Views\legacy\PropertiesView.xaml" />
+    <None Remove="Views\v3\ResourcesExplorerView.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,6 +36,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250108002" />
+		<PackageReference Include="System.Drawing.Common" Version="9.0.10" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -45,37 +47,32 @@
 
 	<ItemGroup>
 	  <Folder Include="Components\" />
+	  <Folder Include="Views\legacy\" />
+	  <Folder Include="Views\v3\" />
 	</ItemGroup>
 
 
 	<ItemGroup>
-	  <Page Update="Views\IndexicationView.xaml">
-	    <Generator>MSBuild:Compile</Generator>
+	  <Page Update="Views\v3\ResourcesExplorerView.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Page>
 	</ItemGroup>
 
-
 	<ItemGroup>
-	  <Page Update="Views\PropertiesView.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </Page>
-	</ItemGroup>
-
-
-	<ItemGroup>
-	  <Page Update="ImportView.xaml">
+	  <Page Update="Views\legacy\ImportView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Page>
-	  <Page Update="MainImportView.xaml">
+	  <Page Update="Views\legacy\MainImportView.xaml">
 		<Generator>MSBuild:Compile</Generator>
 		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Page>
-      <Page Update="PropertiesView.xaml">
+      <Page Update="Views\legacy\PropertiesView.xaml">
 		<Generator>MSBuild:Compile</Generator>
 		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Page>
-	  <Page Update="IndexicationView.xaml">
+	  <Page Update="Views\legacy\IndexicationView.xaml">
 		<Generator>MSBuild:Compile</Generator>
 		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Page>

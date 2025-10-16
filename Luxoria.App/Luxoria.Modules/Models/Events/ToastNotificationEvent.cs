@@ -10,6 +10,7 @@ public class ToastNotificationEvent : IEvent
     /// Gets or sets the title of the toast notification.
     /// </summary>
     public string Title { get; set; } = string.Empty;
+
     /// <summary>
     /// Gets or sets the message of the toast notification.
     /// </summary>

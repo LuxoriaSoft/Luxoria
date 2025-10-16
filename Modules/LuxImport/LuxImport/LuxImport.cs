@@ -1,13 +1,16 @@
 ﻿using LuxImport.Interfaces;
 using LuxImport.Services;
-using LuxImport.Views;
+using LuxImport.Views.Legacy;
+using LuxImport.Views.v3;
 using Luxoria.GModules;
 using Luxoria.GModules.Interfaces;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
+using Luxoria.Modules.Services;
 using Luxoria.SDK.Interfaces;
 using Luxoria.SDK.Models;
 using System.Diagnostics;
+using System.Numerics;
 
 namespace LuxImport;
 
@@ -43,15 +46,34 @@ public class LuxImport : IModule, IModuleUI
         _eventBus.Subscribe<OpenCollectionEvent>(HandleOnOpenCollectionAsync);
         _eventBus.Subscribe<SaveLastUpdatedIdEvent>(HandleSaveLastUpdatedId);
 
-        // Add a menu bar item to the main menu bar
-        List<ISmartButton> smartButtons = new List<ISmartButton>();
-        Dictionary<SmartButtonType, Object> page = new Dictionary<SmartButtonType, Object>
+        // Retreive Storage API
+        IStorageAPI storageAPI = Task.Run(async () =>
         {
-            { SmartButtonType.Modal, new MainImportView(_eventBus) }
+            var tcs = new TaskCompletionSource<IStorageAPI>();
+
+            await eventBus.Publish(new RequestStorageAPIEvent(Name, handle => tcs.SetResult(handle)));
+
+            return await tcs.Task;
+        }).GetAwaiter().GetResult();
+
+        // New Layout version (v3)
+        Dictionary<SmartButtonType, object> v3_view = new()
+        {
+            {SmartButtonType.LeftPanel, new ResourcesExplorerView() },
+            {SmartButtonType.RightPanel, new ResourcesExplorerView() },
+            {SmartButtonType.BottomPanel, new MainImportView(_eventBus, storageAPI) }
         };
 
-        smartButtons.Add(new SmartButton("Import", "ImportDialog", page));
-        Items.Add(new LuxMenuBarItem("Import", true, new Guid(), smartButtons));
+        // Legacy
+        Dictionary<SmartButtonType, Object> legacy = new()
+        {
+            { SmartButtonType.Modal, new MainImportView(_eventBus, storageAPI) }
+        };
+
+        Items.Add(new LuxMenuBarItem("Import", true, new Guid(), [
+            new SmartButton("Import", "Importation", v3_view),
+            new SmartButton("Express", "Legacy Batch Importer", legacy)
+        ]));
     }
 
     /// <summary>
