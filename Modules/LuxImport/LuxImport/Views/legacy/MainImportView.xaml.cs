@@ -1,7 +1,6 @@
 using LuxImport.Interfaces;
 using LuxImport.Repositories;
 using Luxoria.Modules.Interfaces;
-using Luxoria.Modules.Services;
 using Microsoft.UI.Xaml.Controls;
 
 // To learn more about WinUI, the WinUI project structure,

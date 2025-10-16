@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.11.35327.3
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11111.16 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuxImport", "LuxImport\LuxImport.csproj", "{18322530-BF25-428B-AA2A-AB0AD673B194}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuxImport.Tests", "LuxImport.Tests\LuxImport.Tests.csproj", "{53F2D438-08F0-4F58-83F2-CABF72DE296B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuxImport.Benchmark", "LuxImport.Benchmark\LuxImport.Benchmark.csproj", "{A22B905E-0524-4AAB-8D09-ADE61E933884}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuxImport.Logic", "LuxImport.Logic\LuxImport.Logic.csproj", "{B5108362-CEC8-4017-935E-2D1EFAA4B144}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{A22B905E-0524-4AAB-8D09-ADE61E933884}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A22B905E-0524-4AAB-8D09-ADE61E933884}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A22B905E-0524-4AAB-8D09-ADE61E933884}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5108362-CEC8-4017-935E-2D1EFAA4B144}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5108362-CEC8-4017-935E-2D1EFAA4B144}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5108362-CEC8-4017-935E-2D1EFAA4B144}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5108362-CEC8-4017-935E-2D1EFAA4B144}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

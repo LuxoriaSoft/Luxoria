@@ -44,6 +44,10 @@
 		<ProjectReference Include="..\..\..\Luxoria.App\Luxoria.Modules\Luxoria.Modules.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\LuxImport.Logic\LuxImport.Logic.csproj" />
+	</ItemGroup>
+
 
 	<ItemGroup>
 	  <Folder Include="Components\" />
