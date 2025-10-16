@@ -16,10 +16,8 @@ namespace LuxImport.Views.v3
         {
             this.InitializeComponent();
 
-            InitialiseTreeView();
+            Task.Run(InitialiseTreeView);
         }
-
-        private ObservableCollection<TreeItem> _items = [];
 
         private static readonly string[] ignoreFolders =
         {
@@ -29,6 +27,7 @@ namespace LuxImport.Views.v3
         private async void InitialiseTreeView()
         {
             DriveInfo[] drives = DriveInfo.GetDrives();
+            ObservableCollection<TreeItem> items = [];
 
             foreach (DriveInfo drive in drives)
             {
@@ -43,20 +42,22 @@ namespace LuxImport.Views.v3
                     StorageItemThumbnail itemIcon = await folder
                         .GetThumbnailAsync(ThumbnailMode.SingleItem, 24, ThumbnailOptions.UseCurrentScale);
 
-                    TreeItem item = new TreeItem
+                    DispatcherQueue.TryEnqueue(() =>
                     {
-                        BitmapImage = new BitmapImage()
-                    };
+                        TreeItem item = new TreeItem
+                        {
+                            BitmapImage = new BitmapImage()
+                        };
 
-                    item.BitmapImage.SetSource(itemIcon);
+                        item.BitmapImage.SetSource(itemIcon);
 
-                    if (string.IsNullOrEmpty(drive.VolumeLabel))
-                        item.DisplayText = $"Local Disk ({drive.Name})";
-                    else item.DisplayText = drive.VolumeLabel;
+                        if (string.IsNullOrEmpty(drive.VolumeLabel))
+                            item.DisplayText = $"Local Disk ({drive.Name})";
+                        else item.DisplayText = drive.VolumeLabel;
 
-                    item.Path = drive.Name;
-
-                    _items.Add(item);
+                        item.Path = drive.Name;
+                        items.Add(item);
+                    });
                 }
                 catch (FileNotFoundException)
                 {
@@ -83,19 +84,22 @@ namespace LuxImport.Views.v3
                 StorageItemThumbnail itemIcon = await folder
                     .GetThumbnailAsync(ThumbnailMode.SingleItem, 24, ThumbnailOptions.UseCurrentScale);
 
-                TreeItem item = new()
+                DispatcherQueue.TryEnqueue(() =>
                 {
-                    BitmapImage = new BitmapImage()
-                };
+                    TreeItem item = new()
+                    {
+                        BitmapImage = new BitmapImage()
+                    };
 
-                item.BitmapImage.SetSource(itemIcon);
+                    item.BitmapImage.SetSource(itemIcon);
 
-                item.DisplayText = folder.DisplayName;
-                item.Path = fld;
-                _items.Add(item);
+                    item.DisplayText = folder.DisplayName;
+                    item.Path = fld;
+                    items.Add(item);
+                });
             }
 
-            ExplorerTree.ItemsSource = _items;
+            DispatcherQueue.TryEnqueue(() => ExplorerTree.ItemsSource = items);
         }
 
         private void ExplorerTree_Expanding(TreeView sender, TreeViewExpandingEventArgs args)
