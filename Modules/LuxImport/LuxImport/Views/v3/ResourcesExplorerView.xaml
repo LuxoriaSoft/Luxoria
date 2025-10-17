@@ -30,7 +30,10 @@
                 </TreeView.ItemContainerStyle>
                 <TreeView.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal">
+                        <StackPanel Orientation="Horizontal"
+                            CanDrag="True"
+                            DragStarting="TI_DragStarting"
+                            >
 
                             <Image x:Name="ItemIcon"
                                 Source="{Binding BitmapImage}"

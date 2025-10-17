@@ -21,6 +21,7 @@
     <None Remove="Views\legacy\IndexicationView.xaml" />
     <None Remove="Views\legacy\PropertiesView.xaml" />
     <None Remove="Views\v3\ResourcesExplorerView.xaml" />
+    <None Remove="Views\v3\WorkspaceExplorerView.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -52,7 +53,13 @@
 	<ItemGroup>
 	  <Folder Include="Components\" />
 	  <Folder Include="Views\legacy\" />
-	  <Folder Include="Views\v3\" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Page Update="Views\v3\WorkspaceExplorerView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
 
 

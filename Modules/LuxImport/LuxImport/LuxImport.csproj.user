@@ -7,6 +7,11 @@
     <ActiveDebugProfile>Profile 1</ActiveDebugProfile>
   </PropertyGroup>
   <ItemGroup>
+    <Page Update="Views\v3\WorkspaceExplorerView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="Views\v3\ResourcesExplorerView.xaml">
       <SubType>Designer</SubType>
     </Page>

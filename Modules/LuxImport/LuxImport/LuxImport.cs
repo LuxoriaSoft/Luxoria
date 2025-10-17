@@ -58,8 +58,7 @@ public class LuxImport : IModule, IModuleUI
         Dictionary<SmartButtonType, object> v3_view = new()
         {
             {SmartButtonType.LeftPanel, new ResourcesExplorerView() },
-            {SmartButtonType.RightPanel, new ResourcesExplorerView() },
-            {SmartButtonType.BottomPanel, new MainImportView(_eventBus, storageAPI) }
+            {SmartButtonType.MainPanel, new WorkspaceExplorerView() }
         };
 
         // Legacy

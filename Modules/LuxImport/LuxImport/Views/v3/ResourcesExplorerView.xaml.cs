@@ -155,5 +155,10 @@ namespace LuxImport.Views.v3
                 args.Node.HasUnrealizedChildren = true;
             }
         }
+
+        private void TI_DragStarting(Microsoft.UI.Xaml.UIElement sender, Microsoft.UI.Xaml.DragStartingEventArgs args)
+        {
+
+        }
     }
 }
