@@ -40,11 +40,11 @@ namespace LuxImport.Views.v3
                     if (!IOService.CheckFolderPermission(folder.Path) || ignoreFolders.Contains(folder.DisplayName)) continue;
 
                     StorageItemThumbnail itemIcon = await folder
-                        .GetThumbnailAsync(ThumbnailMode.SingleItem, 24, ThumbnailOptions.UseCurrentScale);
+                        .GetThumbnailAsync(ThumbnailMode.SingleItem, 14, ThumbnailOptions.UseCurrentScale);
 
                     DispatcherQueue.TryEnqueue(() =>
                     {
-                        TreeItem item = new TreeItem
+                        TreeItem item = new()
                         {
                             BitmapImage = new BitmapImage()
                         };
@@ -82,7 +82,7 @@ namespace LuxImport.Views.v3
                 if (!IOService.CheckFolderPermission(fld) || ignoreFolders.Contains(folder.DisplayName)) continue;
 
                 StorageItemThumbnail itemIcon = await folder
-                    .GetThumbnailAsync(ThumbnailMode.SingleItem, 24, ThumbnailOptions.UseCurrentScale);
+                    .GetThumbnailAsync(ThumbnailMode.SingleItem, 14, ThumbnailOptions.UseCurrentScale);
 
                 DispatcherQueue.TryEnqueue(() =>
                 {
