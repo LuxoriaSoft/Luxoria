@@ -6,6 +6,7 @@ using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace LuxEditor.EditorUI.Controls.ToolControls
 {
@@ -56,6 +57,18 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
 
         public override void ResizeCanvas(int w, int h)
         {
+            // Validate dimensions to prevent crashes
+            if (w <= 0 || h <= 0)
+            {
+                Debug.WriteLine($"[RadialGradient] Invalid canvas dimensions: {w}x{h}");
+                return;
+            }
+            if (w > 16384 || h > 16384)
+            {
+                Debug.WriteLine($"[RadialGradient] Canvas dimensions exceed maximum (16384): {w}x{h}");
+                return;
+            }
+
             int div = Math.Max(Math.Max(w, h) / 1000, 1);
             int sw = Math.Max(1, w / div);
             int sh = Math.Max(1, h / div);
@@ -243,9 +256,17 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
 
         public override SKBitmap? GetResult()
         {
-            if (_maskBmp == null) return null;
-            if (_maskBmp.Width == _dispW && _maskBmp.Height == _dispH) return _maskBmp;
-            return _maskBmp.Resize(new SKImageInfo(_dispW, _dispH), new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None));
+            try
+            {
+                if (_maskBmp == null) return null;
+                if (_maskBmp.Width == _dispW && _maskBmp.Height == _dispH) return _maskBmp;
+                return _maskBmp.Resize(new SKImageInfo(_dispW, _dispH), new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None));
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[RadialGradient] GetResult failed: {ex.Message}");
+                return _maskBmp?.Copy();
+            }
         }
 
         public override ATool Clone()
