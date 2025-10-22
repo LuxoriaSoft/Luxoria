@@ -169,17 +169,9 @@ namespace LuxEditor.EditorUI.Controls.ToolControls
         public override void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
         {
             var canvas = e.Surface.Canvas;
-            canvas.Clear(SKColors.Transparent);
+            // Don't clear - we draw on top of PhotoViewer's overlay
 
-            if (OpsFusionned != null)
-                canvas.DrawImage(OpsFusionned, 0, 0);
-
-            if (ShowExistingMask && _maskBmp != null)
-            {
-                using var tint = new SKPaint { ColorFilter = SKColorFilter.CreateBlendMode(Color, SKBlendMode.SrcIn) };
-                canvas.DrawBitmap(_maskBmp, new SKRect(0, 0, _maskW, _maskH), new SKRect(0, 0, _dispW, _dispH), tint);
-            }
-
+            // Draw guides for manipulation
             for (int i = 0; i < _gradients.Count; i++)
                 DrawGuides(canvas, _gradients[i], i == _selected);
         }
