@@ -527,10 +527,15 @@ namespace LuxEditor.Components
 
             _currentTool.OpsFusionned = GetImageOps();
 
-
-            var preview = _currentTool.GetResult();
+            // Draw previous operations (fusion)
             if (_currentTool.OpsFusionned != null) {
                 c.DrawImage(_currentTool.OpsFusionned, new SKRect(0, 0, w, h));
+            }
+
+            // Draw current tool result (preview)
+            var preview = _currentTool.GetResult();
+            if (preview != null) {
+                c.DrawBitmap(preview, new SKRect(0, 0, w, h));
             }
 
             c.Flush();
