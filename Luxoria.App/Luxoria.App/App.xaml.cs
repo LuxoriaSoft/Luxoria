@@ -10,8 +10,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -53,7 +55,7 @@ namespace Luxoria.App
             _moduleService = _host.Services.GetRequiredService<IModuleService>();
             _logger = _host.Services.GetRequiredService<ILoggerService>();
 
-            _host.Services.GetRequiredService<IEventBus>().Subscribe<RequestStorageAPIEvent>(OnRequestStorageAPIHandle);
+            EventsHandlerInit();
         }
 
         public static IHostBuilder CreateHostBuilder(Startup startup)
@@ -94,6 +96,18 @@ namespace Luxoria.App
         }
 
         /// <summary>
+        /// Initialise standard events
+        /// This subscribes and publishes standard events after starting up
+        /// </summary>
+        private void EventsHandlerInit()
+        {
+            IEventBus evtbus = _host.Services.GetRequiredService<IEventBus>();
+            
+            // Subscription
+            evtbus.Subscribe<RequestStorageAPIEvent>(OnRequestStorageAPIHandle);
+        }
+
+        /// <summary>
         /// Loads all modules asynchronously and updates the splash screen with progress.
         /// </summary>
         private async Task LoadModulesAsync(SplashScreen splashScreen)
@@ -117,9 +131,35 @@ namespace Luxoria.App
 
             // Finalize module initialization and update the splash screen
             await UpdateSplashScreenAsync(splashScreen, "Initializing modules...");
-            _moduleService.InitializeModules(new ModuleContext());
 
-            await _logger.LogAsync("All modules loaded successfully.", LOG_SECTION, LogLevel.Info);
+            IList<IModule> failed = [];
+
+            var progress = new Progress<(IModule, bool)>(tuple =>
+            {
+                var (module, isSuccess) = tuple;
+
+                if (!isSuccess)
+                {
+                    failed.Add(module);
+                }
+            });
+
+            _moduleService.InitializeModules(new ModuleContext(), progress);
+
+            if (failed.Any())
+            {
+                await UpdateSplashScreenAsync(splashScreen, $"{failed.Count} module(s) failed to intialize");
+                foreach (var module in failed)
+                {
+                    await UpdateSplashScreenAsync(splashScreen, $"Module {module.Name} failed to initialize.");
+                    await Task.Delay(1000);
+                }
+            }
+            else
+            {
+                await UpdateSplashScreenAsync(splashScreen, "All modules initialized successfully.");
+            }
+
             await UpdateSplashScreenAsync(splashScreen, "Launching...");
         }
 
@@ -175,6 +215,12 @@ namespace Luxoria.App
         /// <param name="splashScreen">The splash screen to update with progress.</param>
         private async Task LoadModuleAsync(string moduleFile, string moduleName, ModuleLoader loader, SplashScreen splashScreen)
         {
+            var version = System.Reflection.Assembly
+                .GetExecutingAssembly()
+                .GetName()
+                .Version?.ToString();
+            splashScreen.VersionInfoTextBlock.Text = $"Luxoria v{version} - Edit your vision, share your art";
+
             // Update the splash screen to indicate the module being loaded
             await UpdateSplashScreenAsync(splashScreen, $"Loading {moduleName}...");
             await _logger.LogAsync($"Trying to load: {moduleName}");

@@ -35,9 +35,7 @@ namespace LuxAPI.Controllers
 
             var status = new Dictionary<string, bool>
             {
-                { "Database", isDbConnected },
-                { "Cache", true }, // Placeholder for cache status
-                { "MessageQueue", true } // Placeholder for message queue status
+                { "Database", isDbConnected }
             };
 
             return Ok(new

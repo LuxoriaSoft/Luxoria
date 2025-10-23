@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace LuxAPI.Controllers
 {
     [Authorize] // Veiller à restreindre à l'Admin uniquement
+    [TypeFilter(typeof(AdminOnlyFilter))]
     [ApiController]
     [Route("api/admin")]
     public class AdminController : ControllerBase

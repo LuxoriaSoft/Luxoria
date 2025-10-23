@@ -108,10 +108,22 @@ public sealed class PresetManager
                         JsonValueKind.Number => (float)elem.GetDouble(),
                         JsonValueKind.String => DecodeStringSetting(key, elem.GetString()!),
                         JsonValueKind.Array => ParseArray(key, elem),
+                        JsonValueKind.Object => ParseNestedDictionary(key, elem),
                         _ => null
                     };
                     if (valueToApply != null)
                         newSettings[key] = valueToApply;
+                }
+
+                // Ensure Blur setting exists with default values if not present
+                if (!newSettings.ContainsKey("Blur"))
+                {
+                    newSettings["Blur"] = new Dictionary<string, object>
+                    {
+                        ["State"] = false,
+                        ["Sigma"] = 7f,
+                        ["Subjects"] = new List<Dictionary<string, object>>()
+                    };
                 }
 
                 img.Settings = newSettings;
@@ -148,6 +160,99 @@ public sealed class PresetManager
             return arr.EnumerateArray().Select(x => (float)x.GetDouble()).ToList();
 
         return arr.EnumerateArray().Select(x => x.EnumerateObject().ToDictionary(kv => kv.Name, kv => kv.Value.GetDouble())).ToList();
+    }
+
+    /// <summary>
+    /// Parses nested dictionary objects from JSON, specifically for settings like "Blur"
+    /// </summary>
+    private static object? ParseNestedDictionary(string key, JsonElement obj)
+    {
+        if (key == "Blur")
+        {
+            var blurDict = new Dictionary<string, object>();
+
+            foreach (var prop in obj.EnumerateObject())
+            {
+                var propKey = prop.Name;
+                var propValue = prop.Value;
+
+                object? value = propKey switch
+                {
+                    "State" => propValue.ValueKind == JsonValueKind.True || propValue.ValueKind == JsonValueKind.False
+                        ? propValue.GetBoolean()
+                        : false,
+                    "Sigma" => propValue.ValueKind == JsonValueKind.Number
+                        ? (float)propValue.GetDouble()
+                        : 7f,
+                    "Subjects" => propValue.ValueKind == JsonValueKind.Array
+                        ? ParseBlurSubjects(propValue)
+                        : new List<Dictionary<string, object>>(),
+                    // Legacy support for single "Mask" key (convert to Subjects list)
+                    "Mask" => null, // Ignore legacy Mask, will be migrated
+                    _ => null
+                };
+
+                if (value != null)
+                    blurDict[propKey] = value;
+            }
+
+            // Ensure all required keys exist
+            if (!blurDict.ContainsKey("State")) blurDict["State"] = false;
+            if (!blurDict.ContainsKey("Sigma")) blurDict["Sigma"] = 7f;
+            if (!blurDict.ContainsKey("Subjects")) blurDict["Subjects"] = new List<Dictionary<string, object>>();
+
+            return blurDict;
+        }
+
+        // Generic nested dictionary parsing for future extensions
+        return obj.EnumerateObject().ToDictionary(
+            kv => kv.Name,
+            kv => kv.Value.ValueKind == JsonValueKind.Number
+                ? (object)(float)kv.Value.GetDouble()
+                : kv.Value.GetString() ?? ""
+        );
+    }
+
+    /// <summary>
+    /// Parses the "Subjects" array from Blur settings
+    /// </summary>
+    private static List<Dictionary<string, object>> ParseBlurSubjects(JsonElement array)
+    {
+        var subjects = new List<Dictionary<string, object>>();
+
+        foreach (var item in array.EnumerateArray())
+        {
+            if (item.ValueKind != JsonValueKind.Object) continue;
+
+            var subject = new Dictionary<string, object>();
+
+            foreach (var prop in item.EnumerateObject())
+            {
+                object? value = prop.Name switch
+                {
+                    "SubjectId" => prop.Value.ValueKind == JsonValueKind.String
+                        ? Guid.Parse(prop.Value.GetString()!)
+                        : Guid.NewGuid(),
+                    "IsActive" => prop.Value.ValueKind == JsonValueKind.True || prop.Value.ValueKind == JsonValueKind.False
+                        ? prop.Value.GetBoolean()
+                        : true,
+                    "Mask" => new SKBitmap(), // Masks are not serialized in presets
+                    _ => null
+                };
+
+                if (value != null)
+                    subject[prop.Name] = value;
+            }
+
+            // Ensure all required keys
+            if (!subject.ContainsKey("SubjectId")) subject["SubjectId"] = Guid.NewGuid();
+            if (!subject.ContainsKey("IsActive")) subject["IsActive"] = true;
+            if (!subject.ContainsKey("Mask")) subject["Mask"] = new SKBitmap();
+
+            subjects.Add(subject);
+        }
+
+        return subjects;
     }
 
     private object DecodeStringSetting(string key, string str)

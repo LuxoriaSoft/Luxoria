@@ -1,3 +1,62 @@
+## [1.70.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.70.0...v1.70.1) (2025-10-23)
+
+
+### Bug Fixes
+
+* Improves CLIP algo and adds resource handling ([14a9f58](https://github.com/LuxoriaSoft/Luxoria/commit/14a9f5880f1068bba64b18418cef90fce59dc941))
+* Improves gradient tool rendering and overlay ([3fc13cb](https://github.com/LuxoriaSoft/Luxoria/commit/3fc13cbf17105d32472aea724f16768f2169efe2))
+* Improves gradient tool rendering and overlay ([0838790](https://github.com/LuxoriaSoft/Luxoria/commit/08387903603f8b7f6bc098fe23104286bd432b35))
+* Improves subject overlay and tool handling ([e1bae81](https://github.com/LuxoriaSoft/Luxoria/commit/e1bae81b9b28dbecb52b3f30e9346fa940a70cea))
+* Improves subject overlay and tool handling ([04ca4d2](https://github.com/LuxoriaSoft/Luxoria/commit/04ca4d240a85b39102ac5ae2b8f1abf398e0fd6e))
+* Improves subject recognition blur application ([a30c52b](https://github.com/LuxoriaSoft/Luxoria/commit/a30c52b9bc1b9edeca5a20fe38e0991e3800c650))
+* Improves subject recognition blur application ([e9b0894](https://github.com/LuxoriaSoft/Luxoria/commit/e9b08943abd98f284cb6bda2bf2eacd1a8b35a36))
+
+# [1.70.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.69.1...v1.70.0) (2025-10-11)
+
+
+### Features
+
+* Add ApplicationReady event, being published after launching the app ([6dac5f6](https://github.com/LuxoriaSoft/Luxoria/commit/6dac5f6d0b1844d72b5697525b5c94ab05f753d2))
+* Integrate AppVersion on launching splash screen ([34542e0](https://github.com/LuxoriaSoft/Luxoria/commit/34542e03ef2e79c6a4a4c7c07655463579b0f782))
+
+## [1.69.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.69.0...v1.69.1) (2025-10-11)
+
+
+### Bug Fixes
+
+* Optimisation of LuxEditor concurrencies ([9c87a32](https://github.com/LuxoriaSoft/Luxoria/commit/9c87a32d53e1e1a712573f1e47b1335d95a4d60d))
+
+# [1.69.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.68.0...v1.69.0) (2025-10-04)
+
+
+### Bug Fixes
+
+* Add authorization header to photo fetch requests and handle fetch errors ([d6e6797](https://github.com/LuxoriaSoft/Luxoria/commit/d6e6797dd3cf9fa5d086bf37fd54b7def21f854f))
+* Add debug information when sending mail ([de9d3f7](https://github.com/LuxoriaSoft/Luxoria/commit/de9d3f72d2e19ca98f9ac49dae29daff7e49a443))
+* Add debug information when SendMention ([9657cd2](https://github.com/LuxoriaSoft/Luxoria/commit/9657cd29055dfecc1b14b7cf50f0751567c4c139))
+* Brings authorization in CollectionController ([abe9109](https://github.com/LuxoriaSoft/Luxoria/commit/abe9109e63a5a15d0b96237a378c68f2a3c41cbc))
+* Change SMTP__User to SMTP__Username ([c4f40d1](https://github.com/LuxoriaSoft/Luxoria/commit/c4f40d10fa04ae3bfbcc15c1fc7895c8b93c6477))
+* Correct secret key references for SMTP user and password in deployment configuration ([3b8934f](https://github.com/LuxoriaSoft/Luxoria/commit/3b8934f0a8ffe8d3618b2a5658c29613bc2a1d94))
+* Improve access control checks in CollectionController and update response messages ([274c366](https://github.com/LuxoriaSoft/Luxoria/commit/274c366a09a4e46c26370a81bc1bda2210ded04b))
+* Improve user access checks in controllers ([ab10a3f](https://github.com/LuxoriaSoft/Luxoria/commit/ab10a3fdae561e5685c620888241b9b6b5c5707e))
+* Remove placeholder in Get Status method ([75bcb29](https://github.com/LuxoriaSoft/Luxoria/commit/75bcb29776ecc75db99083136a1724e6bee630eb))
+* Remove unnecessary confirmation URL from email template ([b5de9c4](https://github.com/LuxoriaSoft/Luxoria/commit/b5de9c46c1507c4780254e57b219c2ad37f54475))
+* Update hCaptcha SecretKey and SMTP configuration in appsettings ([e27de2a](https://github.com/LuxoriaSoft/Luxoria/commit/e27de2a82f2dd3f80dd9de15c199b2c2b5958611))
+
+
+### Features
+
+* Enhance image loading with ProtectedImage component and caching mechanism ([28b9108](https://github.com/LuxoriaSoft/Luxoria/commit/28b910879ae8a4e951b7063e6a4636fbda2ede57))
+* Implement AdminOnlyFilter and restrict access to admin routes; add 403 Forbidden page ([a8f3e43](https://github.com/LuxoriaSoft/Luxoria/commit/a8f3e437e1763928cc30dda316ba905d39daa8b4))
+* Refactor ProtectedImage component for improved image loading and caching ([78c3e4c](https://github.com/LuxoriaSoft/Luxoria/commit/78c3e4c602f338b50de6a26c01576e3f405977bc))
+
+# [1.68.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.67.3...v1.68.0) (2025-10-03)
+
+
+### Features
+
+* Allow failure on module intialisation process ([770de6e](https://github.com/LuxoriaSoft/Luxoria/commit/770de6e08fb3847032f150834b8d395e4c458e13))
+
 ## [1.67.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.67.2...v1.67.3) (2025-09-25)
 
 

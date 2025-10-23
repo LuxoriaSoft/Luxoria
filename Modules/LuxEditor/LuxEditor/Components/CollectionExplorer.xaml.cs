@@ -203,35 +203,35 @@ public sealed partial class CollectionExplorer : Page
             Debug.WriteLine("SetImages: No images provided.");
             return;
         }
-
         var filterAlgoNames = images[0].FilterData.GetFilteredAlgorithms();
-        _filterMenuFlyout = BuildFilterMenuFlyout(filterAlgoNames);
+        DispatcherQueue.TryEnqueue(() => _filterMenuFlyout = BuildFilterMenuFlyout(filterAlgoNames));
 
         DispatcherQueue.TryEnqueue(() =>
         {
             _images.Clear();
             _imagePanel.Children.Clear();
-
-            if (!string.IsNullOrEmpty(_filterBy.Algorithm))
-            {
-                images = images
-                    .Where(img => img.FilterData.GetScores().ContainsKey(_filterBy.Algorithm))
-                    .ToList();
-
-                images = _filterBy.Ascending
-                    ? images.OrderBy(img => img.FilterData.GetScores()[_filterBy.Algorithm]).ToList()
-                    : images.OrderByDescending(img => img.FilterData.GetScores()[_filterBy.Algorithm]).ToList();
-            }
-
-            _allImages = images.ToList();
-
-            LuxFilterManager.Instance.Clear();
-            LuxFilterManager.Instance.RegisterFromImages(images);
-            _filterBar.SetAlgorithms(LuxFilterManager.Instance.AvailableAlgorithms);
-
-            ApplyFiltersAndRefresh();
         });
 
+        if (!string.IsNullOrEmpty(_filterBy.Algorithm))
+        {
+            images = images
+                .Where(img => img.FilterData.GetScores().ContainsKey(_filterBy.Algorithm))
+                .ToList();
+
+            images = _filterBy.Ascending
+                ? images.OrderBy(img => img.FilterData.GetScores()[_filterBy.Algorithm]).ToList()
+                : images.OrderByDescending(img => img.FilterData.GetScores()[_filterBy.Algorithm]).ToList();
+        }
+
+        _allImages = images.ToList();
+
+        LuxFilterManager.Instance.Clear();
+
+        LuxFilterManager.Instance.RegisterFromImages(images);
+
+        DispatcherQueue.TryEnqueue(() => _filterBar.SetAlgorithms(LuxFilterManager.Instance.AvailableAlgorithms));
+
+        DispatcherQueue.TryEnqueue(ApplyFiltersAndRefresh);
     }
 
     /// <summary>
@@ -254,11 +254,14 @@ public sealed partial class CollectionExplorer : Page
                     double scale = availableHeight / bitmap.Height;
                     double width = bitmap.Width * scale;
 
-                    border.Width = width;
-                    border.Height = availableHeight;
-                    canvas.Width = width;
-                    canvas.Height = availableHeight;
-                    canvas.Invalidate();
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        border.Width = width;
+                        border.Height = availableHeight;
+                        canvas.Width = width;
+                        canvas.Height = availableHeight;
+                        canvas.Invalidate();
+                    });
                 }
             }
         }
@@ -372,6 +375,8 @@ public sealed partial class CollectionExplorer : Page
         {
             var image = _images[i];
             var bitmap = image.ThumbnailBitmap ?? image.PreviewBitmap ?? image.OriginalBitmap;
+            int idx = i;
+
             var border = new Border
             {
                 Margin = new Thickness(3),
@@ -382,7 +387,6 @@ public sealed partial class CollectionExplorer : Page
             };
 
             var canvas = new SKXamlCanvas { IgnorePixelScaling = true };
-            int idx = i;
             canvas.PaintSurface += (s, e) => OnPaintSurface(s, e, idx);
             border.Child = canvas;
 

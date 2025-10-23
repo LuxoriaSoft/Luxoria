@@ -47,6 +47,9 @@ namespace LuxEditor.Components
         private bool _isCropEditing;
         private bool _updatingCropInputs;
 
+        public event Action<List<DetectedSubject>>? SubjectsDetected;
+        public event Action<bool>? ShowSubjectsOverlayToggled;
+
         public bool LockAspectToggleIsOn => LockAspectToggle.IsOn;
 
         private readonly Dictionary<TreeViewNode, object> _nodeMap = new();
@@ -57,6 +60,8 @@ namespace LuxEditor.Components
         private Lazy<YoLoDetectModelAPI> _yoloDetectionAPI = new(() =>
             new YoLoDetectModelAPI(SubjectRecognition.ExtractEmbeddedResource("LuxEditor.ExternalLibs.Models.yolov5l.onnx")));
         private SubjectRecognition _subjectRecognition;
+
+        public SubjectRecognition SubjectRecognition => _subjectRecognition;
 
         /// <summary>
         /// Style for the temperature slider.
@@ -686,18 +691,95 @@ namespace LuxEditor.Components
             ResetAllButton.Visibility = (idx == 0) ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private void OnBlurAppliedEventHandler(SKBitmap mask)
+        /// <summary>
+        /// Handles subject selection from PhotoViewer - extracts mask and adds to Blur settings
+        /// </summary>
+        public async void OnSubjectSelected(DetectedSubject subject)
         {
-            Debug.WriteLine("Applying new bitmap on orginal");
             if (CurrentImage?.Settings == null) return;
-            Dictionary<string, object>? blurSettings = (Dictionary<string, object>?)CurrentImage?.Settings?["Blur"];
 
-            if (blurSettings == null) return;
-            blurSettings["State"] = true;
-            blurSettings["Mask"] = mask;
-            if (CurrentImage?.Settings == null)
+            Debug.WriteLine($"Subject selected: {subject.Label}, extracting mask...");
+
+            // Extract mask using GrabCut
+            var mask = await _subjectRecognition.ExtractSubjectMask(subject);
+            if (mask == null)
+            {
+                Debug.WriteLine("Failed to extract mask");
                 return;
-            CurrentImage!.Settings["Blur"] = blurSettings;
+            }
+
+            Debug.WriteLine($"Mask extracted: {mask.Width}x{mask.Height}");
+
+            // Get or create blur settings
+            if (!CurrentImage.Settings.TryGetValue("Blur", out var blurObj) || blurObj is not Dictionary<string, object> blurSettings)
+            {
+                blurSettings = new Dictionary<string, object>
+                {
+                    ["State"] = true,
+                    ["Sigma"] = 7f,
+                    ["Subjects"] = new List<Dictionary<string, object>>()
+                };
+                CurrentImage.Settings["Blur"] = blurSettings;
+            }
+
+            // Get subjects list
+            if (!blurSettings.TryGetValue("Subjects", out var subjectsObj) || subjectsObj is not List<Dictionary<string, object>> subjects)
+            {
+                subjects = new List<Dictionary<string, object>>();
+                blurSettings["Subjects"] = subjects;
+            }
+
+            // Find existing subject or create new one
+            Dictionary<string, object>? existingSubject = null;
+            foreach (var subj in subjects)
+            {
+                if (subj.TryGetValue("SubjectId", out var idObj) && idObj is Guid id && id == subject.Id)
+                {
+                    existingSubject = subj;
+                    break;
+                }
+            }
+
+            if (existingSubject != null)
+            {
+                // Update existing subject
+                existingSubject["Mask"] = mask;
+                existingSubject["IsActive"] = subject.IsSelected;
+                Debug.WriteLine($"  → Updated existing subject {subject.Id}: IsActive={subject.IsSelected}");
+            }
+            else
+            {
+                // Add new subject
+                var newSubject = new Dictionary<string, object>
+                {
+                    ["SubjectId"] = subject.Id,
+                    ["Mask"] = mask,
+                    ["IsActive"] = subject.IsSelected
+                };
+                subjects.Add(newSubject);
+                Debug.WriteLine($"  → Added new subject {subject.Id}: IsActive={subject.IsSelected}");
+            }
+
+            // Debug: Log all subjects states
+            Debug.WriteLine($"=== Current Blur/Subjects state (total: {subjects.Count}) ===");
+            foreach (var subj in subjects)
+            {
+                var sid = subj.TryGetValue("SubjectId", out var sidObj) ? sidObj : "unknown";
+                var isActive = subj.TryGetValue("IsActive", out var activeObj) && activeObj is bool a && a;
+                var hasMask = subj.TryGetValue("Mask", out var maskObj) && maskObj is SKBitmap;
+                Debug.WriteLine($"  - Subject {sid}: IsActive={isActive}, HasMask={hasMask}");
+            }
+
+            // Only enable blur state if any subject is active AND blur toggle is on
+            bool anyActive = subjects.Any(s => s.TryGetValue("IsActive", out var a) && a is bool active && active);
+            // Don't auto-enable blur, just track if subjects are active
+            // The user controls blur via the toggle
+            Debug.WriteLine($"Active subjects: {anyActive}, current blur state: {blurSettings["State"]}");
+
+            // Save state for undo/redo
+            CurrentImage.SaveState(true);
+
+            // Trigger rendering update
             RequestFilterUpdate();
         }
 
@@ -706,14 +788,17 @@ namespace LuxEditor.Components
             CurrentImage = image;
 
             foreach (var l in _observedLayers) l.PropertyChanged -= OnLayerModified;
+
             _observedLayers.Clear();
             image.LayerManager.OnOperationChanged += RequestFilterUpdate;
             image.LayerManager.OnLayerChanged += RequestFilterUpdate;
+
             foreach (var l in image.LayerManager.Layers)
             {
                 l.PropertyChanged += OnLayerModified;
                 _observedLayers.Add(l);
             }
+
             image.LayerManager.Layers.CollectionChanged += (_, __) =>
             {
                 foreach (var lay in _observedLayers)
@@ -727,18 +812,36 @@ namespace LuxEditor.Components
                 RequestFilterUpdate();
             };
 
-            EditorStackPanel.Children.Clear();
+            DispatcherQueue.TryEnqueue(() => EditorStackPanel.Children.Clear());
             _categories.Clear();
             _sliderCache.Clear();
-            _subjectRecognition = new(_yoloDetectionAPI);
-            _subjectRecognition.BlurAppliedEvent += OnBlurAppliedEventHandler;
-            _subjectRecognition.SetImage(image);
-            BuildEditorUI();
-            UpdateSliderUI();
-            _toneGroup.RefreshCurves(CurrentImage.Settings);
+
+            DispatcherQueue.TryEnqueue(() => {
+                _subjectRecognition = new(_yoloDetectionAPI);
+                _subjectRecognition.SetImage(image);
+
+                // Wire subject detection events
+                _subjectRecognition.SubjectsDetectedEvent += (subjects) =>
+                {
+                    SubjectsDetected?.Invoke(subjects);
+                };
+
+                _subjectRecognition.ShowOverlayToggled += (isVisible) =>
+                {
+                    ShowSubjectsOverlayToggled?.Invoke(isVisible);
+                };
+
+                _subjectRecognition.FilterUpdateRequested += RequestFilterUpdate;
+            });
+
+            DispatcherQueue.TryEnqueue(BuildEditorUI);
+            DispatcherQueue.TryEnqueue(UpdateSliderUI);
+
+            DispatcherQueue.TryEnqueue(() => _toneGroup.RefreshCurves(CurrentImage.Settings));
+
             RequestFilterUpdate();
-            UpdateResetButtonsVisibility();
-            RefreshLayerTree();
+            DispatcherQueue.TryEnqueue(UpdateResetButtonsVisibility);
+            DispatcherQueue.TryEnqueue(RefreshLayerTree);
         }
 
         private void OnLayerModified(object? s, PropertyChangedEventArgs e) => RequestFilterUpdate();
@@ -976,12 +1079,12 @@ namespace LuxEditor.Components
             {
                 if (CurrentImage == null) return;
 
-                async Task<SKBitmap> RenderAsync(SKBitmap src)
+                async Task<SKBitmap> RenderAsync(SKBitmap src, float blurSigmaScale = 1.0f)
                 {
                     var srcForFilters = _isCropEditing ? src : ApplyCrop(src);
 
                     var baseBmp = await ImageProcessingManager
-                                         .ApplyFiltersAsync(srcForFilters, CurrentImage.Settings, token);
+                                         .ApplyFiltersAsync(srcForFilters, CurrentImage.Settings, token, blurSigmaScale);
 
                     using var surf = SKSurface.Create(new SKImageInfo(baseBmp.Width, baseBmp.Height));
                     var can = surf.Canvas;
@@ -999,7 +1102,7 @@ namespace LuxEditor.Components
                         if (layer.HasActiveFilters())
                         {
                             using var filtered = await ImageProcessingManager
-                                                       .ApplyFiltersAsync(result, layer.Filters, token);
+                                                       .ApplyFiltersAsync(result, layer.Filters, token, blurSigmaScale);
                             DrawMasked(can, filtered, mask, layer);
                         }
                         can.Flush();
@@ -1015,7 +1118,10 @@ namespace LuxEditor.Components
                 // and render directly with full quality
                 if (!_isCropEditing && CurrentImage.PreviewBitmap != null)
                 {
-                    var prev = await RenderAsync(CurrentImage.PreviewBitmap);
+                    // Calculate blur sigma scale based on preview vs original dimensions
+                    float previewScale = (float)CurrentImage.PreviewBitmap.Height / CurrentImage.OriginalBitmap.Height;
+
+                    var prev = await RenderAsync(CurrentImage.PreviewBitmap, previewScale);
                     CurrentImage.EditedPreviewBitmap = prev;
                     var upscaled = ImageProcessingManager.Upscale(prev,
                                                                   (int)CurrentImage.Crop.Height,
@@ -1023,7 +1129,7 @@ namespace LuxEditor.Components
                     OnEditorImageUpdated?.Invoke(upscaled);
                 }
 
-                var full = await RenderAsync(CurrentImage.OriginalBitmap);
+                var full = await RenderAsync(CurrentImage.OriginalBitmap, 1.0f);
                 CurrentImage.EditedBitmap = full;
                 OnEditorImageUpdated?.Invoke(SKImage.FromBitmap(full));
             }
