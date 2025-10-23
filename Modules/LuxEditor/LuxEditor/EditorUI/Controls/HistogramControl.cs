@@ -249,11 +249,85 @@ public class HistogramControl : IEditorGroupItem
             _luminanceHistogram[Math.Clamp(luminance, 0, 255)]++;
         }
 
+        // Apply smoothing to remove jagged edges and create smooth curves
+        SmoothHistogram(_redHistogram);
+        SmoothHistogram(_greenHistogram);
+        SmoothHistogram(_blueHistogram);
+        SmoothHistogram(_luminanceHistogram);
+
         // Find max value for normalization using percentile to avoid extreme peaks
         // This prevents clipped pixels from making the entire histogram flat
         _maxHistogramValue = CalculateNormalizationMax();
 
         _canvas.Invalidate();
+    }
+
+    /// <summary>
+    /// Smooth histogram data using Gaussian blur to eliminate jagged edges
+    /// This creates professional-looking smooth curves like Lightroom
+    /// </summary>
+    private void SmoothHistogram(int[] histogram)
+    {
+        // Create a temporary array to store smoothed values
+        float[] temp = new float[256];
+        for (int i = 0; i < 256; i++)
+            temp[i] = histogram[i];
+
+        // Gaussian kernel for smooth blending
+        // Radius 3 with sigma=1.5 gives nice smooth curves
+        float[] kernel = { 0.06136f, 0.24477f, 0.38774f, 0.24477f, 0.06136f };
+        int radius = 2; // 5-point kernel
+
+        // Apply Gaussian blur (horizontal pass)
+        float[] result = new float[256];
+
+        for (int i = 0; i < 256; i++)
+        {
+            float sum = 0;
+            float weightSum = 0;
+
+            for (int j = -radius; j <= radius; j++)
+            {
+                int index = i + j;
+                if (index >= 0 && index < 256)
+                {
+                    float weight = kernel[j + radius];
+                    sum += temp[index] * weight;
+                    weightSum += weight;
+                }
+                else
+                {
+                    // Edge handling: mirror the edge values
+                    int mirroredIndex = index < 0 ? -index : (2 * 255 - index);
+                    mirroredIndex = Math.Clamp(mirroredIndex, 0, 255);
+                    float weight = kernel[j + radius];
+                    sum += temp[mirroredIndex] * weight;
+                    weightSum += weight;
+                }
+            }
+
+            result[i] = sum / weightSum;
+        }
+
+        // Apply a second pass for extra smoothness (2D Gaussian effect)
+        for (int i = 0; i < 256; i++)
+        {
+            float sum = 0;
+            float weightSum = 0;
+
+            for (int j = -radius; j <= radius; j++)
+            {
+                int index = i + j;
+                if (index >= 0 && index < 256)
+                {
+                    float weight = kernel[j + radius];
+                    sum += result[index] * weight;
+                    weightSum += weight;
+                }
+            }
+
+            histogram[i] = (int)Math.Round(sum / weightSum);
+        }
     }
 
     /// <summary>
