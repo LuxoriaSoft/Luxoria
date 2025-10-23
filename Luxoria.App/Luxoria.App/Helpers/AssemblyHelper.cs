@@ -1,6 +1,7 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 
-namespace Luxoria.Core.Helpers;
+namespace Luxoria.App.Helpers;
 
 public static class AssemblyHelper
 {
