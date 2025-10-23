@@ -191,26 +191,159 @@ namespace LuxEditor.Components
             var img = ImageManager.Instance.SelectedImage;
             if (img == null) return;
 
-            var categoryBox = new TextBox { Header = "Category", PlaceholderText = "e.g. User Presets" };
-            var nameBox = new TextBox { Header = "Preset Name", PlaceholderText = "Untitled Preset" };
+            // Header section with title and description
+            var headerStack = new StackPanel { Spacing = 8, Margin = new Thickness(0, 0, 0, 20) };
 
-            var expanderPanel = new StackPanel { Spacing = 8 };
-
-            void AddStringExpander(string title, IEnumerable<string> items)
+            var titleBlock = new TextBlock
             {
-                var exp = new Expander { Header = title, IsExpanded = true };
-                var sub = new StackPanel { Spacing = 4, Padding = new Thickness(12, 0, 0, 0) };
+                Text = "Create Preset",
+                FontSize = 20,
+                FontWeight = FontWeights.SemiBold
+            };
+
+            var descBlock = new TextBlock
+            {
+                Text = "Save your current photo settings as a reusable preset",
+                FontSize = 13,
+                Opacity = 0.8,
+                TextWrapping = TextWrapping.Wrap
+            };
+
+            headerStack.Children.Add(titleBlock);
+            headerStack.Children.Add(descBlock);
+
+            // Input fields with better styling
+            var categoryBox = new TextBox
+            {
+                PlaceholderText = "e.g., Portrait, Landscape, Vintage",
+                CornerRadius = new Microsoft.UI.Xaml.CornerRadius(4),
+                Margin = new Thickness(0, 4, 0, 0)
+            };
+
+            var categoryLabel = new TextBlock
+            {
+                Text = "Category",
+                FontWeight = FontWeights.Medium,
+                FontSize = 14,
+                Margin = new Thickness(0, 0, 0, 4)
+            };
+
+            var nameBox = new TextBox
+            {
+                PlaceholderText = "e.g., Warm Sunset, Cool Tones",
+                CornerRadius = new Microsoft.UI.Xaml.CornerRadius(4),
+                Margin = new Thickness(0, 4, 0, 0)
+            };
+
+            var nameLabel = new TextBlock
+            {
+                Text = "Preset Name",
+                FontWeight = FontWeights.Medium,
+                FontSize = 14,
+                Margin = new Thickness(0, 16, 0, 4)
+            };
+
+            // Settings selection section
+            var settingsLabel = new TextBlock
+            {
+                Text = "Include Settings",
+                FontWeight = FontWeights.SemiBold,
+                FontSize = 16,
+                Margin = new Thickness(0, 24, 0, 8)
+            };
+
+            var settingsDesc = new TextBlock
+            {
+                Text = "Select which settings to include in this preset",
+                FontSize = 12,
+                Opacity = 0.7,
+                Margin = new Thickness(0, 0, 0, 12)
+            };
+
+            var expanderPanel = new StackPanel { Spacing = 12 };
+
+            void AddStringExpander(string title, IEnumerable<string> items, string description = "")
+            {
+                var exp = new Expander
+                {
+                    Header = title,
+                    IsExpanded = false,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    CornerRadius = new Microsoft.UI.Xaml.CornerRadius(4)
+                };
+
+                var container = new StackPanel { Spacing = 8 };
+
+                if (!string.IsNullOrEmpty(description))
+                {
+                    container.Children.Add(new TextBlock
+                    {
+                        Text = description,
+                        FontSize = 12,
+                        Opacity = 0.7,
+                        TextWrapping = TextWrapping.Wrap,
+                        Margin = new Thickness(0, 0, 0, 8)
+                    });
+                }
+
+                // Select/Deselect all header
+                var headerPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Spacing = 8,
+                    Margin = new Thickness(0, 0, 0, 8)
+                };
+
+                var selectAllBtn = new HyperlinkButton
+                {
+                    Content = "Select All",
+                    FontSize = 11,
+                    Padding = new Thickness(0)
+                };
+
+                var deselectAllBtn = new HyperlinkButton
+                {
+                    Content = "Deselect All",
+                    FontSize = 11,
+                    Padding = new Thickness(0)
+                };
+
+                headerPanel.Children.Add(selectAllBtn);
+                headerPanel.Children.Add(new TextBlock { Text = "•", FontSize = 11, Opacity = 0.5 });
+                headerPanel.Children.Add(deselectAllBtn);
+                container.Children.Add(headerPanel);
+
+                var sub = new StackPanel { Spacing = 8 };
+                var checkBoxes = new List<CheckBox>();
+
                 foreach (var k in items)
-                    sub.Children.Add(new CheckBox { Content = k, IsChecked = true, Tag = k });
-                exp.Content = sub;
+                {
+                    var cb = new CheckBox
+                    {
+                        Content = k,
+                        IsChecked = true,
+                        Tag = k,
+                        MinHeight = 32
+                    };
+                    checkBoxes.Add(cb);
+                    sub.Children.Add(cb);
+                }
+
+                selectAllBtn.Click += (_, __) => checkBoxes.ForEach(cb => cb.IsChecked = true);
+                deselectAllBtn.Click += (_, __) => checkBoxes.ForEach(cb => cb.IsChecked = false);
+
+                container.Children.Add(sub);
+                exp.Content = container;
                 expanderPanel.Children.Add(exp);
             }
 
-            AddStringExpander("Basic", new[] {
+            AddStringExpander("Basic Adjustments", new[] {
                 "Exposure","Contrast","Highlights","Shadows","Whites","Blacks",
                 "Texture","Clarity","Dehaze","Vibrance","Saturation"
-            });
-            AddStringExpander("White Balance", new[] { "Temperature", "Tint" });
+            }, "Fundamental exposure and tone adjustments");
+
+            AddStringExpander("White Balance", new[] { "Temperature", "Tint" },
+                "Color temperature and tint corrections");
 
             var curves = new List<(string disp, string key)> {
                 ("Parametric Curve","ToneCurve_Parametric"),
@@ -219,48 +352,140 @@ namespace LuxEditor.Components
                 ("Green Channel Curve","ToneCurve_Green"),
                 ("Blue Channel Curve","ToneCurve_Blue"),
             };
-            var curvesExp = new Expander { Header = "Curves", IsExpanded = true };
-            var curvesPanel = new StackPanel { Spacing = 4, Padding = new Thickness(12, 0, 0, 0) };
+
+            var curvesExp = new Expander
+            {
+                Header = "Tone Curves",
+                IsExpanded = false,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                CornerRadius = new Microsoft.UI.Xaml.CornerRadius(4)
+            };
+
+            var curvesContainer = new StackPanel { Spacing = 8 };
+            curvesContainer.Children.Add(new TextBlock
+            {
+                Text = "Advanced tone curve adjustments for precise tonal control",
+                FontSize = 12,
+                Opacity = 0.7,
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 0, 0, 8)
+            });
+
+            var curvesPanel = new StackPanel { Spacing = 8 };
+            var curveCheckBoxes = new List<CheckBox>();
             foreach (var (d, k) in curves)
-                curvesPanel.Children.Add(new CheckBox { Content = d, IsChecked = true, Tag = k });
-            curvesExp.Content = curvesPanel;
+            {
+                var cb = new CheckBox { Content = d, IsChecked = true, Tag = k, MinHeight = 32 };
+                curveCheckBoxes.Add(cb);
+                curvesPanel.Children.Add(cb);
+            }
+
+            var curvesHeaderPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Spacing = 8,
+                Margin = new Thickness(0, 0, 0, 8)
+            };
+            var curvesSelectAll = new HyperlinkButton { Content = "Select All", FontSize = 11, Padding = new Thickness(0) };
+            var curvesDeselectAll = new HyperlinkButton { Content = "Deselect All", FontSize = 11, Padding = new Thickness(0) };
+            curvesSelectAll.Click += (_, __) => curveCheckBoxes.ForEach(cb => cb.IsChecked = true);
+            curvesDeselectAll.Click += (_, __) => curveCheckBoxes.ForEach(cb => cb.IsChecked = false);
+            curvesHeaderPanel.Children.Add(curvesSelectAll);
+            curvesHeaderPanel.Children.Add(new TextBlock { Text = "•", FontSize = 11, Opacity = 0.5 });
+            curvesHeaderPanel.Children.Add(curvesDeselectAll);
+
+            curvesContainer.Children.Add(curvesHeaderPanel);
+            curvesContainer.Children.Add(curvesPanel);
+            curvesExp.Content = curvesContainer;
             expanderPanel.Children.Add(curvesExp);
 
-            var maskExp = new Expander { Header = "Masks", IsExpanded = true };
-            var maskRoot = new StackPanel { Spacing = 4, Padding = new Thickness(12, 0, 0, 0) };
-            foreach (var layer in img.LayerManager.Layers)
+            var maskExp = new Expander
             {
-                var layerExp = new Expander { Header = layer.Name, IsExpanded = false, Margin = new Thickness(0, 4, 0, 0) };
-                var layerPanel = new StackPanel { Spacing = 4, Padding = new Thickness(12, 0, 0, 0) };
-                foreach (var op in layer.Operations.OfType<MaskOperation>())
+                Header = "Layer Masks",
+                IsExpanded = false,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                CornerRadius = new Microsoft.UI.Xaml.CornerRadius(4)
+            };
+
+            var maskRoot = new StackPanel { Spacing = 12 };
+
+            if (img.LayerManager.Layers.Any())
+            {
+                maskRoot.Children.Add(new TextBlock
                 {
-                    layerPanel.Children.Add(new CheckBox
+                    Text = "Include specific layer masks and operations",
+                    FontSize = 12,
+                    Opacity = 0.7,
+                    TextWrapping = TextWrapping.Wrap,
+                    Margin = new Thickness(0, 0, 0, 8)
+                });
+
+                foreach (var layer in img.LayerManager.Layers)
+                {
+                    var layerExp = new Expander
                     {
-                        Content = $"{op.Tool.ToolType} ({op.Mode})",
-                        IsChecked = true,
-                        Tag = op.Id
-                    });
+                        Header = layer.Name,
+                        IsExpanded = false,
+                        Margin = new Thickness(0, 4, 0, 0),
+                        CornerRadius = new Microsoft.UI.Xaml.CornerRadius(4)
+                    };
+
+                    var layerPanel = new StackPanel { Spacing = 8 };
+                    foreach (var op in layer.Operations.OfType<MaskOperation>())
+                    {
+                        layerPanel.Children.Add(new CheckBox
+                        {
+                            Content = $"{op.Tool.ToolType} ({op.Mode})",
+                            IsChecked = true,
+                            Tag = op.Id,
+                            MinHeight = 32
+                        });
+                    }
+                    layerExp.Content = layerPanel;
+                    maskRoot.Children.Add(layerExp);
                 }
-                layerExp.Content = layerPanel;
-                maskRoot.Children.Add(layerExp);
             }
+            else
+            {
+                maskRoot.Children.Add(new TextBlock
+                {
+                    Text = "No layer masks available in current image",
+                    FontSize = 12,
+                    FontStyle = Windows.UI.Text.FontStyle.Italic,
+                    Opacity = 0.6
+                });
+            }
+
             maskExp.Content = maskRoot;
             expanderPanel.Children.Add(maskExp);
 
-            var dlgContent = new StackPanel { Spacing = 12 };
+            // Build dialog content with better layout
+            var dlgContent = new StackPanel { Spacing = 0 };
+            dlgContent.Children.Add(headerStack);
+            dlgContent.Children.Add(categoryLabel);
             dlgContent.Children.Add(categoryBox);
+            dlgContent.Children.Add(nameLabel);
             dlgContent.Children.Add(nameBox);
-            dlgContent.Children.Add(new TextBlock { Text = "Include Settings:", FontWeight = FontWeights.SemiBold });
-            dlgContent.Children.Add(new ScrollViewer { Content = expanderPanel, Height = 300 });
+            dlgContent.Children.Add(settingsLabel);
+            dlgContent.Children.Add(settingsDesc);
+
+            var scrollViewer = new ScrollViewer
+            {
+                Content = expanderPanel,
+                MaxHeight = 400,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+            };
+            dlgContent.Children.Add(scrollViewer);
 
             var dlg = new ContentDialog
             {
-                Title = "Create preset from current settings",
                 Content = dlgContent,
-                PrimaryButtonText = "Save",
+                PrimaryButtonText = "Create Preset",
                 CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = ((FrameworkElement)sender).XamlRoot
             };
+
             if (await dlg.ShowAsync() != ContentDialogResult.Primary) return;
 
             var category = categoryBox.Text.Trim();

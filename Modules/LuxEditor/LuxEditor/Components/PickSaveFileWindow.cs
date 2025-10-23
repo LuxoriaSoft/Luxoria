@@ -20,98 +20,144 @@ namespace Luxoria.App.Views
         public PickSaveFileWindow(string suggestedName, string ext)
         {
             _ext = ext;
-            Title = "Save preset";
+            Title = "Save Preset";
 
-            var root = new Grid
+            // Header
+            var titleBlock = new TextBlock
             {
-                Padding = new Thickness(20),
-                Background = (Brush)Application.Current.Resources["SystemControlBackgroundBaseLowBrush"],
-                RowDefinitions =
-                {
-                    new RowDefinition { Height = GridLength.Auto },
-                    new RowDefinition { Height = GridLength.Auto },
-                    new RowDefinition { Height = GridLength.Auto }
-                },
-                ColumnDefinitions =
-                {
-                    new ColumnDefinition { Width = GridLength.Auto },
-                    new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
-                    new ColumnDefinition { Width = GridLength.Auto }
-                }
+                Text = "Save Preset",
+                FontSize = 20,
+                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                Margin = new Thickness(0, 0, 0, 16)
             };
 
+            // Folder section with label above input
             var folderLabel = new TextBlock
             {
-                Text = "Folder:",
-                VerticalAlignment = VerticalAlignment.Center
+                Text = "Location",
+                FontSize = 14,
+                FontWeight = Microsoft.UI.Text.FontWeights.Medium,
+                Margin = new Thickness(0, 0, 0, 8)
             };
-            Grid.SetRow(folderLabel, 0);
-            Grid.SetColumn(folderLabel, 0);
-            root.Children.Add(folderLabel);
 
-            _folderBox.Margin = new Thickness(5, 0, 5, 0);
-            Grid.SetRow(_folderBox, 0);
-            Grid.SetColumn(_folderBox, 1);
-            root.Children.Add(_folderBox);
-
-            var browse = new Button
+            var folderInputPanel = new Grid
             {
-                Content = "Browse…",
-                MinWidth = 75
+                ColumnDefinitions =
+                {
+                    new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+                    new ColumnDefinition { Width = GridLength.Auto }
+                },
+                ColumnSpacing = 8
             };
-            browse.Click += Browse_Click;
-            Grid.SetRow(browse, 0);
-            Grid.SetColumn(browse, 2);
-            root.Children.Add(browse);
 
+            _folderBox.PlaceholderText = "Select a folder...";
+            _folderBox.CornerRadius = new Microsoft.UI.Xaml.CornerRadius(4);
+            Grid.SetColumn(_folderBox, 0);
+            folderInputPanel.Children.Add(_folderBox);
+
+            var browseButton = new Button
+            {
+                Content = "Browse",
+                MinWidth = 100,
+                Height = 32,
+                CornerRadius = new Microsoft.UI.Xaml.CornerRadius(4)
+            };
+            browseButton.Click += Browse_Click;
+            Grid.SetColumn(browseButton, 1);
+            folderInputPanel.Children.Add(browseButton);
+
+            // File name section with label above input
             var nameLabel = new TextBlock
             {
-                Text = "File name:",
-                VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 12, 0, 0)
+                Text = "Preset Name",
+                FontSize = 14,
+                FontWeight = Microsoft.UI.Text.FontWeights.Medium,
+                Margin = new Thickness(0, 20, 0, 8)
             };
-            Grid.SetRow(nameLabel, 1);
-            Grid.SetColumn(nameLabel, 0);
-            root.Children.Add(nameLabel);
 
             _nameBox.Text = Path.GetFileNameWithoutExtension(suggestedName);
-            _nameBox.Margin = new Thickness(5, 12, 0, 0);
-            Grid.SetRow(_nameBox, 1);
-            Grid.SetColumn(_nameBox, 1);
-            Grid.SetColumnSpan(_nameBox, 2);
-            root.Children.Add(_nameBox);
+            _nameBox.PlaceholderText = "Enter preset name...";
+            _nameBox.CornerRadius = new Microsoft.UI.Xaml.CornerRadius(4);
 
+            // File extension hint
+            var extHint = new TextBlock
+            {
+                Text = $"File will be saved as: {Path.GetFileNameWithoutExtension(suggestedName)}{ext}",
+                FontSize = 12,
+                Opacity = 0.7,
+                Margin = new Thickness(0, 6, 0, 0)
+            };
+
+            // Action buttons
             var buttonPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
                 HorizontalAlignment = HorizontalAlignment.Right,
-                Margin = new Thickness(0, 20, 0, 0)
+                Spacing = 12,
+                Margin = new Thickness(0, 28, 0, 0)
             };
-            var save = new Button
-            {
-                Content = "Save",
-                MinWidth = 75
-            };
-            save.Click += OnSave;
-            var cancel = new Button
+
+            var cancelButton = new Button
             {
                 Content = "Cancel",
-                MinWidth = 75,
-                Margin = new Thickness(10, 0, 0, 0)
+                MinWidth = 100,
+                Height = 36,
+                CornerRadius = new Microsoft.UI.Xaml.CornerRadius(4)
             };
-            cancel.Click += (_, __) => CloseWindow(null);
+            cancelButton.Click += (_, __) => CloseWindow(null);
 
-            buttonPanel.Children.Add(save);
-            buttonPanel.Children.Add(cancel);
+            var saveButton = new Button
+            {
+                Content = "Save",
+                MinWidth = 100,
+                Height = 36,
+                Style = (Microsoft.UI.Xaml.Style)Application.Current.Resources["AccentButtonStyle"],
+                CornerRadius = new Microsoft.UI.Xaml.CornerRadius(4)
+            };
+            saveButton.Click += OnSave;
 
-            Grid.SetRow(buttonPanel, 2);
-            Grid.SetColumn(buttonPanel, 0);
-            Grid.SetColumnSpan(buttonPanel, 3);
-            root.Children.Add(buttonPanel);
+            buttonPanel.Children.Add(cancelButton);
+            buttonPanel.Children.Add(saveButton);
 
-            this.AppWindow.Resize(new(400, 200));
+            // Update extension hint when name changes
+            _nameBox.TextChanged += (_, __) =>
+            {
+                var displayName = string.IsNullOrWhiteSpace(_nameBox.Text)
+                    ? "filename"
+                    : _nameBox.Text;
+                extHint.Text = $"File will be saved as: {displayName}{ext}";
+            };
+
+            // Main container
+            var contentPanel = new StackPanel
+            {
+                Padding = new Thickness(24),
+                Spacing = 0,
+                Children =
+                {
+                    titleBlock,
+                    folderLabel,
+                    folderInputPanel,
+                    nameLabel,
+                    _nameBox,
+                    extHint,
+                    buttonPanel
+                }
+            };
+
+            var root = new Border
+            {
+                Background = (Brush)Application.Current.Resources["SystemControlBackgroundBaseLowBrush"],
+                Child = contentPanel
+            };
+
+            // Set responsive window size with min/max constraints
+            this.AppWindow.Resize(new(520, 340));
 
             Content = root;
+
+            // Set focus to name input
+            this.Activated += (_, __) => _nameBox.Focus(FocusState.Programmatic);
         }
 
         private async void Browse_Click(object sender, RoutedEventArgs e)
