@@ -1,5 +1,6 @@
 ﻿using Luxoria.App.Interfaces;
 using Luxoria.App.Logics;
+using Luxoria.Core.Helpers;
 using Luxoria.Core.Interfaces;
 using Luxoria.Modules;
 using Luxoria.Modules.Interfaces;
@@ -215,11 +216,7 @@ namespace Luxoria.App
         /// <param name="splashScreen">The splash screen to update with progress.</param>
         private async Task LoadModuleAsync(string moduleFile, string moduleName, ModuleLoader loader, SplashScreen splashScreen)
         {
-            var version = System.Reflection.Assembly
-                .GetExecutingAssembly()
-                .GetName()
-                .Version?.ToString();
-            splashScreen.VersionInfoTextBlock.Text = $"Luxoria v{version} - Edit your vision, share your art";
+            splashScreen.VersionInfoTextBlock.Text = $"Luxoria v{AssemblyHelper.GetVersionXYZ()} - Edit your vision, share your art";
 
             // Update the splash screen to indicate the module being loaded
             await UpdateSplashScreenAsync(splashScreen, $"Loading {moduleName}...");
