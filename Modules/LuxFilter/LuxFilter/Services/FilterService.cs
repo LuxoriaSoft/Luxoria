@@ -5,6 +5,7 @@ using LuxFilter.Algorithms.PerceptualMetrics;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace LuxFilter.Services;
 
@@ -24,7 +25,7 @@ public class FilterService
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error initializing CLIPAlgo: {ex.Message}");
+                Debug.WriteLine($"Error initializing CLIPAlgo: {ex.Message}");
                 return new ResolutionAlgo();
             }
         }) },

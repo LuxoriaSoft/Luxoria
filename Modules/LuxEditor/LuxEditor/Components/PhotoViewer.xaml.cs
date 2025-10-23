@@ -12,6 +12,8 @@ using Microsoft.UI.Xaml.Input;
 using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 
@@ -22,6 +24,7 @@ namespace LuxEditor.Components
     {
         private readonly DpiCanvas _mainCanvas;
         private readonly DpiCanvas _overlayCanvas;
+        private readonly DpiCanvas _subjectsCanvas;
 
         private SKImage? _currentGpu;
         private SKBitmap? _currentCpu;
@@ -35,6 +38,7 @@ namespace LuxEditor.Components
         private Layer? _observedLayer;
         private SKImage? _cachedFusion;
         private SKImage? _cachedOverlay;
+        private readonly object _overlayLock = new object();
 
         private Action? _overlayTempHandler;
         private Action? _operationRefreshHandler;
@@ -46,6 +50,12 @@ namespace LuxEditor.Components
 
         private readonly DpiCanvas _cropCanvas;
         private bool _isCropMode;
+
+        // Subject detection overlay
+        private ICollection<DetectedSubject> _detectedSubjects = new List<DetectedSubject>();
+        private DetectedSubject? _hoveredSubject;
+        private bool _showSubjectsOverlay = true;
+        public event Action<DetectedSubject>? SubjectSelected;
         public bool IsCropMode { get => _isCropMode; set
             {
                 _isCropMode = value;
@@ -69,22 +79,31 @@ namespace LuxEditor.Components
         public PhotoViewer()
         {
             InitializeComponent();
-            
+
             this.Loaded += OnPhotoViewerLoaded;
 
             _mainCanvas = new DpiCanvas();
             _overlayCanvas = new DpiCanvas();
+            _subjectsCanvas = new DpiCanvas { IsHitTestVisible = false }; // Disabled by default to allow overlay tools to receive pointer events
+
             CanvasHost.Children.Add(_mainCanvas);
             CanvasHost.Children.Add(_overlayCanvas);
+            CanvasHost.Children.Add(_subjectsCanvas);
 
             _mainCanvas.PaintSurface += OnPaintSurface;
             _overlayCanvas.PaintSurface += OnOverlayPaintSurface;
+            _subjectsCanvas.PaintSurface += OnSubjectsPaintSurface;
+
             _overlayCanvas.PointerReleased += (_, _) => {
                 if (_currentImage == null) return;
                 if (_currentImage.LayerManager.SelectedLayer == null) return;
                 if (_currentImage.LayerManager.SelectedLayer.SelectedOperation == null) return;
                 _currentImage?.SaveState();
             };
+
+            // Subject canvas interactions
+            _subjectsCanvas.PointerMoved += OnSubjectsPointerMoved;
+            _subjectsCanvas.PointerPressed += OnSubjectsPointerPressed;
 
             ImageManager.Instance.OnSelectionChanged += img =>
             {
@@ -392,6 +411,15 @@ namespace LuxEditor.Components
 
             DispatcherQueue.EnqueueAsync(() =>
             {
+                _subjectsCanvas.Width = width;
+                _subjectsCanvas.Height = height;
+                _subjectsCanvas.HorizontalAlignment = HorizontalAlignment.Center;
+                _subjectsCanvas.VerticalAlignment = VerticalAlignment.Center;
+                _subjectsCanvas.Margin = _mainCanvas.Margin;
+            });
+
+            DispatcherQueue.EnqueueAsync(() =>
+            {
                 _cropCanvas.Width = width;
                 _cropCanvas.Height = height;
                 _cropCanvas.HorizontalAlignment = HorizontalAlignment.Center;
@@ -402,6 +430,7 @@ namespace LuxEditor.Components
             DispatcherQueue.EnqueueAsync(() => {
                 _mainCanvas.Invalidate();
                 _overlayCanvas.Invalidate();
+                _subjectsCanvas.Invalidate();
                 _cropCanvas.Invalidate();
             });
 
@@ -409,6 +438,7 @@ namespace LuxEditor.Components
             {
                 _mainCanvas.UpdateLayout();
                 _overlayCanvas.UpdateLayout();
+                _subjectsCanvas.UpdateLayout();
                 _cropCanvas.UpdateLayout();
             });
 
@@ -480,8 +510,11 @@ namespace LuxEditor.Components
         {
             if (_currentTool == null || _currentImage == null)
             {
-                _cachedOverlay?.Dispose();
-                _cachedOverlay = null;
+                lock (_overlayLock)
+                {
+                    _cachedOverlay?.Dispose();
+                    _cachedOverlay = null;
+                }
                 return;
             }
 
@@ -494,16 +527,24 @@ namespace LuxEditor.Components
 
             _currentTool.OpsFusionned = GetImageOps();
 
-
-            var preview = _currentTool.GetResult();
+            // Draw previous operations (fusion)
             if (_currentTool.OpsFusionned != null) {
                 c.DrawImage(_currentTool.OpsFusionned, new SKRect(0, 0, w, h));
             }
 
+            // Draw current tool result (preview)
+            var preview = _currentTool.GetResult();
+            if (preview != null) {
+                c.DrawBitmap(preview, new SKRect(0, 0, w, h));
+            }
+
             c.Flush();
 
-            _cachedOverlay?.Dispose();
-            _cachedOverlay = surf.Snapshot();
+            lock (_overlayLock)
+            {
+                _cachedOverlay?.Dispose();
+                _cachedOverlay = surf.Snapshot();
+            }
         }
 
         private void OnOverlayPaintSurface(object sender, SKPaintSurfaceEventArgs e)
@@ -522,13 +563,16 @@ namespace LuxEditor.Components
             var overlayColor =
                 _currentImage.LayerManager.SelectedLayer!.OverlayColor.ToSKColor();
 
-            if (_cachedOverlay != null)
+            lock (_overlayLock)
             {
-                using var paint = new SKPaint
+                if (_cachedOverlay != null)
                 {
-                    ColorFilter = SKColorFilter.CreateBlendMode(overlayColor, SKBlendMode.SrcIn)
-                };
-                canvas.DrawImage(_cachedOverlay, new SKRect(0, 0, w, h), paint);
+                    using var paint = new SKPaint
+                    {
+                        ColorFilter = SKColorFilter.CreateBlendMode(overlayColor, SKBlendMode.SrcIn)
+                    };
+                    canvas.DrawImage(_cachedOverlay, new SKRect(0, 0, w, h), paint);
+                }
             }
 
             if (_currentTool != null)
@@ -568,6 +612,242 @@ namespace LuxEditor.Components
         {
             _isDragging = false;
             (sender as UIElement)?.ReleasePointerCaptures();
+        }
+
+        // ======== Subject Detection Overlay Methods ========
+
+        /// <summary>
+        /// Sets the detected subjects to be displayed as overlays
+        /// </summary>
+        public void SetDetectedSubjects(List<DetectedSubject> subjects)
+        {
+            _detectedSubjects = subjects;
+            // Enable hit testing only when subjects are present and overlay is visible
+            _subjectsCanvas.IsHitTestVisible = subjects.Count > 0 && _showSubjectsOverlay;
+            _subjectsCanvas.Invalidate();
+        }
+
+        /// <summary>
+        /// Shows or hides the subjects overlay
+        /// </summary>
+        public void SetSubjectsOverlayVisible(bool visible)
+        {
+            _showSubjectsOverlay = visible;
+            // Update hit testing based on visibility and presence of subjects
+            _subjectsCanvas.IsHitTestVisible = visible && _detectedSubjects.Count > 0;
+            _subjectsCanvas.Invalidate();
+        }
+
+        /// <summary>
+        /// Clears all detected subjects
+        /// </summary>
+        public void ClearDetectedSubjects()
+        {
+            _detectedSubjects.Clear();
+            _hoveredSubject = null;
+            // Disable hit testing when no subjects
+            _subjectsCanvas.IsHitTestVisible = false;
+            _subjectsCanvas.Invalidate();
+        }
+
+        /// <summary>
+        /// Paints the subject detection overlays
+        /// </summary>
+        private void OnSubjectsPaintSurface(object sender, SKPaintSurfaceEventArgs e)
+        {
+            var canvas = e.Surface.Canvas;
+            canvas.Clear(SKColors.Transparent);
+
+            if (!_showSubjectsOverlay || _detectedSubjects.Count == 0)
+            {
+                return;
+            }
+
+            // Calculate scale ratio between displayed image and original image
+            // Detection is done on EditedBitmap, but we might be displaying PreviewBitmap
+            float scaleX = 1.0f;
+            float scaleY = 1.0f;
+
+            if (_currentImage != null)
+            {
+                // Canvas size matches the displayed bitmap (PreviewBitmap or EditedBitmap)
+                // Detection coordinates are based on EditedBitmap
+                scaleX = (float)e.Info.Width / _currentImage.EditedBitmap.Width;
+                scaleY = (float)e.Info.Height / _currentImage.EditedBitmap.Height;
+            }
+
+            foreach (var subject in _detectedSubjects)
+            {
+                var rect = subject.BoundingBox;
+
+                // Scale coordinates to match displayed image size
+                var skRect = new SKRect(
+                    rect.X * scaleX,
+                    rect.Y * scaleY,
+                    (rect.X + rect.Width) * scaleX,
+                    (rect.Y + rect.Height) * scaleY
+                );
+
+                // Determine color and alpha based on state
+                SKColor color;
+                byte alpha;
+
+                if (subject.IsSelected)
+                {
+                    // Selected: darker and more opaque version of overlay color
+                    var baseColor = subject.OverlayColor;
+                    color = new SKColor(
+                        (byte)(baseColor.Red * 0.7),
+                        (byte)(baseColor.Green * 0.7),
+                        (byte)(baseColor.Blue * 0.7)
+                    );
+                    alpha = 220;
+                }
+                else if (subject == _hoveredSubject)
+                {
+                    // Hovered: bright overlay color
+                    color = subject.OverlayColor;
+                    alpha = 180;
+                }
+                else
+                {
+                    // Normal: semi-transparent overlay
+                    color = subject.OverlayColor;
+                    alpha = 100;
+                }
+
+                // Draw filled rectangle
+                using var fillPaint = new SKPaint
+                {
+                    Color = color.WithAlpha(alpha),
+                    Style = SKPaintStyle.Fill,
+                    IsAntialias = true
+                };
+                canvas.DrawRect(skRect, fillPaint);
+
+                // Draw border
+                using var strokePaint = new SKPaint
+                {
+                    Color = color.WithAlpha(255),
+                    Style = SKPaintStyle.Stroke,
+                    StrokeWidth = subject.IsSelected ? 4 : (subject == _hoveredSubject ? 3 : 2),
+                    IsAntialias = true
+                };
+                canvas.DrawRect(skRect, strokePaint);
+
+                // Draw label
+                var labelText = subject.DisplayName;
+                using var textPaint = new SKPaint
+                {
+                    Color = SKColors.White,
+                    TextSize = 16,
+                    IsAntialias = true,
+                    Typeface = SKTypeface.FromFamilyName("Segoe UI", SKFontStyle.Bold)
+                };
+
+                // Background for label
+                var textBounds = new SKRect();
+                textPaint.MeasureText(labelText, ref textBounds);
+                var labelRect = new SKRect(
+                    skRect.Left,
+                    skRect.Top - 24,
+                    skRect.Left + textBounds.Width + 12,
+                    skRect.Top
+                );
+
+                using var labelBgPaint = new SKPaint
+                {
+                    Color = color.WithAlpha(220),
+                    Style = SKPaintStyle.Fill
+                };
+                canvas.DrawRect(labelRect, labelBgPaint);
+
+                // Draw text
+                canvas.DrawText(labelText, skRect.Left + 6, skRect.Top - 6, textPaint);
+            }
+        }
+
+        /// <summary>
+        /// Handles pointer movement over subjects canvas for hover effect
+        /// </summary>
+        private void OnSubjectsPointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (!_showSubjectsOverlay || _detectedSubjects.Count == 0)
+            {
+                e.Handled = false; // Allow event to propagate to overlay canvas
+                return;
+            }
+
+            var pt = DpiHelper.GetCorrectedPosition(e, _subjectsCanvas);
+            DetectedSubject? newHovered = null;
+
+            // Calculate scale ratio (same as in OnSubjectsPaintSurface)
+            float scaleX = 1.0f;
+            float scaleY = 1.0f;
+            if (_currentImage != null)
+            {
+                scaleX = (float)_subjectsCanvas.Width / _currentImage.EditedBitmap.Width;
+                scaleY = (float)_subjectsCanvas.Height / _currentImage.EditedBitmap.Height;
+            }
+
+            // Find subject under pointer
+            foreach (var subject in _detectedSubjects)
+            {
+                var rect = subject.BoundingBox;
+                // Apply scale to bounding box coordinates
+                float scaledX = rect.X * scaleX;
+                float scaledY = rect.Y * scaleY;
+                float scaledWidth = rect.Width * scaleX;
+                float scaledHeight = rect.Height * scaleY;
+
+                if (pt.X >= scaledX && pt.X <= scaledX + scaledWidth &&
+                    pt.Y >= scaledY && pt.Y <= scaledY + scaledHeight)
+                {
+                    newHovered = subject;
+                    break;
+                }
+            }
+
+            // Update hover state
+            if (newHovered != _hoveredSubject)
+            {
+                if (_hoveredSubject != null)
+                    _hoveredSubject.IsHovered = false;
+
+                _hoveredSubject = newHovered;
+
+                if (_hoveredSubject != null)
+                    _hoveredSubject.IsHovered = true;
+
+                _subjectsCanvas.Invalidate();
+            }
+
+            // Only consume event if we're hovering over a subject
+            e.Handled = (_hoveredSubject != null);
+        }
+
+        /// <summary>
+        /// Handles pointer press on subjects canvas for selection
+        /// </summary>
+        private void OnSubjectsPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (!_showSubjectsOverlay || _hoveredSubject == null)
+            {
+                e.Handled = false; // Allow event to propagate to overlay canvas
+                return;
+            }
+
+            // Toggle selection
+            _hoveredSubject.IsSelected = !_hoveredSubject.IsSelected;
+
+            // Notify editor about selection
+            SubjectSelected?.Invoke(_hoveredSubject);
+
+            // Force refresh of overlay to show updated selection state
+            DispatcherQueue.TryEnqueue(() => _subjectsCanvas.Invalidate());
+
+            // Consume event since we handled it
+            e.Handled = true;
         }
     }
 }

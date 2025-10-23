@@ -34,3 +34,7 @@ assets/TestCollection/DSC02839.ARW
 assets/TestCollection/DSC02847.ARW
 
 assets/TestCollection/DSC02947.ARW
+
+Modules/LuxFilter/LuxFilter.Algorithms/Algorithms/ColorVisualAesthetics/CLIPModel/negative.txt
+
+Modules/LuxFilter/LuxFilter.Algorithms/Algorithms/ColorVisualAesthetics/CLIPModel/positive.txt

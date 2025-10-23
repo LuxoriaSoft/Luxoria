@@ -3,6 +3,7 @@ using Luxoria.Modules.Models;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using SkiaSharp;
+using System.Globalization;
 using System.Reflection;
 
 namespace LuxFilter.Algorithms.ColorVisualAesthetics;
@@ -96,7 +97,7 @@ public class CLIPAlgo : IFilterAlgorithm, IDisposable
     private static float[] LoadVector(string path)
     {
         return File.ReadAllLines(path)
-                   .Select(float.Parse)
+                   .Select(line => float.Parse(line, CultureInfo.InvariantCulture))
                    .ToArray();
     }
 

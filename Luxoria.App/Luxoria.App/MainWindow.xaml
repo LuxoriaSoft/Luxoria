@@ -69,7 +69,7 @@
             HorizontalAlignment="Stretch" 
             VerticalAlignment="Stretch" 
             ResizeBehavior="PreviousAndNext"
-            Background="{ThemeResource ControlStrongFillColorDisabledBrush}"
+            Background="{ThemeResource ControlStrongFillColorDisabledBrush}"    
             Margin="10, 10, 10, 0"
             CornerRadius="10, 10, 0, 0" />
 
