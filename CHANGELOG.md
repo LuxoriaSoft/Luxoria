@@ -1,3 +1,16 @@
+## [1.70.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.70.0...v1.70.1) (2025-10-23)
+
+
+### Bug Fixes
+
+* Improves CLIP algo and adds resource handling ([14a9f58](https://github.com/LuxoriaSoft/Luxoria/commit/14a9f5880f1068bba64b18418cef90fce59dc941))
+* Improves gradient tool rendering and overlay ([3fc13cb](https://github.com/LuxoriaSoft/Luxoria/commit/3fc13cbf17105d32472aea724f16768f2169efe2))
+* Improves gradient tool rendering and overlay ([0838790](https://github.com/LuxoriaSoft/Luxoria/commit/08387903603f8b7f6bc098fe23104286bd432b35))
+* Improves subject overlay and tool handling ([e1bae81](https://github.com/LuxoriaSoft/Luxoria/commit/e1bae81b9b28dbecb52b3f30e9346fa940a70cea))
+* Improves subject overlay and tool handling ([04ca4d2](https://github.com/LuxoriaSoft/Luxoria/commit/04ca4d240a85b39102ac5ae2b8f1abf398e0fd6e))
+* Improves subject recognition blur application ([a30c52b](https://github.com/LuxoriaSoft/Luxoria/commit/a30c52b9bc1b9edeca5a20fe38e0991e3800c650))
+* Improves subject recognition blur application ([e9b0894](https://github.com/LuxoriaSoft/Luxoria/commit/e9b08943abd98f284cb6bda2bf2eacd1a8b35a36))
+
 # [1.70.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.69.1...v1.70.0) (2025-10-11)
 
 
