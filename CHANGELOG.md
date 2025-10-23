@@ -1,3 +1,10 @@
+## [1.71.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.71.1...v1.71.2) (2025-10-23)
+
+
+### Bug Fixes
+
+* GetVersion method (fetches from assembly) ([a364372](https://github.com/LuxoriaSoft/Luxoria/commit/a36437217e43080288035f2dfed116bea5aeb96f))
+
 ## [1.71.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.71.0...v1.71.1) (2025-10-23)
 
 
