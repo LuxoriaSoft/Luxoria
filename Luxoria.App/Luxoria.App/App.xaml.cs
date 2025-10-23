@@ -216,7 +216,8 @@ namespace Luxoria.App
         /// <param name="splashScreen">The splash screen to update with progress.</param>
         private async Task LoadModuleAsync(string moduleFile, string moduleName, ModuleLoader loader, SplashScreen splashScreen)
         {
-            splashScreen.VersionInfoTextBlock.Text = $"Luxoria v{AssemblyHelper.GetVersionXYZ()} - Edit your vision, share your art";
+            string version = AssemblyHelper.GetVersionXYZ();
+            splashScreen.VersionInfoTextBlock.Text = $"Luxoria v{version} - Edit your vision, share your art";
 
             // Update the splash screen to indicate the module being loaded
             await UpdateSplashScreenAsync(splashScreen, $"Loading {moduleName}...");
