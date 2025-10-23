@@ -1,3 +1,10 @@
+## [1.71.4](https://github.com/LuxoriaSoft/Luxoria/compare/v1.71.3...v1.71.4) (2025-10-23)
+
+
+### Bug Fixes
+
+* Assembly version helper & usage ([1fbc4e0](https://github.com/LuxoriaSoft/Luxoria/commit/1fbc4e08f0f5f859ce80e40d2b1950f193e6c337))
+
 ## [1.71.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.71.2...v1.71.3) (2025-10-23)
 
 
