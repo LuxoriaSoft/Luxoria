@@ -26,9 +26,10 @@ public static class AssemblyHelper
     /// </summary>
     public static class VersionCompare
     {
+        public static string Normalize(string s) => s.Replace("v", "");
         public static bool Compare(Version a, Version b) => a == b;
-        public static bool Compare(string a, Version b) => new Version(a) == b;
-        public static bool Compare(Version a, string b) => a == new Version(b);
-        public static bool Compare(string a, string b) => new Version(a) == new Version(b);
+        public static bool Compare(string a, Version b) => Version.Parse(Normalize(a)) == b;
+        public static bool Compare(Version a, string b) => a == Version.Parse(Normalize(b));
+        public static bool Compare(string a, string b) => Version.Parse(Normalize(a)) == Version.Parse(Normalize(b));
     }
 }

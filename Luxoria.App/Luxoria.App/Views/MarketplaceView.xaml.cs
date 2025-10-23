@@ -14,6 +14,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Luxoria.Core.Models;
+using Luxoria.Core.Helpers;
 
 namespace Luxoria.App.Views
 {
@@ -23,6 +24,7 @@ namespace Luxoria.App.Views
         private readonly IStorageAPI _cacheSvc;
         private readonly IEventBus _eventBus;
         private readonly HttpClient _httpClient = new();
+        private readonly string _appVersion = AssemblyHelper.GetVersionXYZ();
 
         private ICollection<LuxRelease> _allReleases;
         private LuxRelease.LuxMod _selectedModule;
@@ -32,6 +34,7 @@ namespace Luxoria.App.Views
         private TextBlock _installStatusText;
         private TextBlock _installDetailsText;
         private bool _allowDialogClose;
+
 
         public MarketplaceView(IMarketplaceService marketplaceSvc, IStorageAPI cacheSvc, IEventBus eventBus)
         {
@@ -56,12 +59,25 @@ namespace Luxoria.App.Views
                             NavView.MenuItems.Clear();
                             foreach (var release in _allReleases)
                             {
+                                bool isRecommended = AssemblyHelper.VersionCompare.Compare(release.Name, _appVersion);
+
+                                string name;
+
+                                if (isRecommended)
+                                    name = $"{release.Name} (Recommanded)";
+                                else
+                                    name = release.Name;
+
                                 var releaseItem = new NavigationViewItem
                                 {
-                                    Content = release.Name,
+                                    Content = name,
                                     Tag = release,
                                     Icon = new SymbolIcon(Symbol.Folder)
                                 };
+
+                                if (isRecommended)
+                                    releaseItem.Icon = new SymbolIcon(Symbol.OutlineStar);
+
                                 NavView.MenuItems.Add(releaseItem);
                             }
                         });
