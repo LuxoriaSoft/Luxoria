@@ -1,4 +1,6 @@
-﻿using Luxoria.Core.Interfaces;
+﻿using Luxoria.App.Helpers;
+using Luxoria.Core.Interfaces;
+using Luxoria.Core.Models;
 using Luxoria.Core.Services;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
@@ -13,7 +15,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Luxoria.Core.Models;
 
 namespace Luxoria.App.Views
 {
@@ -23,6 +24,7 @@ namespace Luxoria.App.Views
         private readonly IStorageAPI _cacheSvc;
         private readonly IEventBus _eventBus;
         private readonly HttpClient _httpClient = new();
+        private readonly string _appVersion = "v1.0.0";
 
         private ICollection<LuxRelease> _allReleases;
         private LuxRelease.LuxMod _selectedModule;
@@ -33,12 +35,14 @@ namespace Luxoria.App.Views
         private TextBlock _installDetailsText;
         private bool _allowDialogClose;
 
+
         public MarketplaceView(IMarketplaceService marketplaceSvc, IStorageAPI cacheSvc, IEventBus eventBus)
         {
             this.InitializeComponent();
             _mktSvc = marketplaceSvc;
             _cacheSvc = cacheSvc;
             _eventBus = eventBus;
+            _appVersion = AssemblyHelper.GetVersionXYZ();
 
             _ = Task.Run(async () =>
             {
@@ -56,13 +60,22 @@ namespace Luxoria.App.Views
                             NavView.MenuItems.Clear();
                             foreach (var release in _allReleases)
                             {
+                                bool isRecommended = AssemblyHelper.VersionCompare.Compare(release.Name, _appVersion);
+
                                 var releaseItem = new NavigationViewItem
                                 {
+                                    Name = release.Name,
                                     Content = release.Name,
                                     Tag = release,
-                                    Icon = new SymbolIcon(Symbol.Folder)
+                                    Icon = new SymbolIcon(isRecommended ? Symbol.OutlineStar : Symbol.Folder)
                                 };
                                 NavView.MenuItems.Add(releaseItem);
+
+                                if (isRecommended)
+                                {
+                                    NavView.SelectedItem = releaseItem;
+                                    NavView_ItemInvoked(NavView, release);
+                                }
                             }
                         });
                     }
@@ -109,31 +122,48 @@ namespace Luxoria.App.Views
             }
         }
 
-        private async void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+        private async void NavView_ItemInvoked(NavigationView sender, object args)
         {
-            ModulesListView.ItemsSource = null;
-            ModulesListView.IsEnabled = false;
-            MdViewer.Text = string.Empty;
-            InstallButton.IsEnabled = false;
-            InstallButton.Content = "Install";
-            DownloadCount.Text = string.Empty;
-
-            if (args.InvokedItemContainer.Tag is LuxRelease release)
+            DispatcherQueue.TryEnqueue(() =>
             {
-                ICollection<LuxRelease.LuxMod> modules;
-                if (_cacheSvc.Contains(release.Id.ToString()))
-                {
-                    modules = _cacheSvc.Get<ICollection<LuxRelease.LuxMod>>(release.Id.ToString());
-                }
-                else
-                {
-                    modules = await _mktSvc.GetRelease(release.Id);
-                    _cacheSvc.Save(release.Id.ToString(), DateTime.Now.AddHours(24), modules);
-                }
+                ModulesListView.ItemsSource = null;
+                ModulesListView.IsEnabled = false;
+                MdViewer.Text = string.Empty;
+                InstallButton.IsEnabled = false;
+                InstallButton.Content = "Install";
+                DownloadCount.Text = string.Empty;
+            });
 
+            if (args is NavigationViewItemInvokedEventArgs
+                && (args as NavigationViewItemInvokedEventArgs)
+                .InvokedItemContainer.Tag is LuxRelease src1)
+            {
+                await NavView_DisplayRelease(src1);
+            }
+            else if (args is LuxRelease src2)
+            {
+                await NavView_DisplayRelease(src2);
+            }
+        }
+
+        private async Task NavView_DisplayRelease(LuxRelease release)
+        {
+            ICollection<LuxRelease.LuxMod> modules;
+            if (_cacheSvc.Contains(release.Id.ToString()))
+            {
+                modules = _cacheSvc.Get<ICollection<LuxRelease.LuxMod>>(release.Id.ToString());
+            }
+            else
+            {
+                modules = await _mktSvc.GetRelease(release.Id);
+                _cacheSvc.Save(release.Id.ToString(), DateTime.Now.AddHours(24), modules);
+            }
+
+            DispatcherQueue.TryEnqueue(() =>
+            {
                 ModulesListView.ItemsSource = modules;
                 ModulesListView.IsEnabled = true;
-            }
+            });
         }
 
         private async void ModulesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)

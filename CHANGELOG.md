@@ -1,3 +1,40 @@
+## [1.71.4](https://github.com/LuxoriaSoft/Luxoria/compare/v1.71.3...v1.71.4) (2025-10-23)
+
+
+### Bug Fixes
+
+* Assembly version helper & usage ([1fbc4e0](https://github.com/LuxoriaSoft/Luxoria/commit/1fbc4e08f0f5f859ce80e40d2b1950f193e6c337))
+
+## [1.71.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.71.2...v1.71.3) (2025-10-23)
+
+
+### Bug Fixes
+
+* GetVersion returns Version (Version-nullable to Version) ([7ef3832](https://github.com/LuxoriaSoft/Luxoria/commit/7ef383215430123e5deb5fb5465c1be0a7a04356))
+
+## [1.71.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.71.1...v1.71.2) (2025-10-23)
+
+
+### Bug Fixes
+
+* GetVersion method (fetches from assembly) ([a364372](https://github.com/LuxoriaSoft/Luxoria/commit/a36437217e43080288035f2dfed116bea5aeb96f))
+
+## [1.71.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.71.0...v1.71.1) (2025-10-23)
+
+
+### Bug Fixes
+
+* Displays version on splash screen ([e9b1688](https://github.com/LuxoriaSoft/Luxoria/commit/e9b1688e8fad1f6aae361ce70d27294a8dde233d))
+
+# [1.71.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.70.1...v1.71.0) (2025-10-23)
+
+
+### Features
+
+* Add Assembly helper ([edd3148](https://github.com/LuxoriaSoft/Luxoria/commit/edd31484c9c65932d5b61d2e49ee254a0924ccc3))
+* Add recommended information on version selector ([423118d](https://github.com/LuxoriaSoft/Luxoria/commit/423118d7f8c4294989471641863ab7da55db472c))
+* Marketplace selects recommended version as default ([a1970cc](https://github.com/LuxoriaSoft/Luxoria/commit/a1970cca918526d4a5630d50e58322f8dbe4f9cd))
+
 ## [1.70.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.70.0...v1.70.1) (2025-10-23)
 
 
