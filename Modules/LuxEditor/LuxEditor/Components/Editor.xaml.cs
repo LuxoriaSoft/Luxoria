@@ -56,6 +56,7 @@ namespace LuxEditor.Components
         private readonly List<Layer> _observedLayers = new();
 
         private EditorToneCurveGroup _toneGroup;
+        private HistogramControl _histogram;
 
         private Lazy<YoLoDetectModelAPI> _yoloDetectionAPI = new(() =>
             new YoLoDetectModelAPI(SubjectRecognition.ExtractEmbeddedResource("LuxEditor.ExternalLibs.Models.yolov5l.onnx")));
@@ -860,6 +861,15 @@ namespace LuxEditor.Components
         /// </summary>
         private void BuildEditorUI()
         {
+            // Create histogram control at the top
+            _histogram = new HistogramControl();
+            _histogram.OnAdjustmentChanged += OnHistogramAdjustment;
+
+            // Connect the image update event to refresh the histogram
+            OnEditorImageUpdated += (img) => _histogram.RefreshHistogram();
+
+            EditorStackPanel.Children.Add(_histogram.GetElement());
+
             var root = new EditorGroupExpander("Basic");
 
             AddCategory(root, "WhiteBalance", "White Balance", new IEditorGroupItem[]
@@ -910,6 +920,18 @@ namespace LuxEditor.Components
             _subjectRecognition.SetImage(CurrentImage);
             subjectRecognitionExpender.AddControl(_subjectRecognition);
             _panelManager.AddCategory(subjectRecognitionExpender);
+        }
+
+        /// <summary>
+        /// Handles adjustments from the histogram control and updates corresponding sliders.
+        /// </summary>
+        private void OnHistogramAdjustment(string settingKey, float value)
+        {
+            // Find the slider and update its value
+            if (_sliderCache.TryGetValue(settingKey, out var slider))
+            {
+                slider.SetValue(value);
+            }
         }
 
         /// <summary>
