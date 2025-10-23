@@ -1,6 +1,6 @@
-﻿using Luxoria.App.Interfaces;
+﻿using Luxoria.App.Helpers;
+using Luxoria.App.Interfaces;
 using Luxoria.App.Logics;
-using Luxoria.Core.Helpers;
 using Luxoria.Core.Interfaces;
 using Luxoria.Modules;
 using Luxoria.Modules.Interfaces;
@@ -35,6 +35,7 @@ namespace Luxoria.App
         // Logger section part
         private const string LOG_SECTION = "General";
         private readonly ILoggerService _logger;
+        private readonly string _appVersion;
 
         private readonly IModuleService _moduleService;
         public IModuleService ModuleService => _moduleService;
@@ -55,6 +56,7 @@ namespace Luxoria.App
 
             _moduleService = _host.Services.GetRequiredService<IModuleService>();
             _logger = _host.Services.GetRequiredService<ILoggerService>();
+            _appVersion = AssemblyHelper.GetVersionXYZ();
 
             EventsHandlerInit();
         }
@@ -73,7 +75,7 @@ namespace Luxoria.App
             await _logger.LogAsync("Application is starting...");
 
             // Show splash screen
-            var splashScreen = new SplashScreen();
+            var splashScreen = new SplashScreen(_appVersion);
             splashScreen.Activate();
 
             await _logger.LogAsync("Modules loaded. Closing slasph screen...");
@@ -216,9 +218,6 @@ namespace Luxoria.App
         /// <param name="splashScreen">The splash screen to update with progress.</param>
         private async Task LoadModuleAsync(string moduleFile, string moduleName, ModuleLoader loader, SplashScreen splashScreen)
         {
-            string version = AssemblyHelper.GetVersionXYZ();
-            splashScreen.VersionInfoTextBlock.Text = $"Luxoria v{version} - Edit your vision, share your art";
-
             // Update the splash screen to indicate the module being loaded
             await UpdateSplashScreenAsync(splashScreen, $"Loading {moduleName}...");
             await _logger.LogAsync($"Trying to load: {moduleName}");
