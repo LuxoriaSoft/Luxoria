@@ -9,7 +9,10 @@ public static class AssemblyHelper
     /// </summary>
     /// <returns>Assembly Version</returns>
     public static Version GetVersion()
-        => Assembly.GetEntryAssembly().GetName().Version;
+    {
+        var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+        return assembly.GetName().Version;
+    }
 
     /// <summary>
     /// Return the main assembly version as X.Y.Z
@@ -18,6 +21,8 @@ public static class AssemblyHelper
     public static string GetVersionXYZ()
     {
         Version ver = GetVersion();
+        if (ver.Build < 0)
+            return $"{ver.Major}.{ver.Minor}";
         return $"{ver.Major}.{ver.Minor}.{ver.Build}";
     }
 
