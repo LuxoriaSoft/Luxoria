@@ -8,11 +8,7 @@ public static class AssemblyHelper
     /// Return the main assembly version
     /// </summary>
     /// <returns>Assembly Version</returns>
-    public static Version GetVersion()
-    {
-        var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
-        return assembly.GetName().Version;
-    }
+    public static Version GetVersion() => Assembly.GetExecutingAssembly().GetName().Version;
 
     /// <summary>
     /// Return the main assembly version as X.Y.Z
