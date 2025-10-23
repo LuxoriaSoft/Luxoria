@@ -420,6 +420,9 @@ namespace LuxEditor.Components
                     Margin = new Thickness(0, 0, 0, 8)
                 });
 
+                // Add a nested ScrollViewer for layer operations to prevent overflow
+                var layersContainer = new StackPanel { Spacing = 8 };
+
                 foreach (var layer in img.LayerManager.Layers)
                 {
                     var layerExp = new Expander
@@ -427,23 +430,67 @@ namespace LuxEditor.Components
                         Header = layer.Name,
                         IsExpanded = false,
                         Margin = new Thickness(0, 4, 0, 0),
-                        CornerRadius = new Microsoft.UI.Xaml.CornerRadius(4)
+                        CornerRadius = new Microsoft.UI.Xaml.CornerRadius(4),
+                        HorizontalAlignment = HorizontalAlignment.Stretch
                     };
 
                     var layerPanel = new StackPanel { Spacing = 8 };
+                    var layerCheckBoxes = new List<CheckBox>();
+
                     foreach (var op in layer.Operations.OfType<MaskOperation>())
                     {
-                        layerPanel.Children.Add(new CheckBox
+                        var cb = new CheckBox
                         {
                             Content = $"{op.Tool.ToolType} ({op.Mode})",
                             IsChecked = true,
                             Tag = op.Id,
                             MinHeight = 32
-                        });
+                        };
+                        layerCheckBoxes.Add(cb);
+                        layerPanel.Children.Add(cb);
                     }
-                    layerExp.Content = layerPanel;
-                    maskRoot.Children.Add(layerExp);
+
+                    // Add Select All / Deselect All for this layer if it has operations
+                    if (layerCheckBoxes.Any())
+                    {
+                        var layerHeaderPanel = new StackPanel
+                        {
+                            Orientation = Orientation.Horizontal,
+                            Spacing = 8,
+                            Margin = new Thickness(0, 0, 0, 8)
+                        };
+                        var layerSelectAll = new HyperlinkButton
+                        {
+                            Content = "Select All",
+                            FontSize = 11,
+                            Padding = new Thickness(0)
+                        };
+                        var layerDeselectAll = new HyperlinkButton
+                        {
+                            Content = "Deselect All",
+                            FontSize = 11,
+                            Padding = new Thickness(0)
+                        };
+                        layerSelectAll.Click += (_, __) => layerCheckBoxes.ForEach(cb => cb.IsChecked = true);
+                        layerDeselectAll.Click += (_, __) => layerCheckBoxes.ForEach(cb => cb.IsChecked = false);
+                        layerHeaderPanel.Children.Add(layerSelectAll);
+                        layerHeaderPanel.Children.Add(new TextBlock { Text = "•", FontSize = 11, Opacity = 0.5 });
+                        layerHeaderPanel.Children.Add(layerDeselectAll);
+
+                        var layerContent = new StackPanel { Spacing = 8 };
+                        layerContent.Children.Add(layerHeaderPanel);
+                        layerContent.Children.Add(layerPanel);
+                        layerExp.Content = layerContent;
+                    }
+                    else
+                    {
+                        layerExp.Content = layerPanel;
+                    }
+
+                    layersContainer.Children.Add(layerExp);
                 }
+
+                maskRoot.Children.Add(layersContainer);
             }
             else
             {
@@ -460,21 +507,37 @@ namespace LuxEditor.Components
             expanderPanel.Children.Add(maskExp);
 
             // Build dialog content with better layout
-            var dlgContent = new StackPanel { Spacing = 0 };
-            dlgContent.Children.Add(headerStack);
-            dlgContent.Children.Add(categoryLabel);
-            dlgContent.Children.Add(categoryBox);
-            dlgContent.Children.Add(nameLabel);
-            dlgContent.Children.Add(nameBox);
-            dlgContent.Children.Add(settingsLabel);
-            dlgContent.Children.Add(settingsDesc);
+            var topSection = new StackPanel { Spacing = 0 };
+            topSection.Children.Add(headerStack);
+            topSection.Children.Add(categoryLabel);
+            topSection.Children.Add(categoryBox);
+            topSection.Children.Add(nameLabel);
+            topSection.Children.Add(nameBox);
+            topSection.Children.Add(settingsLabel);
+            topSection.Children.Add(settingsDesc);
 
             var scrollViewer = new ScrollViewer
             {
                 Content = expanderPanel,
-                MaxHeight = 400,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+                MaxHeight = 500,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+                Margin = new Thickness(0, 0, 0, 16)
             };
+
+            var dlgContent = new Grid
+            {
+                RowDefinitions =
+                {
+                    new RowDefinition { Height = GridLength.Auto },
+                    new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }
+                }
+            };
+
+            Grid.SetRow(topSection, 0);
+            dlgContent.Children.Add(topSection);
+
+            Grid.SetRow(scrollViewer, 1);
             dlgContent.Children.Add(scrollViewer);
 
             var dlg = new ContentDialog
@@ -483,7 +546,9 @@ namespace LuxEditor.Components
                 PrimaryButtonText = "Create Preset",
                 CloseButtonText = "Cancel",
                 DefaultButton = ContentDialogButton.Primary,
-                XamlRoot = ((FrameworkElement)sender).XamlRoot
+                XamlRoot = ((FrameworkElement)sender).XamlRoot,
+                MaxWidth = 600,
+                MaxHeight = 800
             };
 
             if (await dlg.ShowAsync() != ContentDialogResult.Primary) return;
