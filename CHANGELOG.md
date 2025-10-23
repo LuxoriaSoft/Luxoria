@@ -1,3 +1,10 @@
+## [1.71.3](https://github.com/LuxoriaSoft/Luxoria/compare/v1.71.2...v1.71.3) (2025-10-23)
+
+
+### Bug Fixes
+
+* GetVersion returns Version (Version-nullable to Version) ([7ef3832](https://github.com/LuxoriaSoft/Luxoria/commit/7ef383215430123e5deb5fb5465c1be0a7a04356))
+
 ## [1.71.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.71.1...v1.71.2) (2025-10-23)
 
 
