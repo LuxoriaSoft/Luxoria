@@ -1,3 +1,10 @@
+## [1.71.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.71.0...v1.71.1) (2025-10-23)
+
+
+### Bug Fixes
+
+* Displays version on splash screen ([e9b1688](https://github.com/LuxoriaSoft/Luxoria/commit/e9b1688e8fad1f6aae361ce70d27294a8dde233d))
+
 # [1.71.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.70.1...v1.71.0) (2025-10-23)
 
 
