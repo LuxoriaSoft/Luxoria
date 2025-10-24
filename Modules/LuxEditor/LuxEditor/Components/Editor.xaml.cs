@@ -135,10 +135,50 @@ namespace LuxEditor.Components
 
         private void Editor_Loaded(object sender, RoutedEventArgs e)
         {
+            // Add custom resizer bar
+            var resizerBar = new Border
+            {
+                Height = 4,
+                Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 64, 64, 64)),
+                HorizontalAlignment = HorizontalAlignment.Stretch
+            };
+
+            bool isDragging = false;
+            double startY = 0;
+            double startHeight = 0;
+
+            resizerBar.PointerPressed += (s, args) =>
+            {
+                isDragging = true;
+                startY = args.GetCurrentPoint(MainContentGrid).Position.Y;
+                startHeight = HistogramRow.ActualHeight;
+                resizerBar.CapturePointer(args.Pointer);
+            };
+
+            resizerBar.PointerMoved += (s, args) =>
+            {
+                if (isDragging)
+                {
+                    var currentY = args.GetCurrentPoint(MainContentGrid).Position.Y;
+                    var delta = currentY - startY;
+                    var newHeight = Math.Max(80, Math.Min(500, startHeight + delta));
+                    HistogramRow.Height = new GridLength(newHeight);
+                }
+            };
+
+            resizerBar.PointerReleased += (s, args) =>
+            {
+                isDragging = false;
+                resizerBar.ReleasePointerCapture(args.Pointer);
+            };
+
+            Grid.SetRow(resizerBar, 1);
+            MainContentGrid.Children.Add(resizerBar);
+
             LockAspectToggle.Toggled += (_, __) =>
             {
                 if (_updatingCropInputs) return;
-                
+
                 _crop.LockAspectRatio = LockAspectToggle.IsOn;
                 // Notify external components
                 CropBoxChanged?.Invoke(_crop.Box);
@@ -861,14 +901,14 @@ namespace LuxEditor.Components
         /// </summary>
         private void BuildEditorUI()
         {
-            // Create histogram control at the top
+            // Create histogram control in fixed position overlay
             _histogram = new HistogramControl();
             _histogram.OnAdjustmentChanged += OnHistogramAdjustment;
 
             // Connect the image update event to refresh the histogram
             OnEditorImageUpdated += (img) => _histogram.RefreshHistogram();
 
-            EditorStackPanel.Children.Add(_histogram.GetElement());
+            HistogramHost.Content = _histogram.GetElement();
 
             var root = new EditorGroupExpander("Basic");
 

@@ -21,7 +21,7 @@ namespace LuxEditor.EditorUI.Controls;
 /// </summary>
 public class HistogramControl : IEditorGroupItem
 {
-    private readonly StackPanel _container;
+    private readonly UIElement _container;
     private readonly SKXamlCanvas _canvas;
     private readonly ComboBox _modeSelector;
 
@@ -79,20 +79,23 @@ public class HistogramControl : IEditorGroupItem
         _modeSelector = new ComboBox
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
-            Margin = new Thickness(0, 0, 0, 8),
+            Margin = new Thickness(0, 0, 0, 4),
             ItemsSource = new[] { "RGB", "Luminance", "Red", "Green", "Blue" },
-            SelectedIndex = 0
+            SelectedIndex = 0,
+            FontSize = 11
         };
         _modeSelector.SelectionChanged += OnModeChanged;
 
         // Create canvas for histogram rendering
         _canvas = new SKXamlCanvas
         {
-            Height = 180,
+            MinHeight = 1,
             HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
             Background = new SolidColorBrush(Colors.Black)
         };
         _canvas.PaintSurface += OnPaintSurface;
+        _canvas.SizeChanged += (s, e) => _canvas.Invalidate(); // Redraw when size changes
 
         // Setup pointer events for interaction
         _canvas.PointerPressed += OnPointerPressed;
@@ -102,10 +105,15 @@ public class HistogramControl : IEditorGroupItem
         _canvas.PointerEntered += OnPointerEntered;
         _canvas.ManipulationMode = ManipulationModes.TranslateX; // Horizontal only
 
-        // Inner content
-        var contentStack = new StackPanel
+        // Create horizontal layout for compact display
+        var topRow = new Grid
         {
-            Spacing = 8
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) },
+                new ColumnDefinition { Width = new GridLength(12) },
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }
+            }
         };
 
         // Title
@@ -113,29 +121,49 @@ public class HistogramControl : IEditorGroupItem
         {
             Text = "Histogram",
             Foreground = new SolidColorBrush(Colors.White),
-            FontSize = 14,
-            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold
+            FontSize = 12,
+            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+            VerticalAlignment = VerticalAlignment.Center
         };
+        Grid.SetColumn(titleBlock, 0);
+        topRow.Children.Add(titleBlock);
 
-        contentStack.Children.Add(titleBlock);
-        contentStack.Children.Add(_modeSelector);
-        contentStack.Children.Add(_canvas);
+        // Mode selector - more compact
+        _modeSelector.HorizontalAlignment = HorizontalAlignment.Left;
+        _modeSelector.MinWidth = 120;
+        Grid.SetColumn(_modeSelector, 2);
+        topRow.Children.Add(_modeSelector);
 
-        // Wrapper with background
-        var wrapper = new Border
+        var contentGrid = new Grid
         {
-            Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 35, 35, 35)),
-            BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 60, 60, 60)),
-            BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(6),
-            Padding = new Thickness(12),
-            Margin = new Thickness(8, 8, 8, 12),
-            Child = contentStack
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) },
+                new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }
+            }
         };
 
-        // Container
-        _container = new StackPanel();
-        _container.Children.Add(wrapper);
+        // Ensure canvas takes all available space
+        _canvas.Margin = new Thickness(0);
+
+        Grid.SetRow(topRow, 0);
+        Grid.SetRow(_canvas, 1);
+        contentGrid.Children.Add(topRow);
+        contentGrid.Children.Add(_canvas);
+
+        // Wrapper with background - full width compact style
+        _container = new Border
+        {
+            Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 30, 30, 30)),
+            BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 60, 60, 60)),
+            BorderThickness = new Thickness(0, 0, 0, 1),
+            Padding = new Thickness(12, 8, 12, 8),
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            Child = contentGrid
+        };
 
         // Subscribe to image changes
         ImageManager.Instance.OnSelectionChanged += OnImageChanged;
