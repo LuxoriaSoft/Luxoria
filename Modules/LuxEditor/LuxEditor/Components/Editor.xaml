@@ -18,125 +18,142 @@
 
         <ContentControl x:Name="ToolBarHost" Grid.Row="0"/>
 
-        <Grid Grid.Row="1">
-            
-            <ScrollViewer x:Name="EditorScrollViewer"
-                          HorizontalScrollBarVisibility="Auto"
-                          VerticalScrollBarVisibility="Auto">
-                <StackPanel x:Name="EditorStackPanel" Orientation="Vertical"/>
-            </ScrollViewer>
-            
-            <Grid x:Name="CropUI" Visibility="Collapsed">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+        <Grid x:Name="MainContentGrid" Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition x:Name="HistogramRow" Height="150"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0" Orientation="Vertical" Spacing="12" Padding="12">
-                    <!-- Aspect Ratio Controls -->
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        
-                        <ComboBox x:Name="AspectPresetCombo" 
-                                  Grid.Row="0"
-                                  Header="Aspect Ratio" 
-                                  SelectedIndex="0" 
-                                  HorizontalAlignment="Stretch">
-                            <ComboBoxItem>Original</ComboBoxItem>
-                            <ComboBoxItem>4:3</ComboBoxItem>
-                            <ComboBoxItem>16:9</ComboBoxItem>
-                            <ComboBoxItem>16:10</ComboBoxItem>
-                            <ComboBoxItem>Instagram 1:1</ComboBoxItem>
-                            <ComboBoxItem>Instagram 4:5</ComboBoxItem>
-                            <ComboBoxItem>Custom</ComboBoxItem>
-                        </ComboBox>
-                        
-                        <ToggleSwitch x:Name="LockAspectToggle" 
-                                      Grid.Row="1"
-                                      Header="Lock Aspect Ratio" 
-                                      IsOn="True"
-                                      Margin="0,8,0,0"/>
-                    </Grid>
-
-                    <!-- Size Controls -->
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="12"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <TextBlock Text="Dimensions" 
-                                   Grid.Row="0" 
-                                   Grid.ColumnSpan="3" 
-                                   FontWeight="SemiBold" 
-                                   Margin="0,0,0,4"/>
-                        
-                        <controls:NumberBox x:Name="CustomWidthInput"
-                                            Grid.Row="1"
-                                            Grid.Column="0"
-                                            Header="Width"
-                                            Minimum="1"
-                                            Value="100"
-                                            SmallChange="1"/>
-                        
-                        <controls:NumberBox x:Name="CustomHeightInput"
-                                            Grid.Row="1"
-                                            Grid.Column="2"
-                                            Header="Height"
-                                            Minimum="1"
-                                            Value="100"
-                                            SmallChange="1"/>
-                    </Grid>
-
-                    <!-- Rotation Controls -->
-                    <controls:NumberBox x:Name="RotateAngleInput"
-                                        Header="Rotation Angle"
-                                        Minimum="0"
-                                        Maximum="360"
-                                        Value="0"
-                                        SmallChange="1"
-                                        HorizontalAlignment="Stretch"/>
-
-                    <!-- Action Button -->
-                    <Button x:Name="ResetCropButton"
-                            Content="Reset Crop"
+            <!-- Fixed histogram at top -->
+            <ContentControl x:Name="HistogramHost"
+                            Grid.Row="0"
                             HorizontalAlignment="Stretch"
-                            Margin="0,4,0,0"/>
-                </StackPanel>
-                <ContentControl x:Name="CropPanelHost" Grid.Row="1"/>
-            </Grid>
+                            VerticalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            VerticalContentAlignment="Stretch"/>
 
-            <Grid x:Name="LayersUI" Visibility="Collapsed">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+            <!-- GridSplitter will be added programmatically here in Grid.Row="1" -->
 
-                <StackPanel Grid.Row="0" Orientation="Vertical" Spacing="4" Padding="8">
-                    <StackPanel Orientation="Horizontal" Spacing="4">
-                        <Button x:Name="AddLayerBtn" Content="+" Width="24" Height="24" Padding="0" />
-                        <Button x:Name="RemoveLayerBtn" Content="-" Width="24" Height="24" Padding="0" />
+            <Grid Grid.Row="2">
+                <ScrollViewer x:Name="EditorScrollViewer"
+                              HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="EditorStackPanel" Orientation="Vertical"/>
+                </ScrollViewer>
+
+                <Grid x:Name="CropUI" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Vertical" Spacing="12" Padding="12">
+                        <!-- Aspect Ratio Controls -->
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <ComboBox x:Name="AspectPresetCombo"
+                                      Grid.Row="0"
+                                      Header="Aspect Ratio"
+                                      SelectedIndex="0"
+                                      HorizontalAlignment="Stretch">
+                                <ComboBoxItem>Original</ComboBoxItem>
+                                <ComboBoxItem>4:3</ComboBoxItem>
+                                <ComboBoxItem>16:9</ComboBoxItem>
+                                <ComboBoxItem>16:10</ComboBoxItem>
+                                <ComboBoxItem>Instagram 1:1</ComboBoxItem>
+                                <ComboBoxItem>Instagram 4:5</ComboBoxItem>
+                                <ComboBoxItem>Custom</ComboBoxItem>
+                            </ComboBox>
+
+                            <ToggleSwitch x:Name="LockAspectToggle"
+                                          Grid.Row="1"
+                                          Header="Lock Aspect Ratio"
+                                          IsOn="True"
+                                          Margin="0,8,0,0"/>
+                        </Grid>
+
+                        <!-- Size Controls -->
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="Dimensions"
+                                       Grid.Row="0"
+                                       Grid.ColumnSpan="3"
+                                       FontWeight="SemiBold"
+                                       Margin="0,0,0,4"/>
+
+                            <controls:NumberBox x:Name="CustomWidthInput"
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Header="Width"
+                                                Minimum="1"
+                                                Value="100"
+                                                SmallChange="1"/>
+
+                            <controls:NumberBox x:Name="CustomHeightInput"
+                                                Grid.Row="1"
+                                                Grid.Column="2"
+                                                Header="Height"
+                                                Minimum="1"
+                                                Value="100"
+                                                SmallChange="1"/>
+                        </Grid>
+
+                        <!-- Rotation Controls -->
+                        <controls:NumberBox x:Name="RotateAngleInput"
+                                            Header="Rotation Angle"
+                                            Minimum="0"
+                                            Maximum="360"
+                                            Value="0"
+                                            SmallChange="1"
+                                            HorizontalAlignment="Stretch"/>
+
+                        <!-- Action Button -->
+                        <Button x:Name="ResetCropButton"
+                                Content="Reset Crop"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <ContentControl x:Name="CropPanelHost" Grid.Row="1"/>
+                </Grid>
+
+                <Grid x:Name="LayersUI" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Vertical" Spacing="4" Padding="8">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <Button x:Name="AddLayerBtn" Content="+" Width="24" Height="24" Padding="0" />
+                            <Button x:Name="RemoveLayerBtn" Content="-" Width="24" Height="24" Padding="0" />
+                        </StackPanel>
+
+                        <TreeView x:Name="LayerTreeView" Height="200" SelectionMode="Single" Background="#2a2a2a"/>
                     </StackPanel>
 
-                    <TreeView x:Name="LayerTreeView" Height="200" SelectionMode="Single" Background="#2a2a2a"/>
-                </StackPanel>
-
-                <ContentControl x:Name="OperationDetailsHost"
-                                Grid.Row="1"
-                                Visibility="Collapsed"
-                                Margin="8"
-                                Padding="8"
-                                BorderBrush="Gray"
-                                BorderThickness="1"
-                                Background="#55222288"/>
+                    <ContentControl x:Name="OperationDetailsHost"
+                                    Grid.Row="1"
+                                    Visibility="Collapsed"
+                                    Margin="8"
+                                    Padding="8"
+                                    BorderBrush="Gray"
+                                    BorderThickness="1"
+                                    Background="#55222288"/>
+                </Grid>
             </Grid>
         </Grid>
 

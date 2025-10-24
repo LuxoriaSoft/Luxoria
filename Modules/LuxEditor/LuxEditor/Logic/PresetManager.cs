@@ -96,8 +96,11 @@ public sealed class PresetManager
             var img = ImageManager.Instance.SelectedImage;
             if (img != null)
             {
+                // Start with current image settings to preserve unmodified values
+                var mergedSettings = new Dictionary<string, object>(img.Settings);
 
-                var newSettings = new Dictionary<string, object>();
+                // Parse preset settings
+                var presetSettings = new Dictionary<string, object>();
 
                 foreach (var prop in settingsProp.EnumerateObject())
                 {
@@ -112,21 +115,16 @@ public sealed class PresetManager
                         _ => null
                     };
                     if (valueToApply != null)
-                        newSettings[key] = valueToApply;
+                        presetSettings[key] = valueToApply;
                 }
 
-                // Ensure Blur setting exists with default values if not present
-                if (!newSettings.ContainsKey("Blur"))
+                // Merge: preset settings override current settings, others remain unchanged
+                foreach (var kvp in presetSettings)
                 {
-                    newSettings["Blur"] = new Dictionary<string, object>
-                    {
-                        ["State"] = false,
-                        ["Sigma"] = 7f,
-                        ["Subjects"] = new List<Dictionary<string, object>>()
-                    };
+                    mergedSettings[kvp.Key] = kvp.Value;
                 }
 
-                img.Settings = newSettings;
+                img.Settings = mergedSettings;
 
                 img.LayerManager.Layers.Clear();
                 foreach (var layerElem in layersProp.EnumerateArray())
