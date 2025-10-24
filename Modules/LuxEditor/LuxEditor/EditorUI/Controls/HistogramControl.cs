@@ -25,12 +25,24 @@ public class HistogramControl : IEditorGroupItem
     private readonly SKXamlCanvas _canvas;
     private readonly ComboBox _modeSelector;
 
-    // Histogram data
-    private int[] _redHistogram = new int[256];
-    private int[] _greenHistogram = new int[256];
-    private int[] _blueHistogram = new int[256];
-    private int[] _luminanceHistogram = new int[256];
-    private int _maxHistogramValue = 1;
+    // Histogram data - current (animated) values
+    private float[] _redHistogram = new float[256];
+    private float[] _greenHistogram = new float[256];
+    private float[] _blueHistogram = new float[256];
+    private float[] _luminanceHistogram = new float[256];
+    private float _maxHistogramValue = 1;
+
+    // Target histogram data (what we're animating towards)
+    private float[] _targetRedHistogram = new float[256];
+    private float[] _targetGreenHistogram = new float[256];
+    private float[] _targetBlueHistogram = new float[256];
+    private float[] _targetLuminanceHistogram = new float[256];
+    private float _targetMaxHistogramValue = 1;
+
+    // Animation state
+    private bool _isAnimating = false;
+    private DateTime _animationStartTime;
+    private const double ANIMATION_DURATION_MS = 400; // Smooth 400ms animation
 
     // Debounce timer for performance
     private DispatcherTimer? _updateDebounceTimer;
@@ -96,6 +108,9 @@ public class HistogramControl : IEditorGroupItem
         };
         _canvas.PaintSurface += OnPaintSurface;
         _canvas.SizeChanged += (s, e) => _canvas.Invalidate(); // Redraw when size changes
+
+        // Setup animation loop using CompositionTarget for 60fps
+        CompositionTarget.Rendering += OnAnimationTick;
 
         // Setup pointer events for interaction
         _canvas.PointerPressed += OnPointerPressed;
@@ -190,9 +205,75 @@ public class HistogramControl : IEditorGroupItem
     private void OnModeChanged(object sender, SelectionChangedEventArgs e)
     {
         _currentMode = (HistogramMode)_modeSelector.SelectedIndex;
-        // Recalculate max value for new mode
-        _maxHistogramValue = CalculateNormalizationMax();
+        // Recalculate max value for new mode and start animation
+        _targetMaxHistogramValue = CalculateNormalizationMax(_targetRedHistogram, _targetGreenHistogram, _targetBlueHistogram, _targetLuminanceHistogram);
+        StartAnimation();
+    }
+
+    /// <summary>
+    /// Animation tick callback - interpolates histogram values smoothly
+    /// </summary>
+    private void OnAnimationTick(object? sender, object e)
+    {
+        if (!_isAnimating) return;
+
+        double elapsed = (DateTime.Now - _animationStartTime).TotalMilliseconds;
+        float t = (float)Math.Min(elapsed / ANIMATION_DURATION_MS, 1.0);
+
+        // Use ease-out cubic for smooth, natural motion
+        float easedT = 1f - (float)Math.Pow(1f - t, 3);
+
+        // Interpolate all histogram values
+        LerpHistogram(_redHistogram, _targetRedHistogram, easedT);
+        LerpHistogram(_greenHistogram, _targetGreenHistogram, easedT);
+        LerpHistogram(_blueHistogram, _targetBlueHistogram, easedT);
+        LerpHistogram(_luminanceHistogram, _targetLuminanceHistogram, easedT);
+
+        // Interpolate max value
+        _maxHistogramValue = Lerp(_maxHistogramValue, _targetMaxHistogramValue, easedT);
+
+        // Request redraw
         _canvas.Invalidate();
+
+        // Stop animation when complete
+        if (t >= 1.0f)
+        {
+            _isAnimating = false;
+            // Ensure exact target values
+            Array.Copy(_targetRedHistogram, _redHistogram, 256);
+            Array.Copy(_targetGreenHistogram, _greenHistogram, 256);
+            Array.Copy(_targetBlueHistogram, _blueHistogram, 256);
+            Array.Copy(_targetLuminanceHistogram, _luminanceHistogram, 256);
+            _maxHistogramValue = _targetMaxHistogramValue;
+        }
+    }
+
+    /// <summary>
+    /// Linear interpolation between two histogram arrays
+    /// </summary>
+    private void LerpHistogram(float[] current, float[] target, float t)
+    {
+        for (int i = 0; i < 256; i++)
+        {
+            current[i] = Lerp(current[i], target[i], t);
+        }
+    }
+
+    /// <summary>
+    /// Linear interpolation between two float values
+    /// </summary>
+    private float Lerp(float a, float b, float t)
+    {
+        return a + (b - a) * t;
+    }
+
+    /// <summary>
+    /// Start a new animation from current to target values
+    /// </summary>
+    private void StartAnimation()
+    {
+        _isAnimating = true;
+        _animationStartTime = DateTime.Now;
     }
 
     private void OnImageChanged(EditableImage? image)
@@ -219,13 +300,13 @@ public class HistogramControl : IEditorGroupItem
         var img = ImageManager.Instance.SelectedImage;
         if (img == null)
         {
-            // Clear histograms
-            Array.Clear(_redHistogram, 0, 256);
-            Array.Clear(_greenHistogram, 0, 256);
-            Array.Clear(_blueHistogram, 0, 256);
-            Array.Clear(_luminanceHistogram, 0, 256);
-            _maxHistogramValue = 1;
-            _canvas.Invalidate();
+            // Clear target histograms and animate to zero
+            Array.Clear(_targetRedHistogram, 0, 256);
+            Array.Clear(_targetGreenHistogram, 0, 256);
+            Array.Clear(_targetBlueHistogram, 0, 256);
+            Array.Clear(_targetLuminanceHistogram, 0, 256);
+            _targetMaxHistogramValue = 1;
+            StartAnimation();
             return;
         }
 
@@ -237,11 +318,11 @@ public class HistogramControl : IEditorGroupItem
             return;
         }
 
-        // Reset histograms
-        Array.Clear(_redHistogram, 0, 256);
-        Array.Clear(_greenHistogram, 0, 256);
-        Array.Clear(_blueHistogram, 0, 256);
-        Array.Clear(_luminanceHistogram, 0, 256);
+        // Calculate new histogram into temporary arrays
+        int[] tempRed = new int[256];
+        int[] tempGreen = new int[256];
+        int[] tempBlue = new int[256];
+        int[] tempLuminance = new int[256];
 
         // Use direct pixel access for much better performance
         var pixels = bitmap.PeekPixels();
@@ -268,26 +349,36 @@ public class HistogramControl : IEditorGroupItem
             byte g = System.Runtime.InteropServices.Marshal.ReadByte(pixelPtr, offset + 1);
             byte r = System.Runtime.InteropServices.Marshal.ReadByte(pixelPtr, offset + 2);
 
-            _redHistogram[r]++;
-            _greenHistogram[g]++;
-            _blueHistogram[b]++;
+            tempRed[r]++;
+            tempGreen[g]++;
+            tempBlue[b]++;
 
             // Calculate luminance (ITU-R BT.709)
             int luminance = (int)(0.2126f * r + 0.7152f * g + 0.0722f * b);
-            _luminanceHistogram[Math.Clamp(luminance, 0, 255)]++;
+            tempLuminance[Math.Clamp(luminance, 0, 255)]++;
         }
 
         // Apply smoothing to remove jagged edges and create smooth curves
-        SmoothHistogram(_redHistogram);
-        SmoothHistogram(_greenHistogram);
-        SmoothHistogram(_blueHistogram);
-        SmoothHistogram(_luminanceHistogram);
+        SmoothHistogram(tempRed);
+        SmoothHistogram(tempGreen);
+        SmoothHistogram(tempBlue);
+        SmoothHistogram(tempLuminance);
+
+        // Copy smoothed values to target arrays (for animation)
+        for (int i = 0; i < 256; i++)
+        {
+            _targetRedHistogram[i] = tempRed[i];
+            _targetGreenHistogram[i] = tempGreen[i];
+            _targetBlueHistogram[i] = tempBlue[i];
+            _targetLuminanceHistogram[i] = tempLuminance[i];
+        }
 
         // Find max value for normalization using percentile to avoid extreme peaks
         // This prevents clipped pixels from making the entire histogram flat
-        _maxHistogramValue = CalculateNormalizationMax();
+        _targetMaxHistogramValue = CalculateNormalizationMax(_targetRedHistogram, _targetGreenHistogram, _targetBlueHistogram, _targetLuminanceHistogram);
 
-        _canvas.Invalidate();
+        // Start smooth animation to new values
+        StartAnimation();
     }
 
     /// <summary>
@@ -362,12 +453,12 @@ public class HistogramControl : IEditorGroupItem
     /// Calculate normalization max using 95th percentile to avoid extreme peaks
     /// Only considers non-zero histogram bins to get accurate scaling
     /// </summary>
-    private int CalculateNormalizationMax()
+    private float CalculateNormalizationMax(float[] red, float[] green, float[] blue, float[] luminance)
     {
-        var nonZeroValues = new List<int>();
+        var nonZeroValues = new List<float>();
 
         // Collect only non-zero values from the relevant histograms
-        void AddNonZeroValues(int[] histogram)
+        void AddNonZeroValues(float[] histogram)
         {
             for (int i = 0; i < histogram.Length; i++)
             {
@@ -379,21 +470,21 @@ public class HistogramControl : IEditorGroupItem
         switch (_currentMode)
         {
             case HistogramMode.RGB:
-                AddNonZeroValues(_redHistogram);
-                AddNonZeroValues(_greenHistogram);
-                AddNonZeroValues(_blueHistogram);
+                AddNonZeroValues(red);
+                AddNonZeroValues(green);
+                AddNonZeroValues(blue);
                 break;
             case HistogramMode.Luminance:
-                AddNonZeroValues(_luminanceHistogram);
+                AddNonZeroValues(luminance);
                 break;
             case HistogramMode.Red:
-                AddNonZeroValues(_redHistogram);
+                AddNonZeroValues(red);
                 break;
             case HistogramMode.Green:
-                AddNonZeroValues(_greenHistogram);
+                AddNonZeroValues(green);
                 break;
             case HistogramMode.Blue:
-                AddNonZeroValues(_blueHistogram);
+                AddNonZeroValues(blue);
                 break;
         }
 
@@ -559,7 +650,7 @@ public class HistogramControl : IEditorGroupItem
         };
     }
 
-    private void DrawHistogramChannel(SKCanvas canvas, int[] histogram, float width, float height, SKColor color, SKBlendMode blendMode)
+    private void DrawHistogramChannel(SKCanvas canvas, float[] histogram, float width, float height, SKColor color, SKBlendMode blendMode)
     {
         using var paint = new SKPaint
         {
