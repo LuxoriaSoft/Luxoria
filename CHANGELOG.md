@@ -1,3 +1,17 @@
+# [1.72.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.71.4...v1.72.0) (2025-10-24)
+
+
+### Bug Fixes
+
+* Enhances layer operation UI in preset editor ([ec3437b](https://github.com/LuxoriaSoft/Luxoria/commit/ec3437ba2d4c43f11fa2235507491f144cb4d7a7))
+* Smooths histogram data with Gaussian blur ([df1c9de](https://github.com/LuxoriaSoft/Luxoria/commit/df1c9dea677cb65c5c8e06e4497a3f915825fcbc))
+
+
+### Features
+
+* Adds animated transitions to histogram ([18aa3df](https://github.com/LuxoriaSoft/Luxoria/commit/18aa3df6ab5a1937117d12d7681ff342adcdf8c3))
+* Histogram responsiveness ([ee6f657](https://github.com/LuxoriaSoft/Luxoria/commit/ee6f657d43a059d351a247e53c3556286864eac3))
+
 ## [1.71.4](https://github.com/LuxoriaSoft/Luxoria/compare/v1.71.3...v1.71.4) (2025-10-23)
 
 
