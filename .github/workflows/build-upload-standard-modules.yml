@@ -80,7 +80,7 @@ jobs:
         shell: pwsh
 
       - name: Upload LuxImport artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: LuxImport-${{ matrix.platform }}
           path: Modules/LuxImport/LuxImport/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}
@@ -109,7 +109,7 @@ jobs:
         shell: pwsh
 
       - name: Upload LuxFilter artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: LuxFilter-${{ matrix.platform }}
           path: Modules/LuxFilter/LuxFilter/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}
@@ -130,7 +130,7 @@ jobs:
         shell: pwsh
 
       - name: Upload LuxEditor artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: LuxEditor-${{ matrix.platform }}
           path: Modules/LuxEditor/LuxEditor/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}
@@ -151,7 +151,7 @@ jobs:
         shell: pwsh
       
       - name: Upload LuxExport artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: LuxExport-${{ matrix.platform }}
           path: Modules/LuxExport/LuxExport/bin/${{ matrix.configuration }}/${{ env.Framework_Version }}/${{ matrix.platform }}
