@@ -82,14 +82,14 @@ jobs:
 
       # Upload the app as an artifact
       - name: Upload Luxoria.App as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Luxoria.App.${{ matrix.platform }}
           path: ./Luxoria.App/Luxoria.App/bin/${{ matrix.platform }}/${{ matrix.configuration }}/${{ matrix.framework }}/win-${{ matrix.platform }}/
       
       # Upload Lux installer
       - name: Upload LuxInstall as an artifact  
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: LuxoriaSetup.${{ matrix.platform }}.exe
           path: ./Luxoria.App/installer/${{ matrix.platform }}/Output/
