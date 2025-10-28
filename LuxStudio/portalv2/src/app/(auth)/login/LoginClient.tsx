@@ -51,10 +51,12 @@ export default function LoginClient() {
         localStorage.setItem('token', token)
         document.cookie = `token=${token}; path=/`
 
-        const query = window.location.search
-        const params = new URLSearchParams(query)
-        const redirectUrl = params.get('redirect')
-        router.push(redirectUrl || '/')
+        // Récupérer le paramètre redirect
+        const redirectUrl = searchParams.get('redirect') || '/'
+        
+        // Utiliser window.location.href pour une navigation complète
+        // au lieu de router.push pour éviter les problèmes de refresh
+        window.location.href = redirectUrl
       }
     } catch (error: any) {
       setErrorMessage(error.message || 'An unexpected error occurred.')

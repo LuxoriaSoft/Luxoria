@@ -42,7 +42,7 @@ export default function RegisterConfirmationClient() {
         setLoading(false)
 
         setTimeout(() => {
-          router.push('/login')
+          window.location.href = '/login'
         }, 3000)
       } catch (err: any) {
         setErrorMessage(err.message || 'Erreur lors de la validation.') 
