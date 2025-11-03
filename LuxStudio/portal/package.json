@@ -17,7 +17,7 @@
   "devDependencies": {
     "@types/vue": "^2.0.0",
     "@types/vue-router": "^2.0.0",
-    "@vitejs/plugin-vue": "^5.2.1",
+    "@vitejs/plugin-vue": "^6.0.1",
     "@vue/compiler-sfc": "^3.5.13",
     "@vue/tsconfig": "^0.7.0",
     "autoprefixer": "^10.4.20",
