@@ -267,7 +267,7 @@ namespace LuxEditor.Components
                 var exp = new Expander
                 {
                     Header = title,
-                    IsExpanded = false,
+                    IsExpanded = true,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     CornerRadius = new Microsoft.UI.Xaml.CornerRadius(4)
                 };
@@ -356,7 +356,7 @@ namespace LuxEditor.Components
             var curvesExp = new Expander
             {
                 Header = "Tone Curves",
-                IsExpanded = false,
+                IsExpanded = true,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 CornerRadius = new Microsoft.UI.Xaml.CornerRadius(4)
             };
@@ -402,7 +402,7 @@ namespace LuxEditor.Components
             var maskExp = new Expander
             {
                 Header = "Layer Masks",
-                IsExpanded = false,
+                IsExpanded = true,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 CornerRadius = new Microsoft.UI.Xaml.CornerRadius(4)
             };
@@ -428,7 +428,7 @@ namespace LuxEditor.Components
                     var layerExp = new Expander
                     {
                         Header = layer.Name,
-                        IsExpanded = false,
+                        IsExpanded = true,
                         Margin = new Thickness(0, 4, 0, 0),
                         CornerRadius = new Microsoft.UI.Xaml.CornerRadius(4),
                         HorizontalAlignment = HorizontalAlignment.Stretch

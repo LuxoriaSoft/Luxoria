@@ -135,7 +135,7 @@ public sealed class PresetManager
                 }
                 img.LayerManager.SelectedLayer = img.LayerManager.Layers.FirstOrDefault();
                 img.SaveState();
-                
+
                 ImageManager.Instance.SelectImage(img);
             }
         }
