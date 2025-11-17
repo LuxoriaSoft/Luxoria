@@ -1,3 +1,10 @@
+## [1.72.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.72.0...v1.72.1) (2025-11-17)
+
+
+### Bug Fixes
+
+* Delete old files before installing new release ([7820743](https://github.com/LuxoriaSoft/Luxoria/commit/782074302621224ce4b6591eb0f94119488427d1))
+
 # [1.72.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.71.4...v1.72.0) (2025-10-24)
 
 
