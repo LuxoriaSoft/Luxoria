@@ -1,3 +1,10 @@
+## [1.72.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.72.1...v1.72.2) (2025-11-17)
+
+
+### Bug Fixes
+
+* create preset from current settings when expander is false ([d15d454](https://github.com/LuxoriaSoft/Luxoria/commit/d15d454aa3567b80c307beccdf6fa2f8e77666b4))
+
 ## [1.72.1](https://github.com/LuxoriaSoft/Luxoria/compare/v1.72.0...v1.72.1) (2025-11-17)
 
 
