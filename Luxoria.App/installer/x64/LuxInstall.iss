@@ -37,6 +37,9 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
+[InstallDelete]
+Type: filesandordirs; Name: "{app}\*"
+
 [Files]
 Source: "..\..\Luxoria.App\bin\x64\Release\net9.0-windows10.0.26100.0\win-x64\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\Luxoria.App\bin\x64\Release\net9.0-windows10.0.26100.0\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
