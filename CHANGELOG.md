@@ -1,3 +1,10 @@
+# [1.73.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.72.2...v1.73.0) (2025-12-04)
+
+
+### Features
+
+* Add WindowCaption on MarketplaceView ([8443ff3](https://github.com/LuxoriaSoft/Luxoria/commit/8443ff3d45d2831d94818a8b41f5f7131d0a1cfd))
+
 ## [1.72.2](https://github.com/LuxoriaSoft/Luxoria/compare/v1.72.1...v1.72.2) (2025-11-17)
 
 
