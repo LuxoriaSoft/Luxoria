@@ -57,6 +57,11 @@ namespace Luxoria.App.Logics
             services.AddSingleton<IModuleUIService, ModuleUIService>();
             logger.Log("IModuleUI registered successfully !", LOG_SECTION, LogLevel.Info);
 
+            // Core Updater Service
+            logger.Log("Registering CoreUpdaterService", LOG_SECTION, LogLevel.Info);
+            services.AddSingleton<ICoreUpdaterService, CoreUpdaterService>();
+            logger.Log("ICoreUpdaterService registered successfully !");
+
             logger.Log("Services registered successfully !", LOG_SECTION, LogLevel.Info);
         }
     }

@@ -2,6 +2,7 @@
 using Luxoria.App.Interfaces;
 using Luxoria.App.Logics;
 using Luxoria.Core.Interfaces;
+using Luxoria.Core.Services;
 using Luxoria.Modules;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -162,6 +164,16 @@ namespace Luxoria.App
             {
                 await UpdateSplashScreenAsync(splashScreen, "All modules initialized successfully.");
             }
+
+            // Updating modules
+            await UpdateSplashScreenAsync(splashScreen, "Checking/Updating modules...");
+            var updater = _host.Services.GetRequiredService<ICoreUpdaterService>();
+            await updater.InstallAllUpdatesAsync(_moduleService
+            .GetModules()
+                .Select(x => x as IUpdater)
+                .Where(x => x is not null and IUpdater)
+            );
+            await UpdateSplashScreenAsync(splashScreen, "Updated modules.");
 
             await UpdateSplashScreenAsync(splashScreen, "Launching...");
         }

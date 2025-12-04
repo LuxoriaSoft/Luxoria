@@ -36,7 +36,6 @@ namespace Luxoria.App.Views
         private TextBlock _installDetailsText;
         private bool _allowDialogClose;
 
-
         public MarketplaceView(IMarketplaceService marketplaceSvc, IStorageAPI cacheSvc, IEventBus eventBus)
         {
             this.InitializeComponent();
