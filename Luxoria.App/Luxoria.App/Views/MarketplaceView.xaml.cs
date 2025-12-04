@@ -2,6 +2,7 @@
 using Luxoria.Core.Interfaces;
 using Luxoria.Core.Models;
 using Luxoria.Core.Services;
+using Luxoria.GModules.Helpers;
 using Luxoria.Modules.Interfaces;
 using Luxoria.Modules.Models.Events;
 using Microsoft.UI.Dispatching;
@@ -39,6 +40,7 @@ namespace Luxoria.App.Views
         public MarketplaceView(IMarketplaceService marketplaceSvc, IStorageAPI cacheSvc, IEventBus eventBus)
         {
             this.InitializeComponent();
+            WindowHelper.SetCaption(this.AppWindow, "Luxoria_icon");
             _mktSvc = marketplaceSvc;
             _cacheSvc = cacheSvc;
             _eventBus = eventBus;
