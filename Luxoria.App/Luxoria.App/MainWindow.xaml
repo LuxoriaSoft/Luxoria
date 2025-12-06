@@ -96,5 +96,14 @@
             <UserControl x:Name="RightPanelContent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
         </Border>
 
+        <!-- Onboarding overlay will be added dynamically in code-behind -->
+        <Grid
+            x:Name="OnboardingOverlayContainer"
+            Grid.Row="0"
+            Grid.RowSpan="4"
+            Grid.Column="0"
+            Grid.ColumnSpan="5"
+            Visibility="Collapsed" />
+
     </Grid>
 </Window>

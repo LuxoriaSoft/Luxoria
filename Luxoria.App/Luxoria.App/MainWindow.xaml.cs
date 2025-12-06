@@ -1,5 +1,6 @@
 using Luxoria.App.EventHandlers;
 using Luxoria.App.Interfaces;
+using Luxoria.App.Services;
 using Luxoria.GModules;
 using Luxoria.GModules.Helpers;
 using Luxoria.GModules.Interfaces;
@@ -19,7 +20,7 @@ using WinRT.Interop;
 namespace Luxoria.App
 {
     /// <summary>
-    /// The main application window that handles UI initialization, event subscriptions, 
+    /// The main application window that handles UI initialization, event subscriptions,
     /// and module-based component loading.
     /// </summary>
     public sealed partial class MainWindow : Window
@@ -28,6 +29,7 @@ namespace Luxoria.App
         private readonly ILoggerService _loggerService;
         private readonly IModuleService _moduleService;
         private readonly IModuleUIService _uiService;
+        private readonly OnboardingService _onboardingService;
 
         // Event handlers
         private readonly ImageUpdatedHandler _imageUpdatedHandler;
@@ -40,7 +42,13 @@ namespace Luxoria.App
         /// <param name="loggerService">Service for logging application activity.</param>
         /// <param name="moduleService">Service for managing modules.</param>
         /// <param name="uiService">Service for managing UI modules.</param>
-        public MainWindow(IEventBus eventBus, ILoggerService loggerService, IModuleService moduleService, IModuleUIService uiService)
+        /// <param name="onboardingService">Service for managing onboarding flow.</param>
+        public MainWindow(
+            IEventBus eventBus,
+            ILoggerService loggerService,
+            IModuleService moduleService,
+            IModuleUIService uiService,
+            OnboardingService onboardingService)
         {
             InitializeComponent();
 
@@ -48,6 +56,7 @@ namespace Luxoria.App
             _loggerService = loggerService;
             _moduleService = moduleService;
             _uiService = uiService;
+            _onboardingService = onboardingService;
 
             _imageUpdatedHandler = new ImageUpdatedHandler(_loggerService);
             _collectionUpdatedHandler = new CollectionUpdatedHandler(_loggerService);
@@ -57,6 +66,9 @@ namespace Luxoria.App
 
             InitializeEventBus();
             LoadComponents();
+
+            // Initialize onboarding system
+            InitializeOnboarding();
 
             // Publish final event, at this very moment this application has started and is ready
             _eventBus.Publish(new ApplicationReadyEvent());
@@ -295,6 +307,56 @@ namespace Luxoria.App
             textNodes[0].AppendChild(toastXml.CreateTextNode(e.Message));
             var toast = new ToastNotification(toastXml);
             ToastNotificationManager.CreateToastNotifier($"Luxoria - {e.Title}").Show(toast);
+        }
+
+        /// <summary>
+        /// Initializes the onboarding system
+        /// </summary>
+        private async void InitializeOnboarding()
+        {
+            // Wait for the window to be fully loaded
+            await Task.Delay(500);
+
+            var moduleCount = _moduleService.GetModules().OfType<IModuleUI>().Count();
+
+            // Mark as seen if first launch
+            if (_onboardingService.IsFirstLaunch(moduleCount))
+            {
+                _onboardingService.MarkWelcomeSeen();
+            }
+
+            // Show onboarding overlay if it should be shown
+            if (_onboardingService.ShouldShowOnboarding())
+            {
+                ShowOnboardingOverlay();
+            }
+        }
+
+        /// <summary>
+        /// Shows the onboarding overlay
+        /// </summary>
+        private void ShowOnboardingOverlay()
+        {
+            // Initialize the overlay with the onboarding service
+            var onboardingOverlay = new Components.OnboardingOverlay(_onboardingService);
+
+            // Handle onboarding completion
+            onboardingOverlay.OnboardingCompleted += (s, e) =>
+            {
+                _loggerService.Log("Onboarding completed", "MainWindow", SDK.Models.LogLevel.Info);
+                OnboardingOverlayContainer.Visibility = Visibility.Collapsed;
+            };
+
+            onboardingOverlay.OnboardingSkipped += (s, e) =>
+            {
+                _loggerService.Log("Onboarding skipped", "MainWindow", SDK.Models.LogLevel.Info);
+                OnboardingOverlayContainer.Visibility = Visibility.Collapsed;
+            };
+
+            // Add overlay to container
+            OnboardingOverlayContainer.Children.Clear();
+            OnboardingOverlayContainer.Children.Add(onboardingOverlay);
+            OnboardingOverlayContainer.Visibility = Visibility.Visible;
         }
     }
 }

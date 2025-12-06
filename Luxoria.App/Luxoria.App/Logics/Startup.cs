@@ -57,6 +57,11 @@ namespace Luxoria.App.Logics
             services.AddSingleton<IModuleUIService, ModuleUIService>();
             logger.Log("IModuleUI registered successfully !", LOG_SECTION, LogLevel.Info);
 
+            // Register Onboarding Service
+            logger.Log("Registering Onboarding Service...", LOG_SECTION, LogLevel.Info);
+            services.AddSingleton<OnboardingService>();
+            logger.Log("Onboarding Service registered successfully !", LOG_SECTION, LogLevel.Info);
+
             logger.Log("Services registered successfully !", LOG_SECTION, LogLevel.Info);
         }
     }

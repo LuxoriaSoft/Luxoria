@@ -101,5 +101,16 @@ namespace Luxoria.App.Components
             return button;
         }
 
+        /// <summary>
+        /// Opens the Luxoria menu flyout (for onboarding)
+        /// </summary>
+        public void OpenLuxoriaMenu()
+        {
+            if (LuxoriaMenuButton.Flyout != null)
+            {
+                LuxoriaMenuButton.Flyout.ShowAt(LuxoriaMenuButton);
+            }
+        }
+
     }
 }
