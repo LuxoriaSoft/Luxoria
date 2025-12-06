@@ -1,3 +1,11 @@
+# [1.74.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.73.0...v1.74.0) (2025-12-06)
+
+
+### Features
+
+* onboarding interfaces ([a2c9644](https://github.com/LuxoriaSoft/Luxoria/commit/a2c9644d23df4c85528e0e38f93ab777ad3d8811))
+* Onboarding Service ([356b24d](https://github.com/LuxoriaSoft/Luxoria/commit/356b24d2b9c8dcf1aa9a7deb55b077bd34f76498))
+
 # [1.73.0](https://github.com/LuxoriaSoft/Luxoria/compare/v1.72.2...v1.73.0) (2025-12-04)
 
 
