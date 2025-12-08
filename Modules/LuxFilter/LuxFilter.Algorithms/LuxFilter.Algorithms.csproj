@@ -32,7 +32,7 @@
 
   <ItemGroup>
     <PackageReference Include="Luxoria.Algorithm.BrisqueScore" Version="3.0.3.4100" />
-    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.22.0" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.23.2" />
     <PackageReference Include="SkiaSharp" Version="3.116.1" />
   </ItemGroup>
 
