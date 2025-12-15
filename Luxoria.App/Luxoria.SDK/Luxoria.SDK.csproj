@@ -15,7 +15,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Sentry" Version="5.1.0" />
-	  <PackageReference Include="Sentry.Profiling" Version="5.1.0" />
+	  <PackageReference Include="Sentry" Version="6.0.0" />
+	  <PackageReference Include="Sentry.Profiling" Version="6.0.0" />
 	</ItemGroup>
 </Project>
