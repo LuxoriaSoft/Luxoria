@@ -52,6 +52,15 @@ public class EditorGroupExpander : IEditorControl
     }
 
     /// <summary>
+    /// Adds a raw UI element to the expander.
+    /// </summary>
+    /// <param name="element"></param>
+    public void AddRawElement(UIElement element)
+    {
+        _container.Children.Add(element);
+    }
+
+    /// <summary>
     /// Gets the UI element for this expander group.
     /// </summary>
     /// <returns></returns>

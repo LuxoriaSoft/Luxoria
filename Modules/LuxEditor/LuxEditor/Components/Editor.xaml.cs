@@ -9,6 +9,7 @@ using LuxEditor.Logic;
 using LuxEditor.Models;
 using LuxEditor.Services;
 using Luxoria.Algorithm.YoLoDetectModel;
+// Benchmark support
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -63,6 +64,18 @@ namespace LuxEditor.Components
         private SubjectRecognition _subjectRecognition;
 
         public SubjectRecognition SubjectRecognition => _subjectRecognition;
+
+        // Benchmark support
+        private readonly PerformanceMetrics _perfMetrics = PerformanceMetrics.Instance;
+        private StressTestRunner? _stressTestRunner;
+        private string _currentImageName = string.Empty;
+        private int _currentImageWidth = 0;
+        private int _currentImageHeight = 0;
+        private TextBox? _benchmarkImageNameInput;
+        private TextBlock? _benchmarkImageSizeLabel;
+        private TextBlock? _benchmarkStatusLabel;
+        private ProgressRing? _benchmarkProgressRing;
+        private Button? _benchmarkRunButton;
 
         /// <summary>
         /// Style for the temperature slider.
@@ -883,6 +896,7 @@ namespace LuxEditor.Components
             RequestFilterUpdate();
             DispatcherQueue.TryEnqueue(UpdateResetButtonsVisibility);
             DispatcherQueue.TryEnqueue(RefreshLayerTree);
+            DispatcherQueue.TryEnqueue(UpdateBenchmarkImageInfo);
         }
 
         private void OnLayerModified(object? s, PropertyChangedEventArgs e) => RequestFilterUpdate();
@@ -960,6 +974,188 @@ namespace LuxEditor.Components
             _subjectRecognition.SetImage(CurrentImage);
             subjectRecognitionExpender.AddControl(_subjectRecognition);
             _panelManager.AddCategory(subjectRecognitionExpender);
+
+            // Benchmark Section
+            BuildBenchmarkUI();
+        }
+
+        /// <summary>
+        /// Builds the benchmark UI section.
+        /// </summary>
+        private void BuildBenchmarkUI()
+        {
+            var benchmarkExpander = new EditorGroupExpander("Benchmark");
+
+            var benchmarkPanel = new StackPanel
+            {
+                Orientation = Orientation.Vertical,
+                Spacing = 10,
+                Padding = new Thickness(0)
+            };
+
+            // Image Name Input
+            var nameStack = new StackPanel { Orientation = Orientation.Vertical, Spacing = 2 };
+            nameStack.Children.Add(new TextBlock
+            {
+                Text = "Image Name",
+                Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 150, 150, 150)),
+                FontSize = 10
+            });
+            _benchmarkImageNameInput = new TextBox
+            {
+                PlaceholderText = "Enter image name...",
+                HorizontalAlignment = HorizontalAlignment.Stretch
+            };
+            nameStack.Children.Add(_benchmarkImageNameInput);
+            benchmarkPanel.Children.Add(nameStack);
+
+            // Image Size Label
+            _benchmarkImageSizeLabel = new TextBlock
+            {
+                Text = "No image selected",
+                Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 150, 150, 150)),
+                FontSize = 10
+            };
+            benchmarkPanel.Children.Add(_benchmarkImageSizeLabel);
+
+            // Run Benchmark Button
+            _benchmarkRunButton = new Button
+            {
+                Content = "Run Benchmark",
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 120, 212)),
+                Foreground = new SolidColorBrush(Colors.White)
+            };
+            _benchmarkRunButton.Click += RunBenchmarkButton_Click;
+            benchmarkPanel.Children.Add(_benchmarkRunButton);
+
+            // Status Label
+            _benchmarkStatusLabel = new TextBlock
+            {
+                Text = "Ready",
+                Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 150, 150, 150)),
+                FontSize = 10,
+                TextWrapping = TextWrapping.Wrap
+            };
+            benchmarkPanel.Children.Add(_benchmarkStatusLabel);
+
+            // Progress Ring
+            _benchmarkProgressRing = new ProgressRing
+            {
+                IsActive = false,
+                Width = 30,
+                Height = 30,
+                Visibility = Visibility.Collapsed
+            };
+            benchmarkPanel.Children.Add(_benchmarkProgressRing);
+
+            benchmarkExpander.AddRawElement(benchmarkPanel);
+            _panelManager!.AddCategory(benchmarkExpander);
+
+            // Update image info when image changes
+            if (CurrentImage != null)
+            {
+                UpdateBenchmarkImageInfo();
+            }
+        }
+
+        /// <summary>
+        /// Updates the benchmark image info display.
+        /// </summary>
+        private void UpdateBenchmarkImageInfo()
+        {
+            if (CurrentImage?.OriginalBitmap == null) return;
+
+            _currentImageWidth = CurrentImage.OriginalBitmap.Width;
+            _currentImageHeight = CurrentImage.OriginalBitmap.Height;
+            _currentImageName = CurrentImage.FileName ?? "Unknown";
+
+            if (_benchmarkImageSizeLabel != null)
+            {
+                long pixels = (long)_currentImageWidth * _currentImageHeight;
+                double megapixels = pixels / 1_000_000.0;
+                _benchmarkImageSizeLabel.Text = $"Size: {_currentImageWidth}x{_currentImageHeight} ({megapixels:F1} MP)";
+            }
+
+            if (_benchmarkImageNameInput != null && string.IsNullOrEmpty(_benchmarkImageNameInput.Text))
+            {
+                _benchmarkImageNameInput.Text = _currentImageName;
+            }
+        }
+
+        /// <summary>
+        /// Handles the benchmark button click.
+        /// </summary>
+        private async void RunBenchmarkButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (CurrentImage == null)
+            {
+                if (_benchmarkStatusLabel != null)
+                    _benchmarkStatusLabel.Text = "Error: No image loaded";
+                return;
+            }
+
+            // Update image name from input
+            if (_benchmarkImageNameInput != null && !string.IsNullOrEmpty(_benchmarkImageNameInput.Text))
+            {
+                _currentImageName = _benchmarkImageNameInput.Text;
+            }
+
+            // Start the benchmark
+            _perfMetrics.StartNewSession($"Benchmark - {_currentImageName} ({_currentImageWidth}x{_currentImageHeight})");
+
+            // UI updates
+            if (_benchmarkRunButton != null) _benchmarkRunButton.IsEnabled = false;
+            if (_benchmarkProgressRing != null)
+            {
+                _benchmarkProgressRing.IsActive = true;
+                _benchmarkProgressRing.Visibility = Visibility.Visible;
+            }
+            if (_benchmarkStatusLabel != null)
+                _benchmarkStatusLabel.Text = "Running stress tests...";
+
+            try
+            {
+                // Initialize stress test runner
+                _stressTestRunner = new StressTestRunner(DispatcherQueue);
+                _stressTestRunner.SetSliderCache(_sliderCache);
+
+                _stressTestRunner.OnLogMessage += (msg) =>
+                {
+                    Debug.WriteLine(msg);
+                };
+
+                _stressTestRunner.OnTestCompleted += (result) =>
+                {
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        if (_benchmarkStatusLabel != null)
+                            _benchmarkStatusLabel.Text = $"Completed: {result.ScenarioName} ({result.AvgIterationMs:F1}ms avg)";
+                    });
+                };
+
+                // Run all tests
+                await _stressTestRunner.RunAllTestsAsync();
+
+                // Show completion
+                if (_benchmarkStatusLabel != null)
+                    _benchmarkStatusLabel.Text = "Benchmark complete! Results exported to Desktop/LuxEditor_Benchmarks/";
+            }
+            catch (Exception ex)
+            {
+                if (_benchmarkStatusLabel != null)
+                    _benchmarkStatusLabel.Text = $"Error: {ex.Message}";
+                Debug.WriteLine($"Benchmark error: {ex}");
+            }
+            finally
+            {
+                if (_benchmarkRunButton != null) _benchmarkRunButton.IsEnabled = true;
+                if (_benchmarkProgressRing != null)
+                {
+                    _benchmarkProgressRing.IsActive = false;
+                    _benchmarkProgressRing.Visibility = Visibility.Collapsed;
+                }
+            }
         }
 
         /// <summary>
@@ -1137,16 +1333,32 @@ namespace LuxEditor.Components
         private async Task RunPipelineAsync(CancellationToken token)
         {
             _pendingUpdate = false;
+
+            using var pipelineTimer = _perfMetrics.MeasureOperation("Pipeline", "Total", new Dictionary<string, object>
+            {
+                ["ImageName"] = _currentImageName,
+                ["Width"] = _currentImageWidth,
+                ["Height"] = _currentImageHeight
+            });
+
             try
             {
                 if (CurrentImage == null) return;
 
-                async Task<SKBitmap> RenderAsync(SKBitmap src, float blurSigmaScale = 1.0f)
+                async Task<SKBitmap> RenderAsync(SKBitmap src, float blurSigmaScale = 1.0f, string renderPass = "full")
                 {
-                    var srcForFilters = _isCropEditing ? src : ApplyCrop(src);
-
-                    var baseBmp = await ImageProcessingManager
-                                         .ApplyFiltersAsync(srcForFilters, CurrentImage.Settings, token, blurSigmaScale);
+                    SKBitmap baseBmp;
+                    using (_perfMetrics.MeasureOperation("Pipeline", $"ApplyFilters_{renderPass}", new Dictionary<string, object>
+                    {
+                        ["Width"] = src.Width,
+                        ["Height"] = src.Height,
+                        ["BlurScale"] = blurSigmaScale
+                    }))
+                    {
+                        var srcForFilters = _isCropEditing ? src : ApplyCrop(src);
+                        baseBmp = await ImageProcessingManager
+                                             .ApplyFiltersAsync(srcForFilters, CurrentImage.Settings, token, blurSigmaScale);
+                    }
 
                     using var surf = SKSurface.Create(new SKImageInfo(baseBmp.Width, baseBmp.Height));
                     var can = surf.Canvas;
@@ -1158,17 +1370,20 @@ namespace LuxEditor.Components
                     var layers = CurrentImage.LayerManager.Layers.ToArray();
                     foreach (var layer in layers.Where(l => l.Visible))
                     {
-                        using var mask = BuildLayerMask(layer, baseBmp.Width, baseBmp.Height);
-                        if (mask == null) continue;
-
-                        if (layer.HasActiveFilters())
+                        using (_perfMetrics.MeasureOperation("Pipeline", $"LayerMask_{renderPass}"))
                         {
-                            using var filtered = await ImageProcessingManager
-                                                       .ApplyFiltersAsync(result, layer.Filters, token, blurSigmaScale);
-                            DrawMasked(can, filtered, mask, layer);
+                            using var mask = BuildLayerMask(layer, baseBmp.Width, baseBmp.Height);
+                            if (mask == null) continue;
+
+                            if (layer.HasActiveFilters())
+                            {
+                                using var filtered = await ImageProcessingManager
+                                                           .ApplyFiltersAsync(result, layer.Filters, token, blurSigmaScale);
+                                DrawMasked(can, filtered, mask, layer);
+                            }
+                            can.Flush();
+                            surf.ReadPixels(result.Info, result.GetPixels(), result.RowBytes, 0, 0);
                         }
-                        can.Flush();
-                        surf.ReadPixels(result.Info, result.GetPixels(), result.RowBytes, 0, 0);
                     }
 
                     var outBmp = new SKBitmap(baseBmp.Width, baseBmp.Height);
@@ -1180,20 +1395,26 @@ namespace LuxEditor.Components
                 // and render directly with full quality
                 if (!_isCropEditing && CurrentImage.PreviewBitmap != null)
                 {
-                    // Calculate blur sigma scale based on preview vs original dimensions
-                    float previewScale = (float)CurrentImage.PreviewBitmap.Height / CurrentImage.OriginalBitmap.Height;
+                    using (_perfMetrics.MeasureOperation("Pipeline", "PreviewPass"))
+                    {
+                        // Calculate blur sigma scale based on preview vs original dimensions
+                        float previewScale = (float)CurrentImage.PreviewBitmap.Height / CurrentImage.OriginalBitmap.Height;
 
-                    var prev = await RenderAsync(CurrentImage.PreviewBitmap, previewScale);
-                    CurrentImage.EditedPreviewBitmap = prev;
-                    var upscaled = ImageProcessingManager.Upscale(prev,
-                                                                  (int)CurrentImage.Crop.Height,
-                                                                  true);
-                    OnEditorImageUpdated?.Invoke(upscaled);
+                        var prev = await RenderAsync(CurrentImage.PreviewBitmap, previewScale, "preview");
+                        CurrentImage.EditedPreviewBitmap = prev;
+                        var upscaled = ImageProcessingManager.Upscale(prev,
+                                                                      (int)CurrentImage.Crop.Height,
+                                                                      true);
+                        OnEditorImageUpdated?.Invoke(upscaled);
+                    }
                 }
 
-                var full = await RenderAsync(CurrentImage.OriginalBitmap, 1.0f);
-                CurrentImage.EditedBitmap = full;
-                OnEditorImageUpdated?.Invoke(SKImage.FromBitmap(full));
+                using (_perfMetrics.MeasureOperation("Pipeline", "FullPass"))
+                {
+                    var full = await RenderAsync(CurrentImage.OriginalBitmap, 1.0f, "full");
+                    CurrentImage.EditedBitmap = full;
+                    OnEditorImageUpdated?.Invoke(SKImage.FromBitmap(full));
+                }
             }
             catch (OperationCanceledException)
             {
