@@ -263,6 +263,59 @@
                 </StackPanel>
             </Expander>
 
+            <!-- BENCHMARK SECTION -->
+            <Expander Header="Benchmark"
+                      IsExpanded="False"
+                      Padding="15"
+                      Margin="0"
+                      BorderThickness="0"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Stretch">
+
+                <StackPanel Orientation="Vertical" Spacing="10" Padding="0"
+                            HorizontalAlignment="Stretch">
+
+                    <!-- Image Name Input -->
+                    <StackPanel Orientation="Vertical" Spacing="2">
+                        <TextBlock Text="Image Name"
+                                   Foreground="Gray"
+                                   FontSize="10"/>
+                        <TextBox x:Name="ImageNameInput"
+                                 PlaceholderText="Enter image name..."
+                                 HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+
+                    <!-- Image Size Info -->
+                    <TextBlock x:Name="CurrentImageSizeLabel"
+                               Text="No image selected"
+                               Foreground="Gray"
+                               FontSize="10"/>
+
+                    <!-- Run Benchmark Button -->
+                    <Button x:Name="RunBenchmarkButton"
+                            Content="Run Benchmark"
+                            Click="RunBenchmarkButton_Click"
+                            HorizontalAlignment="Stretch"
+                            Background="#0078D4"
+                            Foreground="White"/>
+
+                    <!-- Status Label -->
+                    <TextBlock x:Name="BenchmarkStatusLabel"
+                               Text="Ready"
+                               Foreground="Gray"
+                               FontSize="10"
+                               TextWrapping="Wrap"/>
+
+                    <!-- Progress Ring (hidden by default) -->
+                    <ProgressRing x:Name="BenchmarkProgressRing"
+                                  IsActive="False"
+                                  Width="30"
+                                  Height="30"
+                                  Visibility="Collapsed"/>
+
+                </StackPanel>
+            </Expander>
+
         </StackPanel>
     </Grid>
 </Page>
