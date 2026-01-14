@@ -1,0 +1,72 @@
+{
+  "CollectionExplorer:AdjustImageSizes": {
+    "operationName": "CollectionExplorer:AdjustImageSizes",
+    "sampleCount": 2,
+    "minMs": 0.8516,
+    "maxMs": 5.2125,
+    "avgMs": 3.0320500000000004,
+    "medianMs": 5.2125,
+    "p95Ms": 5.2125,
+    "p99Ms": 5.2125,
+    "stdDevMs": 3.0836219620764154,
+    "avgMemoryDelta": 0,
+    "maxMemoryDelta": 0,
+    "totalGCCollections": 0
+  },
+  "ProcessImage:Complete": {
+    "operationName": "ProcessImage:Complete",
+    "sampleCount": 303,
+    "minMs": 647.0741,
+    "maxMs": 1539.9409,
+    "avgMs": 812.8007227722775,
+    "medianMs": 802.4825,
+    "p95Ms": 943.4943,
+    "p99Ms": 1083.9537,
+    "stdDevMs": 79.36739657594808,
+    "avgMemoryDelta": 709450,
+    "maxMemoryDelta": 128035072,
+    "totalGCCollections": 1000590
+  },
+  "ProcessImage:GPU_Pass": {
+    "operationName": "ProcessImage:GPU_Pass",
+    "sampleCount": 303,
+    "minMs": 2.0925,
+    "maxMs": 10.7391,
+    "avgMs": 2.8252036303630366,
+    "medianMs": 2.7077,
+    "p95Ms": 3.6128,
+    "p99Ms": 5.6256,
+    "stdDevMs": 0.8018008348058676,
+    "avgMemoryDelta": 3584,
+    "maxMemoryDelta": 65768,
+    "totalGCCollections": 0
+  },
+  "ProcessImage:CPU_Pass": {
+    "operationName": "ProcessImage:CPU_Pass",
+    "sampleCount": 303,
+    "minMs": 506.2725,
+    "maxMs": 992.6502,
+    "avgMs": 586.4446686468646,
+    "medianMs": 576.1627,
+    "p95Ms": 668.2193,
+    "p99Ms": 763.2657,
+    "stdDevMs": 48.271350757059146,
+    "avgMemoryDelta": 723546,
+    "maxMemoryDelta": 128026928,
+    "totalGCCollections": 0
+  },
+  "PhotoViewer:SetImage": {
+    "operationName": "PhotoViewer:SetImage",
+    "sampleCount": 303,
+    "minMs": 13.2436,
+    "maxMs": 138.0122,
+    "avgMs": 87.27729042904299,
+    "medianMs": 89.0912,
+    "p95Ms": 111.5941,
+    "p99Ms": 121.0987,
+    "stdDevMs": 16.672453332412257,
+    "avgMemoryDelta": 911263,
+    "maxMemoryDelta": 1957312,
+    "totalGCCollections": 0
+  }
+}

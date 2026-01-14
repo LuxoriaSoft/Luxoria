@@ -1,0 +1,72 @@
+{
+  "Pipeline:FullPass": {
+    "operationName": "Pipeline:FullPass",
+    "sampleCount": 42,
+    "minMs": 57.55,
+    "maxMs": 176.5409,
+    "avgMs": 99.00050952380954,
+    "medianMs": 91.4557,
+    "p95Ms": 156.5127,
+    "p99Ms": 176.5409,
+    "stdDevMs": 24.458886038638937,
+    "avgMemoryDelta": 34464,
+    "maxMemoryDelta": 195128,
+    "totalGCCollections": 2
+  },
+  "Pipeline:ApplyFilters_preview": {
+    "operationName": "Pipeline:ApplyFilters_preview",
+    "sampleCount": 174,
+    "minMs": 13.0868,
+    "maxMs": 181.6949,
+    "avgMs": 74.51649252873558,
+    "medianMs": 76.9681,
+    "p95Ms": 112.3203,
+    "p99Ms": 160.0317,
+    "stdDevMs": 24.869061563062658,
+    "avgMemoryDelta": 6133,
+    "maxMemoryDelta": 207320,
+    "totalGCCollections": 10
+  },
+  "Pipeline:Total": {
+    "operationName": "Pipeline:Total",
+    "sampleCount": 174,
+    "minMs": 123.6157,
+    "maxMs": 412.782,
+    "avgMs": 177.96044310344826,
+    "medianMs": 166.8537,
+    "p95Ms": 254.9937,
+    "p99Ms": 294.488,
+    "stdDevMs": 43.00195564345081,
+    "avgMemoryDelta": 11697,
+    "maxMemoryDelta": 287512,
+    "totalGCCollections": 22
+  },
+  "Pipeline:PreviewPass": {
+    "operationName": "Pipeline:PreviewPass",
+    "sampleCount": 174,
+    "minMs": 50.755,
+    "maxMs": 232.4916,
+    "avgMs": 123.29628218390808,
+    "medianMs": 127.5659,
+    "p95Ms": 165.056,
+    "p99Ms": 218.473,
+    "stdDevMs": 29.283316929909805,
+    "avgMemoryDelta": 10895,
+    "maxMemoryDelta": 215440,
+    "totalGCCollections": 14
+  },
+  "Pipeline:ApplyFilters_full": {
+    "operationName": "Pipeline:ApplyFilters_full",
+    "sampleCount": 42,
+    "minMs": 23.577,
+    "maxMs": 119.1433,
+    "avgMs": 47.86293571428572,
+    "medianMs": 38.5634,
+    "p95Ms": 93.223,
+    "p99Ms": 119.1433,
+    "stdDevMs": 19.944107961192895,
+    "avgMemoryDelta": 33957,
+    "maxMemoryDelta": 123512,
+    "totalGCCollections": 0
+  }
+}

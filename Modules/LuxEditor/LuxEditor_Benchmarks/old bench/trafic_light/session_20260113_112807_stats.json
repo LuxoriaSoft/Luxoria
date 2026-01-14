@@ -1,0 +1,58 @@
+{
+  "ProcessImage:Complete": {
+    "operationName": "ProcessImage:Complete",
+    "sampleCount": 303,
+    "minMs": 1374.8069,
+    "maxMs": 2150.1016,
+    "avgMs": 1573.0529554455443,
+    "medianMs": 1561.7125,
+    "p95Ms": 1707.0868,
+    "p99Ms": 1872.8393,
+    "stdDevMs": 82.8026602164761,
+    "avgMemoryDelta": 1157608,
+    "maxMemoryDelta": 37965024,
+    "totalGCCollections": 4202990
+  },
+  "ProcessImage:GPU_Pass": {
+    "operationName": "ProcessImage:GPU_Pass",
+    "sampleCount": 303,
+    "minMs": 4.8235,
+    "maxMs": 17.9726,
+    "avgMs": 6.063548514851487,
+    "medianMs": 6.0224,
+    "p95Ms": 7.7714,
+    "p99Ms": 9.3704,
+    "stdDevMs": 1.169296860766666,
+    "avgMemoryDelta": 5151,
+    "maxMemoryDelta": 82208,
+    "totalGCCollections": 0
+  },
+  "ProcessImage:CPU_Pass": {
+    "operationName": "ProcessImage:CPU_Pass",
+    "sampleCount": 303,
+    "minMs": 1129.9769,
+    "maxMs": 1804.8909,
+    "avgMs": 1315.8676270627057,
+    "medianMs": 1305.2883,
+    "p95Ms": 1419.1841,
+    "p99Ms": 1616.6716,
+    "stdDevMs": 69.00891442065688,
+    "avgMemoryDelta": 1252440,
+    "maxMemoryDelta": 37899416,
+    "totalGCCollections": 0
+  },
+  "PhotoViewer:SetImage": {
+    "operationName": "PhotoViewer:SetImage",
+    "sampleCount": 303,
+    "minMs": 28.0746,
+    "maxMs": 158.8076,
+    "avgMs": 110.15831716171624,
+    "medianMs": 108.9152,
+    "p95Ms": 128.4345,
+    "p99Ms": 137.8148,
+    "stdDevMs": 9.87841247805496,
+    "avgMemoryDelta": 26989,
+    "maxMemoryDelta": 2297008,
+    "totalGCCollections": 0
+  }
+}
