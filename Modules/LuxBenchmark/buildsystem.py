@@ -49,7 +49,7 @@ LUX_FINAL_NAME = "LuxBenchmark.Lux.dll"
 LUX_MOD_FOLDER = "LuxBenchmark"
 SOURCE_DIR = "./LuxBenchmark/bin/Debug/net9.0-windows10.0.26100.0/" + current_arch + "/publish"
 DEST_DIR = "../../Luxoria.App/Luxoria.App/bin/" + short_arch + "/Debug/net9.0-windows10.0.26100.0/" + current_arch + "/modules/" + LUX_MOD_FOLDER
-MODULE_SOURCE_DIR = "./LuxBenchmark/bin/Debug/net9.0-windows10.0.26100.0/" + current_arch
+MODULE_SOURCE_DIR = "./LuxBenchmark/bin/Debug/net9.0-windows10.0.26100.0/" + current_arch + "/LuxBenchmark"
 MODULE_DEST_DIR = "../../Luxoria.App/Luxoria.App/bin/" + short_arch + "/Debug/net9.0-windows10.0.26100.0/" + current_arch + "/LuxBenchmark"
 
 # Function to build the project
