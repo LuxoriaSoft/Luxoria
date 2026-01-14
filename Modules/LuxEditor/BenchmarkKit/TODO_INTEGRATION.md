@@ -1,8 +1,9 @@
-# BenchmarkKit - Integration Guide for New Luxoria Version
+# BenchmarkKit v2.0.0 - Integration Guide
 
 ## Overview
 
-This kit contains everything needed to add performance benchmarking to LuxEditor. Copy this folder to the new Luxoria version and follow the instructions below.
+This kit contains everything needed to add standardized performance benchmarking to LuxEditor.
+**IMPORTANT**: Both old and new versions MUST use identical operation names for meaningful comparisons.
 
 ---
 
@@ -11,148 +12,144 @@ This kit contains everything needed to add performance benchmarking to LuxEditor
 ```
 BenchmarkKit/
 ├── Services/
-│   ├── PerformanceMetrics.cs    # Core metrics tracking service
-│   └── StressTestRunner.cs      # Automated stress test runner
+│   ├── PerformanceMetrics.cs    # Core metrics tracking (v2.0.0)
+│   └── StressTestRunner.cs      # Standardized test scenarios (v2.0.0)
 ├── docs/
-│   ├── BENCHMARK_REPORT.md      # Full documentation template
+│   ├── BENCHMARK_README.md      # Full documentation with operation names
+│   ├── BENCHMARK_REPORT.md      # Report template
 │   └── BENCHMARK_QUICKSTART.md  # Quick start guide
-├── TODO_INTEGRATION.md          # THIS FILE - Integration instructions
-└── CodeSnippets.md              # Code to add to existing files
+├── TODO_INTEGRATION.md          # THIS FILE
+└── CodeSnippets.md              # Code snippets for integration
 ```
 
 ---
 
-## TODO: Integration Steps
+## Standard Operation Names (MUST USE THESE)
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `BenchmarkOps.RENDER_COMPLETE` | `Render:Complete` | Full render pipeline (PRIMARY metric) |
+| `BenchmarkOps.RENDER_PREVIEW` | `Render:PreviewPass` | Preview pass rendering |
+| `BenchmarkOps.RENDER_FULL` | `Render:FullPass` | Full resolution rendering |
+| `BenchmarkOps.RENDER_FILTERS` | `Render:ApplyFilters` | Filter application phase |
+| `BenchmarkOps.RENDER_LAYERS` | `Render:LayerComposite` | Layer compositing |
+
+---
+
+## Integration Steps
 
 ### Step 1: Copy Services
 
-Copy the `Services/` folder to `LuxEditor/Services/` in the new version:
+Copy files to `LuxEditor/Services/`:
 ```
-BenchmarkKit/Services/PerformanceMetrics.cs  →  LuxEditor/Services/PerformanceMetrics.cs
-BenchmarkKit/Services/StressTestRunner.cs    →  LuxEditor/Services/StressTestRunner.cs
-```
-
-### Step 2: Copy Documentation
-
-Copy docs to appropriate location:
-```
-BenchmarkKit/docs/BENCHMARK_REPORT.md      →  LuxEditor/docs/BENCHMARK_REPORT.md
-BenchmarkKit/docs/BENCHMARK_QUICKSTART.md  →  LuxEditor/docs/BENCHMARK_QUICKSTART.md
+BenchmarkKit/Services/PerformanceMetrics.cs  →  LuxEditor/Services/
+BenchmarkKit/Services/StressTestRunner.cs    →  LuxEditor/Services/
 ```
 
-### Step 3: Modify Editor.xaml
+### Step 2: Update Editor.xaml.cs Measurement Points
 
-Add the Benchmark section to the Editor XAML. Add this **after the last Expander** (probably Color Adjustments):
+Replace any existing measurement calls with standardized names:
+
+```csharp
+// At the start of your render pipeline method:
+using var pipelineTimer = _perfMetrics.Measure(BenchmarkOps.RENDER_COMPLETE, new Dictionary<string, object>
+{
+    ["ImageName"] = _currentImageName,
+    ["Width"] = _currentImageWidth,
+    ["Height"] = _currentImageHeight
+});
+
+// For preview pass:
+using (_perfMetrics.Measure(BenchmarkOps.RENDER_PREVIEW))
+{
+    // preview rendering code
+}
+
+// For full pass:
+using (_perfMetrics.Measure(BenchmarkOps.RENDER_FULL))
+{
+    // full resolution rendering code
+}
+
+// For filter application:
+using (_perfMetrics.Measure(BenchmarkOps.RENDER_FILTERS))
+{
+    // filter application code
+}
+
+// For layer compositing:
+using (_perfMetrics.Measure(BenchmarkOps.RENDER_LAYERS))
+{
+    // layer compositing code
+}
+```
+
+### Step 3: Add Benchmark UI (Optional)
+
+Add benchmark section to Editor.xaml:
 
 ```xml
-<!-- BENCHMARK SECTION -->
-<Expander Header="Benchmark"
-          IsExpanded="False"
-          Padding="15"
-          Margin="0"
-          BorderThickness="0"
-          HorizontalAlignment="Stretch"
-          HorizontalContentAlignment="Stretch">
-
-    <StackPanel Orientation="Vertical" Spacing="10" Padding="0"
-                HorizontalAlignment="Stretch">
-
-        <!-- Image Name Input -->
-        <StackPanel Orientation="Vertical" Spacing="2">
-            <TextBlock Text="Image Name"
-                       Foreground="Gray"
-                       FontSize="10"/>
-            <TextBox x:Name="ImageNameInput"
-                     PlaceholderText="Enter image name..."
-                     HorizontalAlignment="Stretch"/>
-        </StackPanel>
-
-        <!-- Image Size Info -->
-        <TextBlock x:Name="CurrentImageSizeLabel"
-                   Text="No image selected"
-                   Foreground="Gray"
-                   FontSize="10"/>
-
-        <!-- Run Benchmark Button -->
+<Expander Header="Benchmark" IsExpanded="False" Padding="15">
+    <StackPanel Orientation="Vertical" Spacing="10">
+        <TextBox x:Name="ImageNameInput" PlaceholderText="Image name..."/>
         <Button x:Name="RunBenchmarkButton"
                 Content="Run Benchmark"
                 Click="RunBenchmarkButton_Click"
-                HorizontalAlignment="Stretch"
-                Background="#0078D4"
-                Foreground="White"/>
-
-        <!-- Status Label -->
-        <TextBlock x:Name="BenchmarkStatusLabel"
-                   Text="Ready"
-                   Foreground="Gray"
-                   FontSize="10"
-                   TextWrapping="Wrap"/>
-
-        <!-- Progress Ring (hidden by default) -->
-        <ProgressRing x:Name="BenchmarkProgressRing"
-                      IsActive="False"
-                      Width="30"
-                      Height="30"
-                      Visibility="Collapsed"/>
-
+                Background="#0078D4" Foreground="White"/>
+        <TextBlock x:Name="BenchmarkStatusLabel" Text="Ready" Foreground="Gray"/>
     </StackPanel>
 </Expander>
 ```
 
-### Step 4: Modify Editor.xaml.cs
+### Step 4: Add Benchmark Handler
 
-See `CodeSnippets.md` for all the code to add to Editor.xaml.cs.
+```csharp
+private StressTestRunner? _stressTestRunner;
 
-Summary of changes:
-1. Add using statements
-2. Add private fields for benchmark tracking
-3. Modify `SetOriginalBitmap()` to track image info
-4. Instrument `ProcessImage()` with metrics
-5. Add `RunBenchmarkButton_Click()` handler
-6. Add helper methods
+private async void RunBenchmarkButton_Click(object sender, RoutedEventArgs e)
+{
+    if (_stressTestRunner == null)
+    {
+        _stressTestRunner = new StressTestRunner(DispatcherQueue);
+        _stressTestRunner.SetSliderCache(_sliderCache);
+        _stressTestRunner.OnLogMessage += (msg) => Debug.WriteLine(msg);
+    }
 
-### Step 5: Modify PhotoViewer.xaml.cs
+    var imageName = ImageNameInput.Text;
+    if (string.IsNullOrEmpty(imageName)) imageName = "unknown";
 
-See `CodeSnippets.md` for instrumentation code.
+    BenchmarkStatusLabel.Text = "Running...";
+    RunBenchmarkButton.IsEnabled = false;
 
-Summary:
-1. Add using statement for `LuxEditor.Services`
-2. Add `PerformanceMetrics` instance
-3. Instrument `SetImage()` method with timing
+    await _stressTestRunner.RunAllScenariosAsync(imageName);
 
-### Step 6: Modify CollectionExplorer.xaml.cs
-
-See `CodeSnippets.md` for instrumentation code.
-
-Summary:
-1. Add using statements
-2. Add `PerformanceMetrics` instance
-3. Instrument `SetBitmaps()` and `CreateLowResBitmap()` methods
-
-### Step 7: Test Build
-
-Build the project and fix any compilation errors. Common issues:
-- Missing using statements
-- Namespace differences in new version
-- UI element name changes
+    BenchmarkStatusLabel.Text = "Complete! Check Desktop/LuxEditor_Benchmarks/";
+    RunBenchmarkButton.IsEnabled = true;
+}
+```
 
 ---
 
-## Key Metrics Tracked
+## Test Scenarios (8 Standardized Tests)
 
-| Component | Metrics |
-|-----------|---------|
-| **Editor.ProcessImage** | GPU pass time, CPU pass time, memory allocation, pixels/ms |
-| **PhotoViewer.SetImage** | PNG encoding time, WriteableBitmap creation, total latency |
-| **CollectionExplorer** | Thumbnail generation time, memory per thumbnail |
+| ID | Name | Iterations | Delay | Purpose |
+|----|------|------------|-------|---------|
+| `Test:ExposureSweep` | Exposure Full Sweep | 20 | 100ms | Baseline test |
+| `Test:ContrastSweep` | Contrast Full Sweep | 20 | 100ms | Contrast performance |
+| `Test:RapidMovement` | Rapid Slider Movement | 50 | 20ms | Stress test |
+| `Test:WhiteBalance` | White Balance Sweep | 20 | 100ms | Color matrix perf |
+| `Test:ToneControls` | Tone Controls Sweep | 20 | 100ms | Tone mapping |
+| `Test:PresenceControls` | Presence Controls Sweep | 20 | 100ms | Color enhancement |
+| `Test:FullStress` | Full Parameter Stress | 20 | 100ms | All filters active |
+| `Test:Reset` | Reset All Sliders | 1 | 0ms | Reset performance |
 
 ---
 
 ## Export Location
 
-Benchmark results are exported to:
+Results are exported to:
 ```
-Desktop/LuxEditor_Benchmarks/
+Desktop/LuxEditor_Benchmarks/{image_name}/
 ├── session_YYYYMMDD_HHMMSS_full.json   # Complete data
 ├── session_YYYYMMDD_HHMMSS_stats.json  # Statistics only
 └── session_YYYYMMDD_HHMMSS_samples.csv # CSV for analysis
@@ -160,9 +157,23 @@ Desktop/LuxEditor_Benchmarks/
 
 ---
 
-## Notes for New Version
+## Comparing Old vs New Versions
 
-- If `ProcessImage()` architecture changed significantly, adapt the instrumentation points
-- If sliders were renamed or added/removed, update `StressTestRunner.cs`
-- The services are standalone and should work with any WinUI 3 app
-- Namespace in services is `LuxEditor.Services` - change if needed
+1. Copy this BenchmarkKit to BOTH versions
+2. Use the SAME test image
+3. Run benchmarks on the SAME machine
+4. Compare `Render:Complete` averages between versions
+5. Use LuxBenchmark dashboard module for visual comparison
+
+---
+
+## Troubleshooting
+
+**Q: Operations have different names between versions**
+A: This BenchmarkKit v2.0.0 standardizes names. Copy these files to both versions.
+
+**Q: StressTestRunner can't find sliders**
+A: Ensure `SetSliderCache()` is called with your slider dictionary. Slider keys must match: "Exposure", "Contrast", "Highlights", "Shadows", "Temperature", "Tint", "Vibrance", "Saturation", etc.
+
+**Q: Build errors with EditorSlider**
+A: The old version may use different slider types. Adapt `StressTestRunner.SetSliderValue()` to use your slider API.

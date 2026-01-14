@@ -332,12 +332,12 @@ namespace LuxEditor.Components
             long memoryAfterGPU = GC.GetTotalMemory(false);
             sliderValues["MemoryDeltaGPU_Bytes"] = memoryAfterGPU - memoryBeforeProcessing;
 
-            // Record GPU pass as separate metric
+            // Record GPU pass as separate metric (standardized name: Render:FullPass)
             _metrics.RecordSample(new MetricSample
             {
                 Timestamp = DateTime.UtcNow,
-                OperationName = "ProcessImage",
-                Phase = "GPU_Pass",
+                OperationName = BenchmarkOps.RENDER_FULL,
+                Phase = "",
                 DurationMs = gpuPassStopwatch.Elapsed.TotalMilliseconds,
                 MemoryBefore = memoryBeforeProcessing,
                 MemoryAfter = memoryAfterGPU,
@@ -462,12 +462,12 @@ namespace LuxEditor.Components
             double pixelsPerMs = pixelCount / phaseTimings["CPU_PixelProcessing"];
             sliderValues["PixelsPerMs"] = pixelsPerMs;
 
-            // Record CPU pass as separate metric
+            // Record CPU pass as separate metric (standardized name: Render:ApplyFilters)
             _metrics.RecordSample(new MetricSample
             {
                 Timestamp = DateTime.UtcNow,
-                OperationName = "ProcessImage",
-                Phase = "CPU_Pass",
+                OperationName = BenchmarkOps.RENDER_FILTERS,
+                Phase = "",
                 DurationMs = cpuPassStopwatch.Elapsed.TotalMilliseconds,
                 MemoryBefore = memoryBeforeCPU,
                 MemoryAfter = memoryAfterCPU,
@@ -509,12 +509,12 @@ namespace LuxEditor.Components
             sliderValues["TotalMemoryAllocated_Bytes"] = totalMemoryAllocated;
             sliderValues["TotalMemoryAllocated_MB"] = totalMemoryAllocated / (1024.0 * 1024.0);
 
-            // Record master ProcessImage metric
+            // Record master ProcessImage metric (standardized name: Render:Complete)
             _metrics.RecordSample(new MetricSample
             {
                 Timestamp = DateTime.UtcNow,
-                OperationName = "ProcessImage",
-                Phase = "Complete",
+                OperationName = BenchmarkOps.RENDER_COMPLETE,
+                Phase = "",
                 DurationMs = masterStopwatch.Elapsed.TotalMilliseconds,
                 MemoryBefore = memoryBeforeProcessing,
                 MemoryAfter = memoryAfterCPU,
@@ -664,7 +664,7 @@ namespace LuxEditor.Components
                 int totalSamples = 0;
                 double avgProcessTime = 0;
 
-                if (stats.TryGetValue("ProcessImage:Complete", out var processStats))
+                if (stats.TryGetValue(BenchmarkOps.RENDER_COMPLETE, out var processStats))
                 {
                     totalSamples = processStats.SampleCount;
                     avgProcessTime = processStats.AvgMs;
@@ -673,7 +673,7 @@ namespace LuxEditor.Components
                 BenchmarkStatusLabel.Text = $"Benchmark complete!\n" +
                     $"Image: {_currentImageName}\n" +
                     $"Samples: {totalSamples}\n" +
-                    $"Avg ProcessImage: {avgProcessTime:F2}ms\n" +
+                    $"Avg Render:Complete: {avgProcessTime:F2}ms\n" +
                     $"Exported to Desktop/LuxEditor_Benchmarks/";
 
                 _metrics.Log($"Benchmark completed for {_currentImageName}", "INFO");

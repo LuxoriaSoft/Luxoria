@@ -14,7 +14,7 @@ MODULE_DEST_DIR = "../../Luxoria.App/Luxoria.App/bin/x64/Debug/net9.0-windows10.
 # Function to build the project
 def build_project():
     print("Building the project...")
-    os.system("dotnet publish -c Debug")
+    os.system("dotnet publish -c Debug ./LuxEditor/LuxEditor.csproj")
 
 # Function to copy the published files to the destination directory
 def copy_files():

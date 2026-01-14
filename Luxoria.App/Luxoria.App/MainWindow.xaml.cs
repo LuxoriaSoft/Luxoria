@@ -222,7 +222,7 @@ public sealed partial class MainWindow : Window
 
     private void LoadDefaultCollection()
     {
-        var openCollectionEvt = new OpenCollectionEvent("testCollection", "C:\\Users\\pastcque\\source\\repos\\LuxoriaSoft\\Luxoria\\assets\\BaseCollection");
+        var openCollectionEvt = new OpenCollectionEvent("testCollection", "C:\\Users\\noahg\\github\\Luxoria\\assets\\BaseCollection");
 
         openCollectionEvt.OnEventCompleted += (_, _) =>
         {
