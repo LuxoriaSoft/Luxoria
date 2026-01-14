@@ -1,0 +1,137 @@
+<Page
+    x:Class="LuxBenchmark.Components.MetricDetails"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="#252525">
+
+    <Grid Padding="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0"
+                   Text="Details"
+                   FontSize="18"
+                   FontWeight="SemiBold"
+                   Foreground="White"
+                   Margin="0,0,0,12"/>
+
+        <!-- Selected Operation Info -->
+        <Border Grid.Row="1"
+                x:Name="SelectedOperationPanel"
+                Background="#1E1E1E"
+                CornerRadius="8"
+                Padding="12"
+                Margin="0,0,0,12"
+                Visibility="Collapsed">
+            <StackPanel Spacing="8">
+                <TextBlock x:Name="OperationNameText"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Foreground="White"
+                           TextWrapping="Wrap"/>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Session A Stats -->
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="Session A"
+                                   FontSize="12"
+                                   Foreground="#0078D4"
+                                   FontWeight="SemiBold"/>
+                        <TextBlock x:Name="SessionAAvgText"
+                                   FontSize="11"
+                                   Foreground="White"/>
+                        <TextBlock x:Name="SessionAMinMaxText"
+                                   FontSize="10"
+                                   Foreground="Gray"/>
+                        <TextBlock x:Name="SessionAP95Text"
+                                   FontSize="10"
+                                   Foreground="Gray"/>
+                        <TextBlock x:Name="SessionASamplesText"
+                                   FontSize="10"
+                                   Foreground="Gray"/>
+                    </StackPanel>
+
+                    <!-- Session B Stats -->
+                    <StackPanel Grid.Column="1" Spacing="4">
+                        <TextBlock Text="Session B"
+                                   FontSize="12"
+                                   Foreground="#FF8C00"
+                                   FontWeight="SemiBold"/>
+                        <TextBlock x:Name="SessionBAvgText"
+                                   FontSize="11"
+                                   Foreground="White"/>
+                        <TextBlock x:Name="SessionBMinMaxText"
+                                   FontSize="10"
+                                   Foreground="Gray"/>
+                        <TextBlock x:Name="SessionBP95Text"
+                                   FontSize="10"
+                                   Foreground="Gray"/>
+                        <TextBlock x:Name="SessionBSamplesText"
+                                   FontSize="10"
+                                   Foreground="Gray"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Improvement Summary -->
+                <Border Background="#333333"
+                        CornerRadius="4"
+                        Padding="8"
+                        Margin="0,8,0,0">
+                    <StackPanel>
+                        <TextBlock x:Name="ImprovementText"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="ImprovementDescText"
+                                   FontSize="11"
+                                   Foreground="Gray"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <!-- Sample Distribution / Time Series -->
+        <Border Grid.Row="2"
+                Background="#1E1E1E"
+                CornerRadius="8"
+                Padding="12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Text="Sample Distribution"
+                           FontSize="12"
+                           Foreground="Gray"
+                           Margin="0,0,0,8"/>
+
+                <ContentControl x:Name="DistributionChartHost"
+                                Grid.Row="1"/>
+
+                <!-- Empty state -->
+                <TextBlock x:Name="EmptyDetailsText"
+                           Grid.Row="1"
+                           Text="Select an operation to view details"
+                           Foreground="Gray"
+                           FontSize="12"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>
