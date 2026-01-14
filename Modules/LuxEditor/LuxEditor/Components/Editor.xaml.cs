@@ -1334,7 +1334,8 @@ namespace LuxEditor.Components
         {
             _pendingUpdate = false;
 
-            using var pipelineTimer = _perfMetrics.MeasureOperation("Pipeline", "Total", new Dictionary<string, object>
+            // Measure full render pipeline (Render:Complete is the PRIMARY comparison metric)
+            using var pipelineTimer = _perfMetrics.Measure(BenchmarkOps.RENDER_COMPLETE, new Dictionary<string, object>
             {
                 ["ImageName"] = _currentImageName,
                 ["Width"] = _currentImageWidth,
@@ -1348,8 +1349,9 @@ namespace LuxEditor.Components
                 async Task<SKBitmap> RenderAsync(SKBitmap src, float blurSigmaScale = 1.0f, string renderPass = "full")
                 {
                     SKBitmap baseBmp;
-                    using (_perfMetrics.MeasureOperation("Pipeline", $"ApplyFilters_{renderPass}", new Dictionary<string, object>
+                    using (_perfMetrics.Measure(BenchmarkOps.RENDER_FILTERS, new Dictionary<string, object>
                     {
+                        ["RenderPass"] = renderPass,
                         ["Width"] = src.Width,
                         ["Height"] = src.Height,
                         ["BlurScale"] = blurSigmaScale
@@ -1370,7 +1372,7 @@ namespace LuxEditor.Components
                     var layers = CurrentImage.LayerManager.Layers.ToArray();
                     foreach (var layer in layers.Where(l => l.Visible))
                     {
-                        using (_perfMetrics.MeasureOperation("Pipeline", $"LayerMask_{renderPass}"))
+                        using (_perfMetrics.Measure(BenchmarkOps.RENDER_LAYERS))
                         {
                             using var mask = BuildLayerMask(layer, baseBmp.Width, baseBmp.Height);
                             if (mask == null) continue;
@@ -1395,7 +1397,7 @@ namespace LuxEditor.Components
                 // and render directly with full quality
                 if (!_isCropEditing && CurrentImage.PreviewBitmap != null)
                 {
-                    using (_perfMetrics.MeasureOperation("Pipeline", "PreviewPass"))
+                    using (_perfMetrics.Measure(BenchmarkOps.RENDER_PREVIEW))
                     {
                         // Calculate blur sigma scale based on preview vs original dimensions
                         float previewScale = (float)CurrentImage.PreviewBitmap.Height / CurrentImage.OriginalBitmap.Height;
@@ -1409,7 +1411,7 @@ namespace LuxEditor.Components
                     }
                 }
 
-                using (_perfMetrics.MeasureOperation("Pipeline", "FullPass"))
+                using (_perfMetrics.Measure(BenchmarkOps.RENDER_FULL))
                 {
                     var full = await RenderAsync(CurrentImage.OriginalBitmap, 1.0f, "full");
                     CurrentImage.EditedBitmap = full;
