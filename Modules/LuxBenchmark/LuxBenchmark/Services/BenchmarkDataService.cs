@@ -46,6 +46,7 @@ namespace LuxBenchmark.Services
 
         /// <summary>
         /// Discovers all benchmark session files in a directory.
+        /// Supports both flat and version-based folder structures (v3.0.0+).
         /// </summary>
         public List<string> DiscoverSessionFiles(string? directory = null)
         {
@@ -55,10 +56,46 @@ namespace LuxBenchmark.Services
             if (!Directory.Exists(dir))
                 return files;
 
-            // Look for *_full.json files (complete session data)
-            files.AddRange(Directory.GetFiles(dir, "*_full.json"));
+            // Look for *_full.json files recursively (supports version-based folders)
+            files.AddRange(Directory.GetFiles(dir, "*_full.json", SearchOption.AllDirectories));
 
             return files.OrderByDescending(f => File.GetLastWriteTime(f)).ToList();
+        }
+
+        /// <summary>
+        /// Gets all available versions from the benchmark directory.
+        /// </summary>
+        public List<string> GetAvailableVersions(string? directory = null)
+        {
+            var dir = directory ?? GetDefaultBenchmarkDirectory();
+            var versions = new List<string>();
+
+            if (!Directory.Exists(dir))
+                return versions;
+
+            // Get all subdirectories that contain benchmark files
+            foreach (var subDir in Directory.GetDirectories(dir))
+            {
+                var versionName = Path.GetFileName(subDir);
+                var hasFiles = Directory.GetFiles(subDir, "*_full.json", SearchOption.AllDirectories).Length > 0;
+                if (hasFiles)
+                {
+                    versions.Add(versionName);
+                }
+            }
+
+            return versions.OrderBy(v => v).ToList();
+        }
+
+        /// <summary>
+        /// Gets sessions filtered by version.
+        /// </summary>
+        public List<BenchmarkSession> GetSessionsByVersion(string version)
+        {
+            return _loadedSessions
+                .Where(s => s.LuxEditorVersion == version)
+                .OrderByDescending(s => s.StartTime)
+                .ToList();
         }
 
         /// <summary>
@@ -113,6 +150,7 @@ namespace LuxBenchmark.Services
 
         /// <summary>
         /// Compares two sessions and returns detailed comparison results.
+        /// Includes UX-focused comparison for v3.0.0+ sessions.
         /// </summary>
         public ComparisonSummary CompareSessions(BenchmarkSession sessionA, BenchmarkSession sessionB)
         {
@@ -155,18 +193,99 @@ namespace LuxBenchmark.Services
                 summary.Results.Add(result);
             }
 
+            // Build UX comparison if both sessions have UX metrics
+            if (sessionA.HasUXMetrics || sessionB.HasUXMetrics)
+            {
+                summary.UXComparison = BuildUXComparison(sessionA, sessionB);
+            }
+
             return summary;
         }
 
         /// <summary>
+        /// Builds a UX-focused comparison between two sessions.
+        /// </summary>
+        private UXComparison BuildUXComparison(BenchmarkSession sessionA, BenchmarkSession sessionB)
+        {
+            var comparison = new UXComparison();
+
+            // Get UX metrics from UXMetrics object or fallback to statistics
+            var uxA = sessionA.UXMetrics;
+            var uxB = sessionB.UXMetrics;
+
+            // Time to first paint
+            comparison.SessionA_TimeToFirstPaint = uxA?.AvgTimeToFirstPaintMs
+                ?? GetStatAvgMs(sessionA, "UX:TimeToFirstPaint")
+                ?? GetStatAvgMs(sessionA, "Render:PreviewPass")
+                ?? 0;
+
+            comparison.SessionB_TimeToFirstPaint = uxB?.AvgTimeToFirstPaintMs
+                ?? GetStatAvgMs(sessionB, "UX:TimeToFirstPaint")
+                ?? GetStatAvgMs(sessionB, "Render:PreviewPass")
+                ?? 0;
+
+            // Perceived latency
+            comparison.SessionA_PerceivedLatency = uxA?.AvgPerceivedLatencyMs
+                ?? GetStatAvgMs(sessionA, "UX:PerceivedLatency")
+                ?? GetStatAvgMs(sessionA, "Render:PreviewPass")
+                ?? 0;
+
+            comparison.SessionB_PerceivedLatency = uxB?.AvgPerceivedLatencyMs
+                ?? GetStatAvgMs(sessionB, "UX:PerceivedLatency")
+                ?? GetStatAvgMs(sessionB, "Render:PreviewPass")
+                ?? 0;
+
+            // Frame consistency
+            comparison.SessionA_FrameConsistency = uxA?.FrameConsistencyScore ?? 0;
+            comparison.SessionB_FrameConsistency = uxB?.FrameConsistencyScore ?? 0;
+
+            // Peak memory
+            comparison.SessionA_PeakMemory = uxA?.PeakMemoryBytes ?? 0;
+            comparison.SessionB_PeakMemory = uxB?.PeakMemoryBytes ?? 0;
+
+            // GC collections
+            comparison.SessionA_GCCollections = uxA?.TotalGCCollections ?? 0;
+            comparison.SessionB_GCCollections = uxB?.TotalGCCollections ?? 0;
+
+            return comparison;
+        }
+
+        /// <summary>
+        /// Gets average milliseconds from statistics for a given operation key.
+        /// </summary>
+        private double? GetStatAvgMs(BenchmarkSession session, string operationKey)
+        {
+            if (session.Statistics.TryGetValue(operationKey, out var stats))
+            {
+                return stats.AvgMs;
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Gets aggregated statistics across all samples for a given operation.
+        /// Supports both old format (OperationName:Phase) and new format (just OperationName).
         /// </summary>
         public List<(DateTime Time, double Value)> GetTimeSeriesData(BenchmarkSession session, string operationKey)
         {
             return session.Samples
-                .Where(s => $"{s.OperationName}:{s.Phase}" == operationKey)
+                .Where(s => s.OperationName == operationKey ||
+                           $"{s.OperationName}:{s.Phase}" == operationKey)
                 .OrderBy(s => s.Timestamp)
                 .Select(s => (s.Timestamp, s.DurationMs))
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets memory usage time series data for a given operation.
+        /// </summary>
+        public List<(DateTime Time, long Value)> GetMemoryTimeSeriesData(BenchmarkSession session, string operationKey)
+        {
+            return session.Samples
+                .Where(s => s.OperationName == operationKey ||
+                           $"{s.OperationName}:{s.Phase}" == operationKey)
+                .OrderBy(s => s.Timestamp)
+                .Select(s => (s.Timestamp, s.MemoryDelta))
                 .ToList();
         }
 

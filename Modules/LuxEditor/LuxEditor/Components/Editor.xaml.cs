@@ -77,6 +77,10 @@ namespace LuxEditor.Components
         private ProgressRing? _benchmarkProgressRing;
         private Button? _benchmarkRunButton;
 
+        // UX Benchmark timing (v3.0.0)
+        private readonly Stopwatch _uxTimer = new();
+        private const string LUXEDITOR_VERSION = "2.0.0-new";
+
         /// <summary>
         /// Style for the temperature slider.
         /// </summary>
@@ -101,6 +105,9 @@ namespace LuxEditor.Components
         public Editor(EditableImage? editableImage)
         {
             InitializeComponent();
+
+            // Set LuxEditor version for benchmark organization (v3.0.0)
+            _perfMetrics.LuxEditorVersion = LUXEDITOR_VERSION;
 
             _panelManager = new EditorPanelManager(EditorStackPanel);
             ImageManager.Instance.OnSelectionChanged += SetEditableImage;
@@ -1317,6 +1324,10 @@ namespace LuxEditor.Components
         /// </summary>
         public void RequestFilterUpdate()
         {
+            // UX Benchmark: Mark when user input is received (v3.0.0)
+            _perfMetrics.MarkInputReceived();
+            _uxTimer.Restart();
+
             var old = Interlocked.Exchange(ref _cts, new CancellationTokenSource());
             old?.Cancel();
             old?.Dispose();
@@ -1408,7 +1419,15 @@ namespace LuxEditor.Components
                                                                       (int)CurrentImage.Crop.Height,
                                                                       true);
                         OnEditorImageUpdated?.Invoke(upscaled);
+
+                        // UX Benchmark: Record time to first paint & perceived latency (v3.0.0)
+                        var previewMs = _uxTimer.Elapsed.TotalMilliseconds;
+                        _perfMetrics.RecordTimeToFirstPaint(previewMs, "Preview");
+                        _perfMetrics.RecordPerceivedLatency(previewMs, "PreviewShown");
                     }
+
+                    // UX Benchmark: UI is now responsive (user can see preview) (v3.0.0)
+                    _perfMetrics.RecordInteractionReady(_uxTimer.Elapsed.TotalMilliseconds, "AfterPreview");
                 }
 
                 using (_perfMetrics.Measure(BenchmarkOps.RENDER_FULL))
@@ -1417,6 +1436,14 @@ namespace LuxEditor.Components
                     CurrentImage.EditedBitmap = full;
                     OnEditorImageUpdated?.Invoke(SKImage.FromBitmap(full));
                 }
+
+                // UX Benchmark: Record total processing time (v3.0.0)
+                _perfMetrics.RecordSample(new MetricSample
+                {
+                    Timestamp = DateTime.UtcNow,
+                    OperationName = BenchmarkOps.UX_TOTAL_PROCESSING,
+                    DurationMs = _uxTimer.Elapsed.TotalMilliseconds
+                });
             }
             catch (OperationCanceledException)
             {

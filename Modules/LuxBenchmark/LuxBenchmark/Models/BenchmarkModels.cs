@@ -54,6 +54,23 @@ namespace LuxBenchmark.Models
     }
 
     /// <summary>
+    /// UX-focused summary metrics for quick comparison (v3.0.0).
+    /// </summary>
+    public class UXSummary
+    {
+        public double AvgTimeToFirstPaintMs { get; set; }
+        public double AvgPerceivedLatencyMs { get; set; }
+        public double AvgInteractionReadyMs { get; set; }
+        public double AvgTotalProcessingMs { get; set; }
+        public double P95TimeToFirstPaintMs { get; set; }
+        public double P95PerceivedLatencyMs { get; set; }
+        public double FrameConsistencyScore { get; set; }
+        public long PeakMemoryBytes { get; set; }
+        public long AvgMemoryDeltaBytes { get; set; }
+        public int TotalGCCollections { get; set; }
+    }
+
+    /// <summary>
     /// Complete benchmark session data.
     /// </summary>
     public class BenchmarkSession
@@ -63,6 +80,7 @@ namespace LuxBenchmark.Models
         public DateTime EndTime { get; set; }
         public string Version { get; set; } = string.Empty;
         public string BenchmarkKitVersion { get; set; } = string.Empty;
+        public string LuxEditorVersion { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
 
         // Image info (from v2.0.0+)
@@ -74,10 +92,15 @@ namespace LuxBenchmark.Models
         public List<MetricSample> Samples { get; set; } = new();
         public Dictionary<string, OperationStats> Statistics { get; set; } = new();
 
+        // UX Summary metrics (v3.0.0)
+        public UXSummary? UXMetrics { get; set; }
+
         // Computed properties
         public TimeSpan Duration => EndTime - StartTime;
         public int TotalSamples => Samples.Count;
-        public string DisplayName => string.IsNullOrEmpty(Description) ? SessionId : Description;
+        public string DisplayName => !string.IsNullOrEmpty(LuxEditorVersion)
+            ? $"{LuxEditorVersion} - {(string.IsNullOrEmpty(Description) ? SessionId : Description)}"
+            : (string.IsNullOrEmpty(Description) ? SessionId : Description);
 
         /// <summary>
         /// Gets test scenario names from statistics (keys starting with "Test:")
@@ -93,6 +116,18 @@ namespace LuxBenchmark.Models
         public List<string> RenderOperations => Statistics.Keys
             .Where(k => k.StartsWith("Render:"))
             .ToList();
+
+        /// <summary>
+        /// Gets UX operation names from statistics (keys starting with "UX:")
+        /// </summary>
+        public List<string> UXOperations => Statistics.Keys
+            .Where(k => k.StartsWith("UX:"))
+            .ToList();
+
+        /// <summary>
+        /// Returns true if this session has UX metrics (v3.0.0+)
+        /// </summary>
+        public bool HasUXMetrics => UXMetrics != null || UXOperations.Count > 0;
 
         /// <summary>
         /// Image resolution as string (e.g., "4000x3000")
@@ -134,7 +169,7 @@ namespace LuxBenchmark.Models
         public double DeltaP95Ms => SessionB_P95Ms - SessionA_P95Ms;
         public long DeltaMemory => SessionB_AvgMemory - SessionA_AvgMemory;
 
-        // Percentage improvements (negative = faster/better)
+        // Percentage improvements (positive = better, negative = worse)
         public double ImprovementPercent => SessionA_AvgMs > 0
             ? ((SessionA_AvgMs - SessionB_AvgMs) / SessionA_AvgMs) * 100
             : 0;
@@ -146,6 +181,57 @@ namespace LuxBenchmark.Models
         // Status helpers
         public bool IsFaster => DeltaAvgMs < 0;
         public bool UsesLessMemory => DeltaMemory < 0;
+
+        // Operation type helpers
+        public bool IsUXMetric => OperationKey.StartsWith("UX:");
+        public bool IsRenderMetric => OperationKey.StartsWith("Render:");
+        public bool IsTestMetric => OperationKey.StartsWith("Test:");
+    }
+
+    /// <summary>
+    /// UX-focused comparison between two sessions.
+    /// </summary>
+    public class UXComparison
+    {
+        // Time to first paint comparison
+        public double SessionA_TimeToFirstPaint { get; set; }
+        public double SessionB_TimeToFirstPaint { get; set; }
+        public double TimeToFirstPaintImprovement => SessionA_TimeToFirstPaint > 0
+            ? ((SessionA_TimeToFirstPaint - SessionB_TimeToFirstPaint) / SessionA_TimeToFirstPaint) * 100
+            : 0;
+
+        // Perceived latency comparison
+        public double SessionA_PerceivedLatency { get; set; }
+        public double SessionB_PerceivedLatency { get; set; }
+        public double PerceivedLatencyImprovement => SessionA_PerceivedLatency > 0
+            ? ((SessionA_PerceivedLatency - SessionB_PerceivedLatency) / SessionA_PerceivedLatency) * 100
+            : 0;
+
+        // Frame consistency comparison
+        public double SessionA_FrameConsistency { get; set; }
+        public double SessionB_FrameConsistency { get; set; }
+        public double FrameConsistencyImprovement => SessionB_FrameConsistency - SessionA_FrameConsistency;
+
+        // Memory comparison
+        public long SessionA_PeakMemory { get; set; }
+        public long SessionB_PeakMemory { get; set; }
+        public double PeakMemoryImprovement => SessionA_PeakMemory > 0
+            ? ((SessionA_PeakMemory - SessionB_PeakMemory) / (double)SessionA_PeakMemory) * 100
+            : 0;
+
+        // GC comparison
+        public int SessionA_GCCollections { get; set; }
+        public int SessionB_GCCollections { get; set; }
+        public double GCCollectionsImprovement => SessionA_GCCollections > 0
+            ? ((SessionA_GCCollections - SessionB_GCCollections) / (double)SessionA_GCCollections) * 100
+            : 0;
+
+        // Overall UX score (weighted average of improvements)
+        public double OverallUXImprovement =>
+            (TimeToFirstPaintImprovement * 0.4) +   // Most important for UX
+            (PerceivedLatencyImprovement * 0.3) +   // Second most important
+            (FrameConsistencyImprovement * 0.2) +   // Smoothness matters
+            (PeakMemoryImprovement * 0.1);          // Memory efficiency
     }
 
     /// <summary>
@@ -157,12 +243,42 @@ namespace LuxBenchmark.Models
         public BenchmarkSession SessionB { get; set; } = new();
         public List<ComparisonResult> Results { get; set; } = new();
 
+        // UX-focused comparison (v3.0.0+)
+        public UXComparison? UXComparison { get; set; }
+
         public int TotalOperations => Results.Count;
         public int ImprovedCount => Results.FindAll(r => r.IsFaster).Count;
         public int RegressedCount => Results.FindAll(r => !r.IsFaster).Count;
 
+        // Categorized counts
+        public int UXImprovedCount => Results.FindAll(r => r.IsUXMetric && r.IsFaster).Count;
+        public int UXRegressedCount => Results.FindAll(r => r.IsUXMetric && !r.IsFaster).Count;
+        public int RenderImprovedCount => Results.FindAll(r => r.IsRenderMetric && r.IsFaster).Count;
+        public int RenderRegressedCount => Results.FindAll(r => r.IsRenderMetric && !r.IsFaster).Count;
+
         public double OverallImprovementPercent => Results.Count > 0
             ? Results.Average(r => r.ImprovementPercent)
             : 0;
+
+        // UX-weighted improvement (prioritizes UX metrics)
+        public double UXWeightedImprovementPercent
+        {
+            get
+            {
+                var uxResults = Results.Where(r => r.IsUXMetric).ToList();
+                var renderResults = Results.Where(r => r.IsRenderMetric).ToList();
+
+                if (uxResults.Count == 0 && renderResults.Count == 0) return 0;
+
+                // Weight UX metrics more heavily (60% UX, 40% Render)
+                var uxAvg = uxResults.Count > 0 ? uxResults.Average(r => r.ImprovementPercent) : 0;
+                var renderAvg = renderResults.Count > 0 ? renderResults.Average(r => r.ImprovementPercent) : 0;
+
+                if (uxResults.Count == 0) return renderAvg;
+                if (renderResults.Count == 0) return uxAvg;
+
+                return (uxAvg * 0.6) + (renderAvg * 0.4);
+            }
+        }
     }
 }
