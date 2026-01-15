@@ -1,7 +1,7 @@
 /*
  * PerformanceMetrics.cs - Standardized Benchmarking Service for LuxEditor
  *
- * VERSION: 2.0.0
+ * VERSION: 3.0.0
  *
  * IMPORTANT: This file must be identical in both old and new versions for
  * meaningful benchmark comparisons. See BENCHMARK_README.md for documentation.
@@ -12,6 +12,14 @@
  * - Render:FullPass      - Full resolution image rendering
  * - Render:ApplyFilters  - Filter application phase
  * - Render:LayerComposite - Layer compositing phase
+ *
+ * UX-Focused Metrics (v3.0.0):
+ * - UX:TimeToFirstPaint  - Time until user sees first visual feedback
+ * - UX:PerceivedLatency  - Time until preview is displayed (what user feels)
+ * - UX:InteractionReady  - Time until UI is responsive again
+ * - UX:TotalProcessing   - Total background processing time
+ * - UX:MemoryPressure    - Memory usage tracking over time
+ * - UX:InputLatency      - Time from input event to processing start
  */
 
 using System;
@@ -76,6 +84,60 @@ namespace LuxEditor.Services
         public const string TEST_PRESENCE = "Test:PresenceControls";
         public const string TEST_FULL_STRESS = "Test:FullStress";
         public const string TEST_RESET = "Test:Reset";
+
+        // ═══════════════════════════════════════════════════════════════
+        // UX-FOCUSED METRICS (v3.0.0) - User experience measurements
+        // These metrics measure what the USER perceives, not raw processing
+        // ═══════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Time from user action until FIRST visual feedback appears.
+        /// This is the most critical UX metric - users perceive this as "responsiveness".
+        /// For preview-enabled apps, this should be very fast even if full render is slow.
+        /// </summary>
+        public const string UX_TIME_TO_FIRST_PAINT = "UX:TimeToFirstPaint";
+
+        /// <summary>
+        /// Time until preview image is displayed and user can see their change.
+        /// This is what the user "feels" as the response time.
+        /// </summary>
+        public const string UX_PERCEIVED_LATENCY = "UX:PerceivedLatency";
+
+        /// <summary>
+        /// Time until UI becomes responsive again (can accept new input).
+        /// Measures how long the UI blocks during processing.
+        /// </summary>
+        public const string UX_INTERACTION_READY = "UX:InteractionReady";
+
+        /// <summary>
+        /// Total time for all background processing to complete.
+        /// This includes full-res render after preview is shown.
+        /// </summary>
+        public const string UX_TOTAL_PROCESSING = "UX:TotalProcessing";
+
+        /// <summary>
+        /// Memory pressure during operation - tracks allocation patterns.
+        /// High memory pressure causes GC pauses which hurt UX.
+        /// </summary>
+        public const string UX_MEMORY_PRESSURE = "UX:MemoryPressure";
+
+        /// <summary>
+        /// Time from input event (mouse/keyboard) to processing start.
+        /// Measures input handling overhead and event queue delays.
+        /// </summary>
+        public const string UX_INPUT_LATENCY = "UX:InputLatency";
+
+        /// <summary>
+        /// Frame time consistency - measures jank/stuttering.
+        /// Lower variance = smoother experience.
+        /// </summary>
+        public const string UX_FRAME_CONSISTENCY = "UX:FrameConsistency";
+
+        /// <summary>
+        /// Time spent blocked on UI thread during render.
+        /// Should be minimized for responsive UI.
+        /// </summary>
+        public const string UX_UI_BLOCK_TIME = "UX:UIBlockTime";
     }
 
     /// <summary>
@@ -134,8 +196,9 @@ namespace LuxEditor.Services
         public string SessionId { get; set; } = string.Empty;
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
-        public string Version { get; set; } = "2.0.0";
-        public string BenchmarkKitVersion { get; set; } = "2.0.0";
+        public string Version { get; set; } = "3.0.0";
+        public string BenchmarkKitVersion { get; set; } = "3.0.0";
+        public string LuxEditorVersion { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string ImageName { get; set; } = string.Empty;
         public int ImageWidth { get; set; }
@@ -143,6 +206,36 @@ namespace LuxEditor.Services
         public SystemInfo SystemInfo { get; set; } = new();
         public List<MetricSample> Samples { get; set; } = new();
         public Dictionary<string, OperationStats> Statistics { get; set; } = new();
+
+        // UX Summary metrics (v3.0.0)
+        public UXSummary UXMetrics { get; set; } = new();
+    }
+
+    /// <summary>
+    /// UX-focused summary metrics for quick comparison.
+    /// </summary>
+    public class UXSummary
+    {
+        /// <summary>Average time to first paint across all operations.</summary>
+        public double AvgTimeToFirstPaintMs { get; set; }
+        /// <summary>Average perceived latency (preview shown).</summary>
+        public double AvgPerceivedLatencyMs { get; set; }
+        /// <summary>Average time until UI is interactive again.</summary>
+        public double AvgInteractionReadyMs { get; set; }
+        /// <summary>Average total processing time.</summary>
+        public double AvgTotalProcessingMs { get; set; }
+        /// <summary>P95 time to first paint.</summary>
+        public double P95TimeToFirstPaintMs { get; set; }
+        /// <summary>P95 perceived latency.</summary>
+        public double P95PerceivedLatencyMs { get; set; }
+        /// <summary>Frame time consistency score (0-100, higher=smoother).</summary>
+        public double FrameConsistencyScore { get; set; }
+        /// <summary>Peak memory usage during session.</summary>
+        public long PeakMemoryBytes { get; set; }
+        /// <summary>Average memory delta per operation.</summary>
+        public long AvgMemoryDeltaBytes { get; set; }
+        /// <summary>Total GC collections during session.</summary>
+        public int TotalGCCollections { get; set; }
     }
 
     /// <summary>
@@ -214,12 +307,24 @@ namespace LuxEditor.Services
         private string _imageName = string.Empty;
         private int _imageWidth;
         private int _imageHeight;
+        private string _luxEditorVersion = "unknown";
+        private long _peakMemory;
+        private readonly Stopwatch _inputLatencyTimer = new();
 
         public bool ConsoleLoggingEnabled { get; set; } = true;
         public bool DetailedLoggingEnabled { get; set; } = false;
         public string ExportDirectory { get; set; } = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
             "LuxEditor_Benchmarks");
+
+        /// <summary>
+        /// Gets or sets the LuxEditor version for organizing exports.
+        /// </summary>
+        public string LuxEditorVersion
+        {
+            get => _luxEditorVersion;
+            set => _luxEditorVersion = SanitizeFileName(value);
+        }
 
         public static PerformanceMetrics Instance
         {
@@ -251,6 +356,101 @@ namespace LuxEditor.Services
             _imageHeight = height;
         }
 
+        // ═══════════════════════════════════════════════════════════════
+        // UX MEASUREMENT HELPERS (v3.0.0)
+        // ═══════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Call when user input is received (mouse/keyboard event).
+        /// Starts the input latency timer.
+        /// </summary>
+        public void MarkInputReceived()
+        {
+            _inputLatencyTimer.Restart();
+        }
+
+        /// <summary>
+        /// Call when processing starts after input.
+        /// Records input latency and returns scoped timer for the operation.
+        /// </summary>
+        public ScopedTimer MeasureFromInput(string operationName, Dictionary<string, object>? metadata = null)
+        {
+            if (_inputLatencyTimer.IsRunning)
+            {
+                var inputLatency = _inputLatencyTimer.Elapsed.TotalMilliseconds;
+                _inputLatencyTimer.Stop();
+
+                RecordSample(new MetricSample
+                {
+                    Timestamp = DateTime.UtcNow,
+                    OperationName = BenchmarkOps.UX_INPUT_LATENCY,
+                    DurationMs = inputLatency,
+                    Metadata = new Dictionary<string, object> { ["TriggeredBy"] = operationName }
+                });
+            }
+
+            return new ScopedTimer(this, operationName, metadata);
+        }
+
+        /// <summary>
+        /// Records time to first paint - when first visual feedback is shown.
+        /// Call this when preview/placeholder becomes visible.
+        /// </summary>
+        public void RecordTimeToFirstPaint(double milliseconds, string context = "")
+        {
+            RecordSample(new MetricSample
+            {
+                Timestamp = DateTime.UtcNow,
+                OperationName = BenchmarkOps.UX_TIME_TO_FIRST_PAINT,
+                DurationMs = milliseconds,
+                Metadata = string.IsNullOrEmpty(context) ? new() : new Dictionary<string, object> { ["Context"] = context }
+            });
+        }
+
+        /// <summary>
+        /// Records perceived latency - when user sees their change applied.
+        /// Call this when preview image is displayed.
+        /// </summary>
+        public void RecordPerceivedLatency(double milliseconds, string context = "")
+        {
+            RecordSample(new MetricSample
+            {
+                Timestamp = DateTime.UtcNow,
+                OperationName = BenchmarkOps.UX_PERCEIVED_LATENCY,
+                DurationMs = milliseconds,
+                Metadata = string.IsNullOrEmpty(context) ? new() : new Dictionary<string, object> { ["Context"] = context }
+            });
+        }
+
+        /// <summary>
+        /// Records when UI becomes interactive again.
+        /// Call this when UI unblocks and can accept new input.
+        /// </summary>
+        public void RecordInteractionReady(double milliseconds, string context = "")
+        {
+            RecordSample(new MetricSample
+            {
+                Timestamp = DateTime.UtcNow,
+                OperationName = BenchmarkOps.UX_INTERACTION_READY,
+                DurationMs = milliseconds,
+                Metadata = string.IsNullOrEmpty(context) ? new() : new Dictionary<string, object> { ["Context"] = context }
+            });
+        }
+
+        /// <summary>
+        /// Records UI block time - how long UI was unresponsive.
+        /// </summary>
+        public void RecordUIBlockTime(double milliseconds, string context = "")
+        {
+            RecordSample(new MetricSample
+            {
+                Timestamp = DateTime.UtcNow,
+                OperationName = BenchmarkOps.UX_UI_BLOCK_TIME,
+                DurationMs = milliseconds,
+                Metadata = string.IsNullOrEmpty(context) ? new() : new Dictionary<string, object> { ["Context"] = context }
+            });
+        }
+
         /// <summary>
         /// Starts a new benchmark session. Clears all previous data.
         /// </summary>
@@ -259,15 +459,17 @@ namespace LuxEditor.Services
             _sessionId = $"session_{DateTime.Now:yyyyMMdd_HHmmss}";
             _sessionStart = DateTime.UtcNow;
             _sessionTimer.Restart();
+            _peakMemory = GC.GetTotalMemory(false);
 
             while (_samples.TryTake(out _)) { }
             _operationTimes.Clear();
 
             LogToConsole("═══════════════════════════════════════════════════════════════════", ConsoleColor.Cyan);
             LogToConsole($"[BENCHMARK] Session: {_sessionId}", ConsoleColor.Cyan);
+            LogToConsole($"[BENCHMARK] LuxEditor Version: {_luxEditorVersion}", ConsoleColor.Cyan);
             LogToConsole($"[BENCHMARK] Description: {description}", ConsoleColor.Cyan);
             LogToConsole($"[BENCHMARK] Image: {_imageName} ({_imageWidth}x{_imageHeight})", ConsoleColor.Cyan);
-            LogToConsole($"[BENCHMARK] BenchmarkKit: v2.0.0", ConsoleColor.Cyan);
+            LogToConsole($"[BENCHMARK] BenchmarkKit: v3.0.0", ConsoleColor.Cyan);
             LogToConsole("═══════════════════════════════════════════════════════════════════", ConsoleColor.Cyan);
         }
 
@@ -286,6 +488,12 @@ namespace LuxEditor.Services
         public void RecordSample(MetricSample sample)
         {
             _samples.Add(sample);
+
+            // Track peak memory
+            if (sample.MemoryAfter > _peakMemory)
+            {
+                _peakMemory = sample.MemoryAfter;
+            }
 
             _operationTimes.AddOrUpdate(
                 sample.OperationName,
@@ -408,17 +616,23 @@ namespace LuxEditor.Services
 
         public string ExportToJson()
         {
+            // Version-based folder structure: LuxEditor_Benchmarks/{version}/{image_name}/
+            var versionFolder = string.IsNullOrEmpty(_luxEditorVersion) ? "unknown" : _luxEditorVersion;
             var imageFolder = string.IsNullOrEmpty(_imageName) ? "unknown" : SanitizeFileName(_imageName);
-            var exportPath = Path.Combine(ExportDirectory, imageFolder);
+            var exportPath = Path.Combine(ExportDirectory, versionFolder, imageFolder);
             Directory.CreateDirectory(exportPath);
+
+            var stats = GetStatistics();
+            var uxSummary = CalculateUXSummary(stats);
 
             var session = new BenchmarkSession
             {
                 SessionId = _sessionId,
                 StartTime = _sessionStart,
                 EndTime = DateTime.UtcNow,
-                Version = "2.0.0",
-                BenchmarkKitVersion = "2.0.0",
+                Version = "3.0.0",
+                BenchmarkKitVersion = "3.0.0",
+                LuxEditorVersion = _luxEditorVersion,
                 Description = "LuxEditor Performance Benchmark",
                 ImageName = _imageName,
                 ImageWidth = _imageWidth,
@@ -432,7 +646,8 @@ namespace LuxEditor.Services
                     TotalMemoryMB = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / (1024 * 1024)
                 },
                 Samples = _samples.ToList(),
-                Statistics = GetStatistics()
+                Statistics = stats,
+                UXMetrics = uxSummary
             };
 
             var options = new JsonSerializerOptions
@@ -447,12 +662,85 @@ namespace LuxEditor.Services
             var statsPath = Path.Combine(exportPath, $"{_sessionId}_stats.json");
             File.WriteAllText(statsPath, JsonSerializer.Serialize(session.Statistics, options));
 
+            var uxPath = Path.Combine(exportPath, $"{_sessionId}_ux.json");
+            File.WriteAllText(uxPath, JsonSerializer.Serialize(session.UXMetrics, options));
+
             var csvPath = Path.Combine(exportPath, $"{_sessionId}_samples.csv");
             ExportToCsv(csvPath);
 
             LogToConsole($"\n[EXPORT] Exported to: {exportPath}", ConsoleColor.Green);
+            LogToConsole($"[EXPORT] Version: {_luxEditorVersion}", ConsoleColor.Green);
 
             return fullPath;
+        }
+
+        /// <summary>
+        /// Calculates UX summary metrics from statistics.
+        /// </summary>
+        private UXSummary CalculateUXSummary(Dictionary<string, OperationStats> stats)
+        {
+            var summary = new UXSummary();
+
+            // Time to first paint
+            if (stats.TryGetValue(BenchmarkOps.UX_TIME_TO_FIRST_PAINT, out var ttfp))
+            {
+                summary.AvgTimeToFirstPaintMs = ttfp.AvgMs;
+                summary.P95TimeToFirstPaintMs = ttfp.P95Ms;
+            }
+            else if (stats.TryGetValue(BenchmarkOps.RENDER_PREVIEW, out var preview))
+            {
+                // Fallback to preview pass if UX metric not recorded
+                summary.AvgTimeToFirstPaintMs = preview.AvgMs;
+                summary.P95TimeToFirstPaintMs = preview.P95Ms;
+            }
+
+            // Perceived latency
+            if (stats.TryGetValue(BenchmarkOps.UX_PERCEIVED_LATENCY, out var pl))
+            {
+                summary.AvgPerceivedLatencyMs = pl.AvgMs;
+                summary.P95PerceivedLatencyMs = pl.P95Ms;
+            }
+            else if (stats.TryGetValue(BenchmarkOps.RENDER_PREVIEW, out var previewFallback))
+            {
+                summary.AvgPerceivedLatencyMs = previewFallback.AvgMs;
+                summary.P95PerceivedLatencyMs = previewFallback.P95Ms;
+            }
+
+            // Interaction ready
+            if (stats.TryGetValue(BenchmarkOps.UX_INTERACTION_READY, out var ir))
+            {
+                summary.AvgInteractionReadyMs = ir.AvgMs;
+            }
+
+            // Total processing
+            if (stats.TryGetValue(BenchmarkOps.UX_TOTAL_PROCESSING, out var tp))
+            {
+                summary.AvgTotalProcessingMs = tp.AvgMs;
+            }
+            else if (stats.TryGetValue(BenchmarkOps.RENDER_COMPLETE, out var complete))
+            {
+                summary.AvgTotalProcessingMs = complete.AvgMs;
+            }
+
+            // Frame consistency score (based on standard deviation - lower is better)
+            if (stats.TryGetValue(BenchmarkOps.RENDER_PREVIEW, out var previewStats))
+            {
+                // Score: 100 = perfect (0ms stddev), 0 = terrible (50ms+ stddev)
+                var variance = previewStats.StdDevMs;
+                summary.FrameConsistencyScore = Math.Max(0, Math.Min(100, 100 - (variance * 2)));
+            }
+
+            // Memory metrics
+            summary.PeakMemoryBytes = _peakMemory;
+            summary.AvgMemoryDeltaBytes = (long)_samples
+                .Where(s => !s.OperationName.StartsWith("UX:"))
+                .Select(s => s.MemoryDelta)
+                .DefaultIfEmpty(0)
+                .Average();
+
+            summary.TotalGCCollections = _samples.Sum(s => s.Gen0Collections + s.Gen1Collections + s.Gen2Collections);
+
+            return summary;
         }
 
         private void ExportToCsv(string path)

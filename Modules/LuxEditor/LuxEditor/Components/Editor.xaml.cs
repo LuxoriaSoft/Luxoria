@@ -36,6 +36,10 @@ namespace LuxEditor.Components
         private int _frameNumber = 0;
         private DateTime _lastSliderChange = DateTime.MinValue;
 
+        // UX Benchmark timing (v3.0.0)
+        private readonly Stopwatch _uxTimer = new();
+        private const string LUXEDITOR_VERSION = "1.0.0-old";
+
         // Track slider values for delta logging
         private Dictionary<string, double> _lastSliderValues = new()
         {
@@ -53,6 +57,10 @@ namespace LuxEditor.Components
         public Editor()
         {
             this.InitializeComponent();
+
+            // Set LuxEditor version for benchmark organization (v3.0.0)
+            _metrics.LuxEditorVersion = LUXEDITOR_VERSION;
+
             _metrics.Log("Editor component initialized", "INFO");
         }
 
@@ -119,6 +127,10 @@ namespace LuxEditor.Components
 
         private void ExposureSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
+            // UX Benchmark: Mark input received (v3.0.0)
+            _metrics.MarkInputReceived();
+            _uxTimer.Restart();
+
             LogSliderChange("Exposure", e.OldValue / 1000, e.NewValue / 1000);
             if (ExposureValueLabel != null)
                 ExposureValueLabel.Text = (e.NewValue / 1000).ToString("F2");
@@ -128,6 +140,10 @@ namespace LuxEditor.Components
 
         private void ContrastSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
+            // UX Benchmark: Mark input received (v3.0.0)
+            _metrics.MarkInputReceived();
+            _uxTimer.Restart();
+
             LogSliderChange("Contrast", e.OldValue / 1000, e.NewValue / 1000);
             if (ContrastValueLabel != null)
                 ContrastValueLabel.Text = (e.NewValue / 1000).ToString("F2");
@@ -137,6 +153,10 @@ namespace LuxEditor.Components
 
         private void HighlightsSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
+            // UX Benchmark: Mark input received (v3.0.0)
+            _metrics.MarkInputReceived();
+            _uxTimer.Restart();
+
             LogSliderChange("Highlights", e.OldValue / 1000, e.NewValue / 1000);
             if (HighlightsValueLabel != null)
                 HighlightsValueLabel.Text = (e.NewValue / 1000).ToString("F2");
@@ -146,6 +166,10 @@ namespace LuxEditor.Components
 
         private void ShadowsSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
+            // UX Benchmark: Mark input received (v3.0.0)
+            _metrics.MarkInputReceived();
+            _uxTimer.Restart();
+
             LogSliderChange("Shadows", e.OldValue / 1000, e.NewValue / 1000);
             if (ShadowsValueLabel != null)
                 ShadowsValueLabel.Text = (e.NewValue / 1000).ToString("F2");
@@ -155,6 +179,10 @@ namespace LuxEditor.Components
 
         private void TemperatureSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
+            // UX Benchmark: Mark input received (v3.0.0)
+            _metrics.MarkInputReceived();
+            _uxTimer.Restart();
+
             LogSliderChange("Temperature", e.OldValue, e.NewValue);
             if (TemperatureValueLabel != null)
                 TemperatureValueLabel.Text = e.NewValue.ToString("F0");
@@ -164,6 +192,10 @@ namespace LuxEditor.Components
 
         private void TintSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
+            // UX Benchmark: Mark input received (v3.0.0)
+            _metrics.MarkInputReceived();
+            _uxTimer.Restart();
+
             LogSliderChange("Tint", e.OldValue, e.NewValue);
             if (TintValueLabel != null)
                 TintValueLabel.Text = e.NewValue.ToString("F0");
@@ -173,6 +205,10 @@ namespace LuxEditor.Components
 
         private void SaturationSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
+            // UX Benchmark: Mark input received (v3.0.0)
+            _metrics.MarkInputReceived();
+            _uxTimer.Restart();
+
             LogSliderChange("Saturation", e.OldValue, e.NewValue);
             if (SaturationValueLabel != null)
                 SaturationValueLabel.Text = e.NewValue.ToString("F0");
@@ -523,6 +559,19 @@ namespace LuxEditor.Components
                 Gen1Collections = GC.CollectionCount(1),
                 Gen2Collections = GC.CollectionCount(2),
                 Metadata = sliderValues
+            });
+
+            // UX Benchmark: Record UX metrics (v3.0.0)
+            // OLD version doesn't have preview pass, so perceived latency = total processing time
+            var uxTotalMs = _uxTimer.Elapsed.TotalMilliseconds;
+            _metrics.RecordTimeToFirstPaint(uxTotalMs, "FullRender");
+            _metrics.RecordPerceivedLatency(uxTotalMs, "NoPreview");
+            _metrics.RecordInteractionReady(uxTotalMs, "AfterRender");
+            _metrics.RecordSample(new MetricSample
+            {
+                Timestamp = DateTime.UtcNow,
+                OperationName = BenchmarkOps.UX_TOTAL_PROCESSING,
+                DurationMs = uxTotalMs
             });
 
             // Log frame summary

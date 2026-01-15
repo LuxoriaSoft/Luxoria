@@ -76,6 +76,15 @@ namespace LuxEditor.Services
         public const string TEST_PRESENCE = "Test:PresenceControls";
         public const string TEST_FULL_STRESS = "Test:FullStress";
         public const string TEST_RESET = "Test:Reset";
+
+        // ═══════════════════════════════════════════════════════════════
+        // UX-FOCUSED METRICS (v3.0.0)
+        // ═══════════════════════════════════════════════════════════════
+        public const string UX_TIME_TO_FIRST_PAINT = "UX:TimeToFirstPaint";
+        public const string UX_PERCEIVED_LATENCY = "UX:PerceivedLatency";
+        public const string UX_INTERACTION_READY = "UX:InteractionReady";
+        public const string UX_TOTAL_PROCESSING = "UX:TotalProcessing";
+        public const string UX_INPUT_LATENCY = "UX:InputLatency";
     }
 
     /// <summary>
@@ -211,17 +220,25 @@ namespace LuxEditor.Services
         private readonly ConcurrentBag<MetricSample> _samples = new();
         private readonly ConcurrentDictionary<string, List<double>> _operationTimes = new();
         private readonly Stopwatch _sessionTimer = new();
+        private readonly Stopwatch _inputLatencyTimer = new();
         private string _sessionId = string.Empty;
         private DateTime _sessionStart;
         private string _imageName = string.Empty;
         private int _imageWidth;
         private int _imageHeight;
+        private string _luxEditorVersion = "unknown";
 
         public bool ConsoleLoggingEnabled { get; set; } = true;
         public bool DetailedLoggingEnabled { get; set; } = false;
         public string ExportDirectory { get; set; } = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
             "LuxEditor_Benchmarks");
+
+        public string LuxEditorVersion
+        {
+            get => _luxEditorVersion;
+            set => _luxEditorVersion = SanitizeFileName(value);
+        }
 
         public static PerformanceMetrics Instance
         {
@@ -251,6 +268,45 @@ namespace LuxEditor.Services
             _imageName = name;
             _imageWidth = width;
             _imageHeight = height;
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // UX MEASUREMENT HELPERS (v3.0.0)
+        // ═══════════════════════════════════════════════════════════════
+
+        public void MarkInputReceived() => _inputLatencyTimer.Restart();
+
+        public void RecordTimeToFirstPaint(double milliseconds, string context = "")
+        {
+            RecordSample(new MetricSample
+            {
+                Timestamp = DateTime.UtcNow,
+                OperationName = BenchmarkOps.UX_TIME_TO_FIRST_PAINT,
+                DurationMs = milliseconds,
+                Metadata = string.IsNullOrEmpty(context) ? new() : new Dictionary<string, object> { ["Context"] = context }
+            });
+        }
+
+        public void RecordPerceivedLatency(double milliseconds, string context = "")
+        {
+            RecordSample(new MetricSample
+            {
+                Timestamp = DateTime.UtcNow,
+                OperationName = BenchmarkOps.UX_PERCEIVED_LATENCY,
+                DurationMs = milliseconds,
+                Metadata = string.IsNullOrEmpty(context) ? new() : new Dictionary<string, object> { ["Context"] = context }
+            });
+        }
+
+        public void RecordInteractionReady(double milliseconds, string context = "")
+        {
+            RecordSample(new MetricSample
+            {
+                Timestamp = DateTime.UtcNow,
+                OperationName = BenchmarkOps.UX_INTERACTION_READY,
+                DurationMs = milliseconds,
+                Metadata = string.IsNullOrEmpty(context) ? new() : new Dictionary<string, object> { ["Context"] = context }
+            });
         }
 
         /// <summary>
