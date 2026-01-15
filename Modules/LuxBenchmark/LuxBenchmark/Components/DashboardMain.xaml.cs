@@ -64,29 +64,29 @@ namespace LuxBenchmark.Components
             _memoryChart.ItemClicked += OnChartItemClicked;
             MemoryChartHost.Content = _memoryChart;
 
-            // Create pie chart for time distribution
+            // Create pie chart for improvement breakdown
             _timeDistributionChart = new PieChart
             {
-                Title = "Time Distribution by Operation"
+                Title = "Performance Change Distribution"
             };
             TimeDistributionChartHost.Content = _timeDistributionChart;
 
-            // Create primary gauge chart
+            // Create primary gauge chart (shows improvement %)
             _primaryGauge = new GaugeChart
             {
-                Title = "Render Performance",
-                Unit = "ms",
-                MinValue = 0,
-                MaxValue = 100
+                Title = "Overall Improvement",
+                Unit = "%",
+                MinValue = -50,
+                MaxValue = 50
             };
             PrimaryGaugeHost.Content = _primaryGauge;
 
-            // Create histogram chart
+            // Create histogram chart for comparing distributions
             _histogramChart = new Histogram
             {
-                Title = "Sample Distribution",
+                Title = "Sample Distribution (A vs B)",
                 Unit = "ms",
-                BinCount = 20
+                BinCount = 15
             };
             HistogramChartHost.Content = _histogramChart;
 
@@ -116,11 +116,12 @@ namespace LuxBenchmark.Components
             };
             ScatterPlotHost.Content = _scatterPlot;
 
-            // Create waterfall chart
+            // Create waterfall chart for delta comparison
             _waterfallChart = new WaterfallChart
             {
-                Title = "Time Breakdown by Operation",
-                Unit = "ms"
+                Title = "Performance Delta by Operation",
+                Unit = "ms",
+                ShowAsDelta = true
             };
             WaterfallChartHost.Content = _waterfallChart;
 
@@ -172,6 +173,9 @@ namespace LuxBenchmark.Components
             // Calculate comparison
             _currentComparison = BenchmarkDataService.Instance.CompareSessions(_sessionA, _sessionB);
 
+            // Update gauge cards (key summary metrics)
+            UpdateGaugeCards();
+
             // Update metric cards
             UpdateMetricCards();
 
@@ -182,11 +186,90 @@ namespace LuxBenchmark.Components
             UpdateComparisonTable();
         }
 
+        private void UpdateGaugeCards()
+        {
+            GaugeCardsPanel.Children.Clear();
+
+            if (_currentComparison == null) return;
+
+            // 1. Time Improvement Gauge
+            var timeGauge = new GaugeChart
+            {
+                Title = "Speed",
+                Unit = "%",
+                MinValue = -50,
+                MaxValue = 50,
+                Width = 150,
+                Height = 150
+            };
+            var timeImprovement = _currentComparison.OverallImprovementPercent;
+            timeGauge.SetValue(timeImprovement, timeImprovement >= 0 ? "Faster" : "Slower");
+            GaugeCardsPanel.Children.Add(timeGauge);
+
+            // 2. Memory Improvement Gauge
+            var memImprovement = _currentComparison.Results
+                .Where(r => r.SessionA_AvgMemory > 0 && r.SessionB_AvgMemory > 0)
+                .Select(r => r.MemoryImprovementPercent)
+                .DefaultIfEmpty(0)
+                .Average();
+
+            var memGauge = new GaugeChart
+            {
+                Title = "Memory",
+                Unit = "%",
+                MinValue = -50,
+                MaxValue = 50,
+                Width = 150,
+                Height = 150
+            };
+            memGauge.SetValue(memImprovement, memImprovement >= 0 ? "Less" : "More");
+            GaugeCardsPanel.Children.Add(memGauge);
+
+            // 3. Operations Improved vs Regressed
+            int improved = _currentComparison.ImprovedCount;
+            int regressed = _currentComparison.RegressedCount;
+            int total = improved + regressed;
+
+            var opsGauge = new GaugeChart
+            {
+                Title = "Operations",
+                Unit = "",
+                MinValue = 0,
+                MaxValue = total > 0 ? total : 1,
+                Width = 150,
+                Height = 150
+            };
+            opsGauge.SetValue(improved, $"{improved}/{total} faster");
+            GaugeCardsPanel.Children.Add(opsGauge);
+
+            // 4. Stability (based on P95 improvement)
+            var p95Improvement = _currentComparison.Results
+                .Where(r => r.SessionA_P95Ms > 0 && r.SessionB_P95Ms > 0)
+                .Select(r => ((r.SessionA_P95Ms - r.SessionB_P95Ms) / r.SessionA_P95Ms) * 100)
+                .DefaultIfEmpty(0)
+                .Average();
+
+            var stabilityGauge = new GaugeChart
+            {
+                Title = "P95 Latency",
+                Unit = "%",
+                MinValue = -50,
+                MaxValue = 50,
+                Width = 150,
+                Height = 150
+            };
+            stabilityGauge.SetValue(p95Improvement, p95Improvement >= 0 ? "Better" : "Worse");
+            GaugeCardsPanel.Children.Add(stabilityGauge);
+        }
+
         private void UpdateSingleSession()
         {
             if (_sessionA == null) return;
 
             ComparisonStatusText.Text = $"Viewing: {_sessionA.DisplayName}";
+
+            // Update gauge cards for single session
+            UpdateGaugeCardsSingle();
 
             // Update metric cards for single session
             UpdateMetricCardsSingle();
@@ -204,6 +287,80 @@ namespace LuxBenchmark.Components
                 Margin = new Thickness(16)
             };
             ComparisonTablePanel.Children.Add(infoRow);
+        }
+
+        private void UpdateGaugeCardsSingle()
+        {
+            GaugeCardsPanel.Children.Clear();
+
+            if (_sessionA == null) return;
+
+            // Find main render operation
+            var mainOp = _sessionA.Statistics
+                .FirstOrDefault(s => s.Key == "Render:Complete" || s.Key == "Pipeline:Total");
+
+            if (mainOp.Value != null)
+            {
+                // Render Performance Gauge
+                var renderGauge = new GaugeChart
+                {
+                    Title = "Render",
+                    Unit = "ms",
+                    MinValue = 0,
+                    MaxValue = Math.Max(100, mainOp.Value.AvgMs * 2),
+                    Width = 150,
+                    Height = 150
+                };
+                renderGauge.SetValue(mainOp.Value.AvgMs, BenchmarkDataService.GetRating(mainOp.Value.AvgMs).ToString());
+                GaugeCardsPanel.Children.Add(renderGauge);
+            }
+
+            // Memory Usage Gauge
+            var totalMemory = _sessionA.Statistics.Values.Sum(s => Math.Abs(s.AvgMemoryDelta));
+            if (totalMemory > 0)
+            {
+                var memGauge = new GaugeChart
+                {
+                    Title = "Memory Δ",
+                    Unit = "KB",
+                    MinValue = 0,
+                    MaxValue = Math.Max(1000, totalMemory / 1024 * 2),
+                    Width = 150,
+                    Height = 150
+                };
+                memGauge.SetValue(totalMemory / 1024.0, "Total");
+                GaugeCardsPanel.Children.Add(memGauge);
+            }
+
+            // Sample Count Gauge
+            var sampleGauge = new GaugeChart
+            {
+                Title = "Samples",
+                Unit = "",
+                MinValue = 0,
+                MaxValue = Math.Max(100, _sessionA.TotalSamples),
+                Width = 150,
+                Height = 150
+            };
+            sampleGauge.SetValue(_sessionA.TotalSamples, "recorded");
+            GaugeCardsPanel.Children.Add(sampleGauge);
+
+            // Variance Gauge (StdDev as % of Avg)
+            if (mainOp.Value != null && mainOp.Value.AvgMs > 0)
+            {
+                double variance = (mainOp.Value.StdDevMs / mainOp.Value.AvgMs) * 100;
+                var varGauge = new GaugeChart
+                {
+                    Title = "Variance",
+                    Unit = "%",
+                    MinValue = 0,
+                    MaxValue = 100,
+                    Width = 150,
+                    Height = 150
+                };
+                varGauge.SetValue(variance, variance < 10 ? "Stable" : variance < 25 ? "Variable" : "Unstable");
+                GaugeCardsPanel.Children.Add(varGauge);
+            }
         }
 
         private void UpdateMetricCards()
@@ -230,7 +387,7 @@ namespace LuxBenchmark.Components
             int cardsAdded = 0;
             foreach (var (metricKey, displayName) in keyMetricPriority)
             {
-                if (cardsAdded >= 4) break; // Max 4 cards
+                if (cardsAdded >= 3) break; // Max 3 time cards
 
                 var result = _currentComparison.Results.FirstOrDefault(r => r.OperationKey == metricKey);
                 if (result == null) continue;
@@ -247,16 +404,49 @@ namespace LuxBenchmark.Components
                 cardsAdded++;
             }
 
+            // Memory comparison card
+            var totalMemoryA = _currentComparison.Results.Sum(r => r.SessionA_AvgMemory);
+            var totalMemoryB = _currentComparison.Results.Sum(r => r.SessionB_AvgMemory);
+            if (totalMemoryA > 0 || totalMemoryB > 0)
+            {
+                var memoryCard = new MetricCard();
+                memoryCard.SetData(
+                    "Total Memory Δ",
+                    totalMemoryB / 1024.0, // KB
+                    "KB",
+                    totalMemoryA / 1024.0
+                );
+                MetricCardsPanel.Children.Add(memoryCard);
+            }
+
             // Overall improvement card
             var overallCard = new MetricCard();
             var overallImprovement = _currentComparison.OverallImprovementPercent;
             overallCard.SetData(
-                "Overall Change",
+                "Time Improvement",
                 overallImprovement,
                 "%",
                 null
             );
             MetricCardsPanel.Children.Add(overallCard);
+
+            // Memory improvement card
+            var memImprovement = _currentComparison.Results
+                .Where(r => r.SessionA_AvgMemory > 0)
+                .Select(r => r.MemoryImprovementPercent)
+                .DefaultIfEmpty(0)
+                .Average();
+            if (Math.Abs(memImprovement) > 0.01)
+            {
+                var memImpCard = new MetricCard();
+                memImpCard.SetData(
+                    "Memory Improvement",
+                    memImprovement,
+                    "%",
+                    null
+                );
+                MetricCardsPanel.Children.Add(memImpCard);
+            }
         }
 
         private void UpdateMetricCardsSingle()
@@ -328,8 +518,8 @@ namespace LuxBenchmark.Components
 
             _memoryChart.SetData(memItems);
 
-            // Time distribution pie chart (Session B)
-            UpdateTimeDistributionChart(_sessionB);
+            // Improvement breakdown pie chart
+            UpdateImprovementBreakdownChart();
 
             // Update new charts
             UpdateGaugeChart();
@@ -389,6 +579,71 @@ namespace LuxBenchmark.Components
             UpdateWaterfallChartSingle();
         }
 
+        private void UpdateImprovementBreakdownChart()
+        {
+            if (_currentComparison == null)
+            {
+                _timeDistributionChart.SetData(new List<PieChartSlice>());
+                return;
+            }
+
+            // Calculate total time saved vs time lost
+            double totalImproved = 0;
+            double totalRegressed = 0;
+            int improvedCount = 0;
+            int regressedCount = 0;
+
+            foreach (var result in _currentComparison.Results)
+            {
+                double delta = result.SessionA_AvgMs - result.SessionB_AvgMs; // positive = B is faster
+                if (delta > 0)
+                {
+                    totalImproved += delta;
+                    improvedCount++;
+                }
+                else if (delta < 0)
+                {
+                    totalRegressed += Math.Abs(delta);
+                    regressedCount++;
+                }
+            }
+
+            var slices = new List<PieChartSlice>();
+
+            if (totalImproved > 0)
+            {
+                slices.Add(new PieChartSlice
+                {
+                    Label = $"Improved ({improvedCount})",
+                    Value = totalImproved,
+                    Color = SKColor.Parse("#4CAF50") // Green
+                });
+            }
+
+            if (totalRegressed > 0)
+            {
+                slices.Add(new PieChartSlice
+                {
+                    Label = $"Regressed ({regressedCount})",
+                    Value = totalRegressed,
+                    Color = SKColor.Parse("#F44336") // Red
+                });
+            }
+
+            if (slices.Count == 0)
+            {
+                slices.Add(new PieChartSlice
+                {
+                    Label = "No change",
+                    Value = 1,
+                    Color = SKColors.Gray
+                });
+            }
+
+            _timeDistributionChart.Title = "Performance Change Distribution";
+            _timeDistributionChart.SetData(slices);
+        }
+
         private void UpdateTimeDistributionChart(BenchmarkSession? session)
         {
             if (session == null)
@@ -410,6 +665,7 @@ namespace LuxBenchmark.Components
                 })
                 .ToList();
 
+            _timeDistributionChart.Title = "Time Distribution by Operation";
             _timeDistributionChart.SetData(slices);
         }
 
@@ -468,30 +724,36 @@ namespace LuxBenchmark.Components
 
         private void UpdateGaugeChart()
         {
-            if (_sessionB == null) return;
+            if (_currentComparison == null) return;
 
-            // Find primary render metric
-            var renderComplete = _sessionB.Statistics
-                .FirstOrDefault(s => s.Key == "Render:Complete" || s.Key == "Pipeline:Total");
+            // Show overall improvement percentage
+            // Positive = B is faster than A (improvement)
+            // Negative = B is slower than A (regression)
+            double improvement = _currentComparison.OverallImprovementPercent;
 
-            if (renderComplete.Value != null)
-            {
-                double avgMs = renderComplete.Value.AvgMs;
-                _primaryGauge.MaxValue = Math.Max(100, avgMs * 2);
-                _primaryGauge.SetValue(avgMs, BenchmarkDataService.GetRating(avgMs).ToString());
-            }
+            _primaryGauge.Title = "Overall Improvement";
+            _primaryGauge.Unit = "%";
+            _primaryGauge.MinValue = -50;
+            _primaryGauge.MaxValue = 50;
+
+            string label = improvement > 0 ? "Faster" : improvement < 0 ? "Slower" : "Same";
+            _primaryGauge.SetValue(improvement, label);
         }
 
         private void UpdateGaugeChartSingle()
         {
             if (_sessionA == null) return;
 
+            // In single session mode, show render performance
             var renderComplete = _sessionA.Statistics
                 .FirstOrDefault(s => s.Key == "Render:Complete" || s.Key == "Pipeline:Total");
 
             if (renderComplete.Value != null)
             {
                 double avgMs = renderComplete.Value.AvgMs;
+                _primaryGauge.Title = "Render Performance";
+                _primaryGauge.Unit = "ms";
+                _primaryGauge.MinValue = 0;
                 _primaryGauge.MaxValue = Math.Max(100, avgMs * 2);
                 _primaryGauge.SetValue(avgMs, BenchmarkDataService.GetRating(avgMs).ToString());
             }
@@ -499,18 +761,23 @@ namespace LuxBenchmark.Components
 
         private void UpdateHistogramChart()
         {
-            if (_sessionB == null) return;
+            if (_sessionA == null && _sessionB == null) return;
 
-            // Get all render samples for histogram
-            var samples = _sessionB.Samples
+            // Get all render samples for histogram from both sessions
+            var samplesA = _sessionA?.Samples
                 .Where(s => s.OperationName.StartsWith("Render") || s.OperationName == "Pipeline")
                 .Select(s => s.DurationMs)
-                .ToList();
+                .ToList() ?? new List<double>();
 
-            if (samples.Count > 0)
+            var samplesB = _sessionB?.Samples
+                .Where(s => s.OperationName.StartsWith("Render") || s.OperationName == "Pipeline")
+                .Select(s => s.DurationMs)
+                .ToList() ?? new List<double>();
+
+            if (samplesA.Count > 0 || samplesB.Count > 0)
             {
-                _histogramChart.Title = "Sample Distribution (Session B)";
-                _histogramChart.SetData(samples);
+                _histogramChart.Title = "Sample Distribution (A vs B)";
+                _histogramChart.SetComparisonData(samplesA, samplesB);
             }
         }
 
@@ -720,23 +987,25 @@ namespace LuxBenchmark.Components
 
         private void UpdateWaterfallChart()
         {
-            if (_sessionB == null) return;
+            if (_currentComparison == null) return;
 
-            // Get render operations for waterfall
-            var renderOps = _sessionB.Statistics
-                .Where(s => s.Key.StartsWith("Render:") && s.Key != "Render:Complete")
-                .OrderByDescending(s => s.Value.AvgMs)
-                .Take(8)
-                .Select(s => new WaterfallItem
+            // Show delta (improvement/regression) per operation
+            var deltaItems = _currentComparison.Results
+                .Where(r => r.SessionA_AvgMs > 0 && r.SessionB_AvgMs > 0)
+                .OrderByDescending(r => Math.Abs(r.DeltaAvgMs))
+                .Take(10)
+                .Select(r => new WaterfallItem
                 {
-                    Label = FormatMetricName(s.Key),
-                    Value = s.Value.AvgMs,
-                    IsIncrease = true
+                    Label = FormatMetricName(r.OperationKey),
+                    // Positive = B is faster (improvement), Negative = B is slower (regression)
+                    Value = r.SessionA_AvgMs - r.SessionB_AvgMs,
+                    IsIncrease = r.IsFaster
                 })
                 .ToList();
 
-            _waterfallChart.Title = "Time Breakdown by Operation (Session B)";
-            _waterfallChart.SetData(renderOps);
+            _waterfallChart.Title = "Performance Delta by Operation (A→B)";
+            _waterfallChart.ShowAsDelta = true;
+            _waterfallChart.SetData(deltaItems);
         }
 
         private void UpdateWaterfallChartSingle()
@@ -756,6 +1025,7 @@ namespace LuxBenchmark.Components
                 .ToList();
 
             _waterfallChart.Title = "Time Breakdown by Operation";
+            _waterfallChart.ShowAsDelta = false;
             _waterfallChart.SetData(renderOps);
         }
 

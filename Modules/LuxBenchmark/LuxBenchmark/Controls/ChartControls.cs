@@ -497,8 +497,10 @@ namespace LuxBenchmark.Controls
 
     public class Histogram : BaseSkiaChart
     {
-        private List<double> _values = new();
+        private List<double> _valuesA = new();
+        private List<double> _valuesB = new();
         private int _binCount = 20;
+        private bool _comparisonMode = false;
 
         public int BinCount
         {
@@ -508,7 +510,17 @@ namespace LuxBenchmark.Controls
 
         public void SetData(List<double> values)
         {
-            _values = values ?? new List<double>();
+            _valuesA = values ?? new List<double>();
+            _valuesB = new List<double>();
+            _comparisonMode = false;
+            Invalidate();
+        }
+
+        public void SetComparisonData(List<double> valuesA, List<double> valuesB)
+        {
+            _valuesA = valuesA ?? new List<double>();
+            _valuesB = valuesB ?? new List<double>();
+            _comparisonMode = true;
             Invalidate();
         }
 
@@ -516,7 +528,7 @@ namespace LuxBenchmark.Controls
         {
             DrawTitle(canvas, width);
 
-            if (_values.Count == 0)
+            if (_valuesA.Count == 0 && _valuesB.Count == 0)
             {
                 DrawEmptyState(canvas, width, height);
                 return;
@@ -527,38 +539,109 @@ namespace LuxBenchmark.Controls
             float chartLeft = padding;
             float chartTop = titleHeight;
             float chartWidth = width - padding * 2;
-            float chartHeight = height - titleHeight - 50;
+            float chartHeight = height - titleHeight - 70;
 
-            double minValue = _values.Min();
-            double maxValue = _values.Max();
+            // Find global min/max across both datasets
+            var allValues = _valuesA.Concat(_valuesB).ToList();
+            if (allValues.Count == 0) return;
+
+            double minValue = allValues.Min();
+            double maxValue = allValues.Max();
             if (maxValue <= minValue) maxValue = minValue + 1;
 
             double binWidth = (maxValue - minValue) / _binCount;
-            var binCounts = new int[_binCount];
-            foreach (var value in _values)
+
+            // Calculate bins for both datasets
+            var binCountsA = new int[_binCount];
+            var binCountsB = new int[_binCount];
+
+            foreach (var value in _valuesA)
             {
                 int binIndex = Math.Min((int)((value - minValue) / binWidth), _binCount - 1);
-                binCounts[binIndex]++;
+                binCountsA[binIndex]++;
             }
 
-            int maxBinCount = binCounts.Max();
+            foreach (var value in _valuesB)
+            {
+                int binIndex = Math.Min((int)((value - minValue) / binWidth), _binCount - 1);
+                binCountsB[binIndex]++;
+            }
+
+            int maxBinCount = Math.Max(
+                binCountsA.Length > 0 ? binCountsA.Max() : 0,
+                binCountsB.Length > 0 ? binCountsB.Max() : 0);
             if (maxBinCount == 0) maxBinCount = 1;
 
             float barWidthPx = chartWidth / _binCount;
-            for (int i = 0; i < _binCount; i++)
-            {
-                float barHeight = (float)binCounts[i] / maxBinCount * chartHeight;
-                float x = chartLeft + i * barWidthPx;
-                var rect = new SKRect(x + 1, chartTop + chartHeight - barHeight, x + barWidthPx - 1, chartTop + chartHeight);
-                using var paint = new SKPaint { Color = SKColor.Parse("#2196F3"), IsAntialias = true };
-                canvas.DrawRect(rect, paint);
-            }
 
-            // Stats overlay
-            using var statsPaint = new SKPaint { Color = SKColors.White, TextSize = 10, IsAntialias = true };
-            double mean = _values.Average();
-            double stdDev = Math.Sqrt(_values.Average(v => Math.Pow(v - mean, 2)));
-            canvas.DrawText($"n={_values.Count}  μ={mean:F2}  σ={stdDev:F2}", width - 150, 25, statsPaint);
+            if (_comparisonMode && _valuesB.Count > 0)
+            {
+                // Draw both datasets side by side
+                float halfBar = barWidthPx / 2 - 1;
+
+                for (int i = 0; i < _binCount; i++)
+                {
+                    float x = chartLeft + i * barWidthPx;
+
+                    // Session A bar (blue)
+                    float barHeightA = (float)binCountsA[i] / maxBinCount * chartHeight;
+                    var rectA = new SKRect(x + 1, chartTop + chartHeight - barHeightA, x + halfBar, chartTop + chartHeight);
+                    using var paintA = new SKPaint { Color = SKColors.DodgerBlue, IsAntialias = true };
+                    canvas.DrawRect(rectA, paintA);
+
+                    // Session B bar (orange)
+                    float barHeightB = (float)binCountsB[i] / maxBinCount * chartHeight;
+                    var rectB = new SKRect(x + halfBar + 1, chartTop + chartHeight - barHeightB, x + barWidthPx - 1, chartTop + chartHeight);
+                    using var paintB = new SKPaint { Color = SKColors.Orange, IsAntialias = true };
+                    canvas.DrawRect(rectB, paintB);
+                }
+
+                // Legend
+                float legendY = height - 25;
+                using var legendPaint = new SKPaint { Color = SKColors.White, TextSize = 10, IsAntialias = true };
+                using var blueBox = new SKPaint { Color = SKColors.DodgerBlue };
+                using var orangeBox = new SKPaint { Color = SKColors.Orange };
+
+                canvas.DrawRect(chartLeft, legendY - 8, 12, 10, blueBox);
+                canvas.DrawText("Session A", chartLeft + 16, legendY, legendPaint);
+
+                canvas.DrawRect(chartLeft + 100, legendY - 8, 12, 10, orangeBox);
+                canvas.DrawText("Session B", chartLeft + 116, legendY, legendPaint);
+
+                // Stats for both
+                using var statsPaint = new SKPaint { Color = SKColors.White, TextSize = 9, IsAntialias = true };
+                if (_valuesA.Count > 0)
+                {
+                    double meanA = _valuesA.Average();
+                    canvas.DrawText($"A: μ={meanA:F1}ms", width - 140, 22, statsPaint);
+                }
+                if (_valuesB.Count > 0)
+                {
+                    double meanB = _valuesB.Average();
+                    canvas.DrawText($"B: μ={meanB:F1}ms", width - 140, 34, statsPaint);
+                }
+            }
+            else
+            {
+                // Single dataset mode
+                for (int i = 0; i < _binCount; i++)
+                {
+                    float barHeight = (float)binCountsA[i] / maxBinCount * chartHeight;
+                    float x = chartLeft + i * barWidthPx;
+                    var rect = new SKRect(x + 1, chartTop + chartHeight - barHeight, x + barWidthPx - 1, chartTop + chartHeight);
+                    using var paint = new SKPaint { Color = SKColor.Parse("#2196F3"), IsAntialias = true };
+                    canvas.DrawRect(rect, paint);
+                }
+
+                // Stats overlay
+                if (_valuesA.Count > 0)
+                {
+                    using var statsPaint = new SKPaint { Color = SKColors.White, TextSize = 10, IsAntialias = true };
+                    double mean = _valuesA.Average();
+                    double stdDev = Math.Sqrt(_valuesA.Average(v => Math.Pow(v - mean, 2)));
+                    canvas.DrawText($"n={_valuesA.Count}  μ={mean:F2}  σ={stdDev:F2}", width - 150, 25, statsPaint);
+                }
+            }
         }
     }
 
@@ -795,6 +878,13 @@ namespace LuxBenchmark.Controls
     public class WaterfallChart : BaseSkiaChart
     {
         private List<WaterfallItem> _items = new();
+        private bool _showAsDelta = false;
+
+        public bool ShowAsDelta
+        {
+            get => _showAsDelta;
+            set { _showAsDelta = value; Invalidate(); }
+        }
 
         public void SetData(List<WaterfallItem> items)
         {
@@ -817,42 +907,113 @@ namespace LuxBenchmark.Controls
             float chartLeft = padding;
             float chartTop = titleHeight;
             float chartWidth = width - padding * 2;
-            float chartHeight = height - titleHeight - 60;
+            float chartHeight = height - titleHeight - 70;
 
-            double total = _items.Sum(i => i.Value);
-            double maxValue = Math.Max(total, _items.Max(i => i.Value)) * 1.1;
-
-            float barWidthPx = chartWidth / (_items.Count + 1) * 0.7f;
-            float barGroupWidth = chartWidth / (_items.Count + 1);
-
-            double cumulative = 0;
-            for (int i = 0; i < _items.Count; i++)
+            if (_showAsDelta)
             {
-                var item = _items[i];
-                float x = chartLeft + i * barGroupWidth + (barGroupWidth - barWidthPx) / 2;
-                float yStart = chartTop + chartHeight - (float)(cumulative / maxValue * chartHeight);
-                float yEnd = chartTop + chartHeight - (float)((cumulative + item.Value) / maxValue * chartHeight);
+                // Delta mode: show improvement/regression bars centered on 0
+                double maxAbs = _items.Max(i => Math.Abs(i.Value));
+                if (maxAbs == 0) maxAbs = 1;
 
-                var rect = new SKRect(x, yEnd, x + barWidthPx, yStart);
-                using var paint = new SKPaint { Color = SKColor.Parse("#2196F3"), IsAntialias = true };
-                canvas.DrawRoundRect(rect, 4, 4, paint);
+                float barWidthPx = chartWidth / _items.Count * 0.7f;
+                float barGroupWidth = chartWidth / _items.Count;
+                float zeroY = chartTop + chartHeight / 2;
 
-                cumulative += item.Value;
+                // Draw zero line
+                using var zeroLinePaint = new SKPaint { Color = SKColors.Gray, StrokeWidth = 1, IsAntialias = true };
+                canvas.DrawLine(chartLeft, zeroY, chartLeft + chartWidth, zeroY, zeroLinePaint);
 
-                using var labelPaint = new SKPaint { Color = SKColors.Gray, TextSize = 9, IsAntialias = true };
-                var label = TruncateLabel(item.Label, 8);
-                canvas.DrawText(label, x + barWidthPx / 2 - labelPaint.MeasureText(label) / 2, chartTop + chartHeight + 15, labelPaint);
+                // Draw axis labels
+                using var axisLabelPaint = new SKPaint { Color = SKColors.Gray, TextSize = 9, IsAntialias = true };
+                canvas.DrawText("Faster", 5, chartTop + 10, axisLabelPaint);
+                canvas.DrawText("Slower", 5, chartTop + chartHeight - 5, axisLabelPaint);
+
+                for (int i = 0; i < _items.Count; i++)
+                {
+                    var item = _items[i];
+                    float x = chartLeft + i * barGroupWidth + (barGroupWidth - barWidthPx) / 2;
+
+                    // Positive value = improvement (bar goes up, green)
+                    // Negative value = regression (bar goes down, red)
+                    float barHeight = (float)(Math.Abs(item.Value) / maxAbs * (chartHeight / 2 - 10));
+                    var color = item.Value >= 0 ? SKColor.Parse("#4CAF50") : SKColor.Parse("#F44336");
+
+                    SKRect rect;
+                    if (item.Value >= 0)
+                    {
+                        rect = new SKRect(x, zeroY - barHeight, x + barWidthPx, zeroY);
+                    }
+                    else
+                    {
+                        rect = new SKRect(x, zeroY, x + barWidthPx, zeroY + barHeight);
+                    }
+
+                    using var paint = new SKPaint { Color = color, IsAntialias = true };
+                    canvas.DrawRoundRect(rect, 4, 4, paint);
+
+                    // Value label on bar
+                    using var valuePaint = new SKPaint { Color = SKColors.White, TextSize = 8, IsAntialias = true, TextAlign = SKTextAlign.Center };
+                    string valueText = $"{(item.Value >= 0 ? "+" : "")}{item.Value:F1}";
+                    float valueY = item.Value >= 0 ? rect.Top - 3 : rect.Bottom + 10;
+                    canvas.DrawText(valueText, x + barWidthPx / 2, valueY, valuePaint);
+
+                    // Label
+                    using var labelPaint = new SKPaint { Color = SKColors.Gray, TextSize = 8, IsAntialias = true };
+                    var label = TruncateLabel(item.Label, 8);
+                    canvas.DrawText(label, x + barWidthPx / 2 - labelPaint.MeasureText(label) / 2, chartTop + chartHeight + 15, labelPaint);
+                }
+
+                // Legend
+                float legendY = height - 15;
+                using var legendPaint = new SKPaint { Color = SKColors.White, TextSize = 9, IsAntialias = true };
+                using var greenBox = new SKPaint { Color = SKColor.Parse("#4CAF50") };
+                using var redBox = new SKPaint { Color = SKColor.Parse("#F44336") };
+
+                canvas.DrawRect(chartLeft, legendY - 8, 10, 10, greenBox);
+                canvas.DrawText("Improved (ms saved)", chartLeft + 14, legendY, legendPaint);
+
+                canvas.DrawRect(chartLeft + 130, legendY - 8, 10, 10, redBox);
+                canvas.DrawText("Regressed (ms lost)", chartLeft + 144, legendY, legendPaint);
             }
+            else
+            {
+                // Standard waterfall mode
+                double total = _items.Sum(i => Math.Abs(i.Value));
+                double maxValue = Math.Max(total, _items.Max(i => Math.Abs(i.Value))) * 1.1;
+                if (maxValue == 0) maxValue = 1;
 
-            // Total bar
-            float totalX = chartLeft + _items.Count * barGroupWidth + (barGroupWidth - barWidthPx) / 2;
-            float totalHeight = (float)(total / maxValue * chartHeight);
-            var totalRect = new SKRect(totalX, chartTop + chartHeight - totalHeight, totalX + barWidthPx, chartTop + chartHeight);
-            using var totalPaint = new SKPaint { Color = SKColors.White, IsAntialias = true };
-            canvas.DrawRoundRect(totalRect, 4, 4, totalPaint);
+                float barWidthPx = chartWidth / (_items.Count + 1) * 0.7f;
+                float barGroupWidth = chartWidth / (_items.Count + 1);
 
-            using var totalLabelPaint = new SKPaint { Color = SKColors.White, TextSize = 10, IsAntialias = true, Typeface = SKTypeface.FromFamilyName("Segoe UI", SKFontStyle.Bold) };
-            canvas.DrawText("Total", totalX + barWidthPx / 2 - totalLabelPaint.MeasureText("Total") / 2, chartTop + chartHeight + 15, totalLabelPaint);
+                double cumulative = 0;
+                for (int i = 0; i < _items.Count; i++)
+                {
+                    var item = _items[i];
+                    float x = chartLeft + i * barGroupWidth + (barGroupWidth - barWidthPx) / 2;
+                    float yStart = chartTop + chartHeight - (float)(cumulative / maxValue * chartHeight);
+                    float yEnd = chartTop + chartHeight - (float)((cumulative + Math.Abs(item.Value)) / maxValue * chartHeight);
+
+                    var rect = new SKRect(x, yEnd, x + barWidthPx, yStart);
+                    using var paint = new SKPaint { Color = SKColor.Parse("#2196F3"), IsAntialias = true };
+                    canvas.DrawRoundRect(rect, 4, 4, paint);
+
+                    cumulative += Math.Abs(item.Value);
+
+                    using var labelPaint = new SKPaint { Color = SKColors.Gray, TextSize = 9, IsAntialias = true };
+                    var label = TruncateLabel(item.Label, 8);
+                    canvas.DrawText(label, x + barWidthPx / 2 - labelPaint.MeasureText(label) / 2, chartTop + chartHeight + 15, labelPaint);
+                }
+
+                // Total bar
+                float totalX = chartLeft + _items.Count * barGroupWidth + (barGroupWidth - barWidthPx) / 2;
+                float totalHeight = (float)(total / maxValue * chartHeight);
+                var totalRect = new SKRect(totalX, chartTop + chartHeight - totalHeight, totalX + barWidthPx, chartTop + chartHeight);
+                using var totalPaint = new SKPaint { Color = SKColors.White, IsAntialias = true };
+                canvas.DrawRoundRect(totalRect, 4, 4, totalPaint);
+
+                using var totalLabelPaint = new SKPaint { Color = SKColors.White, TextSize = 10, IsAntialias = true, Typeface = SKTypeface.FromFamilyName("Segoe UI", SKFontStyle.Bold) };
+                canvas.DrawText("Total", totalX + barWidthPx / 2 - totalLabelPaint.MeasureText("Total") / 2, chartTop + chartHeight + 15, totalLabelPaint);
+            }
         }
     }
 
@@ -899,20 +1060,70 @@ namespace LuxBenchmark.Controls
             var arcRect = new SKRect(centerX - radius, centerY - radius, centerX + radius, centerY + radius);
             canvas.DrawArc(arcRect, 135, 270, false, bgPaint);
 
-            // Value arc
-            double normalizedValue = Math.Max(0, Math.Min(1, (_value - _minValue) / (_maxValue - _minValue)));
-            var valueColor = GetColorForValue(normalizedValue);
-            using var valuePaint = new SKPaint
+            // Check if this is a centered gauge (min < 0 < max) for improvement display
+            bool isCenteredGauge = _minValue < 0 && _maxValue > 0;
+
+            SKColor valueColor;
+            float sweepAngle;
+
+            if (isCenteredGauge)
             {
-                Color = valueColor,
-                StrokeWidth = arcWidth,
-                IsAntialias = true,
-                Style = SKPaintStyle.Stroke,
-                StrokeCap = SKStrokeCap.Round
-            };
-            canvas.DrawArc(arcRect, 135, (float)(normalizedValue * 270), false, valuePaint);
+                // Centered gauge: 0 is at the middle, positive goes right (green), negative goes left (red)
+                double range = _maxValue - _minValue;
+                double zeroPos = -_minValue / range; // Where 0 sits on the 0-1 scale
+                double valuePos = (_value - _minValue) / range;
+
+                // Color: green for positive (improvement), red for negative (regression)
+                valueColor = _value >= 0 ? SKColor.Parse("#4CAF50") : SKColor.Parse("#F44336");
+
+                // Draw from center (0 position) to value position
+                float centerAngle = 135 + (float)(zeroPos * 270);
+                sweepAngle = (float)((valuePos - zeroPos) * 270);
+
+                using var valuePaint = new SKPaint
+                {
+                    Color = valueColor,
+                    StrokeWidth = arcWidth,
+                    IsAntialias = true,
+                    Style = SKPaintStyle.Stroke,
+                    StrokeCap = SKStrokeCap.Round
+                };
+                canvas.DrawArc(arcRect, centerAngle, sweepAngle, false, valuePaint);
+
+                // Draw center marker (0 position)
+                using var markerPaint = new SKPaint
+                {
+                    Color = SKColors.White,
+                    StrokeWidth = 3,
+                    IsAntialias = true
+                };
+                float markerAngleRad = (centerAngle - 90) * (float)Math.PI / 180;
+                float markerX = centerX + (radius - arcWidth) * (float)Math.Cos(markerAngleRad);
+                float markerY = centerY + (radius - arcWidth) * (float)Math.Sin(markerAngleRad);
+                float markerX2 = centerX + (radius + arcWidth) * (float)Math.Cos(markerAngleRad);
+                float markerY2 = centerY + (radius + arcWidth) * (float)Math.Sin(markerAngleRad);
+                canvas.DrawLine(markerX, markerY, markerX2, markerY2, markerPaint);
+            }
+            else
+            {
+                // Standard gauge: value fills from start
+                double normalizedValue = Math.Max(0, Math.Min(1, (_value - _minValue) / (_maxValue - _minValue)));
+                valueColor = GetColorForValue(normalizedValue);
+                sweepAngle = (float)(normalizedValue * 270);
+
+                using var valuePaint = new SKPaint
+                {
+                    Color = valueColor,
+                    StrokeWidth = arcWidth,
+                    IsAntialias = true,
+                    Style = SKPaintStyle.Stroke,
+                    StrokeCap = SKStrokeCap.Round
+                };
+                canvas.DrawArc(arcRect, 135, sweepAngle, false, valuePaint);
+            }
 
             // Value text
+            string valueText = isCenteredGauge ? $"{(_value >= 0 ? "+" : "")}{_value:F1}{_unit}" : $"{_value:F1} {_unit}";
             using var valueLabelPaint = new SKPaint
             {
                 Color = valueColor,
@@ -921,7 +1132,7 @@ namespace LuxBenchmark.Controls
                 Typeface = SKTypeface.FromFamilyName("Segoe UI", SKFontStyle.Bold),
                 TextAlign = SKTextAlign.Center
             };
-            canvas.DrawText($"{_value:F1} {_unit}", centerX, centerY + 10, valueLabelPaint);
+            canvas.DrawText(valueText, centerX, centerY + 10, valueLabelPaint);
 
             if (!string.IsNullOrEmpty(_label))
             {
@@ -938,6 +1149,7 @@ namespace LuxBenchmark.Controls
 
         private SKColor GetColorForValue(double normalizedValue)
         {
+            // For standard gauge: low is good (green), high is bad (red)
             if (normalizedValue <= 0.25) return SKColor.Parse("#4CAF50");
             if (normalizedValue <= 0.5) return SKColor.Parse("#8BC34A");
             if (normalizedValue <= 0.75) return SKColor.Parse("#FFC107");
@@ -1015,23 +1227,42 @@ namespace LuxBenchmark.Controls
         public ComparisonRow()
         {
             _grid = new Grid { Padding = new Thickness(8, 4, 8, 4), Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 30, 30, 30)) };
-            _grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) });
-            _grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            _grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            _grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            _grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            _grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) });   // Operation
+            _grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });   // A Time
+            _grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });   // B Time
+            _grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });   // Time Change
+            _grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });   // A Memory
+            _grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });   // B Memory
+            _grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });   // Mem Change
             Content = _grid;
         }
 
         public void SetData(ComparisonResult result)
         {
             _grid.Children.Clear();
-            AddCell(result.OperationName, 0, SKColors.White);
-            AddCell($"{result.SessionA_AvgMs:F2} ms", 1, SKColors.DodgerBlue);
-            AddCell($"{result.SessionB_AvgMs:F2} ms", 2, SKColors.Orange);
-            var deltaColor = result.IsFaster ? Windows.UI.Color.FromArgb(255, 76, 175, 80) : Windows.UI.Color.FromArgb(255, 244, 67, 54);
-            AddCell($"{result.DeltaAvgMs:+0.00;-0.00} ms", 3, deltaColor);
-            AddCell($"{result.ImprovementPercent:+0.0;-0.0}%", 4, deltaColor);
+            AddCell(FormatOperationName(result.OperationName), 0, SKColors.White);
+
+            // Time columns
+            AddCell($"{result.SessionA_AvgMs:F1}ms", 1, SKColors.DodgerBlue);
+            AddCell($"{result.SessionB_AvgMs:F1}ms", 2, SKColors.Orange);
+            var timeColor = result.IsFaster ? Windows.UI.Color.FromArgb(255, 76, 175, 80) : Windows.UI.Color.FromArgb(255, 244, 67, 54);
+            AddCell($"{result.ImprovementPercent:+0.0;-0.0}%", 3, timeColor);
+
+            // Memory columns
+            string memA = FormatMemory(result.SessionA_AvgMemory);
+            string memB = FormatMemory(result.SessionB_AvgMemory);
+            AddCell(memA, 4, SKColors.DodgerBlue);
+            AddCell(memB, 5, SKColors.Orange);
+
+            var memColor = result.UsesLessMemory ? Windows.UI.Color.FromArgb(255, 76, 175, 80) : Windows.UI.Color.FromArgb(255, 244, 67, 54);
+            if (result.SessionA_AvgMemory > 0 && result.SessionB_AvgMemory > 0)
+            {
+                AddCell($"{result.MemoryImprovementPercent:+0.0;-0.0}%", 6, memColor);
+            }
+            else
+            {
+                AddCell("-", 6, SKColors.Gray);
+            }
         }
 
         public void SetHeader()
@@ -1039,10 +1270,30 @@ namespace LuxBenchmark.Controls
             _grid.Children.Clear();
             _grid.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 40, 40, 40));
             AddCell("Operation", 0, SKColors.White, true);
-            AddCell("Session A", 1, SKColors.DodgerBlue, true);
-            AddCell("Session B", 2, SKColors.Orange, true);
-            AddCell("Delta", 3, SKColors.White, true);
-            AddCell("Change", 4, SKColors.White, true);
+            AddCell("A Time", 1, SKColors.DodgerBlue, true);
+            AddCell("B Time", 2, SKColors.Orange, true);
+            AddCell("Time Δ", 3, SKColors.White, true);
+            AddCell("A Mem", 4, SKColors.DodgerBlue, true);
+            AddCell("B Mem", 5, SKColors.Orange, true);
+            AddCell("Mem Δ", 6, SKColors.White, true);
+        }
+
+        private static string FormatOperationName(string name)
+        {
+            return name
+                .Replace("Render:", "")
+                .Replace("Pipeline:", "")
+                .Replace("ProcessImage:", "")
+                .Replace("Test:", "T:");
+        }
+
+        private static string FormatMemory(long bytes)
+        {
+            if (bytes == 0) return "-";
+            double kb = bytes / 1024.0;
+            if (Math.Abs(kb) < 1) return $"{bytes}B";
+            if (Math.Abs(kb) < 1024) return $"{kb:F0}K";
+            return $"{kb / 1024:F1}M";
         }
 
         private void AddCell(string text, int column, SKColor color, bool isBold = false) =>
@@ -1054,7 +1305,7 @@ namespace LuxBenchmark.Controls
             {
                 Text = text,
                 Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(color),
-                FontSize = 12,
+                FontSize = 11,
                 VerticalAlignment = VerticalAlignment.Center,
                 FontWeight = isBold ? Microsoft.UI.Text.FontWeights.SemiBold : Microsoft.UI.Text.FontWeights.Normal
             };
