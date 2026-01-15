@@ -62,7 +62,14 @@ namespace LuxBenchmark.Models
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public string Version { get; set; } = string.Empty;
+        public string BenchmarkKitVersion { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+
+        // Image info (from v2.0.0+)
+        public string ImageName { get; set; } = string.Empty;
+        public int ImageWidth { get; set; }
+        public int ImageHeight { get; set; }
+
         public SystemInfo? SystemInfo { get; set; }
         public List<MetricSample> Samples { get; set; } = new();
         public Dictionary<string, OperationStats> Statistics { get; set; } = new();
@@ -71,6 +78,35 @@ namespace LuxBenchmark.Models
         public TimeSpan Duration => EndTime - StartTime;
         public int TotalSamples => Samples.Count;
         public string DisplayName => string.IsNullOrEmpty(Description) ? SessionId : Description;
+
+        /// <summary>
+        /// Gets test scenario names from statistics (keys starting with "Test:")
+        /// </summary>
+        public List<string> TestScenarios => Statistics.Keys
+            .Where(k => k.StartsWith("Test:"))
+            .Select(k => k.Replace("Test:", ""))
+            .ToList();
+
+        /// <summary>
+        /// Gets render operation names from statistics (keys starting with "Render:")
+        /// </summary>
+        public List<string> RenderOperations => Statistics.Keys
+            .Where(k => k.StartsWith("Render:"))
+            .ToList();
+
+        /// <summary>
+        /// Image resolution as string (e.g., "4000x3000")
+        /// </summary>
+        public string ImageResolution => ImageWidth > 0 && ImageHeight > 0
+            ? $"{ImageWidth}x{ImageHeight}"
+            : "Unknown";
+
+        /// <summary>
+        /// Megapixel count
+        /// </summary>
+        public double Megapixels => ImageWidth > 0 && ImageHeight > 0
+            ? (ImageWidth * ImageHeight) / 1_000_000.0
+            : 0;
     }
 
     /// <summary>

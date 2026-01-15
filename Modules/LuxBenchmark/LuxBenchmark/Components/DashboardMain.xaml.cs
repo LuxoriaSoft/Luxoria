@@ -16,7 +16,27 @@ namespace LuxBenchmark.Components
         private BenchmarkSession? _sessionB;
         private readonly BarChart _performanceChart;
         private readonly BarChart _memoryChart;
+        private readonly PieChart _timeDistributionChart;
+        private readonly GaugeChart _primaryGauge;
+        private readonly Histogram _histogramChart;
+        private readonly BoxPlot _boxPlotChart;
+        private readonly ConfidenceBandChart _confidenceBandChart;
+        private readonly ScatterPlot _scatterPlot;
+        private readonly WaterfallChart _waterfallChart;
         private ComparisonSummary? _currentComparison;
+
+        // Color palette for charts
+        private static readonly SKColor[] ChartColors = new[]
+        {
+            SKColor.Parse("#4CAF50"), // Green
+            SKColor.Parse("#2196F3"), // Blue
+            SKColor.Parse("#FF9800"), // Orange
+            SKColor.Parse("#E91E63"), // Pink
+            SKColor.Parse("#9C27B0"), // Purple
+            SKColor.Parse("#00BCD4"), // Cyan
+            SKColor.Parse("#FFEB3B"), // Yellow
+            SKColor.Parse("#795548"), // Brown
+        };
 
         public event Action<string>? OperationSelected;
 
@@ -24,24 +44,85 @@ namespace LuxBenchmark.Components
         {
             InitializeComponent();
 
-            // Create charts programmatically
+            // Create bar chart for performance
             _performanceChart = new BarChart
             {
-                Title = "Average Response Time",
+                Title = "Average Response Time (ms)",
                 Unit = "ms",
                 ShowComparison = true
             };
             _performanceChart.ItemClicked += OnChartItemClicked;
             PerformanceChartHost.Content = _performanceChart;
 
+            // Create bar chart for memory
             _memoryChart = new BarChart
             {
-                Title = "Memory Usage",
+                Title = "Memory Usage (KB)",
                 Unit = "KB",
                 ShowComparison = true
             };
             _memoryChart.ItemClicked += OnChartItemClicked;
             MemoryChartHost.Content = _memoryChart;
+
+            // Create pie chart for time distribution
+            _timeDistributionChart = new PieChart
+            {
+                Title = "Time Distribution by Operation"
+            };
+            TimeDistributionChartHost.Content = _timeDistributionChart;
+
+            // Create primary gauge chart
+            _primaryGauge = new GaugeChart
+            {
+                Title = "Render Performance",
+                Unit = "ms",
+                MinValue = 0,
+                MaxValue = 100
+            };
+            PrimaryGaugeHost.Content = _primaryGauge;
+
+            // Create histogram chart
+            _histogramChart = new Histogram
+            {
+                Title = "Sample Distribution",
+                Unit = "ms",
+                BinCount = 20
+            };
+            HistogramChartHost.Content = _histogramChart;
+
+            // Create box plot chart
+            _boxPlotChart = new BoxPlot
+            {
+                Title = "Statistical Distribution by Operation",
+                Unit = "ms"
+            };
+            BoxPlotChartHost.Content = _boxPlotChart;
+
+            // Create confidence band chart
+            _confidenceBandChart = new ConfidenceBandChart
+            {
+                Title = "Performance Over Time (with variance)",
+                Unit = "ms"
+            };
+            ConfidenceBandChartHost.Content = _confidenceBandChart;
+
+            // Create scatter plot
+            _scatterPlot = new ScatterPlot
+            {
+                Title = "Session Comparison (A vs B)",
+                XLabel = "Session A (ms)",
+                YLabel = "Session B (ms)",
+                Unit = "ms"
+            };
+            ScatterPlotHost.Content = _scatterPlot;
+
+            // Create waterfall chart
+            _waterfallChart = new WaterfallChart
+            {
+                Title = "Time Breakdown by Operation",
+                Unit = "ms"
+            };
+            WaterfallChartHost.Content = _waterfallChart;
 
             UpdateEmptyState();
         }
@@ -131,29 +212,39 @@ namespace LuxBenchmark.Components
 
             if (_currentComparison == null) return;
 
-            // Key metrics to show as cards
-            var keyMetrics = new[]
+            // Key metrics to show as cards (try new names first, then old names)
+            var keyMetricPriority = new[]
             {
-                "Pipeline:Total",
-                "Pipeline:FullPass",
-                "Pipeline:PreviewPass",
-                "Pipeline:ApplyFilters_full"
+                // New standardized names (v2.0.0+)
+                ("Render:Complete", "Render Complete"),
+                ("Render:FullPass", "Full Pass"),
+                ("Render:PreviewPass", "Preview Pass"),
+                ("Render:ApplyFilters", "Apply Filters"),
+                // Old names (v1.x)
+                ("Pipeline:Total", "Pipeline Total"),
+                ("Pipeline:FullPass", "Full Pass"),
+                ("Pipeline:PreviewPass", "Preview Pass"),
+                ("ProcessImage:Complete", "Process Image"),
             };
 
-            foreach (var metricKey in keyMetrics)
+            int cardsAdded = 0;
+            foreach (var (metricKey, displayName) in keyMetricPriority)
             {
+                if (cardsAdded >= 4) break; // Max 4 cards
+
                 var result = _currentComparison.Results.FirstOrDefault(r => r.OperationKey == metricKey);
                 if (result == null) continue;
 
                 var card = new MetricCard();
                 card.SetData(
-                    FormatMetricName(result.OperationName),
+                    displayName,
                     result.SessionB_AvgMs,
                     "ms",
                     result.SessionA_AvgMs
                 );
                 card.Clicked += () => OperationSelected?.Invoke(metricKey);
                 MetricCardsPanel.Children.Add(card);
+                cardsAdded++;
             }
 
             // Overall improvement card
@@ -174,11 +265,21 @@ namespace LuxBenchmark.Components
 
             if (_sessionA == null) return;
 
-            foreach (var stat in _sessionA.Statistics.Take(6))
+            // Prioritize Render operations, then show Test operations
+            var prioritizedStats = _sessionA.Statistics
+                .OrderByDescending(s => s.Key.StartsWith("Render:"))
+                .ThenByDescending(s => s.Key.StartsWith("Test:"))
+                .Take(6);
+
+            foreach (var stat in prioritizedStats)
             {
                 var card = new MetricCard();
+                var displayName = stat.Key.StartsWith("Test:")
+                    ? $"Test: {FormatMetricName(stat.Key)}"
+                    : FormatMetricName(stat.Key);
+
                 card.SetData(
-                    FormatMetricName(stat.Key),
+                    displayName,
                     stat.Value.AvgMs,
                     "ms"
                 );
@@ -226,6 +327,17 @@ namespace LuxBenchmark.Components
                 .ToList();
 
             _memoryChart.SetData(memItems);
+
+            // Time distribution pie chart (Session B)
+            UpdateTimeDistributionChart(_sessionB);
+
+            // Update new charts
+            UpdateGaugeChart();
+            UpdateHistogramChart();
+            UpdateBoxPlotChart();
+            UpdateConfidenceBandChart();
+            UpdateScatterPlot();
+            UpdateWaterfallChart();
         }
 
         private void UpdateChartsSingle()
@@ -264,6 +376,41 @@ namespace LuxBenchmark.Components
 
             _memoryChart.ShowComparison = false;
             _memoryChart.SetData(memItems);
+
+            // Time distribution pie chart
+            UpdateTimeDistributionChart(_sessionA);
+
+            // Update new charts (single session mode)
+            UpdateGaugeChartSingle();
+            UpdateHistogramChartSingle();
+            UpdateBoxPlotChartSingle();
+            UpdateConfidenceBandChartSingle();
+            UpdateScatterPlotSingle();
+            UpdateWaterfallChartSingle();
+        }
+
+        private void UpdateTimeDistributionChart(BenchmarkSession? session)
+        {
+            if (session == null)
+            {
+                _timeDistributionChart.SetData(new List<PieChartSlice>());
+                return;
+            }
+
+            // Get top operations by time for pie chart
+            var slices = session.Statistics
+                .Where(s => s.Value.AvgMs > 0)
+                .OrderByDescending(s => s.Value.AvgMs)
+                .Take(8)
+                .Select((s, index) => new PieChartSlice
+                {
+                    Label = FormatMetricName(s.Key),
+                    Value = s.Value.AvgMs,
+                    Color = ChartColors[index % ChartColors.Length]
+                })
+                .ToList();
+
+            _timeDistributionChart.SetData(slices);
         }
 
         private void UpdateComparisonTable()
@@ -298,9 +445,11 @@ namespace LuxBenchmark.Components
         {
             // Remove common prefixes for cleaner display
             return key
+                .Replace("Render:", "")
                 .Replace("Pipeline:", "")
                 .Replace("ProcessImage:", "")
                 .Replace("PhotoViewer:", "")
+                .Replace("Test:", "")
                 .Replace("_", " ");
         }
 
@@ -314,5 +463,317 @@ namespace LuxBenchmark.Components
                 _ => SKColor.Parse("#F44336")
             };
         }
+
+        #region New Chart Update Methods
+
+        private void UpdateGaugeChart()
+        {
+            if (_sessionB == null) return;
+
+            // Find primary render metric
+            var renderComplete = _sessionB.Statistics
+                .FirstOrDefault(s => s.Key == "Render:Complete" || s.Key == "Pipeline:Total");
+
+            if (renderComplete.Value != null)
+            {
+                double avgMs = renderComplete.Value.AvgMs;
+                _primaryGauge.MaxValue = Math.Max(100, avgMs * 2);
+                _primaryGauge.SetValue(avgMs, BenchmarkDataService.GetRating(avgMs).ToString());
+            }
+        }
+
+        private void UpdateGaugeChartSingle()
+        {
+            if (_sessionA == null) return;
+
+            var renderComplete = _sessionA.Statistics
+                .FirstOrDefault(s => s.Key == "Render:Complete" || s.Key == "Pipeline:Total");
+
+            if (renderComplete.Value != null)
+            {
+                double avgMs = renderComplete.Value.AvgMs;
+                _primaryGauge.MaxValue = Math.Max(100, avgMs * 2);
+                _primaryGauge.SetValue(avgMs, BenchmarkDataService.GetRating(avgMs).ToString());
+            }
+        }
+
+        private void UpdateHistogramChart()
+        {
+            if (_sessionB == null) return;
+
+            // Get all render samples for histogram
+            var samples = _sessionB.Samples
+                .Where(s => s.OperationName.StartsWith("Render") || s.OperationName == "Pipeline")
+                .Select(s => s.DurationMs)
+                .ToList();
+
+            if (samples.Count > 0)
+            {
+                _histogramChart.Title = "Sample Distribution (Session B)";
+                _histogramChart.SetData(samples);
+            }
+        }
+
+        private void UpdateHistogramChartSingle()
+        {
+            if (_sessionA == null) return;
+
+            var samples = _sessionA.Samples
+                .Where(s => s.OperationName.StartsWith("Render") || s.OperationName == "Pipeline")
+                .Select(s => s.DurationMs)
+                .ToList();
+
+            if (samples.Count > 0)
+            {
+                _histogramChart.Title = "Sample Distribution";
+                _histogramChart.SetData(samples);
+            }
+        }
+
+        private void UpdateBoxPlotChart()
+        {
+            if (_sessionA == null || _sessionB == null) return;
+
+            var boxPlotItems = new List<BoxPlotItem>();
+
+            // Get operations present in both sessions
+            var commonOps = _sessionA.Statistics.Keys
+                .Intersect(_sessionB.Statistics.Keys)
+                .Where(k => k.StartsWith("Render:") || k.StartsWith("Pipeline:"))
+                .Take(6);
+
+            int colorIndex = 0;
+            foreach (var op in commonOps)
+            {
+                var statsA = _sessionA.Statistics[op];
+                var statsB = _sessionB.Statistics[op];
+
+                // Add Session A box
+                boxPlotItems.Add(new BoxPlotItem
+                {
+                    Label = $"A:{FormatMetricName(op)}",
+                    Min = statsA.MinMs,
+                    Q1 = statsA.AvgMs - statsA.StdDevMs * 0.675, // Approximate Q1
+                    Median = statsA.MedianMs,
+                    Q3 = statsA.AvgMs + statsA.StdDevMs * 0.675, // Approximate Q3
+                    Max = statsA.MaxMs,
+                    Color = SKColors.DodgerBlue
+                });
+
+                // Add Session B box
+                boxPlotItems.Add(new BoxPlotItem
+                {
+                    Label = $"B:{FormatMetricName(op)}",
+                    Min = statsB.MinMs,
+                    Q1 = statsB.AvgMs - statsB.StdDevMs * 0.675,
+                    Median = statsB.MedianMs,
+                    Q3 = statsB.AvgMs + statsB.StdDevMs * 0.675,
+                    Max = statsB.MaxMs,
+                    Color = SKColors.Orange
+                });
+
+                colorIndex++;
+            }
+
+            _boxPlotChart.SetData(boxPlotItems);
+        }
+
+        private void UpdateBoxPlotChartSingle()
+        {
+            if (_sessionA == null) return;
+
+            var boxPlotItems = _sessionA.Statistics
+                .Where(s => s.Key.StartsWith("Render:") || s.Key.StartsWith("Pipeline:"))
+                .OrderByDescending(s => s.Value.AvgMs)
+                .Take(8)
+                .Select((s, index) => new BoxPlotItem
+                {
+                    Label = FormatMetricName(s.Key),
+                    Min = s.Value.MinMs,
+                    Q1 = s.Value.AvgMs - s.Value.StdDevMs * 0.675,
+                    Median = s.Value.MedianMs,
+                    Q3 = s.Value.AvgMs + s.Value.StdDevMs * 0.675,
+                    Max = s.Value.MaxMs,
+                    Color = ChartColors[index % ChartColors.Length]
+                })
+                .ToList();
+
+            _boxPlotChart.SetData(boxPlotItems);
+        }
+
+        private void UpdateConfidenceBandChart()
+        {
+            if (_sessionA == null && _sessionB == null)
+            {
+                _confidenceBandChart.Clear();
+                return;
+            }
+
+            var series = new List<ConfidenceBandSeries>();
+
+            // Find operation to track
+            string? trackOp = FindPrimaryOperation(_sessionB ?? _sessionA);
+            if (trackOp == null) return;
+
+            // Session A confidence band
+            if (_sessionA != null)
+            {
+                var seriesA = CreateConfidenceBandSeries(_sessionA, trackOp, "Session A", SKColors.DodgerBlue);
+                if (seriesA != null) series.Add(seriesA);
+            }
+
+            // Session B confidence band
+            if (_sessionB != null)
+            {
+                var seriesB = CreateConfidenceBandSeries(_sessionB, trackOp, "Session B", SKColors.Orange);
+                if (seriesB != null) series.Add(seriesB);
+            }
+
+            _confidenceBandChart.Title = $"Performance Variance ({FormatMetricName(trackOp)})";
+            _confidenceBandChart.SetData(series);
+        }
+
+        private void UpdateConfidenceBandChartSingle()
+        {
+            if (_sessionA == null)
+            {
+                _confidenceBandChart.Clear();
+                return;
+            }
+
+            string? trackOp = FindPrimaryOperation(_sessionA);
+            if (trackOp == null) return;
+
+            var series = CreateConfidenceBandSeries(_sessionA, trackOp, "Samples", SKColors.DodgerBlue);
+            if (series != null)
+            {
+                _confidenceBandChart.Title = $"Performance Variance ({FormatMetricName(trackOp)})";
+                _confidenceBandChart.SetData(new List<ConfidenceBandSeries> { series });
+            }
+        }
+
+        private ConfidenceBandSeries? CreateConfidenceBandSeries(BenchmarkSession session, string operation, string name, SKColor color)
+        {
+            var samples = session.Samples
+                .Where(s => $"{s.OperationName}:{s.Phase}" == operation || s.OperationName == operation)
+                .Select(s => s.DurationMs)
+                .ToList();
+
+            if (samples.Count < 5) return null;
+
+            // Create rolling window statistics
+            int windowSize = Math.Max(3, samples.Count / 10);
+            var points = new List<ConfidenceBandPoint>();
+
+            for (int i = 0; i < samples.Count - windowSize; i += Math.Max(1, windowSize / 2))
+            {
+                var window = samples.Skip(i).Take(windowSize).ToList();
+                double mean = window.Average();
+                double stdDev = Math.Sqrt(window.Average(v => Math.Pow(v - mean, 2)));
+
+                points.Add(new ConfidenceBandPoint
+                {
+                    Mean = mean,
+                    Upper = mean + stdDev,
+                    Lower = Math.Max(0, mean - stdDev)
+                });
+            }
+
+            return new ConfidenceBandSeries
+            {
+                Name = name,
+                Points = points,
+                Color = color
+            };
+        }
+
+        private void UpdateScatterPlot()
+        {
+            if (_sessionA == null || _sessionB == null || _currentComparison == null)
+            {
+                _scatterPlot.SetData(new List<ScatterPoint>());
+                return;
+            }
+
+            var points = _currentComparison.Results
+                .Where(r => r.SessionA_AvgMs > 0 && r.SessionB_AvgMs > 0)
+                .Select(r => new ScatterPoint
+                {
+                    Label = FormatMetricName(r.OperationKey),
+                    X = r.SessionA_AvgMs,
+                    Y = r.SessionB_AvgMs,
+                    Tag = r.OperationKey
+                })
+                .ToList();
+
+            _scatterPlot.XLabel = $"Session A: {_sessionA.DisplayName}";
+            _scatterPlot.YLabel = $"Session B: {_sessionB.DisplayName}";
+            _scatterPlot.SetData(points);
+        }
+
+        private void UpdateScatterPlotSingle()
+        {
+            // Scatter plot requires two sessions for comparison
+            _scatterPlot.Title = "Session Comparison (requires 2 sessions)";
+            _scatterPlot.SetData(new List<ScatterPoint>());
+        }
+
+        private void UpdateWaterfallChart()
+        {
+            if (_sessionB == null) return;
+
+            // Get render operations for waterfall
+            var renderOps = _sessionB.Statistics
+                .Where(s => s.Key.StartsWith("Render:") && s.Key != "Render:Complete")
+                .OrderByDescending(s => s.Value.AvgMs)
+                .Take(8)
+                .Select(s => new WaterfallItem
+                {
+                    Label = FormatMetricName(s.Key),
+                    Value = s.Value.AvgMs,
+                    IsIncrease = true
+                })
+                .ToList();
+
+            _waterfallChart.Title = "Time Breakdown by Operation (Session B)";
+            _waterfallChart.SetData(renderOps);
+        }
+
+        private void UpdateWaterfallChartSingle()
+        {
+            if (_sessionA == null) return;
+
+            var renderOps = _sessionA.Statistics
+                .Where(s => s.Key.StartsWith("Render:") && s.Key != "Render:Complete")
+                .OrderByDescending(s => s.Value.AvgMs)
+                .Take(8)
+                .Select(s => new WaterfallItem
+                {
+                    Label = FormatMetricName(s.Key),
+                    Value = s.Value.AvgMs,
+                    IsIncrease = true
+                })
+                .ToList();
+
+            _waterfallChart.Title = "Time Breakdown by Operation";
+            _waterfallChart.SetData(renderOps);
+        }
+
+        private string? FindPrimaryOperation(BenchmarkSession? session)
+        {
+            if (session == null) return null;
+
+            var priorityOps = new[] { "Render:Complete", "Render:FullPass", "Pipeline:Total" };
+
+            foreach (var op in priorityOps)
+            {
+                if (session.Samples.Any(s => $"{s.OperationName}:{s.Phase}" == op || s.OperationName == op))
+                    return op;
+            }
+
+            return session.Samples.FirstOrDefault()?.OperationName;
+        }
+
+        #endregion
     }
 }

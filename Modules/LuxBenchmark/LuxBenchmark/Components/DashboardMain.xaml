@@ -7,50 +7,60 @@
     mc:Ignorable="d"
     Background="#1A1A1A">
 
-    <Grid Padding="16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <!-- Header -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="16" Margin="0,0,0,16">
-            <TextBlock Text="Benchmark Dashboard"
-                       FontSize="24"
-                       FontWeight="Bold"
-                       Foreground="White"/>
-            <TextBlock x:Name="ComparisonStatusText"
-                       FontSize="14"
-                       Foreground="Gray"
-                       VerticalAlignment="Center"/>
-        </StackPanel>
-
-        <!-- Metric Cards Row -->
-        <ScrollViewer Grid.Row="1"
-                      HorizontalScrollBarVisibility="Auto"
-                      VerticalScrollBarVisibility="Disabled"
-                      Margin="0,0,0,16">
-            <StackPanel x:Name="MetricCardsPanel"
-                        Orientation="Horizontal"
-                        Spacing="12"/>
-        </ScrollViewer>
-
-        <!-- Main Content Area -->
-        <Grid Grid.Row="2">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Padding="16">
             <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Chart Area -->
-            <Grid Grid.Row="0">
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="16" Margin="0,0,0,16">
+                <TextBlock Text="Benchmark Dashboard"
+                           FontSize="24"
+                           FontWeight="Bold"
+                           Foreground="White"/>
+                <TextBlock x:Name="ComparisonStatusText"
+                           FontSize="14"
+                           Foreground="Gray"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Gauge Cards Row -->
+            <ScrollViewer Grid.Row="1"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled"
+                          Margin="0,0,0,16">
+                <StackPanel x:Name="GaugeCardsPanel"
+                            Orientation="Horizontal"
+                            Spacing="12"/>
+            </ScrollViewer>
+
+            <!-- Metric Cards Row -->
+            <ScrollViewer Grid.Row="2"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled"
+                          Margin="0,0,0,16">
+                <StackPanel x:Name="MetricCardsPanel"
+                            Orientation="Horizontal"
+                            Spacing="12"/>
+            </ScrollViewer>
+
+            <!-- Main Charts Area Row 1 (3 columns: Bar, Pie, Gauge) -->
+            <Grid Grid.Row="3" Height="280" Margin="0,0,0,16">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Performance Chart -->
+                <!-- Performance Bar Chart -->
                 <Border Grid.Column="0"
                         Background="#252525"
                         CornerRadius="8"
@@ -58,21 +68,95 @@
                     <ContentControl x:Name="PerformanceChartHost"/>
                 </Border>
 
-                <!-- Memory Chart -->
+                <!-- Time Distribution Pie Chart -->
+                <Border Grid.Column="1"
+                        Background="#252525"
+                        CornerRadius="8"
+                        Margin="8,0,8,0">
+                    <ContentControl x:Name="TimeDistributionChartHost"/>
+                </Border>
+
+                <!-- Primary Gauge Chart -->
+                <Border Grid.Column="2"
+                        Background="#252525"
+                        CornerRadius="8"
+                        Margin="8,0,0,0">
+                    <ContentControl x:Name="PrimaryGaugeHost"/>
+                </Border>
+            </Grid>
+
+            <!-- Charts Area Row 2 (3 columns: Memory, Histogram, BoxPlot) -->
+            <Grid Grid.Row="4" Height="280" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Memory Bar Chart -->
+                <Border Grid.Column="0"
+                        Background="#252525"
+                        CornerRadius="8"
+                        Margin="0,0,8,0">
+                    <ContentControl x:Name="MemoryChartHost"/>
+                </Border>
+
+                <!-- Histogram Chart -->
+                <Border Grid.Column="1"
+                        Background="#252525"
+                        CornerRadius="8"
+                        Margin="8,0,8,0">
+                    <ContentControl x:Name="HistogramChartHost"/>
+                </Border>
+
+                <!-- Box Plot Chart -->
+                <Border Grid.Column="2"
+                        Background="#252525"
+                        CornerRadius="8"
+                        Margin="8,0,0,0">
+                    <ContentControl x:Name="BoxPlotChartHost"/>
+                </Border>
+            </Grid>
+
+            <!-- Charts Area Row 3 (2 columns: Timeline with Confidence, Scatter Plot) -->
+            <Grid Grid.Row="5" Height="300" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Timeline with Confidence Bands -->
+                <Border Grid.Column="0"
+                        Background="#252525"
+                        CornerRadius="8"
+                        Margin="0,0,8,0">
+                    <ContentControl x:Name="ConfidenceBandChartHost"/>
+                </Border>
+
+                <!-- Scatter Plot (Session Comparison) -->
                 <Border Grid.Column="1"
                         Background="#252525"
                         CornerRadius="8"
                         Margin="8,0,0,0">
-                    <ContentControl x:Name="MemoryChartHost"/>
+                    <ContentControl x:Name="ScatterPlotHost"/>
                 </Border>
             </Grid>
 
-            <!-- Comparison Table -->
-            <Border Grid.Row="1"
+            <!-- Waterfall Chart (Full Width) -->
+            <Border Grid.Row="6"
                     Background="#252525"
                     CornerRadius="8"
-                    Margin="0,16,0,0"
-                    MaxHeight="300">
+                    Height="280"
+                    Margin="0,0,0,16">
+                <ContentControl x:Name="WaterfallChartHost"/>
+            </Border>
+
+            <!-- Comparison Table -->
+            <Border Grid.Row="7"
+                    Background="#252525"
+                    CornerRadius="8"
+                    Margin="0,0,0,16"
+                    MaxHeight="250">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -95,27 +179,27 @@
                     </ScrollViewer>
                 </Grid>
             </Border>
-        </Grid>
 
-        <!-- Empty State -->
-        <StackPanel x:Name="EmptyStatePanel"
-                    Grid.Row="0"
-                    Grid.RowSpan="3"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Visibility="Collapsed">
-            <FontIcon Glyph="&#xE9F9;"
-                      FontSize="64"
-                      Foreground="Gray"/>
-            <TextBlock Text="No benchmark data loaded"
-                       FontSize="18"
-                       Foreground="Gray"
-                       HorizontalAlignment="Center"
-                       Margin="0,16,0,8"/>
-            <TextBlock Text="Select sessions from the left panel to compare"
-                       FontSize="12"
-                       Foreground="DarkGray"
-                       HorizontalAlignment="Center"/>
-        </StackPanel>
-    </Grid>
+            <!-- Empty State -->
+            <StackPanel x:Name="EmptyStatePanel"
+                        Grid.Row="0"
+                        Grid.RowSpan="8"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Visibility="Collapsed">
+                <FontIcon Glyph="&#xE9F9;"
+                          FontSize="64"
+                          Foreground="Gray"/>
+                <TextBlock Text="No benchmark data loaded"
+                           FontSize="18"
+                           Foreground="Gray"
+                           HorizontalAlignment="Center"
+                           Margin="0,16,0,8"/>
+                <TextBlock Text="Select sessions from the left panel to compare"
+                           FontSize="12"
+                           Foreground="DarkGray"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
 </Page>

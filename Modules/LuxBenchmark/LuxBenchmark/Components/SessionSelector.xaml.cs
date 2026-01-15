@@ -131,75 +131,190 @@ namespace LuxBenchmark.Components
             var card = new Border
             {
                 Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 45, 45, 45)),
-                CornerRadius = new CornerRadius(4),
-                Padding = new Thickness(10),
-                Margin = new Thickness(0, 0, 0, 4)
+                CornerRadius = new CornerRadius(6),
+                Padding = new Thickness(12),
+                Margin = new Thickness(0, 0, 0, 8)
             };
 
-            var content = new StackPanel();
+            var content = new StackPanel { Spacing = 4 };
 
-            // Session name
-            content.Children.Add(new TextBlock
+            // Header: Session name + version badge
+            var headerPanel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+            headerPanel.Children.Add(new TextBlock
             {
                 Text = session.DisplayName,
                 FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
                 Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 255, 255)),
-                FontSize = 12,
-                TextTrimming = TextTrimming.CharacterEllipsis
+                FontSize = 13,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxWidth = 200
             });
 
-            // Version
-            content.Children.Add(new TextBlock
+            // Version badge
+            var versionBadge = new Border
             {
-                Text = $"Version: {session.Version}",
+                Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 60, 60, 60)),
+                CornerRadius = new CornerRadius(3),
+                Padding = new Thickness(6, 2, 6, 2)
+            };
+            versionBadge.Child = new TextBlock
+            {
+                Text = $"v{session.BenchmarkKitVersion ?? session.Version}",
                 Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 150, 150, 150)),
-                FontSize = 10
-            });
+                FontSize = 9
+            };
+            headerPanel.Children.Add(versionBadge);
+            content.Children.Add(headerPanel);
+
+            // Image info (if available)
+            if (!string.IsNullOrEmpty(session.ImageName) || session.ImageWidth > 0)
+            {
+                var imageInfoPanel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+
+                if (!string.IsNullOrEmpty(session.ImageName))
+                {
+                    imageInfoPanel.Children.Add(new TextBlock
+                    {
+                        Text = $"Image: {session.ImageName}",
+                        Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 100, 180, 255)),
+                        FontSize = 10
+                    });
+                }
+
+                if (session.ImageWidth > 0)
+                {
+                    imageInfoPanel.Children.Add(new TextBlock
+                    {
+                        Text = $"{session.ImageResolution} ({session.Megapixels:F1} MP)",
+                        Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 150, 150, 150)),
+                        FontSize = 10
+                    });
+                }
+
+                content.Children.Add(imageInfoPanel);
+            }
 
             // Date and samples
             content.Children.Add(new TextBlock
             {
-                Text = $"{session.StartTime:yyyy-MM-dd HH:mm} | {session.TotalSamples} samples",
+                Text = $"{session.StartTime:yyyy-MM-dd HH:mm} | {session.TotalSamples} samples | {session.Duration.TotalSeconds:F0}s",
                 Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 128, 128, 128)),
                 FontSize = 10
             });
 
-            // Quick stats
-            if (session.Statistics.TryGetValue("Pipeline:Total", out var pipelineStats))
+            // Test scenarios section
+            var testScenarios = session.TestScenarios;
+            if (testScenarios.Count > 0)
             {
-                var avgText = $"Avg: {pipelineStats.AvgMs:F1}ms";
-                var rating = BenchmarkDataService.GetRating(pipelineStats.AvgMs);
-                var ratingColor = rating switch
+                var testHeader = new TextBlock
                 {
-                    PerformanceRating.Excellent => Windows.UI.Color.FromArgb(255, 76, 175, 80),
-                    PerformanceRating.Good => Windows.UI.Color.FromArgb(255, 139, 195, 74),
-                    PerformanceRating.Acceptable => Windows.UI.Color.FromArgb(255, 255, 193, 7),
-                    _ => Windows.UI.Color.FromArgb(255, 244, 67, 54)
+                    Text = $"Tests ({testScenarios.Count}):",
+                    Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 200, 200, 200)),
+                    FontSize = 10,
+                    FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                    Margin = new Thickness(0, 6, 0, 2)
+                };
+                content.Children.Add(testHeader);
+
+                // Test scenario tags
+                var testTagsPanel = new ItemsControl();
+                var tagsStackPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Spacing = 4
                 };
 
-                content.Children.Add(new TextBlock
+                // Show first 4 test scenarios as tags
+                foreach (var test in testScenarios.Take(4))
                 {
-                    Text = avgText,
-                    Foreground = new SolidColorBrush(ratingColor),
-                    FontSize = 11,
-                    FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-                    Margin = new Thickness(0, 4, 0, 0)
-                });
+                    var testBadge = new Border
+                    {
+                        Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 70, 70, 100)),
+                        CornerRadius = new CornerRadius(3),
+                        Padding = new Thickness(6, 2, 6, 2)
+                    };
+                    testBadge.Child = new TextBlock
+                    {
+                        Text = test,
+                        Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 180, 180, 255)),
+                        FontSize = 9
+                    };
+                    tagsStackPanel.Children.Add(testBadge);
+                }
+
+                if (testScenarios.Count > 4)
+                {
+                    tagsStackPanel.Children.Add(new TextBlock
+                    {
+                        Text = $"+{testScenarios.Count - 4} more",
+                        Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 128, 128, 128)),
+                        FontSize = 9,
+                        VerticalAlignment = VerticalAlignment.Center
+                    });
+                }
+
+                content.Children.Add(tagsStackPanel);
             }
+
+            // Performance stats section
+            var statsPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Spacing = 16,
+                Margin = new Thickness(0, 8, 0, 0)
+            };
+
+            // Primary metric: Render:Complete or Pipeline:Total
+            OperationStats? primaryStats = null;
+            string primaryLabel = "";
+
+            if (session.Statistics.TryGetValue("Render:Complete", out var renderStats))
+            {
+                primaryStats = renderStats;
+                primaryLabel = "Render";
+            }
+            else if (session.Statistics.TryGetValue("Pipeline:Total", out var pipelineStats))
+            {
+                primaryStats = pipelineStats;
+                primaryLabel = "Pipeline";
+            }
+
+            if (primaryStats != null)
+            {
+                var rating = BenchmarkDataService.GetRating(primaryStats.AvgMs);
+                var ratingColor = GetRatingColor(rating);
+
+                var primaryStatBlock = CreateStatBlock(primaryLabel, $"{primaryStats.AvgMs:F1}ms", ratingColor);
+                statsPanel.Children.Add(primaryStatBlock);
+
+                // P95
+                var p95Block = CreateStatBlock("P95", $"{primaryStats.P95Ms:F1}ms",
+                    Windows.UI.Color.FromArgb(255, 150, 150, 150));
+                statsPanel.Children.Add(p95Block);
+
+                // Memory
+                var memKB = primaryStats.AvgMemoryDelta / 1024.0;
+                var memBlock = CreateStatBlock("Mem",
+                    memKB > 1024 ? $"{memKB / 1024:F1}MB" : $"{memKB:F0}KB",
+                    Windows.UI.Color.FromArgb(255, 150, 150, 150));
+                statsPanel.Children.Add(memBlock);
+            }
+
+            content.Children.Add(statsPanel);
 
             // Action buttons
             var buttonPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
-                Spacing = 4,
-                Margin = new Thickness(0, 8, 0, 0)
+                Spacing = 8,
+                Margin = new Thickness(0, 10, 0, 0)
             };
 
             var setAButton = new Button
             {
-                Content = "Set as A",
+                Content = "Set as A (Old)",
                 FontSize = 10,
-                Padding = new Thickness(8, 4, 8, 4),
+                Padding = new Thickness(12, 6, 12, 6),
                 Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 120, 212))
             };
             setAButton.Click += (s, e) =>
@@ -212,9 +327,9 @@ namespace LuxBenchmark.Components
 
             var setBButton = new Button
             {
-                Content = "Set as B",
+                Content = "Set as B (New)",
                 FontSize = 10,
-                Padding = new Thickness(8, 4, 8, 4),
+                Padding = new Thickness(12, 6, 12, 6),
                 Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 140, 0))
             };
             setBButton.Click += (s, e) =>
@@ -229,6 +344,39 @@ namespace LuxBenchmark.Components
             card.Child = content;
 
             return card;
+        }
+
+        private static StackPanel CreateStatBlock(string label, string value, Windows.UI.Color valueColor)
+        {
+            var block = new StackPanel { Spacing = 0 };
+
+            block.Children.Add(new TextBlock
+            {
+                Text = label,
+                Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 100, 100, 100)),
+                FontSize = 9
+            });
+
+            block.Children.Add(new TextBlock
+            {
+                Text = value,
+                Foreground = new SolidColorBrush(valueColor),
+                FontSize = 12,
+                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold
+            });
+
+            return block;
+        }
+
+        private static Windows.UI.Color GetRatingColor(PerformanceRating rating)
+        {
+            return rating switch
+            {
+                PerformanceRating.Excellent => Windows.UI.Color.FromArgb(255, 76, 175, 80),
+                PerformanceRating.Good => Windows.UI.Color.FromArgb(255, 139, 195, 74),
+                PerformanceRating.Acceptable => Windows.UI.Color.FromArgb(255, 255, 193, 7),
+                _ => Windows.UI.Color.FromArgb(255, 244, 67, 54)
+            };
         }
 
         private void SelectSession(ComboBox combo, BenchmarkSession session)

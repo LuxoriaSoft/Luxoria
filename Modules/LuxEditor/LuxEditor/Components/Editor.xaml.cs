@@ -1125,7 +1125,7 @@ namespace LuxEditor.Components
                     Debug.WriteLine(msg);
                 };
 
-                _stressTestRunner.OnTestCompleted += (result) =>
+                _stressTestRunner.OnScenarioCompleted += (result) =>
                 {
                     DispatcherQueue.TryEnqueue(() =>
                     {
@@ -1134,8 +1134,8 @@ namespace LuxEditor.Components
                     });
                 };
 
-                // Run all tests
-                await _stressTestRunner.RunAllTestsAsync();
+                // Run all scenarios
+                await _stressTestRunner.RunAllScenariosAsync();
 
                 // Show completion
                 if (_benchmarkStatusLabel != null)
