@@ -53,7 +53,7 @@
             </ScrollViewer>
 
             <!-- Main Charts Area Row 1 (3 columns: Bar, Pie, Gauge) -->
-            <Grid Grid.Row="3" Height="280" Margin="0,0,0,16">
+            <Grid Grid.Row="3" Height="320" Margin="0,0,0,16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
@@ -86,7 +86,7 @@
             </Grid>
 
             <!-- Charts Area Row 2 (3 columns: Memory, Histogram, BoxPlot) -->
-            <Grid Grid.Row="4" Height="280" Margin="0,0,0,16">
+            <Grid Grid.Row="4" Height="320" Margin="0,0,0,16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
@@ -119,7 +119,7 @@
             </Grid>
 
             <!-- Charts Area Row 3 (2 columns: Timeline with Confidence, Scatter Plot) -->
-            <Grid Grid.Row="5" Height="300" Margin="0,0,0,16">
+            <Grid Grid.Row="5" Height="340" Margin="0,0,0,16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
@@ -146,7 +146,7 @@
             <Border Grid.Row="6"
                     Background="#252525"
                     CornerRadius="8"
-                    Height="280"
+                    Height="320"
                     Margin="0,0,0,16">
                 <ContentControl x:Name="WaterfallChartHost"/>
             </Border>

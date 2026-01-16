@@ -90,6 +90,7 @@ namespace LuxBenchmark.Controls
         protected string _unit = "ms";
         private int _lastWidth = 0;
         private int _lastHeight = 0;
+        private float _dpiScale = 2.0f; // Render at 2x resolution for sharper text
 
         public string Title
         {
@@ -109,7 +110,7 @@ namespace LuxBenchmark.Controls
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
-                Stretch = Microsoft.UI.Xaml.Media.Stretch.Fill
+                Stretch = Microsoft.UI.Xaml.Media.Stretch.Uniform
             };
 
             _border = new Border
@@ -151,28 +152,35 @@ namespace LuxBenchmark.Controls
 
         protected void Redraw()
         {
-            int width = _lastWidth > 0 ? _lastWidth : (int)_border.ActualWidth;
-            int height = _lastHeight > 0 ? _lastHeight : (int)_border.ActualHeight;
+            int logicalWidth = _lastWidth > 0 ? _lastWidth : (int)_border.ActualWidth;
+            int logicalHeight = _lastHeight > 0 ? _lastHeight : (int)_border.ActualHeight;
 
-            if (width <= 0 || height <= 0)
+            if (logicalWidth <= 0 || logicalHeight <= 0)
             {
-                width = 400;
-                height = 250;
+                logicalWidth = 400;
+                logicalHeight = 250;
             }
+
+            // Render at higher resolution for sharper graphics
+            int renderWidth = (int)(logicalWidth * _dpiScale);
+            int renderHeight = (int)(logicalHeight * _dpiScale);
 
             try
             {
-                var info = new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
+                var info = new SKImageInfo(renderWidth, renderHeight, SKColorType.Bgra8888, SKAlphaType.Premul);
                 using var surface = SKSurface.Create(info);
                 var canvas = surface.Canvas;
 
+                // Scale the canvas so drawing operations work at logical size
+                canvas.Scale(_dpiScale, _dpiScale);
+
                 canvas.Clear(SKColor.Parse("#1E1E1E"));
-                OnDraw(canvas, width, height);
+                OnDraw(canvas, logicalWidth, logicalHeight);
 
-                using var skBitmap = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
-                surface.ReadPixels(info, skBitmap.GetPixels(), width * 4, 0, 0);
+                using var skBitmap = new SKBitmap(renderWidth, renderHeight, SKColorType.Bgra8888, SKAlphaType.Premul);
+                surface.ReadPixels(info, skBitmap.GetPixels(), renderWidth * 4, 0, 0);
 
-                var bitmap = new WriteableBitmap(width, height);
+                var bitmap = new WriteableBitmap(renderWidth, renderHeight);
                 using (var stream = bitmap.PixelBuffer.AsStream())
                 {
                     var pixels = skBitmap.GetPixelSpan();
@@ -194,11 +202,11 @@ namespace LuxBenchmark.Controls
             using var paint = new SKPaint
             {
                 Color = SKColors.White,
-                TextSize = 16,
+                TextSize = 18,
                 IsAntialias = true,
                 Typeface = SKTypeface.FromFamilyName("Segoe UI", SKFontStyle.Bold)
             };
-            canvas.DrawText(_title, 16, 24, paint);
+            canvas.DrawText(_title, 16, 26, paint);
         }
 
         protected void DrawEmptyState(SKCanvas canvas, int width, int height)
@@ -255,12 +263,13 @@ namespace LuxBenchmark.Controls
                 return;
             }
 
-            float padding = 50;
+            float leftPadding = 60;
+            float rightPadding = 20;
             float titleHeight = 40;
-            float labelHeight = 60;
-            float chartLeft = padding;
+            float labelHeight = 50;
+            float chartLeft = leftPadding;
             float chartTop = titleHeight;
-            float chartWidth = width - padding * 2;
+            float chartWidth = width - leftPadding - rightPadding;
             float chartHeight = height - titleHeight - labelHeight;
 
             double maxValue = _items.Max(i => Math.Max(i.Value, i.CompareValue ?? 0));
@@ -306,27 +315,31 @@ namespace LuxBenchmark.Controls
                 // Label
                 using var labelPaint = new SKPaint
                 {
-                    Color = SKColors.Gray,
-                    TextSize = 10,
+                    Color = SKColors.LightGray,
+                    TextSize = 11,
                     IsAntialias = true
                 };
-                var label = TruncateLabel(item.Label, 12);
+                int maxLabelLen = Math.Max(6, (int)(barGroupWidth / 7));
+                var label = TruncateLabel(item.Label, maxLabelLen);
                 var labelWidth = labelPaint.MeasureText(label);
-                canvas.DrawText(label, x + (barGroupWidth - barPadding * 2) / 2 - labelWidth / 2, chartTop + chartHeight + 20, labelPaint);
+                float labelX = x + (barGroupWidth - barPadding * 2) / 2 - labelWidth / 2;
+                canvas.DrawText(label, labelX, chartTop + chartHeight + 18, labelPaint);
             }
         }
 
         private void DrawGridLines(SKCanvas canvas, float left, float top, float chartWidth, float chartHeight, double maxValue)
         {
             using var gridPaint = new SKPaint { Color = SKColor.Parse("#333333"), StrokeWidth = 1 };
-            using var labelPaint = new SKPaint { Color = SKColors.Gray, TextSize = 10, IsAntialias = true };
+            using var labelPaint = new SKPaint { Color = SKColors.Gray, TextSize = 11, IsAntialias = true };
 
             for (int i = 0; i <= 5; i++)
             {
                 float y = top + chartHeight - (chartHeight * i / 5);
                 canvas.DrawLine(left, y, left + chartWidth, y, gridPaint);
                 double value = maxValue * i / 5;
-                canvas.DrawText($"{value:F1}", 5, y + 4, labelPaint);
+                string labelText = value >= 1000 ? $"{value / 1000:F1}k" : $"{value:F1}";
+                float labelWidth = labelPaint.MeasureText(labelText);
+                canvas.DrawText(labelText, left - labelWidth - 5, y + 4, labelPaint);
             }
         }
     }
@@ -382,19 +395,24 @@ namespace LuxBenchmark.Controls
                 startAngle += sweepAngle;
             }
 
-            // Legend
-            float legendX = width * 0.7f;
+            // Legend with background for better readability
+            float legendX = width * 0.68f;
             float legendY = 50;
-            using var legendPaint = new SKPaint { Color = SKColors.White, TextSize = 11, IsAntialias = true };
+            float legendHeight = _slices.Count * 22 + 10;
+
+            using var legendBgPaint = new SKPaint { Color = SKColor.Parse("#1E1E1E").WithAlpha(180), IsAntialias = true };
+            canvas.DrawRoundRect(new SKRect(legendX - 8, legendY - 16, width - 10, legendY + legendHeight - 20), 6, 6, legendBgPaint);
+
+            using var legendPaint = new SKPaint { Color = SKColors.White, TextSize = 12, IsAntialias = true };
 
             foreach (var slice in _slices)
             {
                 using var colorPaint = new SKPaint { Color = slice.Color, IsAntialias = true };
-                canvas.DrawRect(legendX, legendY - 8, 12, 12, colorPaint);
+                canvas.DrawRoundRect(new SKRect(legendX, legendY - 9, legendX + 14, legendY + 3), 2, 2, colorPaint);
 
                 double pct = slice.Value / total * 100;
-                canvas.DrawText($"{slice.Label} ({pct:F1}%)", legendX + 18, legendY, legendPaint);
-                legendY += 20;
+                canvas.DrawText($"{slice.Label} ({pct:F1}%)", legendX + 20, legendY, legendPaint);
+                legendY += 22;
             }
         }
     }
@@ -608,17 +626,30 @@ namespace LuxBenchmark.Controls
                 canvas.DrawRect(chartLeft + 100, legendY - 8, 12, 10, orangeBox);
                 canvas.DrawText("Session B", chartLeft + 116, legendY, legendPaint);
 
-                // Stats for both
-                using var statsPaint = new SKPaint { Color = SKColors.White, TextSize = 9, IsAntialias = true };
+                // Stats for both - positioned with background for better readability
+                using var statsPaint = new SKPaint { Color = SKColors.White, TextSize = 11, IsAntialias = true };
+                using var statsBgPaint = new SKPaint { Color = SKColor.Parse("#1E1E1E").WithAlpha(180), IsAntialias = true };
+
+                float statsY = 20;
+                float statsX = width - 130;
+
+                if (_valuesA.Count > 0 || _valuesB.Count > 0)
+                {
+                    canvas.DrawRoundRect(new SKRect(statsX - 8, statsY - 12, width - 8, statsY + 28), 4, 4, statsBgPaint);
+                }
+
                 if (_valuesA.Count > 0)
                 {
                     double meanA = _valuesA.Average();
-                    canvas.DrawText($"A: μ={meanA:F1}ms", width - 140, 22, statsPaint);
+                    using var blueTextPaint = new SKPaint { Color = SKColors.DodgerBlue, TextSize = 11, IsAntialias = true };
+                    canvas.DrawText($"A: μ={meanA:F1}ms", statsX, statsY, blueTextPaint);
+                    statsY += 16;
                 }
                 if (_valuesB.Count > 0)
                 {
                     double meanB = _valuesB.Average();
-                    canvas.DrawText($"B: μ={meanB:F1}ms", width - 140, 34, statsPaint);
+                    using var orangeTextPaint = new SKPaint { Color = SKColors.Orange, TextSize = 11, IsAntialias = true };
+                    canvas.DrawText($"B: μ={meanB:F1}ms", statsX, statsY, orangeTextPaint);
                 }
             }
             else
@@ -633,13 +664,20 @@ namespace LuxBenchmark.Controls
                     canvas.DrawRect(rect, paint);
                 }
 
-                // Stats overlay
+                // Stats overlay with background
                 if (_valuesA.Count > 0)
                 {
-                    using var statsPaint = new SKPaint { Color = SKColors.White, TextSize = 10, IsAntialias = true };
                     double mean = _valuesA.Average();
                     double stdDev = Math.Sqrt(_valuesA.Average(v => Math.Pow(v - mean, 2)));
-                    canvas.DrawText($"n={_valuesA.Count}  μ={mean:F2}  σ={stdDev:F2}", width - 150, 25, statsPaint);
+                    string statsText = $"n={_valuesA.Count}  μ={mean:F2}  σ={stdDev:F2}";
+
+                    using var statsPaint = new SKPaint { Color = SKColors.White, TextSize = 11, IsAntialias = true };
+                    float textWidth = statsPaint.MeasureText(statsText);
+                    float statsX = width - textWidth - 15;
+
+                    using var bgPaint = new SKPaint { Color = SKColor.Parse("#1E1E1E").WithAlpha(180), IsAntialias = true };
+                    canvas.DrawRoundRect(new SKRect(statsX - 6, 10, width - 8, 32), 4, 4, bgPaint);
+                    canvas.DrawText(statsText, statsX, 25, statsPaint);
                 }
             }
         }
@@ -713,9 +751,10 @@ namespace LuxBenchmark.Controls
                 canvas.DrawLine(centerX - boxWidth / 2, yMedian, centerX + boxWidth / 2, yMedian, medianPaint);
 
                 // Label
-                using var labelPaint = new SKPaint { Color = SKColors.Gray, TextSize = 9, IsAntialias = true };
-                var label = TruncateLabel(item.Label, 10);
-                canvas.DrawText(label, centerX - labelPaint.MeasureText(label) / 2, chartTop + chartHeight + 15, labelPaint);
+                using var labelPaint = new SKPaint { Color = SKColors.LightGray, TextSize = 11, IsAntialias = true };
+                int maxLen = Math.Max(6, (int)(itemWidth / 8));
+                var label = TruncateLabel(item.Label, maxLen);
+                canvas.DrawText(label, centerX - labelPaint.MeasureText(label) / 2, chartTop + chartHeight + 18, labelPaint);
             }
         }
     }
@@ -958,9 +997,10 @@ namespace LuxBenchmark.Controls
                     canvas.DrawText(valueText, x + barWidthPx / 2, valueY, valuePaint);
 
                     // Label
-                    using var labelPaint = new SKPaint { Color = SKColors.Gray, TextSize = 8, IsAntialias = true };
-                    var label = TruncateLabel(item.Label, 8);
-                    canvas.DrawText(label, x + barWidthPx / 2 - labelPaint.MeasureText(label) / 2, chartTop + chartHeight + 15, labelPaint);
+                    using var labelPaint = new SKPaint { Color = SKColors.LightGray, TextSize = 10, IsAntialias = true };
+                    int maxLen = Math.Max(5, (int)(barGroupWidth / 9));
+                    var label = TruncateLabel(item.Label, maxLen);
+                    canvas.DrawText(label, x + barWidthPx / 2 - labelPaint.MeasureText(label) / 2, chartTop + chartHeight + 18, labelPaint);
                 }
 
                 // Legend
@@ -999,9 +1039,10 @@ namespace LuxBenchmark.Controls
 
                     cumulative += Math.Abs(item.Value);
 
-                    using var labelPaint = new SKPaint { Color = SKColors.Gray, TextSize = 9, IsAntialias = true };
-                    var label = TruncateLabel(item.Label, 8);
-                    canvas.DrawText(label, x + barWidthPx / 2 - labelPaint.MeasureText(label) / 2, chartTop + chartHeight + 15, labelPaint);
+                    using var labelPaint = new SKPaint { Color = SKColors.LightGray, TextSize = 10, IsAntialias = true };
+                    int maxLen = Math.Max(5, (int)(barGroupWidth / 9));
+                    var label = TruncateLabel(item.Label, maxLen);
+                    canvas.DrawText(label, x + barWidthPx / 2 - labelPaint.MeasureText(label) / 2, chartTop + chartHeight + 18, labelPaint);
                 }
 
                 // Total bar
@@ -1122,12 +1163,22 @@ namespace LuxBenchmark.Controls
                 canvas.DrawArc(arcRect, 135, sweepAngle, false, valuePaint);
             }
 
-            // Value text
+            // Value text - draw with background for better readability
             string valueText = isCenteredGauge ? $"{(_value >= 0 ? "+" : "")}{_value:F1}{_unit}" : $"{_value:F1} {_unit}";
+
+            // Draw a dark semi-transparent background behind the text for contrast
+            using var bgPaintText = new SKPaint
+            {
+                Color = SKColor.Parse("#1E1E1E").WithAlpha(200),
+                IsAntialias = true
+            };
+            float textBgRadius = radius * 0.45f;
+            canvas.DrawCircle(centerX, centerY + 15, textBgRadius, bgPaintText);
+
             using var valueLabelPaint = new SKPaint
             {
-                Color = valueColor,
-                TextSize = 24,
+                Color = SKColors.White,
+                TextSize = 28,
                 IsAntialias = true,
                 Typeface = SKTypeface.FromFamilyName("Segoe UI", SKFontStyle.Bold),
                 TextAlign = SKTextAlign.Center
@@ -1139,11 +1190,11 @@ namespace LuxBenchmark.Controls
                 using var labelPaint = new SKPaint
                 {
                     Color = valueColor,
-                    TextSize = 14,
+                    TextSize = 16,
                     IsAntialias = true,
                     TextAlign = SKTextAlign.Center
                 };
-                canvas.DrawText(_label, centerX, centerY + 30, labelPaint);
+                canvas.DrawText(_label, centerX, centerY + 35, labelPaint);
             }
         }
 
