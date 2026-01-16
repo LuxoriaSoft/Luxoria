@@ -17,7 +17,6 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!-- Header -->
@@ -32,18 +31,8 @@
                            VerticalAlignment="Center"/>
             </StackPanel>
 
-            <!-- Gauge Cards Row -->
-            <ScrollViewer Grid.Row="1"
-                          HorizontalScrollBarVisibility="Auto"
-                          VerticalScrollBarVisibility="Disabled"
-                          Margin="0,0,0,16">
-                <StackPanel x:Name="GaugeCardsPanel"
-                            Orientation="Horizontal"
-                            Spacing="12"/>
-            </ScrollViewer>
-
             <!-- Metric Cards Row -->
-            <ScrollViewer Grid.Row="2"
+            <ScrollViewer Grid.Row="1"
                           HorizontalScrollBarVisibility="Auto"
                           VerticalScrollBarVisibility="Disabled"
                           Margin="0,0,0,16">
@@ -53,7 +42,7 @@
             </ScrollViewer>
 
             <!-- Main Charts Area Row 1 (3 columns: Bar, Pie, Gauge) -->
-            <Grid Grid.Row="3" Height="320" Margin="0,0,0,16">
+            <Grid Grid.Row="2" Height="320" Margin="0,0,0,16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
@@ -86,7 +75,7 @@
             </Grid>
 
             <!-- Charts Area Row 2 (3 columns: Memory, Histogram, BoxPlot) -->
-            <Grid Grid.Row="4" Height="320" Margin="0,0,0,16">
+            <Grid Grid.Row="3" Height="320" Margin="0,0,0,16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
@@ -119,7 +108,7 @@
             </Grid>
 
             <!-- Charts Area Row 3 (2 columns: Timeline with Confidence, Scatter Plot) -->
-            <Grid Grid.Row="5" Height="340" Margin="0,0,0,16">
+            <Grid Grid.Row="4" Height="340" Margin="0,0,0,16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
@@ -143,7 +132,7 @@
             </Grid>
 
             <!-- Waterfall Chart (Full Width) -->
-            <Border Grid.Row="6"
+            <Border Grid.Row="5"
                     Background="#252525"
                     CornerRadius="8"
                     Height="320"
@@ -152,7 +141,7 @@
             </Border>
 
             <!-- Comparison Table -->
-            <Border Grid.Row="7"
+            <Border Grid.Row="6"
                     Background="#252525"
                     CornerRadius="8"
                     Margin="0,0,0,16"
@@ -183,7 +172,7 @@
             <!-- Empty State -->
             <StackPanel x:Name="EmptyStatePanel"
                         Grid.Row="0"
-                        Grid.RowSpan="8"
+                        Grid.RowSpan="7"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Visibility="Collapsed">

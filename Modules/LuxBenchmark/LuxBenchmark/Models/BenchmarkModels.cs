@@ -164,23 +164,34 @@ namespace LuxBenchmark.Models
         public long SessionB_AvgMemory { get; set; }
         public int SessionB_Samples { get; set; }
 
-        // Delta calculations
+        // Check if this comparison has valid data in both sessions
+        public bool HasValidTimeComparison => SessionA_AvgMs > 0 && SessionB_AvgMs > 0;
+        // For memory, only compare when both have positive values (actual allocations)
+        // Negative values mean memory was freed (GC) which makes percentage comparisons meaningless
+        public bool HasValidMemoryComparison => SessionA_AvgMemory > 0 && SessionB_AvgMemory > 0;
+
+        // Delta calculations (B - A: negative means B is faster)
         public double DeltaAvgMs => SessionB_AvgMs - SessionA_AvgMs;
         public double DeltaP95Ms => SessionB_P95Ms - SessionA_P95Ms;
         public long DeltaMemory => SessionB_AvgMemory - SessionA_AvgMemory;
 
-        // Percentage improvements (positive = better, negative = worse)
-        public double ImprovementPercent => SessionA_AvgMs > 0
+        // Percentage improvements (positive = B is better/faster, negative = B is worse/slower)
+        // Formula: (A - B) / A * 100
+        // If B < A (B is faster), result is positive (improvement)
+        // If B > A (B is slower), result is negative (regression)
+        public double ImprovementPercent => HasValidTimeComparison
             ? ((SessionA_AvgMs - SessionB_AvgMs) / SessionA_AvgMs) * 100
             : 0;
 
-        public double MemoryImprovementPercent => SessionA_AvgMemory > 0
+        public double MemoryImprovementPercent => HasValidMemoryComparison && SessionA_AvgMemory > 0
             ? ((SessionA_AvgMemory - SessionB_AvgMemory) / (double)SessionA_AvgMemory) * 100
             : 0;
 
-        // Status helpers
-        public bool IsFaster => DeltaAvgMs < 0;
-        public bool UsesLessMemory => DeltaMemory < 0;
+        // Status helpers - only valid when both sessions have data
+        // IsFaster = true when B is faster than A (DeltaAvgMs < 0 means B - A < 0 means B < A)
+        public bool IsFaster => HasValidTimeComparison && DeltaAvgMs < 0;
+        public bool IsSlower => HasValidTimeComparison && DeltaAvgMs > 0;
+        public bool UsesLessMemory => HasValidMemoryComparison && DeltaMemory < 0;
 
         // Operation type helpers
         public bool IsUXMetric => OperationKey.StartsWith("UX:");
@@ -246,39 +257,42 @@ namespace LuxBenchmark.Models
         // UX-focused comparison (v3.0.0+)
         public UXComparison? UXComparison { get; set; }
 
+        // Only count operations that have valid data in BOTH sessions
+        public List<ComparisonResult> ValidResults => Results.Where(r => r.HasValidTimeComparison).ToList();
+
         public int TotalOperations => Results.Count;
-        public int ImprovedCount => Results.FindAll(r => r.IsFaster).Count;
-        public int RegressedCount => Results.FindAll(r => !r.IsFaster).Count;
+        public int ValidOperations => ValidResults.Count;
 
-        // Categorized counts
-        public int UXImprovedCount => Results.FindAll(r => r.IsUXMetric && r.IsFaster).Count;
-        public int UXRegressedCount => Results.FindAll(r => r.IsUXMetric && !r.IsFaster).Count;
-        public int RenderImprovedCount => Results.FindAll(r => r.IsRenderMetric && r.IsFaster).Count;
-        public int RenderRegressedCount => Results.FindAll(r => r.IsRenderMetric && !r.IsFaster).Count;
+        // Count improved/regressed only for operations with valid data in both sessions
+        public int ImprovedCount => ValidResults.Count(r => r.IsFaster);
+        public int RegressedCount => ValidResults.Count(r => r.IsSlower);
+        public int UnchangedCount => ValidResults.Count(r => !r.IsFaster && !r.IsSlower);
 
-        public double OverallImprovementPercent => Results.Count > 0
-            ? Results.Average(r => r.ImprovementPercent)
+        // Categorized counts (only for valid comparisons)
+        public int UXImprovedCount => ValidResults.Count(r => r.IsUXMetric && r.IsFaster);
+        public int UXRegressedCount => ValidResults.Count(r => r.IsUXMetric && r.IsSlower);
+        public int RenderImprovedCount => ValidResults.Count(r => r.IsRenderMetric && r.IsFaster);
+        public int RenderRegressedCount => ValidResults.Count(r => r.IsRenderMetric && r.IsSlower);
+
+        // Total time for all valid operations
+        public double TotalTimeA => ValidResults.Sum(r => r.SessionA_AvgMs);
+        public double TotalTimeB => ValidResults.Sum(r => r.SessionB_AvgMs);
+
+        // Overall improvement calculated on TOTALS (not average of percentages!)
+        // Positive = B is faster than A (improvement)
+        // Negative = B is slower than A (regression)
+        // Example: A=100ms total, B=80ms total -> (100-80)/100 = +20% improvement
+        public double OverallImprovementPercent => TotalTimeA > 0
+            ? ((TotalTimeA - TotalTimeB) / TotalTimeA) * 100
             : 0;
 
-        // UX-weighted improvement (prioritizes UX metrics)
-        public double UXWeightedImprovementPercent
-        {
-            get
-            {
-                var uxResults = Results.Where(r => r.IsUXMetric).ToList();
-                var renderResults = Results.Where(r => r.IsRenderMetric).ToList();
+        // Total memory for all valid operations
+        public long TotalMemoryA => Results.Where(r => r.HasValidMemoryComparison).Sum(r => r.SessionA_AvgMemory);
+        public long TotalMemoryB => Results.Where(r => r.HasValidMemoryComparison).Sum(r => r.SessionB_AvgMemory);
 
-                if (uxResults.Count == 0 && renderResults.Count == 0) return 0;
-
-                // Weight UX metrics more heavily (60% UX, 40% Render)
-                var uxAvg = uxResults.Count > 0 ? uxResults.Average(r => r.ImprovementPercent) : 0;
-                var renderAvg = renderResults.Count > 0 ? renderResults.Average(r => r.ImprovementPercent) : 0;
-
-                if (uxResults.Count == 0) return renderAvg;
-                if (renderResults.Count == 0) return uxAvg;
-
-                return (uxAvg * 0.6) + (renderAvg * 0.4);
-            }
-        }
+        // Overall memory improvement on totals
+        public double OverallMemoryImprovementPercent => TotalMemoryA > 0
+            ? ((TotalMemoryA - TotalMemoryB) / (double)TotalMemoryA) * 100
+            : 0;
     }
 }
