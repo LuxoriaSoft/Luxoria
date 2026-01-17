@@ -278,21 +278,66 @@ namespace LuxBenchmark.Models
         public double TotalTimeA => ValidResults.Sum(r => r.SessionA_AvgMs);
         public double TotalTimeB => ValidResults.Sum(r => r.SessionB_AvgMs);
 
-        // Overall improvement calculated on TOTALS (not average of percentages!)
-        // Positive = B is faster than A (improvement)
-        // Negative = B is slower than A (regression)
-        // Example: A=100ms total, B=80ms total -> (100-80)/100 = +20% improvement
-        public double OverallImprovementPercent => TotalTimeA > 0
-            ? ((TotalTimeA - TotalTimeB) / TotalTimeA) * 100
-            : 0;
+        // Speed ratio: how many times faster/slower is B compared to A
+        // > 1.0 means B is faster (e.g., 2.0 = B is 2x faster)
+        // < 1.0 means B is slower (e.g., 0.5 = B is 2x slower)
+        // This is symmetric: if A/B gives 2.0, then B/A gives 0.5
+        public double SpeedRatio => TotalTimeB > 0 ? TotalTimeA / TotalTimeB : 1.0;
+
+        // Overall improvement as percentage (clamped to reasonable range)
+        // Positive = B is faster, Negative = B is slower
+        // Capped at +/- 99% to avoid confusing values like -358%
+        public double OverallImprovementPercent
+        {
+            get
+            {
+                if (TotalTimeA <= 0 || TotalTimeB <= 0) return 0;
+
+                // Use ratio-based calculation
+                // If B is faster: (1 - B/A) * 100 -> e.g., B=80, A=100 -> (1 - 0.8) * 100 = +20%
+                // If B is slower: (1 - B/A) * 100 -> e.g., B=100, A=80 -> (1 - 1.25) * 100 = -25%
+                double ratio = TotalTimeB / TotalTimeA;
+                double improvement = (1.0 - ratio) * 100.0;
+
+                // Cap at +/- 95% for display (ratio still available for precise info)
+                return Math.Max(-95, Math.Min(95, improvement));
+            }
+        }
+
+        // Human-readable speed description
+        public string SpeedDescription
+        {
+            get
+            {
+                if (TotalTimeA <= 0 || TotalTimeB <= 0) return "N/A";
+
+                double ratio = SpeedRatio;
+                if (Math.Abs(ratio - 1.0) < 0.01) return "Same speed";
+
+                if (ratio > 1.0)
+                    return $"{ratio:F2}x faster";
+                else
+                    return $"{1.0 / ratio:F2}x slower";
+            }
+        }
 
         // Total memory for all valid operations
         public long TotalMemoryA => Results.Where(r => r.HasValidMemoryComparison).Sum(r => r.SessionA_AvgMemory);
         public long TotalMemoryB => Results.Where(r => r.HasValidMemoryComparison).Sum(r => r.SessionB_AvgMemory);
 
-        // Overall memory improvement on totals
-        public double OverallMemoryImprovementPercent => TotalMemoryA > 0
-            ? ((TotalMemoryA - TotalMemoryB) / (double)TotalMemoryA) * 100
-            : 0;
+        // Memory ratio
+        public double MemoryRatio => TotalMemoryB > 0 ? (double)TotalMemoryA / TotalMemoryB : 1.0;
+
+        // Overall memory improvement (capped)
+        public double OverallMemoryImprovementPercent
+        {
+            get
+            {
+                if (TotalMemoryA <= 0 || TotalMemoryB <= 0) return 0;
+                double ratio = (double)TotalMemoryB / TotalMemoryA;
+                double improvement = (1.0 - ratio) * 100.0;
+                return Math.Max(-95, Math.Min(95, improvement));
+            }
+        }
     }
 }
