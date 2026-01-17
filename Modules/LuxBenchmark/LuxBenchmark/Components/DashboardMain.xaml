@@ -16,7 +16,6 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!-- Header -->
@@ -74,32 +73,23 @@
                 </Border>
             </Grid>
 
-            <!-- Charts Area Row 2 (3 columns: Memory, Histogram, BoxPlot) -->
+            <!-- Charts Area Row 2 (2 columns: Histogram, BoxPlot) -->
             <Grid Grid.Row="3" Height="320" Margin="0,0,0,16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Memory Bar Chart -->
+                <!-- Histogram Chart -->
                 <Border Grid.Column="0"
                         Background="#252525"
                         CornerRadius="8"
                         Margin="0,0,8,0">
-                    <ContentControl x:Name="MemoryChartHost"/>
-                </Border>
-
-                <!-- Histogram Chart -->
-                <Border Grid.Column="1"
-                        Background="#252525"
-                        CornerRadius="8"
-                        Margin="8,0,8,0">
                     <ContentControl x:Name="HistogramChartHost"/>
                 </Border>
 
                 <!-- Box Plot Chart -->
-                <Border Grid.Column="2"
+                <Border Grid.Column="1"
                         Background="#252525"
                         CornerRadius="8"
                         Margin="8,0,0,0">
@@ -107,8 +97,8 @@
                 </Border>
             </Grid>
 
-            <!-- Charts Area Row 3 (2 columns: Timeline with Confidence, Scatter Plot) -->
-            <Grid Grid.Row="4" Height="340" Margin="0,0,0,16">
+            <!-- Charts Area Row 3 (2 columns: Confidence Band, Waterfall) -->
+            <Grid Grid.Row="4" Height="320" Margin="0,0,0,16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
@@ -122,26 +112,17 @@
                     <ContentControl x:Name="ConfidenceBandChartHost"/>
                 </Border>
 
-                <!-- Scatter Plot (Session Comparison) -->
+                <!-- Waterfall Chart -->
                 <Border Grid.Column="1"
                         Background="#252525"
                         CornerRadius="8"
                         Margin="8,0,0,0">
-                    <ContentControl x:Name="ScatterPlotHost"/>
+                    <ContentControl x:Name="WaterfallChartHost"/>
                 </Border>
             </Grid>
 
-            <!-- Waterfall Chart (Full Width) -->
-            <Border Grid.Row="5"
-                    Background="#252525"
-                    CornerRadius="8"
-                    Height="320"
-                    Margin="0,0,0,16">
-                <ContentControl x:Name="WaterfallChartHost"/>
-            </Border>
-
             <!-- Comparison Table -->
-            <Border Grid.Row="6"
+            <Border Grid.Row="5"
                     Background="#252525"
                     CornerRadius="8"
                     Margin="0,0,0,16"
@@ -172,7 +153,7 @@
             <!-- Empty State -->
             <StackPanel x:Name="EmptyStatePanel"
                         Grid.Row="0"
-                        Grid.RowSpan="7"
+                        Grid.RowSpan="6"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Visibility="Collapsed">

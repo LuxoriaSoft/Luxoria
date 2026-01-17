@@ -15,13 +15,11 @@ namespace LuxBenchmark.Components
         private BenchmarkSession? _sessionA;
         private BenchmarkSession? _sessionB;
         private readonly BarChart _performanceChart;
-        private readonly BarChart _memoryChart;
         private readonly PieChart _timeDistributionChart;
         private readonly GaugeChart _primaryGauge;
         private readonly Histogram _histogramChart;
         private readonly BoxPlot _boxPlotChart;
         private readonly ConfidenceBandChart _confidenceBandChart;
-        private readonly ScatterPlot _scatterPlot;
         private readonly WaterfallChart _waterfallChart;
         private ComparisonSummary? _currentComparison;
 
@@ -54,17 +52,6 @@ namespace LuxBenchmark.Components
             _performanceChart.ItemClicked += OnChartItemClicked;
             _performanceChart.ChartClicked += OnChartClicked;
             PerformanceChartHost.Content = _performanceChart;
-
-            // Create bar chart for memory
-            _memoryChart = new BarChart
-            {
-                Title = "Memory Usage (KB)",
-                Unit = "KB",
-                ShowComparison = true
-            };
-            _memoryChart.ItemClicked += OnChartItemClicked;
-            _memoryChart.ChartClicked += OnChartClicked;
-            MemoryChartHost.Content = _memoryChart;
 
             // Create pie chart for improvement breakdown
             _timeDistributionChart = new PieChart
@@ -112,17 +99,6 @@ namespace LuxBenchmark.Components
             };
             _confidenceBandChart.ChartClicked += OnChartClicked;
             ConfidenceBandChartHost.Content = _confidenceBandChart;
-
-            // Create scatter plot
-            _scatterPlot = new ScatterPlot
-            {
-                Title = "Session Comparison (A vs B)",
-                XLabel = "Session A (ms)",
-                YLabel = "Session B (ms)",
-                Unit = "ms"
-            };
-            _scatterPlot.ChartClicked += OnChartClicked;
-            ScatterPlotHost.Content = _scatterPlot;
 
             // Create waterfall chart for delta comparison
             _waterfallChart = new WaterfallChart
@@ -265,21 +241,6 @@ namespace LuxBenchmark.Components
                 cardsAdded++;
             }
 
-            // Memory comparison card
-            var totalMemoryA = _currentComparison.Results.Sum(r => r.SessionA_AvgMemory);
-            var totalMemoryB = _currentComparison.Results.Sum(r => r.SessionB_AvgMemory);
-            if (totalMemoryA > 0 || totalMemoryB > 0)
-            {
-                var memoryCard = new MetricCard();
-                memoryCard.SetData(
-                    "Total Memory Δ",
-                    totalMemoryB / 1024.0, // KB
-                    "KB",
-                    totalMemoryA / 1024.0
-                );
-                MetricCardsPanel.Children.Add(memoryCard);
-            }
-
             // Overall improvement card
             var overallCard = new MetricCard();
             var overallImprovement = _currentComparison.OverallImprovementPercent;
@@ -290,20 +251,6 @@ namespace LuxBenchmark.Components
                 null
             );
             MetricCardsPanel.Children.Add(overallCard);
-
-            // Memory improvement card (calculated on totals)
-            var memImprovementCard = _currentComparison.OverallMemoryImprovementPercent;
-            if (Math.Abs(memImprovementCard) > 0.01)
-            {
-                var memImpCard = new MetricCard();
-                memImpCard.SetData(
-                    "Memory Improvement",
-                    memImprovementCard,
-                    "%",
-                    null
-                );
-                MetricCardsPanel.Children.Add(memImpCard);
-            }
         }
 
         private void UpdateMetricCardsSingle()
@@ -357,33 +304,14 @@ namespace LuxBenchmark.Components
 
             _performanceChart.SetData(perfItems);
 
-            // Memory chart data - only show valid memory comparisons
-            var memItems = _currentComparison.Results
-                .Where(r => r.HasValidMemoryComparison)
-                .OrderByDescending(r => Math.Max(r.SessionA_AvgMemory, r.SessionB_AvgMemory))
-                .Take(10)
-                .Select(r => new BarChartItem
-                {
-                    Label = FormatMetricName(r.OperationKey),
-                    Value = r.SessionB_AvgMemory / 1024.0, // Convert to KB
-                    CompareValue = r.SessionA_AvgMemory / 1024.0,
-                    Color = SKColors.Orange,
-                    CompareColor = SKColors.DodgerBlue,
-                    Tag = r.OperationKey
-                })
-                .ToList();
-
-            _memoryChart.SetData(memItems);
-
             // Improvement breakdown pie chart
             UpdateImprovementBreakdownChart();
 
-            // Update new charts
+            // Update other charts
             UpdateGaugeChart();
             UpdateHistogramChart();
             UpdateBoxPlotChart();
             UpdateConfidenceBandChart();
-            UpdateScatterPlot();
             UpdateWaterfallChart();
         }
 
@@ -407,32 +335,14 @@ namespace LuxBenchmark.Components
             _performanceChart.ShowComparison = false;
             _performanceChart.SetData(perfItems);
 
-            // Memory chart data
-            var memItems = _sessionA.Statistics
-                .Where(s => s.Value.AvgMemoryDelta > 0)
-                .OrderByDescending(s => s.Value.AvgMemoryDelta)
-                .Take(10)
-                .Select(s => new BarChartItem
-                {
-                    Label = FormatMetricName(s.Key),
-                    Value = s.Value.AvgMemoryDelta / 1024.0,
-                    Color = SKColors.Purple,
-                    Tag = s.Key
-                })
-                .ToList();
-
-            _memoryChart.ShowComparison = false;
-            _memoryChart.SetData(memItems);
-
             // Time distribution pie chart
             UpdateTimeDistributionChart(_sessionA);
 
-            // Update new charts (single session mode)
+            // Update other charts (single session mode)
             UpdateGaugeChartSingle();
             UpdateHistogramChartSingle();
             UpdateBoxPlotChartSingle();
             UpdateConfidenceBandChartSingle();
-            UpdateScatterPlotSingle();
             UpdateWaterfallChartSingle();
         }
 
@@ -582,7 +492,7 @@ namespace LuxBenchmark.Components
             };
         }
 
-        #region New Chart Update Methods
+        #region Chart Update Methods
 
         private void UpdateGaugeChart()
         {
@@ -671,7 +581,6 @@ namespace LuxBenchmark.Components
                 .Where(k => k.StartsWith("Render:") || k.StartsWith("Pipeline:"))
                 .Take(6);
 
-            int colorIndex = 0;
             foreach (var op in commonOps)
             {
                 var statsA = _sessionA.Statistics[op];
@@ -700,8 +609,6 @@ namespace LuxBenchmark.Components
                     Max = statsB.MaxMs,
                     Color = SKColors.Orange
                 });
-
-                colorIndex++;
             }
 
             _boxPlotChart.SetData(boxPlotItems);
@@ -814,37 +721,6 @@ namespace LuxBenchmark.Components
                 Points = points,
                 Color = color
             };
-        }
-
-        private void UpdateScatterPlot()
-        {
-            if (_sessionA == null || _sessionB == null || _currentComparison == null)
-            {
-                _scatterPlot.SetData(new List<ScatterPoint>());
-                return;
-            }
-
-            // Only plot points with valid data in both sessions
-            var points = _currentComparison.ValidResults
-                .Select(r => new ScatterPoint
-                {
-                    Label = FormatMetricName(r.OperationKey),
-                    X = r.SessionA_AvgMs,
-                    Y = r.SessionB_AvgMs,
-                    Tag = r.OperationKey
-                })
-                .ToList();
-
-            _scatterPlot.XLabel = $"Session A: {_sessionA.DisplayName}";
-            _scatterPlot.YLabel = $"Session B: {_sessionB.DisplayName}";
-            _scatterPlot.SetData(points);
-        }
-
-        private void UpdateScatterPlotSingle()
-        {
-            // Scatter plot requires two sessions for comparison
-            _scatterPlot.Title = "Session Comparison (requires 2 sessions)";
-            _scatterPlot.SetData(new List<ScatterPoint>());
         }
 
         private void UpdateWaterfallChart()
