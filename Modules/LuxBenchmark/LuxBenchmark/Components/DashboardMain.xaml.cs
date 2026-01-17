@@ -52,6 +52,7 @@ namespace LuxBenchmark.Components
                 ShowComparison = true
             };
             _performanceChart.ItemClicked += OnChartItemClicked;
+            _performanceChart.ChartClicked += OnChartClicked;
             PerformanceChartHost.Content = _performanceChart;
 
             // Create bar chart for memory
@@ -62,6 +63,7 @@ namespace LuxBenchmark.Components
                 ShowComparison = true
             };
             _memoryChart.ItemClicked += OnChartItemClicked;
+            _memoryChart.ChartClicked += OnChartClicked;
             MemoryChartHost.Content = _memoryChart;
 
             // Create pie chart for improvement breakdown
@@ -69,6 +71,7 @@ namespace LuxBenchmark.Components
             {
                 Title = "Performance Change Distribution"
             };
+            _timeDistributionChart.ChartClicked += OnChartClicked;
             TimeDistributionChartHost.Content = _timeDistributionChart;
 
             // Create primary gauge chart (shows improvement %)
@@ -79,6 +82,7 @@ namespace LuxBenchmark.Components
                 MinValue = -50,
                 MaxValue = 50
             };
+            _primaryGauge.ChartClicked += OnChartClicked;
             PrimaryGaugeHost.Content = _primaryGauge;
 
             // Create histogram chart for comparing distributions
@@ -88,6 +92,7 @@ namespace LuxBenchmark.Components
                 Unit = "ms",
                 BinCount = 15
             };
+            _histogramChart.ChartClicked += OnChartClicked;
             HistogramChartHost.Content = _histogramChart;
 
             // Create box plot chart
@@ -96,6 +101,7 @@ namespace LuxBenchmark.Components
                 Title = "Statistical Distribution by Operation",
                 Unit = "ms"
             };
+            _boxPlotChart.ChartClicked += OnChartClicked;
             BoxPlotChartHost.Content = _boxPlotChart;
 
             // Create confidence band chart
@@ -104,6 +110,7 @@ namespace LuxBenchmark.Components
                 Title = "Performance Over Time (with variance)",
                 Unit = "ms"
             };
+            _confidenceBandChart.ChartClicked += OnChartClicked;
             ConfidenceBandChartHost.Content = _confidenceBandChart;
 
             // Create scatter plot
@@ -114,6 +121,7 @@ namespace LuxBenchmark.Components
                 YLabel = "Session B (ms)",
                 Unit = "ms"
             };
+            _scatterPlot.ChartClicked += OnChartClicked;
             ScatterPlotHost.Content = _scatterPlot;
 
             // Create waterfall chart for delta comparison
@@ -123,9 +131,18 @@ namespace LuxBenchmark.Components
                 Unit = "ms",
                 ShowAsDelta = true
             };
+            _waterfallChart.ChartClicked += OnChartClicked;
             WaterfallChartHost.Content = _waterfallChart;
 
             UpdateEmptyState();
+        }
+
+        private async void OnChartClicked(BaseSkiaChart chart)
+        {
+            var dialog = new ChartExpandDialog();
+            dialog.XamlRoot = this.XamlRoot;
+            dialog.SetChart(chart);
+            await dialog.ShowAsync();
         }
 
         /// <summary>

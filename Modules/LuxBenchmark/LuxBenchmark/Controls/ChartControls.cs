@@ -92,6 +92,9 @@ namespace LuxBenchmark.Controls
         private int _lastHeight = 0;
         private float _dpiScale = 2.0f; // Render at 2x resolution for sharper text
 
+        public event Action<BaseSkiaChart>? ChartClicked;
+        public bool IsExpandable { get; set; } = true;
+
         public string Title
         {
             get => _title;
@@ -124,6 +127,7 @@ namespace LuxBenchmark.Controls
 
             _border.SizeChanged += OnSizeChanged;
             _border.Loaded += (s, e) => Redraw();
+            _border.PointerPressed += OnBorderPointerPressed;
 
             Content = _border;
 
@@ -131,6 +135,14 @@ namespace LuxBenchmark.Controls
             VerticalAlignment = VerticalAlignment.Stretch;
             HorizontalContentAlignment = HorizontalAlignment.Stretch;
             VerticalContentAlignment = VerticalAlignment.Stretch;
+        }
+
+        private void OnBorderPointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            if (IsExpandable)
+            {
+                ChartClicked?.Invoke(this);
+            }
         }
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -226,6 +238,8 @@ namespace LuxBenchmark.Controls
             if (label.Length <= maxLength) return label;
             return label.Substring(0, maxLength - 2) + "..";
         }
+
+        public abstract BaseSkiaChart Clone();
     }
 
     #endregion
@@ -327,6 +341,27 @@ namespace LuxBenchmark.Controls
             }
         }
 
+        public override BaseSkiaChart Clone()
+        {
+            var clone = new BarChart
+            {
+                Title = _title,
+                Unit = _unit,
+                ShowComparison = _showComparison,
+                IsExpandable = false
+            };
+            clone.SetData(_items.Select(i => new BarChartItem
+            {
+                Label = i.Label,
+                Value = i.Value,
+                CompareValue = i.CompareValue,
+                Color = i.Color,
+                CompareColor = i.CompareColor,
+                Tag = i.Tag
+            }).ToList());
+            return clone;
+        }
+
         private void DrawGridLines(SKCanvas canvas, float left, float top, float chartWidth, float chartHeight, double maxValue)
         {
             using var gridPaint = new SKPaint { Color = SKColor.Parse("#333333"), StrokeWidth = 1 };
@@ -414,6 +449,23 @@ namespace LuxBenchmark.Controls
                 canvas.DrawText($"{slice.Label} ({pct:F1}%)", legendX + 20, legendY, legendPaint);
                 legendY += 22;
             }
+        }
+
+        public override BaseSkiaChart Clone()
+        {
+            var clone = new PieChart
+            {
+                Title = _title,
+                Unit = _unit,
+                IsExpandable = false
+            };
+            clone.SetData(_slices.Select(s => new PieChartSlice
+            {
+                Label = s.Label,
+                Value = s.Value,
+                Color = s.Color
+            }).ToList());
+            return clone;
         }
     }
 
@@ -506,6 +558,24 @@ namespace LuxBenchmark.Controls
                 canvas.DrawText(series.Name, legendX + 16, legendY, legendPaint);
                 legendX += legendPaint.MeasureText(series.Name) + 30;
             }
+        }
+
+        public override BaseSkiaChart Clone()
+        {
+            var clone = new LineChart
+            {
+                Title = _title,
+                Unit = _unit,
+                XAxisLabel = _xAxisLabel,
+                IsExpandable = false
+            };
+            clone.SetData(_series.Select(s => new LineChartSeries
+            {
+                Name = s.Name,
+                Values = new List<double>(s.Values),
+                Color = s.Color
+            }).ToList());
+            return clone;
         }
     }
 
@@ -681,6 +751,26 @@ namespace LuxBenchmark.Controls
                 }
             }
         }
+
+        public override BaseSkiaChart Clone()
+        {
+            var clone = new Histogram
+            {
+                Title = _title,
+                Unit = _unit,
+                BinCount = _binCount,
+                IsExpandable = false
+            };
+            if (_comparisonMode)
+            {
+                clone.SetComparisonData(new List<double>(_valuesA), new List<double>(_valuesB));
+            }
+            else
+            {
+                clone.SetData(new List<double>(_valuesA));
+            }
+            return clone;
+        }
     }
 
     #endregion
@@ -757,6 +847,27 @@ namespace LuxBenchmark.Controls
                 canvas.DrawText(label, centerX - labelPaint.MeasureText(label) / 2, chartTop + chartHeight + 18, labelPaint);
             }
         }
+
+        public override BaseSkiaChart Clone()
+        {
+            var clone = new BoxPlot
+            {
+                Title = _title,
+                Unit = _unit,
+                IsExpandable = false
+            };
+            clone.SetData(_items.Select(i => new BoxPlotItem
+            {
+                Label = i.Label,
+                Min = i.Min,
+                Q1 = i.Q1,
+                Median = i.Median,
+                Q3 = i.Q3,
+                Max = i.Max,
+                Color = i.Color
+            }).ToList());
+            return clone;
+        }
     }
 
     #endregion
@@ -830,6 +941,26 @@ namespace LuxBenchmark.Controls
                 using var pointPaint = new SKPaint { Color = color, IsAntialias = true };
                 canvas.DrawCircle(x, y, 6, pointPaint);
             }
+        }
+
+        public override BaseSkiaChart Clone()
+        {
+            var clone = new ScatterPlot
+            {
+                Title = _title,
+                Unit = _unit,
+                XLabel = _xLabel,
+                YLabel = _yLabel,
+                IsExpandable = false
+            };
+            clone.SetData(_points.Select(p => new ScatterPoint
+            {
+                Label = p.Label,
+                X = p.X,
+                Y = p.Y,
+                Tag = p.Tag
+            }).ToList());
+            return clone;
         }
     }
 
@@ -907,6 +1038,28 @@ namespace LuxBenchmark.Controls
                 using var linePaint = new SKPaint { Color = series.Color, StrokeWidth = 2, IsAntialias = true, Style = SKPaintStyle.Stroke };
                 canvas.DrawPath(meanPath, linePaint);
             }
+        }
+
+        public override BaseSkiaChart Clone()
+        {
+            var clone = new ConfidenceBandChart
+            {
+                Title = _title,
+                Unit = _unit,
+                IsExpandable = false
+            };
+            clone.SetData(_series.Select(s => new ConfidenceBandSeries
+            {
+                Name = s.Name,
+                Color = s.Color,
+                Points = s.Points.Select(p => new ConfidenceBandPoint
+                {
+                    Mean = p.Mean,
+                    Upper = p.Upper,
+                    Lower = p.Lower
+                }).ToList()
+            }).ToList());
+            return clone;
         }
     }
 
@@ -1055,6 +1208,24 @@ namespace LuxBenchmark.Controls
                 using var totalLabelPaint = new SKPaint { Color = SKColors.White, TextSize = 10, IsAntialias = true, Typeface = SKTypeface.FromFamilyName("Segoe UI", SKFontStyle.Bold) };
                 canvas.DrawText("Total", totalX + barWidthPx / 2 - totalLabelPaint.MeasureText("Total") / 2, chartTop + chartHeight + 15, totalLabelPaint);
             }
+        }
+
+        public override BaseSkiaChart Clone()
+        {
+            var clone = new WaterfallChart
+            {
+                Title = _title,
+                Unit = _unit,
+                ShowAsDelta = _showAsDelta,
+                IsExpandable = false
+            };
+            clone.SetData(_items.Select(i => new WaterfallItem
+            {
+                Label = i.Label,
+                Value = i.Value,
+                IsIncrease = i.IsIncrease
+            }).ToList());
+            return clone;
         }
     }
 
@@ -1205,6 +1376,21 @@ namespace LuxBenchmark.Controls
             if (normalizedValue <= 0.5) return SKColor.Parse("#8BC34A");
             if (normalizedValue <= 0.75) return SKColor.Parse("#FFC107");
             return SKColor.Parse("#F44336");
+        }
+
+        public override BaseSkiaChart Clone()
+        {
+            var clone = new GaugeChart
+            {
+                Title = _title,
+                Unit = _unit,
+                MinValue = _minValue,
+                MaxValue = _maxValue,
+                Label = _label,
+                IsExpandable = false
+            };
+            clone.SetValue(_value, _label);
+            return clone;
         }
     }
 
