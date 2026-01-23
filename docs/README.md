@@ -4,6 +4,10 @@
 ## Introduction
 This is the official documentation for the Luxoria project.
 
+## Platform Overview
+- [Overview](./luxplatform/PLATFORM_OVERVIEW.md)
+- [Deployments](./luxplatform/DEPLOYMENTS.md)
+
 ## How to use
 To use this documentation, simply navigate to the desired section, please navigate in the selected section to find the desired information.
 - [Desktop](./desktop/README.md)
