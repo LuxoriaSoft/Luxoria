@@ -27,9 +27,12 @@ public class StorageAPI : IStorageAPI
     /// </summary>
     /// <param name="input">Input to be standarised</param>
     /// <returns>Returns the standarised input</returns>
-    public static string StandarizeInput(string input)
+    public static string StandarizeInput(string input, int defaultTimeout = 2000)
     {
-        Regex r = new("(?:[^a-z0-9 ]|(?<=['\"])s)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+        Regex r = new(
+            "(?:[^a-z0-9 ]|(?<=['\"])s)",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled,
+            TimeSpan.FromMilliseconds(defaultTimeout));
         return r.Replace(input, String.Empty);
     }
 
