@@ -75,6 +75,25 @@ Luxoria offers photographers a comprehensive solution to optimize their image wo
 
 Luxoria is more than just a photo editing tool, it's a complete photography management platform. From the moment you capture a shot, Luxoria ensures your photos are organized, edited, and shared efficiently. With AI-powered tools, intuitive collaboration features, and an easy-to-use interface, Luxoria is designed for photographers who want to focus on creativity while streamlining their workflow.
 
+## **Open Source at Luxoria**
+
+At Luxoria, open source is a core part of how we build. We are committed to developing in the open, collaborating with the community, and maintaining high standards of transparency and quality across our projects.
+
+The Luxoria Project is released under the **Apache License 2.0**, a permissive license that enables broad adoption, commercial use, and contribution without unnecessary constraints.
+
+### Built for the .NET Ecosystem
+
+Luxoria is designed with a strong focus on the .NET ecosystem. Our goal is to deliver robust, modular, and reusable components that integrate seamlessly into modern applications.
+
+We continuously invest in expanding the ecosystem by shipping production-ready libraries and tools.
+
+### Distribution & Packages
+
+All of our codebase and experimentations are hosted on GitHub and packages are published on NuGet and are actively maintained:
+
+- [Luxoria Contributions & Experimentations on GitHub](https://github.com/orgs/LuxoriaSoft/repositories)
+- [Luxoria on NuGet.org](https://www.nuget.org/profiles/Luxoria)
+
 ---
 
 ## 📄 **License**
