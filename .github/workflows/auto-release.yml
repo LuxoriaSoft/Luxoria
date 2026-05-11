@@ -27,6 +27,6 @@ jobs:
           node-version: "lts/*"
   
       - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v4
+        uses: cycjimmy/semantic-release-action@v6
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
