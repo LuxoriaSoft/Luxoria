@@ -22,12 +22,12 @@ python-dateutil==2.9.0.post0
 pytz==2025.2
 PyYAML==6.0.2
 regex==2024.11.6
-requests==2.32.3
+requests==2.32.4
 safetensors==0.5.3
 six==1.17.0
 sympy==1.14.0
 tokenizers==0.21.1
-torch==2.7.0
+torch==2.7.1
 tqdm==4.67.1
 transformers==4.52.2
 typing_extensions==4.13.2
